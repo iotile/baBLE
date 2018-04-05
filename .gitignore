@@ -1,0 +1,12 @@
+# Compiled files
+build/*
+bin/*
+
+# IDE
+.idea/
+
+# Mac
+.DS_Store
+
+# Keep .gitkeep
+!.gitkeep
