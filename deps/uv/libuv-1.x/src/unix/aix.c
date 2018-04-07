@@ -295,7 +295,7 @@ void uv__io_poll(uv_loop_t* loop, int timeout) {
     loop->watchers[loop->nwatchers + 1] = NULL;
 
     if (have_signals != 0)
-      return;  /* Event loop should cycle now so don't poll again. */
+      return;  /* Events loop should cycle now so don't poll again. */
 
     if (nevents != 0) {
       if (nfds == ARRAY_SIZE(events) && --count != 0) {
@@ -470,7 +470,7 @@ static int uv__makedir_p(const char *dir) {
 }
 
 /*
- * Creates necessary subdirectories in the AIX Event Infrastructure
+ * Creates necessary subdirectories in the AIX Events Infrastructure
  * file system for monitoring the object specified.
  * Returns code from mkdir call
  */
@@ -675,7 +675,7 @@ static void uv__ahafs_event(uv_loop_t* loop, uv__io_t* event_watch, unsigned int
 
   assert((bytes >= 0) && "uv__ahafs_event - Error reading monitor file");
 
-  /* In file / directory move cases, AIX Event infrastructure
+  /* In file / directory move cases, AIX Events infrastructure
    * produces a second event with no data.
    * Ignore it and return gracefully.
    */

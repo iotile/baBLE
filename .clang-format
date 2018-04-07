@@ -1,0 +1,13 @@
+﻿BasedOnStyle: LLVM
+AlwaysBreakTemplateDeclarations: 'true'
+ColumnLimit: '100'
+IndentWidth: '2'
+Language: Cpp
+MaxEmptyLinesToKeep: '1'
+NamespaceIndentation: All
+PointerAlignment: Left
+SortIncludes: 'true'
+SpaceBeforeAssignmentOperators: 'true'
+SpaceBeforeParens: ControlStatements
+Standard: Cpp11
+UseTab: Never

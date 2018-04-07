@@ -56,4 +56,4 @@ set(SOURCES
 add_library(uv ${SOURCES})
 
 find_package(Threads)
-target_link_libraries(uv ${CMAKE_THREAD_LIBS_INIT} ${M_LIB})
+target_link_libraries(uv ${CMAKE_THREAD_LIBS_INIT})

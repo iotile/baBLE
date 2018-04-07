@@ -270,7 +270,7 @@ void uv__io_poll(uv_loop_t* loop, int timeout) {
     uv__pollfds_del(loop, -1);
 
     if (have_signals != 0)
-      return;  /* Event loop should cycle now so don't poll again. */
+      return;  /* Events loop should cycle now so don't poll again. */
 
     if (nevents != 0)
       return;
