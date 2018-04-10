@@ -6,7 +6,9 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-#include "utils/colors.hpp"
+#include "../utils/colors.hpp"
+
+#define DEFAULT_NAME "General"
 
 class Log {
 
@@ -28,11 +30,11 @@ public:
   void set_level(const Level& level);
 
   void write_log(const std::string &name, const std::string& message, const Level& level, const std::string& color = WHITE_COLOR);
-  void critical(const std::string& message, const std::string &name = "General");
-  void error(const std::string& message, const std::string &name = "General");
-  void warning(const std::string& message, const std::string &name = "General");
-  void info(const std::string& message, const std::string &name = "General");
-  void debug(const std::string& message, const std::string &name = "General");
+  void critical(const std::string& message, const std::string &name = DEFAULT_NAME);
+  void error(const std::string& message, const std::string &name = DEFAULT_NAME);
+  void warning(const std::string& message, const std::string &name = DEFAULT_NAME);
+  void info(const std::string& message, const std::string &name = DEFAULT_NAME);
+  void debug(const std::string& message, const std::string &name = DEFAULT_NAME);
 
 private:
   Log();

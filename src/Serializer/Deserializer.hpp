@@ -4,29 +4,25 @@
 #include <algorithm>
 #include <array>
 #include <cstdint>
-#include <iostream>
+#include <cstring>
 #include <vector>
 
-#include "utils/stream_formats.hpp"
+#include "AbstractSerializer.hpp"
 
 #if __BYTE_ORDER__ == __ORDER_PDP_ENDIAN__
 #error "Byte order not suported (PDP endian)"
 #endif
 
-class Deserializer {
+class Deserializer : public AbstractSerializer {
 
 public:
   Deserializer();
   Deserializer(Deserializer& other);
   Deserializer(const uint8_t* buffer, size_t size);
   explicit Deserializer(const std::vector<uint8_t>& buffer);
-  Deserializer& operator=(const Deserializer& other);
 
-  size_t size() const;
-  const uint8_t* buffer() const;
-
-  void import(const uint8_t* buffer, size_t size);
-  void import(const std::vector<uint8_t>& buffer);
+  void import(const uint8_t* buffer, size_t size) override;
+  void import(const std::vector<uint8_t>& buffer) override;
 
   template<typename T>
   Deserializer& operator>>(T& value);
@@ -39,10 +35,6 @@ public:
   template<typename T>
   Deserializer& operator>>(std::vector<T>& container);
 
-  friend std::ostream& operator<<(std::ostream& output,const Deserializer& self);
-
-private:
-  std::vector<uint8_t> m_buffer;
 };
 
 template<typename T>

@@ -8,16 +8,16 @@ set(SOURCES_FILES
         src/main.cpp
 #        src/interfaces/BaBLEIOInterface.hpp
 #        src/interfaces/BluetoothIOInterface.hpp
-        src/Log.cpp
-        src/Log.hpp
+        src/Log/Log.cpp
+        src/Log/Log.hpp
         src/utils/colors.hpp
         src/utils/stream_formats.hpp
-        src/Serializer.cpp
-        src/Serializer.hpp
-        src/Deserializer.cpp
-        src/Deserializer.hpp
-#        src/AbstractSerializer.cpp
-#        src/AbstractSerializer.hpp
+        src/Serializer/Serializer.cpp
+        src/Serializer/Serializer.hpp
+        src/Serializer/Deserializer.cpp
+        src/Serializer/Deserializer.hpp
+        src/Serializer/AbstractSerializer.cpp
+        src/Serializer/AbstractSerializer.hpp
         )
 add_executable(baBLE_linux ${SOURCES_FILES})
 

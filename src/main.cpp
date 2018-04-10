@@ -1,10 +1,10 @@
 #include <iostream>
 #include <memory>
 #include <uvw.hpp>
-#include "Log.hpp"
+#include "Log/Log.hpp"
 #include "utils/colors.hpp"
-#include "Serializer.hpp"
-#include "Deserializer.hpp"
+#include "Serializer/Serializer.hpp"
+#include "Serializer/Deserializer.hpp"
 #include "utils/stream_formats.hpp"
 
 using namespace std;
@@ -48,6 +48,10 @@ int main() {
   }
   cout << endl;
   cout << str2 << endl;
+
+  Serializer ser3;
+  ser3 = ser;
+  cout << ser3;
 
 //  Loop loop = Loop::getDefault();
 //  std::cout << COLORIZE(RED_COLOR, "OK") << std::endl;
