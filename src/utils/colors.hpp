@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_COLORS_H
-#define BABLE_LINUX_COLORS_H
+#ifndef BABLE_LINUX_COLORS_HPP
+#define BABLE_LINUX_COLORS_HPP
 
 #include <string>
 
@@ -14,10 +14,4 @@
 
 #define COLORIZE(color, txt) ((color) + std::string(txt) + RESET_COLOR)
 
-#define RED(txt) COLORIZE(RED_COLOR, txt)
-#define GREEN(txt) COLORIZE(GREEN_COLOR, txt)
-#define YELLOW(txt) COLORIZE(YELLOW_COLOR, txt)
-#define BLUE(txt) COLORIZE(BLUE_COLOR, txt)
-#define PURPLE(txt) COLORIZE(PURPLE_COLOR, txt)
-
-#endif //BABLE_LINUX_COLORS_H
+#endif //BABLE_LINUX_COLORS_HPP
