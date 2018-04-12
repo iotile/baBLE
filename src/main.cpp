@@ -1,79 +1,104 @@
-#include <iostream>
 #include <memory>
 #include <uvw.hpp>
 #include "Log/Log.hpp"
-#include "utils/colors.hpp"
-#include "Serializer/Serializer.hpp"
-#include "Serializer/Deserializer.hpp"
-#include "utils/stream_formats.hpp"
+#include "MGMTSocket.hpp"
 
 using namespace std;
 using namespace uvw;
 
+// Function used to call all handlers closing callbacks before stopping the loop
+void cleanly_stop_loop(Loop& loop) {
+  loop.walk([](BaseHandle &handle){
+    handle.close();
+  });
+  loop.stop();
+}
+
 int main() {
   ENABLE_LOGGING(DEBUG);
 
-  uint8_t test0 = 15;
-  uint8_t test1 = 10;
-  string str;
-  str += "test";
-  array<uint8_t, 5> truc = {2, 8, 12, 15, 55};
-  vector<uint8_t> bidule = {1, 3, 88, 155};
-  Serializer ser;
-  ser << test0 << test1 << truc << bidule << str;
-  cout << ser;
+  // Create loop
+  shared_ptr<Loop> loop = Loop::getDefault();
+  loop->on<ErrorEvent>([](const ErrorEvent& err, Loop& l) {
+    LOG.error("An error occured: " + string(err.what()), "Loop");
+  });
 
-  const uint8_t* buffer = ser.buffer();
-  for(int i = 0; i < ser.size(); i++) {
-    printf("%d / ", buffer[i]);
-  }
-  cout << endl;
+  // Stop on SIGINT signal
+  shared_ptr<SignalHandle> stop_signal = loop->resource<SignalHandle>();
+  stop_signal->on<SignalEvent>([](const SignalEvent&, SignalHandle& sig) {
+    LOG.warning("Stop signal received...", "Signal");
+    cleanly_stop_loop(sig.loop());
+  });
+  stop_signal->start(SIGINT);
 
-  uint8_t test2;
-  uint8_t test3;
-  array<uint8_t, 5> truc2{};
-  vector<uint8_t> bidule2(4);
-  string str2;
-  Deserializer deser(buffer, ser.size());
-  cout << deser;
-  deser >> test2 >> test3 >> truc2 >> bidule2 >> str2;
-  cout << HEX(test2) << " " << HEX(test3) << endl;
-  for(const uint8_t& v : truc2) {
-    cout << HEX(v) << " / ";
-  }
-  cout << endl;
+  // Create MGMT socket
+  shared_ptr<MGMTSocket> mgmt_sock = make_shared<MGMTSocket>();
 
-  for(const uint8_t& v : bidule2) {
-    cout << HEX(v) << " / ";
-  }
-  cout << endl;
-  cout << str2 << endl;
+  // Poll the MGMT socket on READABLE (data available) and WRITABLE (we can write on the socket)
+  shared_ptr<PollHandle> sock_poll = loop->resource<PollHandle>(mgmt_sock->get_socket());
+  sock_poll->on<PollEvent>([&mgmt_sock] (const PollEvent& event, const PollHandle& handle) {
+    if (event.flags & PollHandle::Event::READABLE) {
+      printf("DATA RECEIVED !\n");
+      Deserializer deser = mgmt_sock->receive();
+      LOG.debug(deser, "MGMT poller");
 
-  Serializer ser3;
-  ser3 = ser;
-  cout << ser3;
+      uint16_t event_code;
+      uint16_t controller_index;
+      uint16_t payload_length;
+      uint16_t command_code;
+      uint8_t status;
 
-//  Loop loop = Loop::getDefault();
-//  std::cout << COLORIZE(RED_COLOR, "OK") << std::endl;
-//
-//  TimerHandle timer = loop->resource<TimerHandle>();
-//  int counter = 0;
-//  timer->on<TimerEvent>([&counter](const TimerEvent&, TimerHandle& t) {
-//    counter ++;
-//    LOG.debug("TIC #" + to_string(counter), "Timer");
-//    if (counter >= 5) {
-//      t.loop().stop();
-//    }
-//  });
-//  timer->start(chrono::seconds(1), chrono::seconds(2));
-//
-//  string test[2];
-//  cin >> test[0] >> test[1];
-//  cout << test[0];
-//  cout << test[1];
-//  cout << "test";
-//
-//  loop->run<Loop::Mode::DEFAULT>();
-  printf("END");
+      uint8_t version;
+      uint16_t revision;
+      deser >> event_code >> controller_index >> payload_length >> command_code >> status >> version >> revision;
+      printf("Event: %04x\n"
+             "Controller: %04x\n"
+             "Length: %04x\n"
+             "Command code: %04x\n"
+             "Status: %02x\n"
+             "Version: %02x\n"
+             "Revision: %04x\n", event_code, controller_index, payload_length, command_code, status, version, revision);
+    } else if (event.flags & PollHandle::Event::WRITABLE) {
+      mgmt_sock->set_writable();
+    }
+  });
+  sock_poll->start(Flags<PollHandle::Event>(PollHandle::Event::READABLE) | Flags<PollHandle::Event>(PollHandle::Event::WRITABLE));
+
+  // Run a timer calling callback every second
+  int counter = 0;
+  shared_ptr<TimerHandle> timer = loop->resource<TimerHandle>();
+  timer->on<TimerEvent>([&counter, &mgmt_sock](const TimerEvent&, TimerHandle& t) {
+    counter++;
+    LOG.debug("TIC #" + to_string(counter), "Timer");
+
+    if (counter == 2) {
+      Serializer ser;
+      uint16_t command_code = 0x0001;
+      uint16_t controller_id = 0xFFFF;
+      uint16_t params_length = 0;
+      ser << command_code << controller_id << params_length;
+      LOG.debug(ser, "Timer");
+
+      Serializer ser2 = ser;
+      LOG.debug(ser2, "Timer");
+      cout << ser2.stringify();
+      mgmt_sock->send(ser);
+      mgmt_sock->send(ser2);
+    }
+
+    if (counter == 5) {
+      cleanly_stop_loop(t.loop());
+    }
+  });
+  timer->start(chrono::seconds(1), chrono::seconds(1));
+
+  // Start the loop
+  LOG.info("Start loop...");
+  loop->run<Loop::Mode::DEFAULT>();
+  LOG.info("Loop stopped.");
+
+  // Close and clean the loop
+  loop->close();
+  loop->clear();
   return 0;
 }

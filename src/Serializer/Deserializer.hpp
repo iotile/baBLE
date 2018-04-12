@@ -16,11 +16,6 @@
 class Deserializer : public AbstractSerializer {
 
 public:
-  Deserializer();
-  Deserializer(Deserializer& other);
-  Deserializer(const uint8_t* buffer, size_t size);
-  explicit Deserializer(const std::vector<uint8_t>& buffer);
-
   void import(const uint8_t* buffer, size_t size) override;
   void import(const std::vector<uint8_t>& buffer) override;
 
@@ -35,6 +30,9 @@ public:
   template<typename T>
   Deserializer& operator>>(std::vector<T>& container);
 
+private:
+
+
 };
 
 template<typename T>
@@ -42,7 +40,6 @@ Deserializer& Deserializer::operator>>(T& value) {
   const size_t nb_bytes = sizeof(value);
 
   if (nb_bytes == 1) {
-    // TODO: protect with mutex
     value = m_buffer.back();
     m_buffer.pop_back();
   } else {

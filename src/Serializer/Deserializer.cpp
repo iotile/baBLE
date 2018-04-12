@@ -2,20 +2,6 @@
 
 using namespace std;
 
-Deserializer::Deserializer() = default;
-
-Deserializer::Deserializer(Deserializer& other) {
-  import(other.m_buffer);
-}
-
-Deserializer::Deserializer(const std::vector<uint8_t>& buffer) {
-  import(buffer);
-}
-
-Deserializer::Deserializer(const uint8_t* buffer, size_t size) {
-  import(buffer, size);
-}
-
 void Deserializer::import(const uint8_t* buffer, size_t size) {
   size_t nb_elements = size / sizeof(buffer[0]);
   m_buffer.clear();

@@ -6,23 +6,26 @@
 #include <typeinfo>
 #include <vector>
 
+#include "../Log/Loggable.hpp"
 #include "../utils/stream_formats.hpp"
 
-class AbstractSerializer {
+class AbstractSerializer : public Loggable {
 
 public:
   size_t size() const;
   const uint8_t* buffer() const;
 
-  friend std::ostream& operator<<(std::ostream& output, const AbstractSerializer& self);
+  const std::string stringify() const override;
 
   virtual ~AbstractSerializer() = default;
 
 protected:
-  AbstractSerializer& operator=(const AbstractSerializer& other);
+  AbstractSerializer() = default;
+  explicit AbstractSerializer(const std::vector<uint8_t>& buffer);
+  AbstractSerializer(const uint8_t* buffer, size_t size);
 
-  virtual void import(const uint8_t* buffer, size_t size) = 0;
-  virtual void import(const std::vector<uint8_t>& buffer) = 0;
+  virtual void import(const uint8_t* buffer, size_t size);
+  virtual void import(const std::vector<uint8_t>& buffer);
 
   std::vector<uint8_t> m_buffer;
 

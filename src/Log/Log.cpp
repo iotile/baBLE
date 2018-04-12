@@ -74,3 +74,7 @@ void Log::info(const string& message, const string& name) {
 void Log::debug(const string& message, const string& name) {
   write_log(name, message, Level::DEBUG, WHITE_COLOR);
 }
+
+void Log::debug(const Loggable& object, const string& name) {
+  debug(object.stringify(), name);
+}

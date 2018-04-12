@@ -8,17 +8,20 @@ set(SOURCES_FILES
         src/main.cpp
 #        src/interfaces/BaBLEIOInterface.hpp
 #        src/interfaces/BluetoothIOInterface.hpp
-        src/Log/Log.cpp
-        src/Log/Log.hpp
         src/utils/colors.hpp
         src/utils/stream_formats.hpp
+        src/Log/Log.cpp
+        src/Log/Log.hpp
+        src/Log/Loggable.hpp
+        src/Serializer/AbstractSerializer.cpp
+        src/Serializer/AbstractSerializer.hpp
         src/Serializer/Serializer.cpp
         src/Serializer/Serializer.hpp
         src/Serializer/Deserializer.cpp
         src/Serializer/Deserializer.hpp
-        src/Serializer/AbstractSerializer.cpp
-        src/Serializer/AbstractSerializer.hpp
-        )
+        src/MGMTSocket.cpp
+        src/MGMTSocket.hpp
+    )
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies

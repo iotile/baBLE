@@ -2,23 +2,10 @@
 
 using namespace std;
 
-Serializer::Serializer() = default;
-
-Serializer::Serializer(Serializer& other) {
-  import(other.m_buffer);
-}
-
-Serializer::Serializer(const std::vector<uint8_t>& buffer) {
-  import(buffer);
-}
-
-Serializer::Serializer(const uint8_t* buffer, size_t size) {
-  import(buffer, size);
-}
-
 void Serializer::import(const uint8_t* buffer, size_t size) {
+  size_t nb_elements = size / sizeof(buffer[0]);
   m_buffer.clear();
-  m_buffer = vector<uint8_t>(buffer, buffer + size / sizeof(buffer[0]));
+  m_buffer = vector<uint8_t>(buffer, buffer + nb_elements);
 }
 
 void Serializer::import(const vector<uint8_t>& buffer) {

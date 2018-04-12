@@ -15,11 +15,6 @@
 class Serializer : public AbstractSerializer {
 
 public:
-  Serializer();
-  Serializer(Serializer& other);
-  Serializer(const uint8_t* buffer, size_t size);
-  explicit Serializer(const std::vector<uint8_t>& buffer);
-
   void import(const uint8_t* buffer, size_t size) override;
   void import(const std::vector<uint8_t>& buffer) override;
 

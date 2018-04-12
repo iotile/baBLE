@@ -2,13 +2,12 @@
 
 using namespace std;
 
-AbstractSerializer& AbstractSerializer::operator=(const AbstractSerializer& other) {
-  if (&other == this) {
-    return *this;
-  }
-  import(other.m_buffer);
+AbstractSerializer::AbstractSerializer(const std::vector<uint8_t>& buffer) {
+  import(buffer);
+}
 
-  return *this;
+AbstractSerializer::AbstractSerializer(const uint8_t* buffer, size_t size) {
+  import(buffer, size);
 }
 
 size_t AbstractSerializer::size() const {
@@ -20,21 +19,22 @@ const uint8_t* AbstractSerializer::buffer() const {
 }
 
 void AbstractSerializer::import(const uint8_t* buffer, size_t size) {
-  throw runtime_error("Can't run `import` function on the AbstractSerializer.");
+  throw runtime_error("Can't run `import` function of AbstractSerializer.");
 }
 
 void AbstractSerializer::import(const vector<uint8_t>& buffer) {
-  throw runtime_error("Can't run `import` function on the AbstractSerializer.");
+  throw runtime_error("Can't run `import` function of AbstractSerializer.");
 }
 
-ostream& operator<<(ostream& output, const AbstractSerializer& self) {
-  output << "<" << typeid(self).name() << "[" << self.size() << "]> { ";
+const string AbstractSerializer::stringify() const {
+  ostringstream data;
+  data << "<" << typeid(*this).name() << "[" << size() << "]> { ";
 
-  for (const uint8_t value : self.m_buffer) {
-    output << HEX(value) << " ";
+  for (const uint8_t value : m_buffer) {
+    data << HEX(value) << " ";
   }
 
-  output << "}" << endl;
+  data << "}";
 
-  return output;
+  return data.str();
 }

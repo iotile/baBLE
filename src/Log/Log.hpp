@@ -6,6 +6,8 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+
+#include "Loggable.hpp"
 #include "../utils/colors.hpp"
 
 #define DEFAULT_NAME "General"
@@ -35,6 +37,7 @@ public:
   void warning(const std::string& message, const std::string &name = DEFAULT_NAME);
   void info(const std::string& message, const std::string &name = DEFAULT_NAME);
   void debug(const std::string& message, const std::string &name = DEFAULT_NAME);
+  void debug(const Loggable& object, const std::string &name = DEFAULT_NAME);
 
 private:
   Log();
