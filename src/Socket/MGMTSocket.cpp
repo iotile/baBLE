@@ -1,7 +1,6 @@
 #include "MGMTSocket.hpp"
 
 MGMTSocket::MGMTSocket() {
-  m_writable = true;
   m_socket = socket(PF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC | SOCK_NONBLOCK, BTPROTO_HCI);
   if (m_socket < 0) {
     throw std::runtime_error("Error while creating the MGMT socket.");
@@ -10,6 +9,8 @@ MGMTSocket::MGMTSocket() {
   if(!bind_socket()) {
     throw std::runtime_error("Error while binding the MGMT socket.");
   }
+
+  set_writable(true);
 }
 
 bool MGMTSocket::bind_socket() {
@@ -31,7 +32,7 @@ bool MGMTSocket::send(const Serializer& ser) {
     return false;
 
   } else {
-    m_writable = false;
+    set_writable(false);
     if (write(m_socket, ser.buffer(), ser.size()) < 0) {
       LOG.error("Error while sending a message to MGMT socket. Queuing...");
       m_send_queue.push(ser);
@@ -58,11 +59,14 @@ Deserializer MGMTSocket::receive() {
   return deser;
 }
 
-void MGMTSocket::set_writable() {
-  m_writable = true;
-  while (!m_send_queue.empty()) {
-    send(m_send_queue.front());
-    m_send_queue.pop();
+void MGMTSocket::set_writable(bool is_writable) {
+  m_writable = is_writable;
+
+  if (m_writable) {
+    while (!m_send_queue.empty()) {
+      send(m_send_queue.front());
+      m_send_queue.pop();
+    }
   }
 }
 

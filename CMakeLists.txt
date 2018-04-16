@@ -6,8 +6,6 @@ set(CMAKE_CXX_STANDARD 14)
 ## Build executable from sources files
 set(SOURCES_FILES
         src/main.cpp
-#        src/interfaces/BaBLEIOInterface.hpp
-#        src/interfaces/BluetoothIOInterface.hpp
         src/utils/colors.hpp
         src/utils/stream_formats.hpp
         src/Log/Log.cpp
@@ -19,9 +17,15 @@ set(SOURCES_FILES
         src/Serializer/Serializer.hpp
         src/Serializer/Deserializer.cpp
         src/Serializer/Deserializer.hpp
-        src/MGMTSocket.cpp
-        src/MGMTSocket.hpp
-    )
+        src/Socket/MGMTSocket.cpp
+        src/Socket/MGMTSocket.hpp
+        src/Commands/AbstractCommand.cpp
+        src/Commands/AbstractCommand.hpp
+        src/Commands/GetMGMTInfoCommand.cpp
+        src/Commands/GetMGMTInfoCommand.hpp
+        src/Commands/CommandManager.cpp
+        src/Commands/CommandManager.hpp
+        src/Commands/CommandFactory.hpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies

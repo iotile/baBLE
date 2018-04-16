@@ -51,7 +51,7 @@ void Log::write_log(const string& name, const string& message, const Level& leve
   if (m_log_level != Level::DISABLED && level >= m_log_level) {
     const string prefix = build_prefix(name, level);
 
-    cout << COLORIZE(color, prefix) << message << endl;
+    cerr << COLORIZE(color, prefix) << message << endl;
   }
 }
 

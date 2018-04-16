@@ -30,9 +30,6 @@ public:
   template<typename T>
   Deserializer& operator>>(std::vector<T>& container);
 
-private:
-
-
 };
 
 template<typename T>

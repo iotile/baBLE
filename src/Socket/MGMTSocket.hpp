@@ -8,9 +8,9 @@
 #include <memory>
 #include <queue>
 
-#include "Serializer/Serializer.hpp"
-#include "Serializer/Deserializer.hpp"
-#include "Log/Log.hpp"
+#include "../Serializer/Serializer.hpp"
+#include "../Serializer/Deserializer.hpp"
+#include "../Log/Log.hpp"
 
 #define BTPROTO_HCI   1
 #define HCI_DEV_NONE  0xffff
@@ -22,7 +22,7 @@ struct sockaddr_hci {
   unsigned short  hci_channel;
 };
 
-class MGMTSocket : public uvw::Emitter<MGMTSocket> {
+class MGMTSocket {
 
 public:
   MGMTSocket();
@@ -33,11 +33,11 @@ public:
 
   Deserializer receive();
 
-  void set_writable();
+  void set_writable(bool is_writable);
 
   uvw::OSSocketHandle::Type& get_socket();
 
-  ~MGMTSocket() override;
+  ~MGMTSocket();
 
 private:
   uvw::OSSocketHandle::Type m_socket;
