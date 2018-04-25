@@ -17,12 +17,13 @@ public:
     return m_packet_type;
   };
 
-  uint8_t* format_packet(const std::unique_ptr<Packet::AbstractPacket>& packet) {
+  std::vector<uint8_t> format_packet(const std::unique_ptr<Packet::AbstractPacket>& packet) {
     switch(m_packet_type) {
       case Packet::ASCII:
         {
-          std::string str = packet->to_ascii();
-          return (uint8_t*)str.c_str();
+          std::string str = packet->to_ascii() + "\n";
+          std::vector<uint8_t> result = std::vector<uint8_t>(str.begin(), str.end());
+          return result;
         }
 
       default:
@@ -31,10 +32,8 @@ public:
   }
 
   bool send(std::unique_ptr<Packet::AbstractPacket> packet) override {
-    uint8_t* data = format_packet(packet);
-    std::cout << data << std::endl;
-    // TODO: check how to send data to stdout
-//    fwrite(response.c_str(), 1, response.size(), stdout);
+    std::vector<uint8_t> formatted_packet = format_packet(packet);
+    fwrite(formatted_packet.data(), sizeof(uint8_t), formatted_packet.size(), stdout);
     fflush(stdout);
     return true;
   };

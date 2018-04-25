@@ -16,8 +16,8 @@ public:
     deser >> command_code_str;
     auto command_code = static_cast<uint16_t>(stoi(command_code_str));
 
-    auto it = m_packets.find(command_code);
-    if (it == m_packets.end()) {
+    auto it = m_commands.find(command_code);
+    if (it == m_commands.end()) {
       throw std::invalid_argument("Command code not found");
     }
 
@@ -27,6 +27,9 @@ public:
     packet->unserialize(deser);
     return packet;
   };
+
+  template<class T>
+  AbstractBuilder& register_event(Packet::Type translated_type) = delete;
 
 private:
   const Packet::Type packet_type() const override {

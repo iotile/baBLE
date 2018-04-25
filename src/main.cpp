@@ -46,10 +46,10 @@ int main() {
 
   // Builders
   AsciiBuilder ascii_builder;
-  ascii_builder.register_packet<Packet::Commands::GetMGMTInfo>(Packet::Type::MGMT);
+  ascii_builder.register_command<Packet::Commands::GetMGMTInfo>(Packet::Type::MGMT);
 
   MGMTBuilder mgmt_builder;
-  mgmt_builder.register_packet<Packet::Responses::GetMGMTInfo>(Packet::Type::ASCII);
+  mgmt_builder.register_command<Packet::Responses::GetMGMTInfo>(Packet::Type::ASCII);
 
   // Create socket manager
   SocketManager socket_manager;
