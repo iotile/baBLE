@@ -23,19 +23,22 @@ bool MGMTSocket::bind_socket() {
   return bind(m_socket, (struct sockaddr*) &addr, sizeof(addr)) == 0;
 }
 
-bool MGMTSocket::send(const Serializer& ser) {
+bool MGMTSocket::send(std::unique_ptr<Packet::AbstractPacket> packet) {
   LOG.info("Sending data...", "MGMT socket");
 
   if (!m_writable) {
     LOG.debug("Already sending a message. Queuing...");
-    m_send_queue.push(ser);
+    m_send_queue.push(std::move(packet));
     return false;
 
   } else {
+    const Serializer ser = packet->serialize();
+    LOG.debug(ser, "MGMT socket");
+
     set_writable(false);
     if (write(m_socket, ser.buffer(), ser.size()) < 0) {
       LOG.error("Error while sending a message to MGMT socket. Queuing...");
-      m_send_queue.push(ser);
+      m_send_queue.push(std::move(packet));
       return false;
     }
   }
@@ -64,13 +67,13 @@ void MGMTSocket::set_writable(bool is_writable) {
 
   if (m_writable) {
     while (!m_send_queue.empty()) {
-      send(m_send_queue.front());
+      send(std::move(m_send_queue.front()));
       m_send_queue.pop();
     }
   }
 }
 
-uvw::OSSocketHandle::Type& MGMTSocket::get_socket() {
+uvw::OSSocketHandle::Type MGMTSocket::get_socket() const {
   return m_socket;
 }
 

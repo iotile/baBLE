@@ -29,6 +29,9 @@ public:
   template<typename T>
   Serializer& operator<<(const std::vector<T>& container);
 
+  template<std::size_t N>
+  Serializer& operator<<(const char (&container)[N]);
+
 };
 
 template<typename T>
@@ -39,7 +42,7 @@ Serializer& Serializer::operator<<(const T& value) {
     m_buffer.push_back(value);
 
   } else {
-    uint8_t* byte_ptr = (uint8_t*)&value;
+    auto byte_ptr = (uint8_t*)&value;
     m_buffer.reserve(m_buffer.size() + nb_bytes);
     if (__BYTE_ORDER == __LITTLE_ENDIAN) {
       for(size_t i = 0; i < nb_bytes; i++) {
@@ -71,6 +74,15 @@ Serializer& Serializer::operator<<(const std::vector<T>& container) {
   m_buffer.reserve(m_buffer.size() + container.size());
   for(const T& value : container) {
     *this << value;
+  }
+
+  return *this;
+}
+
+template<std::size_t N>
+Serializer& Serializer::operator<<(const char (&container)[N]) {
+  for(size_t i = 0; i < N; i++) {
+    *this << container[i];
   }
 
   return *this;

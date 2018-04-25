@@ -30,17 +30,24 @@ public:
   template<typename T>
   Deserializer& operator>>(std::vector<T>& container);
 
+  template<std::size_t N>
+  Deserializer& operator>>(const char (&container)[N]);
+
 };
 
 template<typename T>
 Deserializer& Deserializer::operator>>(T& value) {
   const size_t nb_bytes = sizeof(value);
 
+  if (nb_bytes > m_buffer.size()) {
+    throw std::invalid_argument("Can't deserialize into value: not enough bytes.");
+  }
+
   if (nb_bytes == 1) {
     value = m_buffer.back();
     m_buffer.pop_back();
   } else {
-    uint8_t* byte_ptr = (uint8_t*)&value;
+    auto byte_ptr = (uint8_t*)&value;
     if (__BYTE_ORDER == __LITTLE_ENDIAN) {
       for(size_t i = 0; i < nb_bytes; i++) {
         byte_ptr[i] = m_buffer.back();
@@ -71,6 +78,15 @@ template<typename T>
 Deserializer& Deserializer::operator>>(std::vector<T>& container) {
   for(T& value : container) {
     *this >> value;
+  }
+
+  return *this;
+}
+
+template<std::size_t N>
+Deserializer& Deserializer::operator>>(const char (&container)[N]) {
+  for(size_t i = 0; i < N; i++) {
+    *this >> container[i];
   }
 
   return *this;

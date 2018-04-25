@@ -17,15 +17,32 @@ set(SOURCES_FILES
         src/Serializer/Serializer.hpp
         src/Serializer/Deserializer.cpp
         src/Serializer/Deserializer.hpp
-        src/Socket/MGMTSocket.cpp
-        src/Socket/MGMTSocket.hpp
-        src/Commands/AbstractCommand.cpp
-        src/Commands/AbstractCommand.hpp
-        src/Commands/GetMGMTInfoCommand.cpp
-        src/Commands/GetMGMTInfoCommand.hpp
-        src/Commands/CommandManager.cpp
-        src/Commands/CommandManager.hpp
-        src/Commands/CommandFactory.hpp)
+        src/Socket/AbstractSocket.hpp
+        src/Socket/SocketManager.hpp
+        src/Socket/MGMT/MGMTSocket.cpp
+        src/Socket/MGMT/MGMTSocket.hpp
+        src/Socket/HCI/HCISocket.cpp
+        src/Socket/HCI/HCISocket.hpp
+        src/Socket/StdIO/StdIOSocket.cpp
+        src/Socket/StdIO/StdIOSocket.hpp
+        src/Packet/constants.hpp
+        src/Packet/AbstractPacket.hpp
+        src/Packet/Commands/GetMGMTInfo/GetMGMTInfo.cpp
+        src/Packet/Commands/GetMGMTInfo/GetMGMTInfo.hpp
+        src/Packet/Commands/CommandPacket.hpp
+        src/Packet/Responses/ResponsePacket.hpp
+        src/Packet/Responses/GetMGMTInfo/GetMGMTInfo.cpp
+        src/Packet/Responses/GetMGMTInfo/GetMGMTInfo.hpp
+        src/Builder/AbstractBuilder.hpp
+        src/Builder/MGMT/MGMTBuilder.cpp
+        src/Builder/MGMT/MGMTBuilder.hpp
+        src/Builder/Ascii/AsciiBuilder.cpp
+        src/Builder/Ascii/AsciiBuilder.hpp
+        src/Poller/Poller.cpp
+        src/Poller/Poller.hpp
+        src/Poller/PipePoller.cpp
+        src/Poller/PipePoller.hpp
+        )
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies

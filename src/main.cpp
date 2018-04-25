@@ -1,8 +1,16 @@
 #include <memory>
 #include <uvw.hpp>
 #include "Log/Log.hpp"
-#include "Socket/MGMTSocket.hpp"
-#include "Commands/CommandManager.hpp"
+#include "Socket/SocketManager.hpp"
+#include "Socket/MGMT/MGMTSocket.hpp"
+#include "Socket/StdIO/StdIOSocket.hpp"
+#include "Builder/Ascii/AsciiBuilder.hpp"
+#include "Builder/MGMT/MGMTBuilder.hpp"
+#include "Packet/constants.hpp"
+#include "Packet/Responses/GetMGMTInfo/GetMGMTInfo.hpp"
+#include "Packet/Commands/GetMGMTInfo/GetMGMTInfo.hpp"
+#include "Poller/Poller.hpp"
+#include "Poller/PipePoller.hpp"
 
 using namespace std;
 using namespace uvw;
@@ -32,52 +40,59 @@ int main() {
   });
   stop_signal->start(SIGINT);
 
-  // Create MGMT socket
-  shared_ptr<MGMTSocket> mgmt_sock = make_shared<MGMTSocket>();
+  // Sockets
+  shared_ptr<StdIOSocket> bable_socket = make_shared<StdIOSocket>(Packet::Type::ASCII);
+  shared_ptr<MGMTSocket> mgmt_socket = make_shared<MGMTSocket>();
 
-  shared_ptr<PipeHandle> stdin_pipe = loop->resource<PipeHandle>(false);
-  stdin_pipe->data(mgmt_sock);
-  stdin_pipe->open(0); // 0 is stdin
-  stdin_pipe->read();
-  stdin_pipe->on<DataEvent>([] (const DataEvent& event, const PipeHandle& handle) {
-    const string cmd(event.data.get());
-    LOG.info("Data on stdin: " + cmd);
+  // Builders
+  AsciiBuilder ascii_builder;
+  ascii_builder.register_packet<Packet::Commands::GetMGMTInfo>(Packet::Type::MGMT);
 
-    if (!cmd.empty()) {
-      shared_ptr<MGMTSocket> sock = handle.data<MGMTSocket>();
-      CommandManager::Process(cmd, sock); // create command and send it to MGMT socket
-    }
-  });
+  MGMTBuilder mgmt_builder;
+  mgmt_builder.register_packet<Packet::Responses::GetMGMTInfo>(Packet::Type::ASCII);
 
-  // Poll the MGMT socket on READABLE (data available) and WRITABLE (we can write on the socket)
-  shared_ptr<PollHandle> sock_poll = loop->resource<PollHandle>(mgmt_sock->get_socket());
-  sock_poll->data(mgmt_sock);
-  sock_poll->on<PollEvent>([] (const PollEvent& event, const PollHandle& handle) {
-    shared_ptr<MGMTSocket> sock = handle.data<MGMTSocket>();
+  // Create socket manager
+  SocketManager socket_manager;
+  socket_manager
+      .register_socket(mgmt_socket)
+      .register_socket(bable_socket);
 
-    if (event.flags & PollHandle::Event::READABLE) {
-      Deserializer deser = sock->receive();
-      LOG.debug(deser, "MGMT poller");
-      CommandManager::Process(deser, stdout); // Read MGMT response and send data to stdout (via command class)
+  // Create pollers
+  Poller mgmt_poller(loop, mgmt_socket->get_socket());
+  mgmt_poller
+      .on_readable([&mgmt_socket, &mgmt_builder, &socket_manager]() {
+        LOG.debug("Readable data on MGMT socket...", "MGMT poller");
+        Deserializer deser = mgmt_socket->receive();
+        LOG.debug(deser, "MGMT poller");
+        std::unique_ptr<Packet::AbstractPacket> packet = mgmt_builder.build(deser);
+        LOG.debug("Packet built", "MGMT poller");
+        packet->translate();
+        LOG.debug("Packet translated", "MGMT poller");
+        socket_manager.send(std::move(packet));
+      })
+      .on_writable([&mgmt_socket]() {
+        mgmt_socket->set_writable(true);
+      })
+      .start();
 
-    } else if (event.flags & PollHandle::Event::WRITABLE) {
-      sock->set_writable(true);
-    }
-  });
-  sock_poll->start(Flags<PollHandle::Event>(PollHandle::Event::READABLE) | Flags<PollHandle::Event>(PollHandle::Event::WRITABLE));
+  PipePoller stdinput_poller(loop, STDIO_ID::in);
+  stdinput_poller
+      .on_data([&bable_socket, &ascii_builder, &socket_manager](const char* data, size_t length) {
+        try {
+          LOG.debug("Readable data on BaBLE pipe...", "BABLE poller");
+          Deserializer deser = bable_socket->receive(data, length);
+          LOG.debug(deser, "BABLE poller");
+          std::unique_ptr<Packet::AbstractPacket> packet = ascii_builder.build(deser);
+          LOG.debug("Packet built", "BABLE poller");
+          packet->translate();
+          LOG.debug("Packet translated", "BABLE poller");
+          socket_manager.send(std::move(packet));
 
-  // Run a timer calling callback every second
-//  int counter = 0;
-//  shared_ptr<TimerHandle> timer = loop->resource<TimerHandle>();
-//  timer->on<TimerEvent>([&counter](const TimerEvent&, TimerHandle& t) {
-//    counter++;
-//    LOG.debug("TIC #" + to_string(counter), "Timer");
-//
-//    if (counter == 5) {
-//      cleanly_stop_loop(t.loop());
-//    }
-//  });
-//  timer->start(chrono::seconds(1), chrono::seconds(1));
+        } catch (const invalid_argument& err) {
+          LOG.error(err.what());
+        }
+      })
+      .start();
 
   // Start the loop
   LOG.info("Start loop...");

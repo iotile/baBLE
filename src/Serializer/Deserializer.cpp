@@ -15,7 +15,7 @@ void Deserializer::import(const vector<uint8_t>& buffer) {
 }
 
 Deserializer& Deserializer::operator>>(string& value) {
-  for (vector<uint8_t>::reverse_iterator it = m_buffer.rbegin(); it != m_buffer.rend(); ++it) {
+  for (auto it = m_buffer.rbegin(); it != m_buffer.rend(); ++it) {
     if (*it == '\0') {
       m_buffer.pop_back();
       break;

@@ -3,7 +3,7 @@ import sys
 
 process = subprocess.Popen(["./build/debug/baBLE_linux"], stdout=subprocess.PIPE, stdin=subprocess.PIPE)
 
-process.stdin.write("get_info")
+process.stdin.write("1")
 
 try:
     while True:

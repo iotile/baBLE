@@ -15,7 +15,7 @@
 class Log {
 
 public:
-  inline static Log& get_instance() {
+  inline static Log& get() {
     static Log instance;
     return instance;
   }
@@ -50,7 +50,7 @@ private:
   unsigned char m_log_level;
 };
 
-#define LOG Log::get_instance()
+#define LOG Log::get()
 #define ENABLE_LOGGING(lvl) LOG.set_level(Log::Level::lvl)
 #define DISABLE_LOGGING LOG.set_level(Log::Level::DISABLED)
 
