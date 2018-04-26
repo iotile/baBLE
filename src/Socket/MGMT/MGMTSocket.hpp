@@ -24,6 +24,7 @@ struct sockaddr_hci {
   unsigned short  hci_channel;
 };
 
+// TODO: idea -> run poller in socket ?
 class MGMTSocket : public AbstractSocket {
 
 public:

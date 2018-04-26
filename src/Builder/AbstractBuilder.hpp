@@ -11,6 +11,21 @@ using PacketConstructor = std::function<std::unique_ptr<Packet::AbstractPacket>(
 class AbstractBuilder {
 
 public:
+  AbstractBuilder() = default;
+
+  explicit AbstractBuilder(Packet::Type default_translated_type) {
+    m_default_translated_type = default_translated_type;
+  }
+
+  template<class T>
+  AbstractBuilder& register_command() {
+    if (m_default_translated_type == 0) {
+      throw std::invalid_argument("Missing argument 'translated_type' to register command.");
+    }
+
+    return register_command<T>(m_default_translated_type);
+  };
+
   template<class T>
   AbstractBuilder& register_command(Packet::Type translated_type) {
     const Packet::Type initial_type = packet_type();
@@ -26,6 +41,15 @@ public:
     };
 
     return *this;
+  };
+
+  template<class T>
+  AbstractBuilder& register_event() {
+    if (m_default_translated_type == 0) {
+      throw std::invalid_argument("Missing argument 'translated_type' to register event.");
+    }
+
+    return register_event<T>(m_default_translated_type);
   };
 
   template<class T>
@@ -52,6 +76,8 @@ protected:
 
   std::unordered_map<uint16_t, PacketConstructor> m_commands;
   std::unordered_map<uint16_t, PacketConstructor> m_events;
+
+  Packet::Type m_default_translated_type;
 
 };
 

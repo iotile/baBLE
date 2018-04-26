@@ -11,6 +11,8 @@
 #include "Packet/Commands/GetMGMTInfo/GetMGMTInfo.hpp"
 #include "Poller/Poller.hpp"
 #include "Poller/PipePoller.hpp"
+#include "Packet/Commands/Scan/StartScan.hpp"
+#include "Packet/Responses/Scan/StartScan.hpp"
 
 using namespace std;
 using namespace uvw;
@@ -23,6 +25,7 @@ void cleanly_stop_loop(Loop& loop) {
   loop.stop();
 }
 
+// TODO: handle errors properly (if exception OR status in complete event OR status in status event) -> forward to bable socket
 int main() {
   ENABLE_LOGGING(DEBUG);
 
@@ -44,31 +47,42 @@ int main() {
   shared_ptr<StdIOSocket> bable_socket = make_shared<StdIOSocket>(Packet::Type::ASCII);
   shared_ptr<MGMTSocket> mgmt_socket = make_shared<MGMTSocket>();
 
-  // Builders
-  AsciiBuilder ascii_builder;
-  ascii_builder.register_command<Packet::Commands::GetMGMTInfo>(Packet::Type::MGMT);
-
-  MGMTBuilder mgmt_builder;
-  mgmt_builder.register_command<Packet::Responses::GetMGMTInfo>(Packet::Type::ASCII);
-
   // Create socket manager
   SocketManager socket_manager;
   socket_manager
       .register_socket(mgmt_socket)
       .register_socket(bable_socket);
 
+  // Builders
+  AsciiBuilder ascii_builder;
+  MGMTBuilder mgmt_builder(Packet::Type::ASCII);
+
+  // Register packets into builder
+  ascii_builder
+      .register_command<Packet::Commands::GetMGMTInfo>(Packet::Type::MGMT)
+      .register_command<Packet::Commands::StartScan>(Packet::Type::MGMT);
+
+  mgmt_builder
+      .register_command<Packet::Responses::GetMGMTInfo>()
+      .register_command<Packet::Responses::StartScan>();
+
   // Create pollers
   Poller mgmt_poller(loop, mgmt_socket->get_socket());
   mgmt_poller
       .on_readable([&mgmt_socket, &mgmt_builder, &socket_manager]() {
-        LOG.debug("Readable data on MGMT socket...", "MGMT poller");
-        Deserializer deser = mgmt_socket->receive();
-        LOG.debug(deser, "MGMT poller");
-        std::unique_ptr<Packet::AbstractPacket> packet = mgmt_builder.build(deser);
-        LOG.debug("Packet built", "MGMT poller");
-        packet->translate();
-        LOG.debug("Packet translated", "MGMT poller");
-        socket_manager.send(std::move(packet));
+        try {
+          LOG.debug("Readable data on MGMT socket...", "MGMT poller");
+          Deserializer deser = mgmt_socket->receive();
+          LOG.debug(deser, "MGMT poller");
+          std::unique_ptr<Packet::AbstractPacket> packet = mgmt_builder.build(deser);
+          LOG.debug("Packet built", "MGMT poller");
+          packet->translate();
+          LOG.debug("Packet translated", "MGMT poller");
+          socket_manager.send(std::move(packet));
+
+        } catch (const exception& err) {
+          LOG.error(err.what(), "MGMT poller");
+        }
       })
       .on_writable([&mgmt_socket]() {
         mgmt_socket->set_writable(true);
@@ -88,8 +102,9 @@ int main() {
           LOG.debug("Packet translated", "BABLE poller");
           socket_manager.send(std::move(packet));
 
-        } catch (const invalid_argument& err) {
-          LOG.error(err.what());
+        } catch (const exception& err) {
+          LOG.error(err.what(), "BABLE poller");
+          bable_socket->send(err.what());
         }
       })
       .start();
