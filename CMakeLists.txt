@@ -62,7 +62,14 @@ add_executable(baBLE_linux ${SOURCES_FILES})
 add_subdirectory(deps/uv)
 target_link_libraries(baBLE_linux uv)
 ### uvw
-include_directories(deps/uvw)
+add_subdirectory(deps/uvw)
+target_link_libraries(baBLE_linux uvw)
+### flatbuffers
+add_subdirectory(deps/flatbuffers)
+target_link_libraries(baBLE_linux flatbuffers)
+
+## Include generated flatbuffers schemas
+include_directories(schemas/generated)
 
 ## Install
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR})

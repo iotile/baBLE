@@ -30,7 +30,12 @@ void cleanly_stop_loop(Loop& loop) {
 }
 
 // TODO: handle errors properly (if exception OR status in complete event OR status in status event) -> forward to bable socket
+// TODO: implement flatbuffers
+
 // TODO: idea -> put all registration into a bootstap.cpp file with a bootstrap() function
+// TODO: idea => merge Command and Response in one single Packet class ?
+// TODO: idea -> run poller in socket ?
+
 int main() {
   ENABLE_LOGGING(DEBUG);
 

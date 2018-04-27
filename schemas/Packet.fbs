@@ -1,0 +1,11 @@
+include "GetMGMTInfoPayload.fbs";
+
+union Payload {
+  GetMGMTInfoPayload
+}
+
+table Packet {
+  payload:Payload;
+}
+
+root_type Packet;

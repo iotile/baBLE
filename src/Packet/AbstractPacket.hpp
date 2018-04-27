@@ -5,7 +5,6 @@
 #include "../Serializer/Deserializer.hpp"
 #include "constants.hpp"
 
-// TODO: idea => merge Command and Response in one single Packet class ?
 namespace Packet {
 
   class AbstractPacket {

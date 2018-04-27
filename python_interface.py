@@ -6,9 +6,9 @@ process = subprocess.Popen(["./build/debug/baBLE_linux"], stdout=subprocess.PIPE
 
 process.stdin.write("2,0")
 
-time.sleep(2)
-
-process.stdin.write("5,0")
+# time.sleep(2)
+#
+# process.stdin.write("5,0")
 
 try:
     while True:
