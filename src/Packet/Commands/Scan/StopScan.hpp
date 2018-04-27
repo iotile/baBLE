@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_COMMANDS_STARTSCAN_HPP
-#define BABLE_LINUX_COMMANDS_STARTSCAN_HPP
+#ifndef BABLE_LINUX_COMMANDS_STOPSCAN_HPP
+#define BABLE_LINUX_COMMANDS_STOPSCAN_HPP
 
 #include <cstdint>
 #include "../CommandPacket.hpp"
@@ -7,30 +7,30 @@
 
 namespace Packet::Commands {
 
-  class StartScan : public CommandPacket<StartScan> {
+  class StopScan : public CommandPacket<StopScan> {
 
   public:
     static const uint16_t command_code(Packet::Type type) {
       switch(type) {
         case Packet::Type::MGMT:
-          return Commands::MGMT::Code::StartScan;
+          return Commands::MGMT::Code::StopScan;
 
         case Packet::Type::ASCII:
-          return Commands::Ascii::Code::StartScan;
+          return Commands::Ascii::Code::StopScan;
 
         default:
           throw std::runtime_error("Current type has no known id.");
       }
     };
 
-    StartScan(Packet::Type initial_type, Packet::Type translated_type): CommandPacket(initial_type, translated_type) {
+    StopScan(Packet::Type initial_type, Packet::Type translated_type): CommandPacket(initial_type, translated_type) {
       m_address_type = 0x06; // All BLE devices
       m_params_length = 1;
     };
 
     void from_ascii(const std::vector<std::string>& params) override {
       if (params.size() < 2) {
-        throw std::invalid_argument("Missing arguments for 'start_scan' packet. Usage: <command_code>,<controller_id>");
+        throw std::invalid_argument("Missing arguments for 'stop_scan' packet. Usage: <command_code>,<controller_id>");
       }
 
       std::string controller_id_str = params.at(1);
@@ -59,4 +59,4 @@ namespace Packet::Commands {
 
 }
 
-#endif //BABLE_LINUX_COMMANDS_STARTSCAN_HPP
+#endif //BABLE_LINUX_COMMANDS_STOPSCAN_HPP

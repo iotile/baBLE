@@ -16,14 +16,16 @@ namespace Packet {
     namespace MGMT {
       enum Code {
         GetMGMTInfo= 0x0001,
-        StartScan= 0x0023
+        StartScan= 0x0023,
+        StopScan= 0x0024
       };
     }
 
     namespace Ascii {
       enum Code {
         GetMGMTInfo= 0x0001,
-        StartScan= 0x0002
+        StartScan= 0x0002,
+        StopScan= 0x005
       };
 
       const char Delimiter = ',';

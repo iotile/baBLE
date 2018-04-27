@@ -7,12 +7,14 @@
 #include "Builder/Ascii/AsciiBuilder.hpp"
 #include "Builder/MGMT/MGMTBuilder.hpp"
 #include "Packet/constants.hpp"
-#include "Packet/Responses/GetMGMTInfo/GetMGMTInfo.hpp"
-#include "Packet/Commands/GetMGMTInfo/GetMGMTInfo.hpp"
 #include "Poller/Poller.hpp"
 #include "Poller/PipePoller.hpp"
+#include "Packet/Commands/GetMGMTInfo/GetMGMTInfo.hpp"
+#include "Packet/Responses/GetMGMTInfo/GetMGMTInfo.hpp"
 #include "Packet/Commands/Scan/StartScan.hpp"
 #include "Packet/Responses/Scan/StartScan.hpp"
+#include "Packet/Commands/Scan/StopScan.hpp"
+#include "Packet/Responses/Scan/StopScan.hpp"
 #include "Packet/Events/DeviceFound/DeviceFound.hpp"
 #include "Packet/Events/Discovering/Discovering.hpp"
 
@@ -28,6 +30,7 @@ void cleanly_stop_loop(Loop& loop) {
 }
 
 // TODO: handle errors properly (if exception OR status in complete event OR status in status event) -> forward to bable socket
+// TODO: idea -> put all registration into a bootstap.cpp file with a bootstrap() function
 int main() {
   ENABLE_LOGGING(DEBUG);
 
@@ -62,11 +65,13 @@ int main() {
   // Register packets into builder
   ascii_builder
       .register_command<Packet::Commands::GetMGMTInfo>(Packet::Type::MGMT)
-      .register_command<Packet::Commands::StartScan>(Packet::Type::MGMT);
+      .register_command<Packet::Commands::StartScan>(Packet::Type::MGMT)
+      .register_command<Packet::Commands::StopScan>(Packet::Type::MGMT);
 
   mgmt_builder
       .register_command<Packet::Responses::GetMGMTInfo>()
       .register_command<Packet::Responses::StartScan>()
+      .register_command<Packet::Responses::StopScan>()
       .register_event<Packet::Events::DeviceFound>()
       .register_event<Packet::Events::Discovering>();
 
