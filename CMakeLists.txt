@@ -42,7 +42,7 @@ set(SOURCES_FILES
         src/Poller/Poller.hpp
         src/Poller/PipePoller.cpp
         src/Poller/PipePoller.hpp
-        src/Packet/Commands/Scan/StartScan.cpp src/Packet/Commands/Scan/StartScan.hpp src/Packet/Responses/Scan/StartScan.cpp src/Packet/Responses/Scan/StartScan.hpp)
+        src/Packet/Commands/Scan/StartScan.cpp src/Packet/Commands/Scan/StartScan.hpp src/Packet/Responses/Scan/StartScan.cpp src/Packet/Responses/Scan/StartScan.hpp src/Packet/Events/EventPacket.hpp src/Packet/Events/DeviceFound/DeviceFound.cpp src/Packet/Events/DeviceFound/DeviceFound.hpp src/Packet/Events/Discovering/Discovering.cpp src/Packet/Events/Discovering/Discovering.hpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies

@@ -30,6 +30,22 @@ namespace Packet {
     }
   }
 
+  namespace Events {
+    namespace MGMT {
+      enum Code {
+        DeviceFound= 0x0012,
+        Discovering= 0x0013
+      };
+    }
+
+    namespace Ascii {
+      enum Code {
+        DeviceFound= 0x003,
+        Discovering= 0x004
+      };
+    }
+  }
+
   namespace Status {
     namespace MGMT {
       enum Code {

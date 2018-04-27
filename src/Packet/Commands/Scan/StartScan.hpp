@@ -24,7 +24,7 @@ namespace Packet::Commands {
     };
 
     StartScan(Packet::Type initial_type, Packet::Type translated_type): CommandPacket(initial_type, translated_type) {
-      m_address_type = 0x06;
+      m_address_type = 0x06; // All BLE devices
       m_params_length = 1;
     };
 

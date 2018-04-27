@@ -13,6 +13,8 @@
 #include "Poller/PipePoller.hpp"
 #include "Packet/Commands/Scan/StartScan.hpp"
 #include "Packet/Responses/Scan/StartScan.hpp"
+#include "Packet/Events/DeviceFound/DeviceFound.hpp"
+#include "Packet/Events/Discovering/Discovering.hpp"
 
 using namespace std;
 using namespace uvw;
@@ -64,7 +66,9 @@ int main() {
 
   mgmt_builder
       .register_command<Packet::Responses::GetMGMTInfo>()
-      .register_command<Packet::Responses::StartScan>();
+      .register_command<Packet::Responses::StartScan>()
+      .register_event<Packet::Events::DeviceFound>()
+      .register_event<Packet::Events::Discovering>();
 
   // Create pollers
   Poller mgmt_poller(loop, mgmt_socket->get_socket());

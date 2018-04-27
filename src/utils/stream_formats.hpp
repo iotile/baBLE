@@ -3,6 +3,7 @@
 
 #include <iomanip>
 
-#define HEX(value) "0x" << std::setfill('0') << std::setw(2) << std::hex << static_cast<int>(value) << std::dec
+#define HEX(value) "0x" << RAW_HEX(value, 2)
+#define RAW_HEX(value, width) std::setfill('0') << std::setw(width) << std::hex << static_cast<int>(value) << std::dec
 
 #endif //BABLE_LINUX_STREAM_FORMATS_HPP
