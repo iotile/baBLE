@@ -35,8 +35,27 @@ builder.Finish(packet)
 
 buf = builder.Output()
 buf = b'\xCA\xFE' + len(buf).to_bytes(2, byteorder='little') + buf
-print(buf)
 process.stdin.write(buf)
+
+time.sleep(2)
+
+builder = flatbuffers.Builder(0)
+
+StopScan.StopScanStart(builder)
+StopScan.StopScanAddControllerId(builder, 0)
+StopScan.StopScanAddAddressType(builder, 0x07)
+payload = StopScan.StopScanEnd(builder)
+
+Packet.PacketStart(builder)
+Packet.PacketAddPayloadType(builder, Payload.Payload().StopScan)
+Packet.PacketAddPayload(builder, payload)
+packet = Packet.PacketEnd(builder)
+
+builder.Finish(packet)
+
+buf2 = builder.Output()
+buf2 = b'\xCA\xFE' + len(buf2).to_bytes(2, byteorder='little') + buf2
+process.stdin.write(buf2)
 
 header_length = 4
 

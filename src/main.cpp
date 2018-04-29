@@ -11,11 +11,8 @@
 #include "Poller/Poller.hpp"
 #include "Poller/PipePoller.hpp"
 #include "Packet/Commands/GetMGMTInfo/GetMGMTInfo.hpp"
-#include "Packet/Responses/GetMGMTInfo/GetMGMTInfo.hpp"
 #include "Packet/Commands/Scan/StartScan.hpp"
-#include "Packet/Responses/Scan/StartScan.hpp"
 #include "Packet/Commands/Scan/StopScan.hpp"
-#include "Packet/Responses/Scan/StopScan.hpp"
 #include "Packet/Events/DeviceFound/DeviceFound.hpp"
 #include "Packet/Events/Discovering/Discovering.hpp"
 
@@ -34,7 +31,6 @@ void cleanly_stop_loop(Loop& loop) {
 // TODO: completely refactor Serializer/Deserializer (use fixed length for MGMT/HCI) + make it simpler/cleaner
 
 // TODO: idea -> put all registration into a bootstap.cpp file with a bootstrap() function
-// TODO: idea => merge Command and Response in one single Packet class ?
 // TODO: idea -> run poller in socket ?
 
 int main() {
@@ -81,9 +77,9 @@ int main() {
       .register_command<Packet::Commands::StopScan>(Packet::Type::MGMT);
 
   mgmt_builder
-      .register_command<Packet::Responses::GetMGMTInfo>()
-      .register_command<Packet::Responses::StartScan>()
-      .register_command<Packet::Responses::StopScan>()
+      .register_command<Packet::Commands::GetMGMTInfo>()
+      .register_command<Packet::Commands::StartScan>()
+      .register_command<Packet::Commands::StopScan>()
       .register_event<Packet::Events::DeviceFound>()
       .register_event<Packet::Events::Discovering>();
 

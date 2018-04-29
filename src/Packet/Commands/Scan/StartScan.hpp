@@ -29,7 +29,7 @@ namespace Packet::Commands {
     };
 
     StartScan(Packet::Type initial_type, Packet::Type translated_type): CommandPacket(initial_type, translated_type) {
-      m_address_type = 0x06; // All BLE devices
+      m_address_type = 0;
       m_params_length = 1;
     };
 
@@ -40,6 +40,11 @@ namespace Packet::Commands {
 
       std::string controller_id_str = params.at(1);
       m_controller_id = static_cast<uint16_t>(stoi(controller_id_str));
+    };
+
+    void from_mgmt(Deserializer& deser) override {
+      CommandPacket::from_mgmt(deser);
+      deser >> m_address_type;
     };
 
     void from_flatbuffers(Deserializer& deser) override {
@@ -70,6 +75,18 @@ namespace Packet::Commands {
       ser << m_address_type;
       return ser;
     };
+
+    Serializer to_flatbuffers() const override {
+      flatbuffers::FlatBufferBuilder builder(0);
+      auto payload = Schemas::CreateStartScan(builder, m_controller_id, m_address_type);
+
+      Serializer ser = build_flatbuffers_packet<Schemas::StartScan>(builder, payload, Schemas::Payload::StartScan);
+
+      Serializer result;
+      result << static_cast<uint8_t>(0xCA) << static_cast<uint8_t>(0xFE) << static_cast<uint16_t>(ser.size()) << ser;
+
+      return result;
+    }
 
   private:
     uint8_t m_address_type;

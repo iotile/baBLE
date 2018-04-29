@@ -31,9 +31,6 @@ set(SOURCES_FILES
         src/Packet/Commands/GetMGMTInfo/GetMGMTInfo.cpp
         src/Packet/Commands/GetMGMTInfo/GetMGMTInfo.hpp
         src/Packet/Commands/CommandPacket.hpp
-        src/Packet/Responses/ResponsePacket.hpp
-        src/Packet/Responses/GetMGMTInfo/GetMGMTInfo.cpp
-        src/Packet/Responses/GetMGMTInfo/GetMGMTInfo.hpp
         src/Builder/AbstractBuilder.hpp
         src/Builder/MGMT/MGMTBuilder.cpp
         src/Builder/MGMT/MGMTBuilder.hpp
@@ -45,8 +42,6 @@ set(SOURCES_FILES
         src/Poller/PipePoller.hpp
         src/Packet/Commands/Scan/StartScan.cpp
         src/Packet/Commands/Scan/StartScan.hpp
-        src/Packet/Responses/Scan/StartScan.cpp
-        src/Packet/Responses/Scan/StartScan.hpp
         src/Packet/Events/EventPacket.hpp
         src/Packet/Events/DeviceFound/DeviceFound.cpp
         src/Packet/Events/DeviceFound/DeviceFound.hpp
@@ -54,8 +49,8 @@ set(SOURCES_FILES
         src/Packet/Events/Discovering/Discovering.hpp
         src/Packet/Commands/Scan/StopScan.cpp
         src/Packet/Commands/Scan/StopScan.hpp
-        src/Packet/Responses/Scan/StopScan.cpp
-        src/Packet/Responses/Scan/StopScan.hpp src/Builder/Flatbuffers/FlatbuffersBuilder.cpp src/Builder/Flatbuffers/FlatbuffersBuilder.hpp)
+        src/Builder/Flatbuffers/FlatbuffersBuilder.cpp
+        src/Builder/Flatbuffers/FlatbuffersBuilder.hpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies
