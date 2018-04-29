@@ -1,0 +1,28 @@
+namespace Schemas;
+
+table StartScan {
+  controller_id:uint16;
+  address_type:uint8 = 0x06;
+}
+
+table StopScan {
+  controller_id:uint16;
+  address_type:uint8 = 0x06;
+}
+
+table DeviceFound {
+  controller_id:uint16;
+  address:string;
+  address_type:uint8;
+  rssi:int8;
+  flags:[uint8];
+  uuid:string;
+  company_id:uint16;
+  device_name:string;
+}
+
+table Discovering {
+  controller_id:uint16;
+  address_type:uint8;
+  state:bool;
+}

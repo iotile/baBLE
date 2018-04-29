@@ -2,6 +2,8 @@
 #define BABLE_LINUX_RESPONSES_STARTSCAN_HPP
 
 #include <cstdint>
+#include <flatbuffers/flatbuffers.h>
+#include <Packet_generated.h>
 #include "../ResponsePacket.hpp"
 #include "../../constants.hpp"
 
@@ -18,8 +20,11 @@ namespace Packet::Responses {
         case Packet::Type::ASCII:
           return Commands::Ascii::Code::StartScan;
 
+        case Packet::Type::FLATBUFFERS:
+          return static_cast<uint16_t>(Schemas::Payload::StartScan);
+
         default:
-          throw std::runtime_error("Current type has no known id.");
+          throw std::runtime_error("Current type has no known id (StartScan).");
       }
     };
 
@@ -41,6 +46,18 @@ namespace Packet::Responses {
 
       return header + ", " + payload.str();
     };
+
+    Serializer to_flatbuffers() const override {
+      flatbuffers::FlatBufferBuilder builder(0);
+      auto payload = Schemas::CreateStartScan(builder, m_controller_id, m_address_type);
+
+      Serializer ser = build_flatbuffers_packet<Schemas::StartScan>(builder, payload, Schemas::Payload::StartScan);
+
+      Serializer result;
+      result << static_cast<uint8_t>(0xCA) << static_cast<uint8_t>(0xFE) << static_cast<uint16_t>(ser.size()) << ser;
+
+      return result;
+    }
 
   private:
     uint8_t m_address_type;

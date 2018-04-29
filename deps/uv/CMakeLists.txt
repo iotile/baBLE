@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(libuv)
 
+set(CMAKE_CXX_FLAGS "-funsigned-char")
 set(LIBUVDIR libuv-1.x)
 
 include_directories(${LIBUVDIR}/include ${LIBUVDIR}/src)

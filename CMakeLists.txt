@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(baBLE_linux)
 
 set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_FLAGS "-funsigned-char")
 
 ## Build executable from sources files
 set(SOURCES_FILES
@@ -54,7 +55,7 @@ set(SOURCES_FILES
         src/Packet/Commands/Scan/StopScan.cpp
         src/Packet/Commands/Scan/StopScan.hpp
         src/Packet/Responses/Scan/StopScan.cpp
-        src/Packet/Responses/Scan/StopScan.hpp)
+        src/Packet/Responses/Scan/StopScan.hpp src/Builder/Flatbuffers/FlatbuffersBuilder.cpp src/Builder/Flatbuffers/FlatbuffersBuilder.hpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies

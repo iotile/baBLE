@@ -1,7 +1,14 @@
-include "GetMGMTInfoPayload.fbs";
+include "GetMGMTInfo.fbs";
+include "Scan.fbs";
+
+namespace Schemas;
 
 union Payload {
-  GetMGMTInfoPayload
+  GetMGMTInfo,
+  StartScan,
+  StopScan,
+  DeviceFound,
+  Discovering
 }
 
 table Packet {
