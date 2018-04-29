@@ -10,10 +10,26 @@
 class AsciiBuilder : public AbstractBuilder {
 
 public:
+  using AbstractBuilder::AbstractBuilder;
+
+  static std::string extract_command_code(const Deserializer& deser) {
+    Deserializer tmp_deser = deser;
+    std::string data_str;
+    tmp_deser >> data_str;
+
+    size_t pos = data_str.find(Packet::Commands::Ascii::Delimiter);
+
+    if (pos == std::string::npos) {
+      return data_str;
+    }
+
+    std::string command_code_str = data_str.substr(0, pos);
+    return command_code_str;
+  }
+
   std::unique_ptr<Packet::AbstractPacket> build(Deserializer& deser) override {
-    // Extract event_code from deser
-    std::string command_code_str;
-    deser >> command_code_str;
+    std::string command_code_str = extract_command_code(deser);
+
     auto command_code = static_cast<uint16_t>(stoi(command_code_str));
 
     auto it = m_commands.find(command_code);
@@ -21,7 +37,6 @@ public:
       throw std::invalid_argument("Command code not found");
     }
 
-    // Get command from command_code
     PacketConstructor fn = it->second;
     std::unique_ptr<Packet::AbstractPacket> packet = fn();
     packet->unserialize(deser);

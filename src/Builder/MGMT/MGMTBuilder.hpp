@@ -10,14 +10,18 @@
 class MGMTBuilder : public AbstractBuilder {
 
 public:
+  using AbstractBuilder::AbstractBuilder;
+
   std::unique_ptr<Packet::AbstractPacket> build(Deserializer& deser) override {
     Deserializer tmp_deser = deser;
 
     uint16_t event_code;
     tmp_deser >> event_code;
 
-    if (event_code == 0x0001 || event_code == 0x0002) {
+    if (event_code == 0x0001) {
       return build_command(deser);
+    } else if(event_code == 0x0002) {
+      return build_status(deser);
     } else if (0x0002 < event_code && event_code <= 0x0025) {
       return build_event(event_code, deser);
     } else {
@@ -30,11 +34,11 @@ public:
 
     // Extract event_code from deser
     uint16_t event_code;
-    uint16_t controller_index;
+    uint16_t controller_id;
     uint16_t payload_length;
     uint16_t command_code;
 
-    tmp_deser >> event_code >> controller_index >> payload_length >> command_code;
+    tmp_deser >> event_code >> controller_id >> payload_length >> command_code;
 
     auto it = m_commands.find(command_code);
     if (it == m_commands.end()) {
@@ -58,6 +62,20 @@ public:
     std::unique_ptr<Packet::AbstractPacket> packet = fn();
     packet->unserialize(deser);
     return packet;
+  }
+
+  std::unique_ptr<Packet::AbstractPacket> build_status(Deserializer& deser) {
+    Deserializer tmp_deser = deser;
+
+    uint16_t event_code;
+    uint16_t controller_id;
+    uint16_t payload_length;
+    uint16_t command_code;
+    uint8_t status;
+
+    tmp_deser >> event_code >> controller_id >> payload_length >> command_code >> status;
+
+    throw std::runtime_error("Status event received (often because an error occurred) (status=" + Packet::Status::MGMT::ToString.at(status) + ")");
   }
 
 private:

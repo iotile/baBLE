@@ -5,6 +5,7 @@
 #include "../Serializer/Deserializer.hpp"
 #include "constants.hpp"
 
+// TODO: idea => merge Command and Response in one single Packet class ?
 namespace Packet {
 
   class AbstractPacket {
@@ -32,7 +33,18 @@ namespace Packet {
           return from_hci(deser);
 
         case Packet::Type::ASCII:
-          return from_ascii();
+          std::string data_str;
+          deser >> data_str;
+
+          std::stringstream data_stream(data_str);
+          std::vector<std::string> params;
+
+          while(data_stream.good()) {
+            std::string substr;
+            getline(data_stream, substr, Packet::Commands::Ascii::Delimiter);
+            params.push_back(substr);
+          }
+          return from_ascii(params);
       }
     };
 
@@ -44,7 +56,10 @@ namespace Packet {
       Packet::Type tmp = m_current_type;
       m_current_type = m_translated_type;
       m_translated_type = m_current_type;
+      after_translate();
     };
+
+    virtual void after_translate() {};
 
     virtual Serializer to_mgmt() const { throw std::runtime_error("to_mgmt() not defined.");  };
     virtual Serializer to_hci() const { throw std::runtime_error("to_hci() not defined.");  };
@@ -57,7 +72,7 @@ namespace Packet {
 
     virtual void from_mgmt(Deserializer& deser) { throw std::runtime_error("from_mgmt(Deserializer&) not defined.");  };
     virtual void from_hci(Deserializer& deser) { throw std::runtime_error("from_hci(Deserializer&) not defined.");  };
-    virtual void from_ascii() { throw std::runtime_error("from_ascii() not defined.");  };
+    virtual void from_ascii(const std::vector<std::string>& params) { throw std::runtime_error("from_ascii(const std::vector<std::string>&) not defined.");  };
 
     Packet::Type m_current_type;
     Packet::Type m_translated_type;

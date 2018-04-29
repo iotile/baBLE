@@ -38,6 +38,13 @@ public:
     return true;
   };
 
+  bool send(const std::string& str) {
+    std::string data_str = str + "\n";
+    fwrite(data_str.c_str(), sizeof(char), data_str.size(), stdout);
+    fflush(stdout);
+    return true;
+  };
+
   Deserializer receive(const char* data, size_t length) override {
     Deserializer deser;
     deser.import((uint8_t*)(data), length);

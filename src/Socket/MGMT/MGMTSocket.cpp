@@ -37,9 +37,8 @@ bool MGMTSocket::send(std::unique_ptr<Packet::AbstractPacket> packet) {
 
     set_writable(false);
     if (write(m_socket, ser.buffer(), ser.size()) < 0) {
-      LOG.error("Error while sending a message to MGMT socket. Queuing...");
-      m_send_queue.push(std::move(packet));
-      return false;
+      LOG.error("Error while sending a message to MGMT socket.");
+      throw std::runtime_error("Error occured while sending the packet through MGMT socket.");
     }
   }
 

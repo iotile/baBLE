@@ -7,7 +7,7 @@
 
 namespace Packet::Commands {
 
-  class GetMGMTInfo : public CommandPacket {
+  class GetMGMTInfo : public CommandPacket<GetMGMTInfo> {
 
   public:
     static const uint16_t command_code(Packet::Type type) {
@@ -27,12 +27,14 @@ namespace Packet::Commands {
       m_command_code = command_code(m_current_type);
     };
 
-    void from_ascii() override {};
+    void from_ascii(const std::vector<std::string>& params) override {};
+
+    std::string to_ascii() const override {
+      return CommandPacket::to_ascii();
+    };
 
     Serializer to_mgmt() const override {
-      Serializer ser;
-      generate_header(ser);
-      return ser;
+      return CommandPacket::to_mgmt();
     };
 
   };

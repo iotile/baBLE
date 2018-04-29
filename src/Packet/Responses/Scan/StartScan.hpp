@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_RESPONSES_GETMGMTINFO_HPP
-#define BABLE_LINUX_RESPONSES_GETMGMTINFO_HPP
+#ifndef BABLE_LINUX_RESPONSES_STARTSCAN_HPP
+#define BABLE_LINUX_RESPONSES_STARTSCAN_HPP
 
 #include <cstdint>
 #include "../ResponsePacket.hpp"
@@ -7,48 +7,45 @@
 
 namespace Packet::Responses {
 
-  class GetMGMTInfo : public ResponsePacket<GetMGMTInfo> {
+  class StartScan : public ResponsePacket<StartScan> {
 
   public:
     static const uint16_t command_code(Packet::Type type) {
       switch(type) {
         case Packet::Type::MGMT:
-          return Commands::MGMT::Code::GetMGMTInfo;
+          return Commands::MGMT::Code::StartScan;
 
         case Packet::Type::ASCII:
-          return Commands::Ascii::Code::GetMGMTInfo;
+          return Commands::Ascii::Code::StartScan;
 
         default:
           throw std::runtime_error("Current type has no known id.");
       }
     };
 
-    GetMGMTInfo(Packet::Type initial_type, Packet::Type translated_type): ResponsePacket(initial_type, translated_type) {
-      m_version = 0;
-      m_revision = 0;
+    StartScan(Packet::Type initial_type, Packet::Type translated_type): ResponsePacket(initial_type, translated_type) {
+      m_address_type = 0;
     };
 
     void from_mgmt(Deserializer& deser) override {
       ResponsePacket::from_mgmt(deser);
-      deser >> m_version >> m_revision;
+      deser >> m_address_type;
     };
 
     std::string to_ascii() const override {
       std::string header = ResponsePacket::to_ascii();
       std::stringstream payload;
 
-      payload << "Version: " << std::to_string(m_version) << ", "
-              << "Revision: " << std::to_string(m_revision);
+      payload << "Address type: " << std::to_string(m_address_type);
 
 
       return header + ", " + payload.str();
     };
 
   private:
-    uint8_t m_version;
-    uint16_t m_revision;
+    uint8_t m_address_type;
   };
 
 }
 
-#endif //BABLE_LINUX_RESPONSES_GETMGMTINFO_HPP
+#endif //BABLE_LINUX_RESPONSES_STARTSCAN_HPP
