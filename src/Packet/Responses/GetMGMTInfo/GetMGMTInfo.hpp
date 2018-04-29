@@ -2,6 +2,8 @@
 #define BABLE_LINUX_RESPONSES_GETMGMTINFO_HPP
 
 #include <cstdint>
+#include <flatbuffers/flatbuffers.h>
+#include <Packet_generated.h>
 #include "../ResponsePacket.hpp"
 #include "../../constants.hpp"
 
@@ -18,8 +20,11 @@ namespace Packet::Responses {
         case Packet::Type::ASCII:
           return Commands::Ascii::Code::GetMGMTInfo;
 
+        case Packet::Type::FLATBUFFERS:
+          return static_cast<uint16_t>(Schemas::Payload::GetMGMTInfo);
+
         default:
-          throw std::runtime_error("Current type has no known id.");
+          throw std::runtime_error("Current type has no known id (GetMGMTInfo).");
       }
     };
 
@@ -43,6 +48,18 @@ namespace Packet::Responses {
 
       return header + ", " + payload.str();
     };
+
+    Serializer to_flatbuffers() const override {
+      flatbuffers::FlatBufferBuilder builder(0);
+      auto payload = Schemas::CreateGetMGMTInfo(builder, m_version, m_revision);
+
+      Serializer ser = build_flatbuffers_packet<Schemas::GetMGMTInfo>(builder, payload, Schemas::Payload::GetMGMTInfo);
+
+      Serializer result;
+      result << static_cast<uint8_t>(0xCA) << static_cast<uint8_t>(0xFE) << static_cast<uint16_t>(ser.size()) << ser;
+
+      return result;
+    }
 
   private:
     uint8_t m_version;

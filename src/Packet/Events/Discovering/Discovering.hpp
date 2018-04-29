@@ -2,6 +2,8 @@
 #define BABLE_LINUX_DISCOVERING_HPP
 
 #include <cstdint>
+#include <flatbuffers/flatbuffers.h>
+#include <Packet_generated.h>
 #include "../EventPacket.hpp"
 #include "../../../Serializer/Deserializer.hpp"
 
@@ -18,8 +20,11 @@ namespace Packet::Events {
         case Packet::Type::ASCII:
           return Events::Ascii::Code::Discovering;
 
+        case Packet::Type::FLATBUFFERS:
+          return static_cast<uint16_t>(Schemas::Payload::Discovering);
+
         default:
-          throw std::runtime_error("Current type has no known id.");
+          throw std::runtime_error("Current type has no known id (Discovering).");
       }
     };
 
@@ -42,6 +47,19 @@ namespace Packet::Events {
 
       return header + ", " + payload.str();
     };
+
+    Serializer to_flatbuffers() const override {
+      flatbuffers::FlatBufferBuilder builder(0);
+
+      auto payload = Schemas::CreateDiscovering(builder, m_controller_id, m_address_type, m_discovering);
+
+      Serializer ser = build_flatbuffers_packet<Schemas::Discovering>(builder, payload, Schemas::Payload::Discovering);
+
+      Serializer result;
+      result << static_cast<uint8_t>(0xCA) << static_cast<uint8_t>(0xFE) << static_cast<uint16_t>(ser.size()) << ser;
+
+      return result;
+    }
 
   private:
     uint8_t m_address_type;

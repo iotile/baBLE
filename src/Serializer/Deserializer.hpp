@@ -16,8 +16,20 @@
 class Deserializer : public AbstractSerializer {
 
 public:
+  Deserializer() = default;
+  explicit Deserializer(const std::vector<uint8_t>& buffer) {
+    import(buffer);
+  };
+  Deserializer(const uint8_t* buffer, size_t size) {
+    import(buffer, size);
+  };
+
   void import(const uint8_t* buffer, size_t size) override;
   void import(const std::vector<uint8_t>& buffer) override;
+
+  void reverse() {
+    std::reverse(m_buffer.begin(), m_buffer.end());
+  };
 
   template<typename T>
   Deserializer& operator>>(T& value);
@@ -32,6 +44,8 @@ public:
 
   template<std::size_t N>
   Deserializer& operator>>(const char (&container)[N]);
+
+  Deserializer& operator>>(const Deserializer& other);
 
 };
 
@@ -91,6 +105,5 @@ Deserializer& Deserializer::operator>>(const char (&container)[N]) {
 
   return *this;
 }
-
 
 #endif //BABLE_LINUX_DESERIALIZER_HPP

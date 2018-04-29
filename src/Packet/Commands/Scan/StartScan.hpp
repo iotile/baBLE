@@ -2,6 +2,8 @@
 #define BABLE_LINUX_COMMANDS_STARTSCAN_HPP
 
 #include <cstdint>
+#include <flatbuffers/flatbuffers.h>
+#include <Packet_generated.h>
 #include "../CommandPacket.hpp"
 #include "../../constants.hpp"
 
@@ -18,8 +20,11 @@ namespace Packet::Commands {
         case Packet::Type::ASCII:
           return Commands::Ascii::Code::StartScan;
 
+        case Packet::Type::FLATBUFFERS:
+          return static_cast<uint16_t>(Schemas::Payload::StartScan);
+
         default:
-          throw std::runtime_error("Current type has no known id.");
+          throw std::runtime_error("Current type has no known id (StartScan).");
       }
     };
 
@@ -35,6 +40,20 @@ namespace Packet::Commands {
 
       std::string controller_id_str = params.at(1);
       m_controller_id = static_cast<uint16_t>(stoi(controller_id_str));
+    };
+
+    void from_flatbuffers(Deserializer& deser) override {
+      auto packet = Schemas::GetPacket(deser.buffer());
+      auto payload = static_cast<const Schemas::StartScan*>(packet->payload());
+
+      flatbuffers::Verifier payload_verifier(deser.buffer(), deser.size());
+      bool packet_valid = Schemas::VerifyPayload(payload_verifier, payload, Schemas::Payload::StartScan);
+      if (!packet_valid) {
+        throw std::invalid_argument("Flatbuffers StartScan packet is not valid. Can't parse it.");
+      }
+
+      m_controller_id = payload->controller_id();
+      m_address_type = payload->address_type();
     };
 
     std::string to_ascii() const override {

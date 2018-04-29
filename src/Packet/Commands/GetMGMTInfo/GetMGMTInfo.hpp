@@ -2,6 +2,8 @@
 #define BABLE_LINUX_COMMANDS_GETMGMTINFO_HPP
 
 #include <cstdint>
+#include <flatbuffers/flatbuffers.h>
+#include <Packet_generated.h>
 #include "../CommandPacket.hpp"
 #include "../../constants.hpp"
 
@@ -18,8 +20,11 @@ namespace Packet::Commands {
         case Packet::Type::ASCII:
           return Commands::Ascii::Code::GetMGMTInfo;
 
+        case Packet::Type::FLATBUFFERS:
+          return static_cast<uint16_t>(Schemas::Payload::GetMGMTInfo);
+
         default:
-          throw std::runtime_error("Current type has no known id.");
+          throw std::runtime_error("Current type has no known id (GetMGMTInfo).");
       }
     };
 
@@ -28,6 +33,8 @@ namespace Packet::Commands {
     };
 
     void from_ascii(const std::vector<std::string>& params) override {};
+
+    void from_flatbuffers(Deserializer& deser) override {};
 
     std::string to_ascii() const override {
       return CommandPacket::to_ascii();

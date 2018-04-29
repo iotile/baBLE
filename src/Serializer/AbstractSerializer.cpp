@@ -2,14 +2,6 @@
 
 using namespace std;
 
-AbstractSerializer::AbstractSerializer(const std::vector<uint8_t>& buffer) {
-  import(buffer);
-}
-
-AbstractSerializer::AbstractSerializer(const uint8_t* buffer, size_t size) {
-  import(buffer, size);
-}
-
 size_t AbstractSerializer::size() const {
   return m_buffer.size();
 }

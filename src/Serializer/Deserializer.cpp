@@ -27,3 +27,9 @@ Deserializer& Deserializer::operator>>(string& value) {
 
   return *this;
 }
+
+Deserializer& Deserializer::operator>>(const Deserializer& other) {
+  m_buffer.insert(m_buffer.end(), other.m_buffer.begin(), other.m_buffer.end());
+
+  return *this;
+}

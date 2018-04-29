@@ -5,6 +5,7 @@
 #include "Socket/MGMT/MGMTSocket.hpp"
 #include "Socket/StdIO/StdIOSocket.hpp"
 #include "Builder/Ascii/AsciiBuilder.hpp"
+#include "Builder/Flatbuffers/FlatbuffersBuilder.hpp"
 #include "Builder/MGMT/MGMTBuilder.hpp"
 #include "Packet/constants.hpp"
 #include "Poller/Poller.hpp"
@@ -30,7 +31,12 @@ void cleanly_stop_loop(Loop& loop) {
 }
 
 // TODO: handle errors properly (if exception OR status in complete event OR status in status event) -> forward to bable socket
+// TODO: completely refactor Serializer/Deserializer (use fixed length for MGMT/HCI) + make it simpler/cleaner
+
 // TODO: idea -> put all registration into a bootstap.cpp file with a bootstrap() function
+// TODO: idea => merge Command and Response in one single Packet class ?
+// TODO: idea -> run poller in socket ?
+
 int main() {
   ENABLE_LOGGING(DEBUG);
 
@@ -49,7 +55,7 @@ int main() {
   stop_signal->start(SIGINT);
 
   // Sockets
-  shared_ptr<StdIOSocket> bable_socket = make_shared<StdIOSocket>(Packet::Type::ASCII);
+  shared_ptr<StdIOSocket> bable_socket = make_shared<StdIOSocket>(Packet::Type::FLATBUFFERS); // TODO: type bable_socket always equal to default mgmtbuilder param
   shared_ptr<MGMTSocket> mgmt_socket = make_shared<MGMTSocket>();
 
   // Create socket manager
@@ -60,10 +66,16 @@ int main() {
 
   // Builders
   AsciiBuilder ascii_builder;
-  MGMTBuilder mgmt_builder(Packet::Type::ASCII);
+  FlatbuffersBuilder fb_builder;
+  MGMTBuilder mgmt_builder(Packet::Type::FLATBUFFERS);
 
   // Register packets into builder
   ascii_builder
+      .register_command<Packet::Commands::GetMGMTInfo>(Packet::Type::MGMT)
+      .register_command<Packet::Commands::StartScan>(Packet::Type::MGMT)
+      .register_command<Packet::Commands::StopScan>(Packet::Type::MGMT);
+
+  fb_builder
       .register_command<Packet::Commands::GetMGMTInfo>(Packet::Type::MGMT)
       .register_command<Packet::Commands::StartScan>(Packet::Type::MGMT)
       .register_command<Packet::Commands::StopScan>(Packet::Type::MGMT);
@@ -100,12 +112,15 @@ int main() {
 
   PipePoller stdinput_poller(loop, STDIO_ID::in);
   stdinput_poller
-      .on_data([&bable_socket, &ascii_builder, &socket_manager](const char* data, size_t length) {
+      .on_data([&bable_socket, &fb_builder, &socket_manager](const char* data, size_t length) {
         try {
           LOG.debug("Readable data on BaBLE pipe...", "BABLE poller");
-          Deserializer deser = bable_socket->receive(data, length);
+          Deserializer deser;
+          if (!bable_socket->receive(deser, data, length)) {
+            return;
+          }
           LOG.debug(deser, "BABLE poller");
-          std::unique_ptr<Packet::AbstractPacket> packet = ascii_builder.build(deser);
+          std::unique_ptr<Packet::AbstractPacket> packet = fb_builder.build(deser);
           LOG.debug("Packet built", "BABLE poller");
           packet->translate();
           LOG.debug("Packet translated", "BABLE poller");

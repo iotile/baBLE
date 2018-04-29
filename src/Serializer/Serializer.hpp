@@ -15,6 +15,14 @@
 class Serializer : public AbstractSerializer {
 
 public:
+  Serializer() = default;
+  explicit Serializer(const std::vector<uint8_t>& buffer) {
+    import(buffer);
+  };
+  Serializer(const uint8_t* buffer, size_t size) {
+    import(buffer, size);
+  };
+
   void import(const uint8_t* buffer, size_t size) override;
   void import(const std::vector<uint8_t>& buffer) override;
 
@@ -31,6 +39,8 @@ public:
 
   template<std::size_t N>
   Serializer& operator<<(const char (&container)[N]);
+
+  Serializer& operator<<(const Serializer& other);
 
 };
 

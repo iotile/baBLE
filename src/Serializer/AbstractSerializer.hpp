@@ -14,16 +14,15 @@ class AbstractSerializer : public Loggable {
 public:
   size_t size() const;
   const uint8_t* buffer() const;
+  const std::vector<uint8_t> raw_buffer() const {
+    return m_buffer;
+  }
 
   const std::string stringify() const override;
 
   virtual ~AbstractSerializer() = default;
 
 protected:
-  AbstractSerializer() = default;
-  explicit AbstractSerializer(const std::vector<uint8_t>& buffer);
-  AbstractSerializer(const uint8_t* buffer, size_t size);
-
   virtual void import(const uint8_t* buffer, size_t size);
   virtual void import(const std::vector<uint8_t>& buffer);
 

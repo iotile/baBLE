@@ -2,6 +2,8 @@
 #define BABLE_LINUX_DEVICEFOUND_HPP
 
 #include <cstdint>
+#include <flatbuffers/flatbuffers.h>
+#include <Packet_generated.h>
 #include "../EventPacket.hpp"
 #include "../../../Serializer/Deserializer.hpp"
 #include "../../../Log/Log.hpp"
@@ -19,8 +21,11 @@ namespace Packet::Events {
         case Packet::Type::ASCII:
           return Events::Ascii::Code::DeviceFound;
 
+        case Packet::Type::FLATBUFFERS:
+          return static_cast<uint16_t>(Schemas::Payload::DeviceFound);
+
         default:
-          throw std::runtime_error("Current type has no known id.");
+          throw std::runtime_error("Current type has no known id (DeviceFound).");
       }
     };
 
@@ -32,7 +37,6 @@ namespace Packet::Events {
       m_eir_data_length = 0;
 
       m_eir_flags = 0;
-      m_uuid =  std::array<uint8_t, 16>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
       m_company_id = 0;
     };
 
@@ -61,6 +65,35 @@ namespace Packet::Events {
       return header + ", " + payload.str();
     };
 
+    Serializer to_flatbuffers() const override {
+      std::vector<uint8_t> flags_vector(m_flags.begin(), m_flags.end());
+
+      flatbuffers::FlatBufferBuilder builder(0);
+      auto address = builder.CreateString(format_bd_address(m_address));
+      auto flags = builder.CreateVector(flags_vector);
+      auto uuid = builder.CreateString(format_uuid(m_uuid));
+      auto device_name = builder.CreateString(format_device_name(m_device_name));
+
+      auto payload = Schemas::CreateDeviceFound(
+          builder,
+          m_controller_id,
+          address,
+          m_address_type,
+          m_rssi,
+          flags,
+          uuid,
+          m_company_id,
+          device_name
+      );
+
+      Serializer ser = build_flatbuffers_packet<Schemas::DeviceFound>(builder, payload, Schemas::Payload::DeviceFound);
+
+      Serializer result;
+      result << static_cast<uint8_t>(0xCA) << static_cast<uint8_t>(0xFE) << static_cast<uint16_t>(ser.size()) << ser;
+
+      return result;
+    }
+
   private:
     static std::string format_bd_address(const std::array<uint8_t, 6>& bd_address_array) {
       std::stringstream bd_address;
@@ -75,10 +108,10 @@ namespace Packet::Events {
       return bd_address.str();
     }
 
-    static std::string format_uuid(const std::array<uint8_t, 16>& uuid_array) {
+    static std::string format_uuid(const std::vector<uint8_t>& uuid_vector) {
       std::stringstream uuid;
 
-      for(auto& v : uuid_array) {
+      for(auto& v : uuid_vector) {
         uuid << RAW_HEX(v, 2);
       }
 
@@ -114,9 +147,19 @@ namespace Packet::Events {
             m_eir_flags = *it;
             break;
 
+          case 0x02: // 16bits UUID
+          case 0x03:
+            m_uuid.assign(it, it + 4);
+            break;
+
+          case 0x04: // 32bits UUID
+          case 0x05:
+            m_uuid.assign(it, it + 8);
+            break;
+
           case 0x06: // 128bits UUID
           case 0x07:
-            std::copy(it, it + 16, m_uuid.begin());
+            m_uuid.assign(it, it + 16);
             break;
 
           case 0xFF: // Manufacturer Specific
@@ -124,8 +167,7 @@ namespace Packet::Events {
             break;
 
           case 0x09: // Device complete name
-            m_device_name.resize(field_length);
-            std::copy(it, it + field_length, m_device_name.begin());
+            m_device_name.assign(it, it + field_length);
             break;
 
           default:
@@ -141,13 +183,13 @@ namespace Packet::Events {
 
     std::array<uint8_t, 6> m_address{};
     uint8_t m_address_type;
-    uint8_t m_rssi;
+    int8_t m_rssi;
     std::array<uint8_t, 4> m_flags{};
     uint16_t m_eir_data_length;
     std::vector<uint8_t> m_eir_data;
 
     uint8_t m_eir_flags;
-    std::array<uint8_t, 16> m_uuid{};
+    std::vector<uint8_t> m_uuid;
     uint16_t m_company_id;
     std::vector<uint8_t> m_device_name;
   };

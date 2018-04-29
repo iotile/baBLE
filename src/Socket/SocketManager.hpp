@@ -21,7 +21,7 @@ public:
 
     auto it = m_sockets.find(type);
     if (it == m_sockets.end()) {
-      throw std::invalid_argument("Packet to send has no known type.");
+      throw std::invalid_argument("Packet to send has no known type: " + std::to_string(type));
     }
 
     std::shared_ptr<AbstractSocket> socket = it->second;

@@ -9,7 +9,8 @@ namespace Packet {
   enum Type {
     MGMT,
     HCI,
-    ASCII
+    ASCII,
+    FLATBUFFERS
   };
 
   namespace Commands {

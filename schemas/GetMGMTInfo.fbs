@@ -1,0 +1,6 @@
+namespace Schemas;
+
+table GetMGMTInfo {
+  version:uint8;
+  revision:uint16;
+}
