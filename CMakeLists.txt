@@ -50,7 +50,31 @@ set(SOURCES_FILES
         src/Packet/Commands/Scan/StopScan.cpp
         src/Packet/Commands/Scan/StopScan.hpp
         src/Builder/Flatbuffers/FlatbuffersBuilder.cpp
-        src/Builder/Flatbuffers/FlatbuffersBuilder.hpp)
+        src/Builder/Flatbuffers/FlatbuffersBuilder.hpp
+        src/Format/MGMT/MGMTFormat.cpp
+        src/Format/MGMT/MGMTFormat.hpp
+        src/Format/MGMT/MGMTFormatBuilder.cpp
+        src/Format/MGMT/MGMTFormatBuilder.hpp
+        src/Format/MGMT/MGMTFormatExtractor.cpp
+        src/Format/MGMT/MGMTFormatExtractor.hpp
+        src/Format/Flatbuffers/FlatbuffersFormat.cpp
+        src/Format/Flatbuffers/FlatbuffersFormat.hpp
+        src/Format/Ascii/AsciiFormat.cpp
+        src/Format/Ascii/AsciiFormat.hpp
+        src/Format/Ascii/AsciiFormatBuilder.cpp
+        src/Format/Ascii/AsciiFormatBuilder.hpp
+        src/Format/Ascii/AsciiFormatExtractor.cpp
+        src/Format/Ascii/AsciiFormatExtractor.hpp
+        src/Builder/PacketBuilder.cpp
+        src/Builder/PacketBuilder.hpp
+        src/Router/Router.cpp
+        src/Router/Router.hpp
+        src/Transports/AbstractSocket.hpp
+        src/Transports/MGMT/MGMTSocket.cpp
+        src/Transports/MGMT/MGMTSocket.hpp
+        src/Transports/StdIO/StdIOSocket.cpp
+        src/Transports/StdIO/StdIOSocket.hpp
+        src/Format/AbstractFormat.hpp src/Format/AbstractBuilder.hpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies
