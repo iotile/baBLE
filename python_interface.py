@@ -124,15 +124,15 @@ try:
             company_id = devicefound.CompanyId()
             device_name = devicefound.DeviceName()
 
-            # print("DeviceFound",
-            #       "Controller id:", controller_id,
-            #       "Address type:", address_type,
-            #       "Address:", address,
-            #       "RSSI:", rssi,
-            #       "Flags:", flags,
-            #       "UUID:", uuid,
-            #       "Company id:", company_id,
-            #       "Device name:", device_name)
+            print("DeviceFound",
+                  "Controller id:", controller_id,
+                  "Address type:", address_type,
+                  "Address:", address,
+                  "RSSI:", rssi,
+                  "Flags:", flags,
+                  "UUID:", uuid,
+                  "Company id:", company_id,
+                  "Device name:", device_name)
         else:
             print('NOPE...')
 

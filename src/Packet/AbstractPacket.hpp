@@ -5,6 +5,8 @@
 #include <utility>
 #include <vector>
 #include "constants.hpp"
+#include "../Format/MGMT/constants.hpp"
+#include "../Format/Ascii/constants.hpp"
 #include "../Format/MGMT/MGMTFormatExtractor.hpp"
 #include "../Format/Ascii/AsciiFormatExtractor.hpp"
 #include "../Format/Flatbuffers/FlatbuffersFormatExtractor.hpp"

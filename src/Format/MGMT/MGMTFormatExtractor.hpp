@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <vector>
 #include "../../Log/Log.hpp"
+#include "constants.hpp"
 
 #if __BYTE_ORDER__ == __ORDER_PDP_ENDIAN__
 #error "Byte order not suported (PDP endian)"
@@ -79,7 +80,7 @@ public:
   };
 
   void parse_header(const std::vector<uint8_t>& data) {
-    if (data.size() < 6) {
+    if (data.size() < Format::MGMT::header_length) {
       throw std::invalid_argument("Given MGMT data are too small (< 6 bytes). Can't parse header.");
     }
 

@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <vector>
 #include <string>
+#include "constants.hpp"
 
 class MGMTFormatBuilder {
 
@@ -100,7 +101,7 @@ private:
     auto params_length = static_cast<uint16_t>(m_formatted_data.size());
 
     std::vector<uint8_t> header;
-    header.reserve(6);
+    header.reserve(Format::MGMT::header_length);
 
     // Use little-endian
     header.push_back(static_cast<uint8_t>(m_code & 0x00FF));

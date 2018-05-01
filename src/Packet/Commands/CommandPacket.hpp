@@ -12,7 +12,7 @@ namespace Packet::Commands {
     CommandPacket(Packet::Type initial_type, Packet::Type translated_type)
         : AbstractPacket(initial_type, translated_type) {
       m_command_code = T::command_code(m_current_type);
-      m_controller_id = 0xFFFF;
+      m_controller_id = Format::MGMT::non_controller_id;
       m_status = 0;
     };
 

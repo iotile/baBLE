@@ -11,10 +11,10 @@ namespace Packet::Commands {
     static const uint16_t command_code(Packet::Type type) {
       switch(type) {
         case Packet::Type::MGMT:
-          return Commands::MGMT::Code::GetMGMTInfo;
+          return Format::MGMT::CommandCode::GetMGMTInfo;
 
         case Packet::Type::ASCII:
-          return Commands::Ascii::Code::GetMGMTInfo;
+          return Format::Ascii::CommandCode::GetMGMTInfo;
 
         case Packet::Type::FLATBUFFERS:
           return static_cast<uint16_t>(Schemas::Payload::GetMGMTInfo);

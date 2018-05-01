@@ -1,9 +1,8 @@
 #ifndef BABLE_LINUX_MGMTFORMAT_HPP
 #define BABLE_LINUX_MGMTFORMAT_HPP
 
-#include <memory>
+#include "./constants.hpp"
 #include "../AbstractFormat.hpp"
-#include "../../Packet/AbstractPacket.hpp"
 #include "MGMTFormatBuilder.hpp"
 #include "MGMTFormatExtractor.hpp"
 
@@ -15,7 +14,7 @@ public:
   };
 
   const size_t header_length() const override {
-    return 6;
+    return Format::MGMT::header_length;
   };
 
   bool is_command(uint16_t type_code) override {

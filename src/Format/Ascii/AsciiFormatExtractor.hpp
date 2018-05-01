@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <vector>
 #include <stdexcept>
-#include "../../Packet/constants.hpp"
+#include "./constants.hpp"
 
 class AsciiFormatExtractor {
 
@@ -18,7 +18,7 @@ public:
     for (auto& value : data) {
       auto c = static_cast<char>(value);
 
-      if (c == Packet::Commands::Ascii::Delimiter) {
+      if (c == Format::Ascii::Delimiter) {
         break;
       }
 
@@ -39,7 +39,7 @@ public:
     for (auto& value : data) {
       auto c = static_cast<char>(value);
 
-      if (c == Packet::Commands::Ascii::Delimiter) {
+      if (c == Format::Ascii::Delimiter) {
         m_payload.push_back(data_str);
         data_str.clear();
         continue;

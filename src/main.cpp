@@ -26,7 +26,6 @@ void cleanly_stop_loop(Loop& loop) {
 }
 
 // TUESDAY 1st May =>
-// TODO: move MGMT constants in MGMTFormat ? (event_code, header_length, controller_id null...)
 // TODO: make packet loggable
 // TODO: remove unused includes
 // TODO: clean code

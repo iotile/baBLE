@@ -54,7 +54,8 @@ set(SOURCES_FILES
         src/Transport/Socket/MGMT/MGMTSocket.hpp
         src/Transport/Socket/StdIO/StdIOSocket.cpp
         src/Transport/Socket/StdIO/StdIOSocket.hpp
-        )
+        src/Format/MGMT/constants.hpp
+        src/Format/Ascii/constants.hpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies

@@ -12,10 +12,10 @@ namespace Packet::Events {
     static const uint16_t event_code(Packet::Type type) {
       switch(type) {
         case Packet::Type::MGMT:
-          return Events::MGMT::Code::DeviceFound;
+          return Format::MGMT::EventCode::DeviceFound;
 
         case Packet::Type::ASCII:
-          return Events::Ascii::Code::DeviceFound;
+          return Format::Ascii::EventCode::DeviceFound;
 
         case Packet::Type::FLATBUFFERS:
           return static_cast<uint16_t>(Schemas::Payload::DeviceFound);

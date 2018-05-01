@@ -10,7 +10,7 @@ namespace Packet::Events {
 
   protected:
     EventPacket(Packet::Type initial_type, Packet::Type translated_type): AbstractPacket(initial_type, translated_type) {
-      m_controller_id = 0xFFFF;
+      m_controller_id = Format::MGMT::non_controller_id;
     };
 
     std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override {
