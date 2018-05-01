@@ -1,0 +1,7 @@
+namespace Schemas;
+
+table Discovering {
+  controller_id:uint16;
+  address_type:uint8;
+  state:bool;
+}

@@ -1,5 +1,8 @@
-include "GetMGMTInfo.fbs";
-include "Scan.fbs";
+include "./Commands/GetMGMTInfo.fbs";
+include "./Commands/StartScan.fbs";
+include "./Commands/StopScan.fbs";
+include "./Events/DeviceFound.fbs";
+include "./Events/Discovering.fbs";
 
 namespace Schemas;
 
