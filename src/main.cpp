@@ -26,7 +26,6 @@ void cleanly_stop_loop(Loop& loop) {
 }
 
 // TUESDAY 1st May =>
-// TODO: make packet loggable
 // TODO: remove unused includes
 // TODO: clean code
 // TODO: handle errors properly (if exception OR status in complete event OR status in status event) -> forward to bable socket
@@ -85,6 +84,7 @@ int main() {
     try {
       std::unique_ptr<Packet::AbstractPacket> packet = mgmt_builder.build(received_data);
       LOG.debug("Packet built", "MGMT poller");
+      LOG.debug(*packet, "MGMT poller");
       packet->translate();
       LOG.debug("Packet translated", "MGMT poller");
       socket_container.send(std::move(packet));

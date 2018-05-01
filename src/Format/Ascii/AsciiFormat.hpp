@@ -37,15 +37,15 @@ public:
     return uuid.str();
   }
 
-  static std::string format_device_name(const std::vector<uint8_t>& device_name_array) {
-    std::stringstream device_name;
+  static std::string bytes_to_string(const std::vector<uint8_t>& bytes) {
+    std::stringstream result;
 
-    for(auto& v : device_name_array) {
-      device_name << char(v);
+    for(auto& v : bytes) {
+      result << char(v);
     }
 
-    return device_name.str();
-  }
+    return result.str();
+  };
 
   const Packet::Type packet_type() const override {
     return Packet::Type::ASCII;

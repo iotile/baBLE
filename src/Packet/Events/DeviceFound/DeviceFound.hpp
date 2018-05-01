@@ -2,7 +2,6 @@
 #define BABLE_LINUX_DEVICEFOUND_HPP
 
 #include "../EventPacket.hpp"
-#include "../../../Format/Ascii/AsciiFormat.hpp"
 
 namespace Packet::Events {
 
@@ -66,7 +65,7 @@ namespace Packet::Events {
           .add("EIR flags: ", m_eir.flags)
           .add("EIR UUID: ", AsciiFormat::format_uuid(m_eir.uuid))
           .add("EIR company ID: ", m_eir.company_id)
-          .add("EIR device name", AsciiFormat::format_device_name(m_eir.device_name));
+          .add("EIR device name", AsciiFormat::bytes_to_string(m_eir.device_name));
 
       return builder.build();
     };
@@ -79,7 +78,7 @@ namespace Packet::Events {
       auto address = builder.CreateString(AsciiFormat::format_bd_address(m_address));
       auto flags = builder.CreateVector(flags_vector);
       auto uuid = builder.CreateString(AsciiFormat::format_uuid(m_eir.uuid));
-      auto device_name = builder.CreateString(AsciiFormat::format_device_name(m_eir.device_name));
+      auto device_name = builder.CreateString(AsciiFormat::bytes_to_string(m_eir.device_name));
 
       auto payload = Schemas::CreateDeviceFound(
           builder,

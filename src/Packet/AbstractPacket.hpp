@@ -7,16 +7,14 @@
 #include "constants.hpp"
 #include "../Format/MGMT/constants.hpp"
 #include "../Format/Ascii/constants.hpp"
-#include "../Format/MGMT/MGMTFormatExtractor.hpp"
-#include "../Format/Ascii/AsciiFormatExtractor.hpp"
+#include "../Format/Ascii/AsciiFormat.hpp"
+#include "../Format/MGMT/MGMTFormat.hpp"
 #include "../Format/Flatbuffers/FlatbuffersFormatExtractor.hpp"
-#include "../Format/MGMT/MGMTFormatBuilder.hpp"
-#include "../Format/Ascii/AsciiFormatBuilder.hpp"
 #include "../Format/Flatbuffers/FlatbuffersFormatBuilder.hpp"
 
 namespace Packet {
 
-  class AbstractPacket {
+  class AbstractPacket : public Loggable {
 
   public:
     static const uint16_t command_code(Packet::Type type) {
@@ -104,6 +102,15 @@ namespace Packet {
     };
     virtual void import(FlatbuffersFormatExtractor& extractor) {
       throw std::runtime_error("import(FlatbuffersFormatExtractor&) not defined.");
+    };
+
+    const std::string stringify() const override {
+      AsciiFormatBuilder builder;
+      builder
+          .add("Event code", m_event_code)
+          .add("Controller ID", m_controller_id);
+      std::vector<uint8_t> data = serialize(builder);
+      return AsciiFormat::bytes_to_string(data);
     };
 
     virtual ~AbstractPacket() = default;
