@@ -2,7 +2,6 @@
 #define BABLE_LINUX_COMMANDS_GETMGMTINFO_HPP
 
 #include "../CommandPacket.hpp"
-#include "../../../Format/Flatbuffers/FlatbuffersFormat.hpp"
 
 namespace Packet::Commands {
 
@@ -35,8 +34,8 @@ namespace Packet::Commands {
       CommandPacket::import(extractor);
     };
 
-    void import(const Schemas::Packet* packet) override {
-      CommandPacket::import(packet);
+    void import(FlatbuffersFormatExtractor& extractor) override {
+      CommandPacket::import(extractor);
     };
 
     void import(MGMTFormatExtractor& extractor) override {
@@ -55,11 +54,11 @@ namespace Packet::Commands {
       return builder.build();
     };
 
-    std::vector<uint8_t> serialize(flatbuffers::FlatBufferBuilder& builder) const override {
+    std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override {
       CommandPacket::serialize(builder);
       auto payload = Schemas::CreateGetMGMTInfo(builder, m_version, m_revision);
 
-      return FlatbuffersFormat::build_packet<Schemas::GetMGMTInfo>(builder, payload, Schemas::Payload::GetMGMTInfo);
+      return builder.build(payload, Schemas::Payload::GetMGMTInfo);
     }
 
     std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override {

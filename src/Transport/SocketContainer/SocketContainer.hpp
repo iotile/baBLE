@@ -4,13 +4,13 @@
 #include <cstdint>
 #include <memory>
 #include <unordered_map>
-#include "../Transports/AbstractSocket.hpp"
+#include "../AbstractSocket.hpp"
 
 class SocketContainer {
 
 public:
   SocketContainer& register_socket(std::shared_ptr<AbstractSocket> socket) {
-    Packet::Type packet_type = socket->packet_type();
+    Packet::Type packet_type = socket->format()->packet_type();
     m_sockets.emplace(packet_type, std::move(socket));
 
     return *this;

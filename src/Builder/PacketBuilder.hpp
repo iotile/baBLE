@@ -83,7 +83,7 @@ public:
     } else if (m_building_format->is_event(type_code)) {
       return build_event(type_code, raw_data);
     } else {
-      throw std::invalid_argument("Given data to build a packet has no known type.");
+      throw std::invalid_argument("Given data to build a packet has no known type: " + std::to_string(type_code));
     }
   };
 

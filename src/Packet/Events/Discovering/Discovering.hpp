@@ -1,9 +1,6 @@
 #ifndef BABLE_LINUX_DISCOVERING_HPP
 #define BABLE_LINUX_DISCOVERING_HPP
 
-#include <cstdint>
-#include <flatbuffers/flatbuffers.h>
-#include <Packet_generated.h>
 #include "../EventPacket.hpp"
 
 namespace Packet::Events {
@@ -27,37 +24,33 @@ namespace Packet::Events {
       }
     };
 
-    Discovering(Packet::Type initial_type, Packet::Type translated_type): EventPacket(initial_type, translated_type) {
+    Discovering(Packet::Type initial_type, Packet::Type translated_type)
+        : EventPacket(initial_type, translated_type) {
       m_address_type = 0;
       m_discovering = 0;
     };
 
-    void from_mgmt(Deserializer& deser) override {
-      EventPacket::from_mgmt(deser);
-      deser >> m_address_type >> m_discovering;
+    void import(MGMTFormatExtractor& extractor) override {
+      EventPacket::import(extractor);
+      m_address_type = extractor.get_value<uint8_t>();
+      m_discovering = extractor.get_value<uint8_t>();
     };
 
-    std::string to_ascii() const override {
-      std::string header = EventPacket::to_ascii();
-      std::stringstream payload;
+    std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override {
+      EventPacket::serialize(builder);
+      builder
+          .set_name("Discovering")
+          .add("Address type", m_address_type)
+          .add("Discovering", m_discovering);
 
-      payload << "Address type: " << std::to_string(m_address_type) << ", "
-              << "Discovering: " << std::to_string(m_discovering);
-
-      return header + ", " + payload.str();
+      return builder.build();
     };
 
-    Serializer to_flatbuffers() const override {
-      flatbuffers::FlatBufferBuilder builder(0);
-
+    std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override {
+      EventPacket::serialize(builder);
       auto payload = Schemas::CreateDiscovering(builder, m_controller_id, m_address_type, m_discovering);
 
-      Serializer ser = build_flatbuffers_packet<Schemas::Discovering>(builder, payload, Schemas::Payload::Discovering);
-
-      Serializer result;
-      result << static_cast<uint8_t>(0xCA) << static_cast<uint8_t>(0xFE) << static_cast<uint16_t>(ser.size()) << ser;
-
-      return result;
+      return builder.build(payload, Schemas::Payload::Discovering);
     }
 
   private:

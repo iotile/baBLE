@@ -147,7 +147,7 @@ struct StartScan FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     return GetField<uint16_t>(VT_CONTROLLER_ID, 0);
   }
   uint8_t address_type() const {
-    return GetField<uint8_t>(VT_ADDRESS_TYPE, 0);
+    return GetField<uint8_t>(VT_ADDRESS_TYPE, 6);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -164,7 +164,7 @@ struct StartScanBuilder {
     fbb_.AddElement<uint16_t>(StartScan::VT_CONTROLLER_ID, controller_id, 0);
   }
   void add_address_type(uint8_t address_type) {
-    fbb_.AddElement<uint8_t>(StartScan::VT_ADDRESS_TYPE, address_type, 0);
+    fbb_.AddElement<uint8_t>(StartScan::VT_ADDRESS_TYPE, address_type, 6);
   }
   explicit StartScanBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -181,7 +181,7 @@ struct StartScanBuilder {
 inline flatbuffers::Offset<StartScan> CreateStartScan(
     flatbuffers::FlatBufferBuilder &_fbb,
     uint16_t controller_id = 0,
-    uint8_t address_type = 0) {
+    uint8_t address_type = 6) {
   StartScanBuilder builder_(_fbb);
   builder_.add_controller_id(controller_id);
   builder_.add_address_type(address_type);
@@ -197,7 +197,7 @@ struct StopScan FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     return GetField<uint16_t>(VT_CONTROLLER_ID, 0);
   }
   uint8_t address_type() const {
-    return GetField<uint8_t>(VT_ADDRESS_TYPE, 0);
+    return GetField<uint8_t>(VT_ADDRESS_TYPE, 6);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -214,7 +214,7 @@ struct StopScanBuilder {
     fbb_.AddElement<uint16_t>(StopScan::VT_CONTROLLER_ID, controller_id, 0);
   }
   void add_address_type(uint8_t address_type) {
-    fbb_.AddElement<uint8_t>(StopScan::VT_ADDRESS_TYPE, address_type, 0);
+    fbb_.AddElement<uint8_t>(StopScan::VT_ADDRESS_TYPE, address_type, 6);
   }
   explicit StopScanBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -231,7 +231,7 @@ struct StopScanBuilder {
 inline flatbuffers::Offset<StopScan> CreateStopScan(
     flatbuffers::FlatBufferBuilder &_fbb,
     uint16_t controller_id = 0,
-    uint8_t address_type = 0) {
+    uint8_t address_type = 6) {
   StopScanBuilder builder_(_fbb);
   builder_.add_controller_id(controller_id);
   builder_.add_address_type(address_type);

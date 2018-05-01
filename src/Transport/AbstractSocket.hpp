@@ -2,6 +2,7 @@
 #define BABLE_LINUX_ABSTRACTSOCKET_HPP
 
 #include <uvw.hpp>
+#include "../Format/AbstractFormat.hpp"
 #include "../Packet/AbstractPacket.hpp"
 #include "../Packet/constants.hpp"
 #include "../Log/Log.hpp"
@@ -15,8 +16,8 @@ public:
     m_format = std::move(format);
   }
 
-  virtual const Packet::Type packet_type() const {
-    return m_format->packet_type();
+  virtual const std::shared_ptr<AbstractFormat> format() const {
+    return m_format;
   };
 
   virtual bool send(const std::vector<uint8_t>& data) = 0;

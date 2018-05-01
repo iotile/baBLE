@@ -9,9 +9,9 @@
 #include <queue>
 #include <uvw.hpp>
 
-#include "../AbstractSocket.hpp"
-#include "../../Log/Log.hpp"
-#include "../../Packet/constants.hpp"
+#include "../../AbstractSocket.hpp"
+#include "../../../Log/Log.hpp"
+#include "../../../Packet/constants.hpp"
 
 #define BTPROTO_HCI   1
 #define HCI_DEV_NONE  0xffff

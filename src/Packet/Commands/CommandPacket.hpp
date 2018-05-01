@@ -35,7 +35,7 @@ namespace Packet::Commands {
       return {};
     };
 
-    std::vector<uint8_t> serialize(flatbuffers::FlatBufferBuilder& builder) const override {
+    std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override {
       return {};
     };
 
@@ -44,8 +44,10 @@ namespace Packet::Commands {
       m_status = extractor.get_value<uint8_t>();
     };
 
-    void import(AsciiFormatExtractor& extractor) override {};
-    void import(const Schemas::Packet* packet) override {};
+    void import(AsciiFormatExtractor& extractor) override {
+      m_command_code = static_cast<uint16_t>(stoi(extractor.get()));
+    };
+    void import(FlatbuffersFormatExtractor& extractor) override {};
 
     uint16_t m_command_code;
     uint8_t m_status;

@@ -14,18 +14,19 @@ set(SOURCES_FILES
         src/Log/Loggable.hpp
         src/Packet/constants.hpp
         src/Packet/AbstractPacket.hpp
+        src/Packet/Commands/CommandPacket.hpp
         src/Packet/Commands/GetMGMTInfo/GetMGMTInfo.cpp
         src/Packet/Commands/GetMGMTInfo/GetMGMTInfo.hpp
-#        src/Packet/Commands/CommandPacket.hpp
-#        src/Packet/Commands/Scan/StartScan.cpp
-#        src/Packet/Commands/Scan/StartScan.hpp
-#        src/Packet/Events/EventPacket.hpp
-#        src/Packet/Events/DeviceFound/DeviceFound.cpp
-#        src/Packet/Events/DeviceFound/DeviceFound.hpp
-#        src/Packet/Events/Discovering/Discovering.cpp
-#        src/Packet/Events/Discovering/Discovering.hpp
-#        src/Packet/Commands/Scan/StopScan.cpp
-#        src/Packet/Commands/Scan/StopScan.hpp
+        src/Packet/Commands/Scan/StartScan.cpp
+        src/Packet/Commands/Scan/StartScan.hpp
+        src/Packet/Commands/Scan/StopScan.cpp
+        src/Packet/Commands/Scan/StopScan.hpp
+        src/Packet/Events/EventPacket.hpp
+        src/Packet/Events/DeviceFound/DeviceFound.cpp
+        src/Packet/Events/DeviceFound/DeviceFound.hpp
+        src/Packet/Events/Discovering/Discovering.cpp
+        src/Packet/Events/Discovering/Discovering.hpp
+        src/Format/AbstractFormat.hpp
         src/Format/MGMT/MGMTFormat.cpp
         src/Format/MGMT/MGMTFormat.hpp
         src/Format/MGMT/MGMTFormatBuilder.cpp
@@ -34,6 +35,10 @@ set(SOURCES_FILES
         src/Format/MGMT/MGMTFormatExtractor.hpp
         src/Format/Flatbuffers/FlatbuffersFormat.cpp
         src/Format/Flatbuffers/FlatbuffersFormat.hpp
+        src/Format/Flatbuffers/FlatbuffersFormatBuilder.cpp
+        src/Format/Flatbuffers/FlatbuffersFormatBuilder.hpp
+        src/Format/Flatbuffers/FlatbuffersFormatExtractor.cpp
+        src/Format/Flatbuffers/FlatbuffersFormatExtractor.hpp
         src/Format/Ascii/AsciiFormat.cpp
         src/Format/Ascii/AsciiFormat.hpp
         src/Format/Ascii/AsciiFormatBuilder.cpp
@@ -42,16 +47,14 @@ set(SOURCES_FILES
         src/Format/Ascii/AsciiFormatExtractor.hpp
         src/Builder/PacketBuilder.cpp
         src/Builder/PacketBuilder.hpp
-        src/SocketContainer/SocketContainer.cpp
-        src/SocketContainer/SocketContainer.hpp
-        src/Transports/AbstractSocket.hpp
-        src/Transports/MGMT/MGMTSocket.cpp
-        src/Transports/MGMT/MGMTSocket.hpp
-        src/Transports/StdIO/StdIOSocket.cpp
-        src/Transports/StdIO/StdIOSocket.hpp
-        src/Format/AbstractFormat.hpp
-        src/Packet/Commands/CommandPacket.hpp
-        src/Packet/Events/EventPacket.hpp)
+        src/Transport/AbstractSocket.hpp
+        src/Transport/SocketContainer/SocketContainer.cpp
+        src/Transport/SocketContainer/SocketContainer.hpp
+        src/Transport/Socket/MGMT/MGMTSocket.cpp
+        src/Transport/Socket/MGMT/MGMTSocket.hpp
+        src/Transport/Socket/StdIO/StdIOSocket.cpp
+        src/Transport/Socket/StdIO/StdIOSocket.hpp
+        )
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies

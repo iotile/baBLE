@@ -4,9 +4,9 @@
 #define MAGIC_CODE 0xCAFE
 
 #include <algorithm>
-#include "../AbstractSocket.hpp"
-#include "../../Log/Log.hpp"
-#include "../../utils/stream_formats.hpp"
+#include "../../AbstractSocket.hpp"
+#include "../../../Log/Log.hpp"
+#include "../../../utils/stream_formats.hpp"
 
 class StdIOSocket : public AbstractSocket {
 

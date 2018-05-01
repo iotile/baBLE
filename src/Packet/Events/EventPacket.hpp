@@ -16,14 +16,15 @@ namespace Packet::Events {
     std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override {
       builder
           .add("Type", "Event");
+
+      return {};
     }
 
-    std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override {};
-    std::vector<uint8_t> serialize(flatbuffers::FlatBufferBuilder& builder) const override {};
+    std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override {
+      return {};
+    };
 
     void import(MGMTFormatExtractor& extractor) override {};
-    void import(AsciiFormatExtractor& extractor) override {};
-    void import(const Schemas::Packet* packet) override {};
 
   };
 

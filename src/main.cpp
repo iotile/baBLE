@@ -3,15 +3,15 @@
 #include "Log/Log.hpp"
 #include "Format/MGMT/MGMTFormat.hpp"
 #include "Format/Flatbuffers/FlatbuffersFormat.hpp"
-#include "Transports/MGMT/MGMTSocket.hpp"
-#include "Transports/StdIO/StdIOSocket.hpp"
+#include "Transport/Socket/MGMT/MGMTSocket.hpp"
+#include "Transport/Socket/StdIO/StdIOSocket.hpp"
 #include "Builder/PacketBuilder.hpp"
 #include "Packet/Commands/GetMGMTInfo/GetMGMTInfo.hpp"
-//#include "Packet/Commands/Scan/StartScan.hpp"
-//#include "Packet/Commands/Scan/StopScan.hpp"
-//#include "Packet/Events/DeviceFound/DeviceFound.hpp"
-//#include "Packet/Events/Discovering/Discovering.hpp"
-#include "SocketContainer/SocketContainer.hpp"
+#include "Packet/Commands/Scan/StartScan.hpp"
+#include "Packet/Commands/Scan/StopScan.hpp"
+#include "Packet/Events/DeviceFound/DeviceFound.hpp"
+#include "Packet/Events/Discovering/Discovering.hpp"
+#include "Transport/SocketContainer/SocketContainer.hpp"
 #include "Format/Ascii/AsciiFormat.hpp"
 
 using namespace std;
@@ -26,14 +26,11 @@ void cleanly_stop_loop(Loop& loop) {
 }
 
 // TUESDAY 1st May =>
-// TODO: reimplement Scan, and Events + tests
 // TODO: move MGMT constants in MGMTFormat ? (event_code, header_length, controller_id null...)
 // TODO: make packet loggable
 // TODO: remove unused includes
 // TODO: clean code
 // TODO: handle errors properly (if exception OR status in complete event OR status in status event) -> forward to bable socket
-
-// TODO: (post flatbuffers issue)
 
 // TODO: idea -> put all registration into a bootstap.cpp file with a bootstrap() function
 int main() {
@@ -58,37 +55,31 @@ int main() {
   shared_ptr<FlatbuffersFormat> fb_format = make_shared<FlatbuffersFormat>();
   shared_ptr<AsciiFormat> ascii_format = make_shared<AsciiFormat>();
 
-  // Builder
-  PacketBuilder mgmt_builder(mgmt_format, fb_format);
-  mgmt_builder
-      .register_command<Packet::Commands::GetMGMTInfo>();
-//      .register_command<Packet::Commands::StartScan>()
-//      .register_command<Packet::Commands::StopScan>()
-//      .register_event<Packet::Events::DeviceFound>()
-//      .register_event<Packet::Events::Discovering>();
-
-  PacketBuilder fb_builder(fb_format);
-  fb_builder
-    .set_output_format(mgmt_format)
-      .register_command<Packet::Commands::GetMGMTInfo>();
-//      .register_command<Packet::Commands::StartScan>()
-//      .register_command<Packet::Commands::StopScan>();
-
-  PacketBuilder ascii_builder(ascii_format);
-  ascii_builder
-      .set_output_format(mgmt_format)
-      .register_command<Packet::Commands::GetMGMTInfo>();
-
   // Sockets
-  shared_ptr<StdIOSocket> stdio_socket = make_shared<StdIOSocket>(fb_format);
   shared_ptr<MGMTSocket> mgmt_socket = make_shared<MGMTSocket>(mgmt_format);
+  shared_ptr<StdIOSocket> stdio_socket = make_shared<StdIOSocket>(fb_format);
 
   // Create socket manager
   SocketContainer socket_container;
   socket_container
       .register_socket(mgmt_socket)
-      .register_socket(stdio_socket)
       .register_socket(stdio_socket);
+
+  // Builder
+  PacketBuilder mgmt_builder(mgmt_format, stdio_socket->format());
+  mgmt_builder
+      .register_command<Packet::Commands::GetMGMTInfo>()
+      .register_command<Packet::Commands::StartScan>()
+      .register_command<Packet::Commands::StopScan>()
+      .register_event<Packet::Events::DeviceFound>()
+      .register_event<Packet::Events::Discovering>();
+
+  PacketBuilder stdio_builder(stdio_socket->format());
+  stdio_builder
+    .set_output_format(mgmt_socket->format())
+      .register_command<Packet::Commands::GetMGMTInfo>()
+      .register_command<Packet::Commands::StartScan>()
+      .register_command<Packet::Commands::StopScan>();
 
   // Poll sockets
   mgmt_socket->poll(loop, [&mgmt_builder, &socket_container](const std::vector<uint8_t>& received_data) {
@@ -104,9 +95,9 @@ int main() {
     }
   });
 
-  stdio_socket->poll(loop, [&fb_builder, &socket_container](const std::vector<uint8_t>& received_data) {
+  stdio_socket->poll(loop, [&stdio_builder, &socket_container](const std::vector<uint8_t>& received_data) {
     try {
-      std::unique_ptr<Packet::AbstractPacket> packet = fb_builder.build(received_data);
+      std::unique_ptr<Packet::AbstractPacket> packet = stdio_builder.build(received_data);
       LOG.debug("Packet built", "BABLE poller");
       packet->translate();
       LOG.debug("Packet translated", "BABLE poller");

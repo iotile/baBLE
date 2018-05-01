@@ -11,24 +11,24 @@ process = subprocess.Popen(["./build/debug/baBLE_linux"],
                            universal_newlines=False)
 
 ## ASCII
-# process.stdin.write(b'\xCA\xFE' + len("1").to_bytes(2, byteorder='little') + bytes("1", encoding="utf-8"))
+# process.stdin.write(b'\xCA\xFE' + len("1").to_bytes(2, byteorder='little') + bytes("2,0,7", encoding="utf-8"))
 # process.stdin.write(bytes("2,0", encoding="utf-8"))
 # time.sleep(2)
 # process.stdin.write("5,0")
 
 ## Flatbuffers
 builder = flatbuffers.Builder(0)
-GetMGMTInfo.GetMGMTInfoStart(builder)
-payload = GetMGMTInfo.GetMGMTInfoEnd(builder)
+# GetMGMTInfo.GetMGMTInfoStart(builder)
+# payload = GetMGMTInfo.GetMGMTInfoEnd(builder)
 
-# StartScan.StartScanStart(builder)
-# StartScan.StartScanAddControllerId(builder, 0)
-# StartScan.StartScanAddAddressType(builder, 0x07)
-# payload = StartScan.StartScanEnd(builder)
+StartScan.StartScanStart(builder)
+StartScan.StartScanAddControllerId(builder, 0)
+StartScan.StartScanAddAddressType(builder, 0x07)
+payload = StartScan.StartScanEnd(builder)
 
 Packet.PacketStart(builder)
-Packet.PacketAddPayloadType(builder, Payload.Payload().GetMGMTInfo)
-# Packet.PacketAddPayloadType(builder, Payload.Payload().StartScan)
+# Packet.PacketAddPayloadType(builder, Payload.Payload().GetMGMTInfo)
+Packet.PacketAddPayloadType(builder, Payload.Payload().StartScan)
 Packet.PacketAddPayload(builder, payload)
 packet = Packet.PacketEnd(builder)
 
@@ -124,15 +124,15 @@ try:
             company_id = devicefound.CompanyId()
             device_name = devicefound.DeviceName()
 
-            print("DeviceFound",
-                  "Controller id:", controller_id,
-                  "Address type:", address_type,
-                  "Address:", address,
-                  "RSSI:", rssi,
-                  "Flags:", flags,
-                  "UUID:", uuid,
-                  "Company id:", company_id,
-                  "Device name:", device_name)
+            # print("DeviceFound",
+            #       "Controller id:", controller_id,
+            #       "Address type:", address_type,
+            #       "Address:", address,
+            #       "RSSI:", rssi,
+            #       "Flags:", flags,
+            #       "UUID:", uuid,
+            #       "Company id:", company_id,
+            #       "Device name:", device_name)
         else:
             print('NOPE...')
 

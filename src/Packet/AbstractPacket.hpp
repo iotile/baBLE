@@ -4,14 +4,13 @@
 #include <cstdint>
 #include <utility>
 #include <vector>
-#include <flatbuffers/flatbuffers.h>
-#include <Packet_generated.h>
 #include "constants.hpp"
-#include "../Format/AbstractFormat.hpp"
 #include "../Format/MGMT/MGMTFormatExtractor.hpp"
 #include "../Format/Ascii/AsciiFormatExtractor.hpp"
+#include "../Format/Flatbuffers/FlatbuffersFormatExtractor.hpp"
 #include "../Format/MGMT/MGMTFormatBuilder.hpp"
 #include "../Format/Ascii/AsciiFormatBuilder.hpp"
+#include "../Format/Flatbuffers/FlatbuffersFormatBuilder.hpp"
 
 namespace Packet {
 
@@ -45,7 +44,7 @@ namespace Packet {
 
         case Packet::Type::FLATBUFFERS:
         {
-          flatbuffers::FlatBufferBuilder builder(0);
+          FlatbuffersFormatBuilder builder(0);
           return serialize(builder);
         }
       }
@@ -69,8 +68,8 @@ namespace Packet {
 
         case Packet::Type::FLATBUFFERS:
         {
-          auto packet = Schemas::GetPacket(raw_data.data());
-          return import(packet);
+          FlatbuffersFormatExtractor extractor(raw_data);
+          return import(extractor);
         }
       }
     };
@@ -91,8 +90,8 @@ namespace Packet {
     virtual std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const {
       throw std::runtime_error("serialize(AsciiFormatBuilder&) not defined.");
     };
-    virtual std::vector<uint8_t> serialize(flatbuffers::FlatBufferBuilder& builder) const {
-      throw std::runtime_error("serialize(flatbuffers::FlatBufferBuilder&) not defined.");
+    virtual std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const {
+      throw std::runtime_error("serialize(FlatbuffersFormatBuilder&) not defined.");
     };
 
     virtual void import(MGMTFormatExtractor& extractor) {
@@ -101,8 +100,8 @@ namespace Packet {
     virtual void import(AsciiFormatExtractor& extractor) {
       throw std::runtime_error("import(AsciiFormatExtractor&) not defined.");
     };
-    virtual void import(const Schemas::Packet* packet) {
-      throw std::runtime_error("import(Schemas::Packet&) not defined.");
+    virtual void import(FlatbuffersFormatExtractor& extractor) {
+      throw std::runtime_error("import(FlatbuffersFormatExtractor&) not defined.");
     };
 
     virtual ~AbstractPacket() = default;

@@ -48,21 +48,6 @@ public:
     throw std::runtime_error("Flatbuffers format can't extract payload length: this information is not included in the format.");
   };
 
-  template<class T>
-  static std::vector<uint8_t> build_packet(flatbuffers::FlatBufferBuilder& builder, const flatbuffers::Offset<T>& payload, Schemas::Payload payload_type) {
-    Schemas::PacketBuilder packet_builder(builder);
-    packet_builder.add_payload_type(payload_type);
-    packet_builder.add_payload(payload.Union());
-    auto packet = packet_builder.Finish();
-    builder.Finish(packet);
-
-    uint8_t* buffer = builder.GetBufferPointer();
-    size_t buffer_size = builder.GetSize();
-
-    std::vector<uint8_t> result(buffer, buffer + buffer_size);
-    return result;
-  }
-
 private:
 
 };
