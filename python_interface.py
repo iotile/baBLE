@@ -11,23 +11,24 @@ process = subprocess.Popen(["./build/debug/baBLE_linux"],
                            universal_newlines=False)
 
 ## ASCII
+# process.stdin.write(b'\xCA\xFE' + len("1").to_bytes(2, byteorder='little') + bytes("1", encoding="utf-8"))
 # process.stdin.write(bytes("2,0", encoding="utf-8"))
 # time.sleep(2)
 # process.stdin.write("5,0")
 
 ## Flatbuffers
 builder = flatbuffers.Builder(0)
-# GetMGMTInfo.GetMGMTInfoStart(builder)
-# payload = GetMGMTInfo.GetMGMTInfoEnd(builder)
+GetMGMTInfo.GetMGMTInfoStart(builder)
+payload = GetMGMTInfo.GetMGMTInfoEnd(builder)
 
-StartScan.StartScanStart(builder)
-StartScan.StartScanAddControllerId(builder, 0)
-StartScan.StartScanAddAddressType(builder, 0x07)
-payload = StartScan.StartScanEnd(builder)
+# StartScan.StartScanStart(builder)
+# StartScan.StartScanAddControllerId(builder, 0)
+# StartScan.StartScanAddAddressType(builder, 0x07)
+# payload = StartScan.StartScanEnd(builder)
 
 Packet.PacketStart(builder)
-# Packet.PacketAddPayloadType(builder, Payload.Payload().GetMGMTInfo)
-Packet.PacketAddPayloadType(builder, Payload.Payload().StartScan)
+Packet.PacketAddPayloadType(builder, Payload.Payload().GetMGMTInfo)
+# Packet.PacketAddPayloadType(builder, Payload.Payload().StartScan)
 Packet.PacketAddPayload(builder, payload)
 packet = Packet.PacketEnd(builder)
 
@@ -37,25 +38,25 @@ buf = builder.Output()
 buf = b'\xCA\xFE' + len(buf).to_bytes(2, byteorder='little') + buf
 process.stdin.write(buf)
 
-time.sleep(2)
+#time.sleep(2)
 
-builder = flatbuffers.Builder(0)
-
-StopScan.StopScanStart(builder)
-StopScan.StopScanAddControllerId(builder, 0)
-StopScan.StopScanAddAddressType(builder, 0x07)
-payload = StopScan.StopScanEnd(builder)
-
-Packet.PacketStart(builder)
-Packet.PacketAddPayloadType(builder, Payload.Payload().StopScan)
-Packet.PacketAddPayload(builder, payload)
-packet = Packet.PacketEnd(builder)
-
-builder.Finish(packet)
-
-buf2 = builder.Output()
-buf2 = b'\xCA\xFE' + len(buf2).to_bytes(2, byteorder='little') + buf2
-process.stdin.write(buf2)
+# builder = flatbuffers.Builder(0)
+#
+# StopScan.StopScanStart(builder)
+# StopScan.StopScanAddControllerId(builder, 0)
+# StopScan.StopScanAddAddressType(builder, 0x07)
+# payload = StopScan.StopScanEnd(builder)
+#
+# Packet.PacketStart(builder)
+# Packet.PacketAddPayloadType(builder, Payload.Payload().StopScan)
+# Packet.PacketAddPayload(builder, payload)
+# packet = Packet.PacketEnd(builder)
+#
+# builder.Finish(packet)
+#
+# buf2 = builder.Output()
+# buf2 = b'\xCA\xFE' + len(buf2).to_bytes(2, byteorder='little') + buf2
+# process.stdin.write(buf2)
 
 header_length = 4
 
@@ -76,6 +77,8 @@ try:
         payload = bytearray()
         while len(payload) < length:
             payload += process.stdout.read(1)
+
+        # print(payload.decode(encoding="utf-8"))
 
         packet = Packet.Packet.GetRootAsPacket(payload, 0)
 

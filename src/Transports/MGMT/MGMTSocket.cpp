@@ -1,6 +1,9 @@
 #include "MGMTSocket.hpp"
 
-MGMTSocket::MGMTSocket(): AbstractSocket(get_header_size()) {
+MGMTSocket::MGMTSocket(std::shared_ptr<AbstractFormat> format)
+    : AbstractSocket(std::move(format)) {
+  m_header_length = m_format->header_length();
+
   m_socket = socket(PF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC | SOCK_NONBLOCK, BTPROTO_HCI);
   if (m_socket < 0) {
     throw std::runtime_error("Error while creating the MGMT socket.");
@@ -34,7 +37,7 @@ bool MGMTSocket::send(const std::vector<uint8_t>& data) {
   } else {
     set_writable(false);
     if (write(m_socket, data.data(), data.size()) < 0) {
-      LOG.error("Error while sending a message to MGMT socket.");
+      LOG.error("Error while sending a message to MGMT socket: " + std::string(strerror(errno)), "MGMTSocket");
       throw std::runtime_error("Error occured while sending the packet through MGMT socket.");
     }
   }
@@ -42,19 +45,39 @@ bool MGMTSocket::send(const std::vector<uint8_t>& data) {
   return true;
 }
 
+std::vector<uint8_t> MGMTSocket::receive() {
+  std::vector<uint8_t> header(m_header_length);
+
+  // MSG_PEEK is used to not remove data in socket queue. Else, for unknown reason, all the data are consumed and we
+  // can't read the payload afterwards...
+  ssize_t length_read = recv(m_socket, header.data(), header.size(), MSG_PEEK);
+
+  if (length_read < m_header_length) {
+    LOG.error("Error while reading the header: " + std::string(strerror(errno)), "MGMTSocket");
+    throw std::runtime_error("Can't read header on the MGMT socket.");
+  }
+
+  size_t payload_length = m_format->extract_payload_length(header);
+
+  std::vector<uint8_t> result(m_header_length + payload_length);
+  length_read = read(m_socket, result.data(), result.size());
+
+  if (length_read < m_header_length + payload_length) {
+    LOG.error("Error while reading the payload: " + std::string(strerror(errno)), "MGMTSocket");
+    throw std::runtime_error("Can't read payload on the MGMT socket.");
+  }
+
+  return result;
+}
+
 void MGMTSocket::poll(std::shared_ptr<uvw::Loop> loop, CallbackFunction on_received) {
   auto poller = loop->resource<uvw::PollHandle>(m_socket);
 
-  poller->on<uvw::PollEvent>([this, &on_received](const uvw::PollEvent& event, const uvw::PollHandle& handle){
+  poller->on<uvw::PollEvent>([this, on_received](const uvw::PollEvent& event, const uvw::PollHandle& handle){
     if (event.flags & uvw::PollHandle::Event::READABLE) {
-      LOG.debug("Readable data...", "MGMTSocket");
-      std::vector<uint8_t> buffer = receive();
-
-      if (!receive_with_header(buffer.data(), buffer.size())) {
-        return;
-      }
-      on_received(m_received_payload);
-      clear();
+      LOG.debug("Reading data...", "MGMTSocket");
+      std::vector<uint8_t> received_payload = receive();
+      on_received(received_payload);
     } else if (event.flags & uvw::PollHandle::Event::WRITABLE) {
       set_writable(true);
     }
@@ -64,21 +87,6 @@ void MGMTSocket::poll(std::shared_ptr<uvw::Loop> loop, CallbackFunction on_recei
   uvw::Flags<uvw::PollHandle::Event> writable = uvw::Flags<uvw::PollHandle::Event>(uvw::PollHandle::Event::WRITABLE);
 
   poller->start(readable | writable);
-}
-
-std::vector<uint8_t> MGMTSocket::receive() {
-  LOG.info("Receiving data...", "MGMT socket");
-  std::vector<uint8_t> buffer(1024);
-  ssize_t length = read(m_socket, buffer.data(), buffer.size());
-
-  if (length <= 0) {
-    throw std::runtime_error("Nothing read on the socket.");
-  }
-
-  buffer.resize(static_cast<size_t>(length));
-  buffer.shrink_to_fit();
-
-  return buffer;
 }
 
 void MGMTSocket::set_writable(bool is_writable) {

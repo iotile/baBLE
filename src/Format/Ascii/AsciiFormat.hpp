@@ -51,14 +51,8 @@ public:
     return Packet::Type::ASCII;
   };
 
-  AsciiFormatBuilder createBuilder(const std::string& name) {
-    AsciiFormatBuilder builder(name);
-    return builder;
-  };
-
-  AsciiFormatExtractor createExtractor(const std::vector<uint8_t>& data) {
-    AsciiFormatExtractor extractor(data);
-    return extractor;
+  const size_t header_length() const override {
+    return 0;
   };
 
   bool is_command(uint16_t type_code) override {
@@ -71,11 +65,15 @@ public:
 
   uint16_t extract_command_code(const std::vector<uint8_t>& data) override {
     return AsciiFormatExtractor::extract_command_code(data);
-  }
+  };
 
   uint16_t extract_type_code(const std::vector<uint8_t>& data) override {
     return 0;
-  }
+  };
+
+  uint16_t extract_payload_length(const std::vector<uint8_t>& data) override {
+    throw std::runtime_error("Ascii format can't extract payload length: this information is not included in the format.");
+  };
 
 };
 

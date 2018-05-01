@@ -10,9 +10,13 @@ class AsciiFormatBuilder {
 
 
 public:
-  explicit AsciiFormatBuilder(const std::string& name) {
-    m_name = name;
+  AsciiFormatBuilder() {
+    m_name = "Generic";
   };
+
+  AsciiFormatBuilder& set_name(const std::string& name) {
+    m_name = name;
+  }
 
   AsciiFormatBuilder& add(const std::string& field_name, const std::string& value) {
     std::stringstream stream;
@@ -101,6 +105,13 @@ public:
     m_data_vector.push_back(stream.str());
 
     return *this;
+  };
+
+  template<size_t N>
+  AsciiFormatBuilder& add(const std::string& field_name, const char (&container)[N]) {
+    std::string str(container);
+
+    return add(field_name, str);
   };
 
   template<size_t N>

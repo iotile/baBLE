@@ -10,8 +10,8 @@ class AsciiFormatExtractor {
 
 public:
   static uint16_t extract_command_code(const std::vector<uint8_t>& data) {
-    if (data.size() < 2) {
-      throw std::invalid_argument("Given MGMT data are too small (< 2 bytes). Can't extract command code.");
+    if (data.empty()) {
+      throw std::invalid_argument("Given ASCII data are too small (< 1 bytes). Can't extract command code.");
     }
 
     std::string data_str;
@@ -29,6 +29,7 @@ public:
   };
 
   explicit AsciiFormatExtractor(const std::vector<uint8_t>& data) {
+    m_stack_pointer = 0;
     parse_payload(data);
   };
 
@@ -50,8 +51,21 @@ public:
     m_payload.push_back(data_str);
   }
 
+  std::string get() {
+    if (m_stack_pointer >= m_payload.size()) {
+      throw std::runtime_error("No more data to get from AsciiFormatExtractor");
+    }
+
+    std::string result = m_payload.at(m_stack_pointer);
+    m_stack_pointer++;
+
+    return result;
+  }
+
+
 private:
   std::vector<std::string> m_payload;
+  size_t m_stack_pointer;
 
 };
 

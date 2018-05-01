@@ -27,12 +27,8 @@ public:
       throw std::invalid_argument("Given MGMT data are too small (< 2 bytes). Can't extract event code.");
     }
 
-    uint16_t event_code;
-    if (__BYTE_ORDER == __LITTLE_ENDIAN) {
-      event_code = (data.at(0) << 8) | data.at(1); // TODO: verify order
-    } else {
-      event_code = (data.at(1) << 8) | data.at(0);
-    }
+    // Use little endian
+    uint16_t event_code = (data.at(1) << 8) | data.at(0);
 
     return event_code;
   };
@@ -45,11 +41,8 @@ public:
         throw std::invalid_argument("Given MGMT data are too small (< 2 bytes). Can't extract command code.");
       }
 
-      if (__BYTE_ORDER == __LITTLE_ENDIAN) {
-        command_code = (data.at(0) << 8) | data.at(1); // TODO: verify order
-      } else {
-        command_code = (data.at(1) << 8) | data.at(0);
-      }
+      // Use little endian
+      command_code = (data.at(1) << 8) | data.at(0);
 
     } else {
       if (data.size() < 8) {
@@ -62,20 +55,27 @@ public:
         throw std::invalid_argument("Can't extract command code from given MGMT data: no command code inside");
       }
 
-      if (__BYTE_ORDER == __LITTLE_ENDIAN) {
-        command_code = (data.at(7) << 8) | data.at(8); // TODO: verify order
-      } else {
-        command_code = (data.at(8) << 8) | data.at(7);
-      }
+      // Use little endian
+      command_code = (data.at(7) << 8) | data.at(6);
     }
 
     return command_code;
   };
 
+  static uint16_t extract_payload_length(const std::vector<uint8_t>& data) {
+    if (data.size() < 6) {
+      throw std::invalid_argument("Given MGMT data are too small (< 6 bytes). Can't extract payload length.");
+    }
+
+    // Use little endian
+    uint16_t payload_length = (data.at(5) << 8) | data.at(4);
+    return payload_length;
+  };
+
   explicit MGMTFormatExtractor(const std::vector<uint8_t>& data)
       : m_event_code(0), m_controller_id(0), m_params_length(0) {
     parse_header(data);
-    m_payload.assign(data.rbegin() + 6, data.rend()); // TODO: verify that rbegin()+6 is ok (and not rend()+6)
+    m_payload.assign(data.rbegin(), data.rend() - 6);
   };
 
   void parse_header(const std::vector<uint8_t>& data) {
@@ -83,16 +83,9 @@ public:
       throw std::invalid_argument("Given MGMT data are too small (< 6 bytes). Can't parse header.");
     }
 
-    if (__BYTE_ORDER == __LITTLE_ENDIAN) {
-      m_event_code = (static_cast<uint16_t>(data.at(1)) << 8) | data.at(0);
-      m_controller_id = (static_cast<uint16_t>(data.at(3)) << 8) | data.at(2);
-      m_params_length = (static_cast<uint16_t>(data.at(5)) << 8) | data.at(4);
-
-    } else {
-      m_event_code = (static_cast<uint16_t>(data.at(0)) << 8) | data.at(1);
-      m_controller_id = (static_cast<uint16_t>(data.at(2)) << 8) | data.at(3);
-      m_params_length = (static_cast<uint16_t>(data.at(4)) << 8) | data.at(5);
-    }
+    m_event_code = (static_cast<uint16_t>(data.at(1)) << 8) | data.at(0);
+    m_controller_id = (static_cast<uint16_t>(data.at(3)) << 8) | data.at(2);
+    m_params_length = (static_cast<uint16_t>(data.at(5)) << 8) | data.at(4);
   };
 
   template<typename T>
@@ -204,6 +197,14 @@ public:
     }
 
     return result;
+  };
+
+  uint16_t get_event_code() {
+    return m_event_code;
+  }
+
+  uint16_t get_controller_id() {
+    return m_controller_id;
   }
 
 private:

@@ -7,8 +7,6 @@
 #include "MGMTFormatBuilder.hpp"
 #include "MGMTFormatExtractor.hpp"
 
-// TODO: move MGMT constants in MGMTFormat ? (event_code, header_length, ...)
-
 class MGMTFormat : public AbstractFormat {
 
 public:
@@ -16,14 +14,8 @@ public:
     return Packet::Type::MGMT;
   };
 
-  MGMTFormatBuilder createBuilder(uint16_t code, uint16_t controller_id) {
-    MGMTFormatBuilder builder(code, controller_id);
-    return builder;
-  };
-
-  MGMTFormatExtractor createExtractor(const std::vector<uint8_t>& data) {
-    MGMTFormatExtractor extractor(data);
-    return extractor;
+  const size_t header_length() const override {
+    return 6;
   };
 
   bool is_command(uint16_t type_code) override {
@@ -45,6 +37,10 @@ public:
   uint16_t extract_type_code(const std::vector<uint8_t>& data) override {
     return MGMTFormatExtractor::extract_event_code(data);
   }
+
+  uint16_t extract_payload_length(const std::vector<uint8_t>& data) override {
+    return MGMTFormatExtractor::extract_payload_length(data);
+  };
 
 };
 

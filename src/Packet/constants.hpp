@@ -8,7 +8,6 @@ namespace Packet {
 
   enum Type {
     MGMT,
-    HCI,
     ASCII,
     FLATBUFFERS
   };

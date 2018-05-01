@@ -13,10 +13,16 @@
 class MGMTFormatBuilder {
 
 public:
-  MGMTFormatBuilder(uint16_t code, uint16_t controller_id) {
-    m_code = code;
+  explicit MGMTFormatBuilder(uint16_t controller_id) {
+    m_code = 0;
     m_controller_id = controller_id;
   };
+
+  MGMTFormatBuilder& set_code(uint16_t code) {
+    m_code = code;
+
+    return *this;
+  }
 
   template<typename T>
   MGMTFormatBuilder& add(const T& value) {

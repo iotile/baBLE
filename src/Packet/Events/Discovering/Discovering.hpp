@@ -5,7 +5,6 @@
 #include <flatbuffers/flatbuffers.h>
 #include <Packet_generated.h>
 #include "../EventPacket.hpp"
-#include "../../../Serializer/Deserializer.hpp"
 
 namespace Packet::Events {
 

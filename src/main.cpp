@@ -1,20 +1,18 @@
 #include <memory>
 #include <uvw.hpp>
 #include "Log/Log.hpp"
-#include "Socket/SocketManager.hpp"
-#include "Socket/MGMT/MGMTSocket.hpp"
-#include "Socket/StdIO/StdIOSocket.hpp"
-#include "Builder/Ascii/AsciiBuilder.hpp"
-#include "Builder/Flatbuffers/FlatbuffersBuilder.hpp"
-#include "Builder/MGMT/MGMTBuilder.hpp"
-#include "Packet/constants.hpp"
-#include "Poller/Poller.hpp"
-#include "Poller/PipePoller.hpp"
+#include "Format/MGMT/MGMTFormat.hpp"
+#include "Format/Flatbuffers/FlatbuffersFormat.hpp"
+#include "Transports/MGMT/MGMTSocket.hpp"
+#include "Transports/StdIO/StdIOSocket.hpp"
+#include "Builder/PacketBuilder.hpp"
 #include "Packet/Commands/GetMGMTInfo/GetMGMTInfo.hpp"
-#include "Packet/Commands/Scan/StartScan.hpp"
-#include "Packet/Commands/Scan/StopScan.hpp"
-#include "Packet/Events/DeviceFound/DeviceFound.hpp"
-#include "Packet/Events/Discovering/Discovering.hpp"
+//#include "Packet/Commands/Scan/StartScan.hpp"
+//#include "Packet/Commands/Scan/StopScan.hpp"
+//#include "Packet/Events/DeviceFound/DeviceFound.hpp"
+//#include "Packet/Events/Discovering/Discovering.hpp"
+#include "SocketContainer/SocketContainer.hpp"
+#include "Format/Ascii/AsciiFormat.hpp"
 
 using namespace std;
 using namespace uvw;
@@ -27,12 +25,17 @@ void cleanly_stop_loop(Loop& loop) {
   loop.stop();
 }
 
+// TUESDAY 1st May =>
+// TODO: reimplement Scan, and Events + tests
+// TODO: move MGMT constants in MGMTFormat ? (event_code, header_length, controller_id null...)
+// TODO: make packet loggable
+// TODO: remove unused includes
+// TODO: clean code
 // TODO: handle errors properly (if exception OR status in complete event OR status in status event) -> forward to bable socket
-// TODO: completely refactor Serializer/Deserializer (use fixed length for MGMT/HCI) + make it simpler/cleaner
+
+// TODO: (post flatbuffers issue)
 
 // TODO: idea -> put all registration into a bootstap.cpp file with a bootstrap() function
-// TODO: idea -> run poller in socket ?
-
 int main() {
   ENABLE_LOGGING(DEBUG);
 
@@ -50,84 +53,69 @@ int main() {
   });
   stop_signal->start(SIGINT);
 
+  // Formats
+  shared_ptr<MGMTFormat> mgmt_format = make_shared<MGMTFormat>();
+  shared_ptr<FlatbuffersFormat> fb_format = make_shared<FlatbuffersFormat>();
+  shared_ptr<AsciiFormat> ascii_format = make_shared<AsciiFormat>();
+
+  // Builder
+  PacketBuilder mgmt_builder(mgmt_format, fb_format);
+  mgmt_builder
+      .register_command<Packet::Commands::GetMGMTInfo>();
+//      .register_command<Packet::Commands::StartScan>()
+//      .register_command<Packet::Commands::StopScan>()
+//      .register_event<Packet::Events::DeviceFound>()
+//      .register_event<Packet::Events::Discovering>();
+
+  PacketBuilder fb_builder(fb_format);
+  fb_builder
+    .set_output_format(mgmt_format)
+      .register_command<Packet::Commands::GetMGMTInfo>();
+//      .register_command<Packet::Commands::StartScan>()
+//      .register_command<Packet::Commands::StopScan>();
+
+  PacketBuilder ascii_builder(ascii_format);
+  ascii_builder
+      .set_output_format(mgmt_format)
+      .register_command<Packet::Commands::GetMGMTInfo>();
+
   // Sockets
-  shared_ptr<StdIOSocket> bable_socket = make_shared<StdIOSocket>(Packet::Type::FLATBUFFERS); // TODO: type bable_socket always equal to default mgmtbuilder param
-  shared_ptr<MGMTSocket> mgmt_socket = make_shared<MGMTSocket>();
+  shared_ptr<StdIOSocket> stdio_socket = make_shared<StdIOSocket>(fb_format);
+  shared_ptr<MGMTSocket> mgmt_socket = make_shared<MGMTSocket>(mgmt_format);
 
   // Create socket manager
-  SocketManager socket_manager;
-  socket_manager
+  SocketContainer socket_container;
+  socket_container
       .register_socket(mgmt_socket)
-      .register_socket(bable_socket);
+      .register_socket(stdio_socket)
+      .register_socket(stdio_socket);
 
-  // Builders
-  AsciiBuilder ascii_builder;
-  FlatbuffersBuilder fb_builder;
-  MGMTBuilder mgmt_builder(Packet::Type::FLATBUFFERS);
+  // Poll sockets
+  mgmt_socket->poll(loop, [&mgmt_builder, &socket_container](const std::vector<uint8_t>& received_data) {
+    try {
+      std::unique_ptr<Packet::AbstractPacket> packet = mgmt_builder.build(received_data);
+      LOG.debug("Packet built", "MGMT poller");
+      packet->translate();
+      LOG.debug("Packet translated", "MGMT poller");
+      socket_container.send(std::move(packet));
 
-  // Register packets into builder
-  ascii_builder
-      .register_command<Packet::Commands::GetMGMTInfo>(Packet::Type::MGMT)
-      .register_command<Packet::Commands::StartScan>(Packet::Type::MGMT)
-      .register_command<Packet::Commands::StopScan>(Packet::Type::MGMT);
+    } catch (const exception& err) {
+      LOG.error(err.what(), "MGMT poller");
+    }
+  });
 
-  fb_builder
-      .register_command<Packet::Commands::GetMGMTInfo>(Packet::Type::MGMT)
-      .register_command<Packet::Commands::StartScan>(Packet::Type::MGMT)
-      .register_command<Packet::Commands::StopScan>(Packet::Type::MGMT);
+  stdio_socket->poll(loop, [&fb_builder, &socket_container](const std::vector<uint8_t>& received_data) {
+    try {
+      std::unique_ptr<Packet::AbstractPacket> packet = fb_builder.build(received_data);
+      LOG.debug("Packet built", "BABLE poller");
+      packet->translate();
+      LOG.debug("Packet translated", "BABLE poller");
+      socket_container.send(std::move(packet));
 
-  mgmt_builder
-      .register_command<Packet::Commands::GetMGMTInfo>()
-      .register_command<Packet::Commands::StartScan>()
-      .register_command<Packet::Commands::StopScan>()
-      .register_event<Packet::Events::DeviceFound>()
-      .register_event<Packet::Events::Discovering>();
-
-  // Create pollers
-  Poller mgmt_poller(loop, mgmt_socket->get_socket());
-  mgmt_poller
-      .on_readable([&mgmt_socket, &mgmt_builder, &socket_manager]() {
-        try {
-          LOG.debug("Readable data on MGMT socket...", "MGMT poller");
-          Deserializer deser = mgmt_socket->receive();
-          LOG.debug(deser, "MGMT poller");
-          std::unique_ptr<Packet::AbstractPacket> packet = mgmt_builder.build(deser);
-          LOG.debug("Packet built", "MGMT poller");
-          packet->translate();
-          LOG.debug("Packet translated", "MGMT poller");
-          socket_manager.send(std::move(packet));
-
-        } catch (const exception& err) {
-          LOG.error(err.what(), "MGMT poller");
-        }
-      })
-      .on_writable([&mgmt_socket]() {
-        mgmt_socket->set_writable(true);
-      })
-      .start();
-
-  PipePoller stdinput_poller(loop, STDIO_ID::in);
-  stdinput_poller
-      .on_data([&bable_socket, &fb_builder, &socket_manager](const char* data, size_t length) {
-        try {
-          LOG.debug("Readable data on BaBLE pipe...", "BABLE poller");
-          Deserializer deser;
-          if (!bable_socket->receive(deser, data, length)) {
-            return;
-          }
-          LOG.debug(deser, "BABLE poller");
-          std::unique_ptr<Packet::AbstractPacket> packet = fb_builder.build(deser);
-          LOG.debug("Packet built", "BABLE poller");
-          packet->translate();
-          LOG.debug("Packet translated", "BABLE poller");
-          socket_manager.send(std::move(packet));
-
-        } catch (const exception& err) {
-          LOG.error(err.what(), "BABLE poller");
-          bable_socket->send(err.what());
-        }
-      })
-      .start();
+    } catch (const exception& err) {
+      LOG.error(err.what(), "BABLE poller");
+    }
+  });
 
   // Start the loop
   LOG.info("Start loop...");

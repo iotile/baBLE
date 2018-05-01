@@ -14,6 +14,10 @@ public:
     return Packet::Type::FLATBUFFERS;
   };
 
+  const size_t header_length() const override {
+    return 0;
+  };
+
   bool is_command(uint16_t type_code) override {
     return true;
   };
@@ -40,8 +44,12 @@ public:
     return 0;
   }
 
+  uint16_t extract_payload_length(const std::vector<uint8_t>& data) override {
+    throw std::runtime_error("Flatbuffers format can't extract payload length: this information is not included in the format.");
+  };
+
   template<class T>
-  std::vector<uint8_t> build_packet(flatbuffers::FlatBufferBuilder& builder, const flatbuffers::Offset<T>& payload, Schemas::Payload payload_type) const {
+  static std::vector<uint8_t> build_packet(flatbuffers::FlatBufferBuilder& builder, const flatbuffers::Offset<T>& payload, Schemas::Payload payload_type) {
     Schemas::PacketBuilder packet_builder(builder);
     packet_builder.add_payload_type(payload_type);
     packet_builder.add_payload(payload.Union());

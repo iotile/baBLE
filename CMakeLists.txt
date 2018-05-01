@@ -12,45 +12,20 @@ set(SOURCES_FILES
         src/Log/Log.cpp
         src/Log/Log.hpp
         src/Log/Loggable.hpp
-        src/Serializer/AbstractSerializer.cpp
-        src/Serializer/AbstractSerializer.hpp
-        src/Serializer/Serializer.cpp
-        src/Serializer/Serializer.hpp
-        src/Serializer/Deserializer.cpp
-        src/Serializer/Deserializer.hpp
-        src/Socket/AbstractSocket.hpp
-        src/Socket/SocketManager.hpp
-        src/Socket/MGMT/MGMTSocket.cpp
-        src/Socket/MGMT/MGMTSocket.hpp
-        src/Socket/HCI/HCISocket.cpp
-        src/Socket/HCI/HCISocket.hpp
-        src/Socket/StdIO/StdIOSocket.cpp
-        src/Socket/StdIO/StdIOSocket.hpp
         src/Packet/constants.hpp
         src/Packet/AbstractPacket.hpp
         src/Packet/Commands/GetMGMTInfo/GetMGMTInfo.cpp
         src/Packet/Commands/GetMGMTInfo/GetMGMTInfo.hpp
-        src/Packet/Commands/CommandPacket.hpp
-        src/Builder/AbstractBuilder.hpp
-        src/Builder/MGMT/MGMTBuilder.cpp
-        src/Builder/MGMT/MGMTBuilder.hpp
-        src/Builder/Ascii/AsciiBuilder.cpp
-        src/Builder/Ascii/AsciiBuilder.hpp
-        src/Poller/Poller.cpp
-        src/Poller/Poller.hpp
-        src/Poller/PipePoller.cpp
-        src/Poller/PipePoller.hpp
-        src/Packet/Commands/Scan/StartScan.cpp
-        src/Packet/Commands/Scan/StartScan.hpp
-        src/Packet/Events/EventPacket.hpp
-        src/Packet/Events/DeviceFound/DeviceFound.cpp
-        src/Packet/Events/DeviceFound/DeviceFound.hpp
-        src/Packet/Events/Discovering/Discovering.cpp
-        src/Packet/Events/Discovering/Discovering.hpp
-        src/Packet/Commands/Scan/StopScan.cpp
-        src/Packet/Commands/Scan/StopScan.hpp
-        src/Builder/Flatbuffers/FlatbuffersBuilder.cpp
-        src/Builder/Flatbuffers/FlatbuffersBuilder.hpp
+#        src/Packet/Commands/CommandPacket.hpp
+#        src/Packet/Commands/Scan/StartScan.cpp
+#        src/Packet/Commands/Scan/StartScan.hpp
+#        src/Packet/Events/EventPacket.hpp
+#        src/Packet/Events/DeviceFound/DeviceFound.cpp
+#        src/Packet/Events/DeviceFound/DeviceFound.hpp
+#        src/Packet/Events/Discovering/Discovering.cpp
+#        src/Packet/Events/Discovering/Discovering.hpp
+#        src/Packet/Commands/Scan/StopScan.cpp
+#        src/Packet/Commands/Scan/StopScan.hpp
         src/Format/MGMT/MGMTFormat.cpp
         src/Format/MGMT/MGMTFormat.hpp
         src/Format/MGMT/MGMTFormatBuilder.cpp
@@ -67,14 +42,16 @@ set(SOURCES_FILES
         src/Format/Ascii/AsciiFormatExtractor.hpp
         src/Builder/PacketBuilder.cpp
         src/Builder/PacketBuilder.hpp
-        src/Router/Router.cpp
-        src/Router/Router.hpp
+        src/SocketContainer/SocketContainer.cpp
+        src/SocketContainer/SocketContainer.hpp
         src/Transports/AbstractSocket.hpp
         src/Transports/MGMT/MGMTSocket.cpp
         src/Transports/MGMT/MGMTSocket.hpp
         src/Transports/StdIO/StdIOSocket.cpp
         src/Transports/StdIO/StdIOSocket.hpp
-        src/Format/AbstractFormat.hpp src/Format/AbstractBuilder.hpp)
+        src/Format/AbstractFormat.hpp
+        src/Packet/Commands/CommandPacket.hpp
+        src/Packet/Events/EventPacket.hpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies
