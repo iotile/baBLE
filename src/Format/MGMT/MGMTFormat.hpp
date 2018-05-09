@@ -18,16 +18,12 @@ public:
   };
 
   bool is_command(uint16_t type_code) override {
-    return type_code == 0x0001;
+    return type_code == 0x0001 || type_code == 0x0002;
   };
 
   bool is_event(uint16_t type_code) override {
     return 0x0002 < type_code && type_code <= 0x0025;
   };
-
-  bool is_error(uint16_t type_code) {
-    return type_code == 0x0002;
-  }
 
   uint16_t extract_command_code(const std::vector<uint8_t>& data) override {
     return MGMTFormatExtractor::extract_command_code(data);

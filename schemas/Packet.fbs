@@ -3,6 +3,7 @@ include "./Commands/StartScan.fbs";
 include "./Commands/StopScan.fbs";
 include "./Events/DeviceFound.fbs";
 include "./Events/Discovering.fbs";
+include "./Errors/BaBLEError.fbs";
 
 namespace Schemas;
 
@@ -11,11 +12,29 @@ union Payload {
   StartScan,
   StopScan,
   DeviceFound,
-  Discovering
+  Discovering,
+  BaBLEError
+}
+
+enum StatusCode:uint8 {
+  Success = 0x00,
+  SocketError = 0x01,
+  NotFound = 0x02,
+  WrongFormat = 0x03,
+  InvalidCommand = 0x04,
+  Unknown = 0x05,
+  Rejected = 0x06,
+  Denied = 0x07,
+  Cancelled = 0x08,
+  NotPowered = 0x09,
+  Failed = 0x0A
 }
 
 table Packet {
   payload:Payload;
+  status:StatusCode = Success;
+  native_status:uint8 = 0x00;
+  native_class:string;
 }
 
 root_type Packet;

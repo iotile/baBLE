@@ -2,10 +2,8 @@
 #define BABLE_LINUX_FLATBUFFERSFORMATEXTRACTOR_HPP
 
 #include <cstdint>
-#include <flatbuffers/flatbuffers.h>
 #include <Packet_generated.h>
 #include <vector>
-#include "../../Log/Log.hpp"
 
 class FlatbuffersFormatExtractor {
 

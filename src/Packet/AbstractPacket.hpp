@@ -5,12 +5,9 @@
 #include <utility>
 #include <vector>
 #include "constants.hpp"
-#include "../Format/MGMT/constants.hpp"
-#include "../Format/Ascii/constants.hpp"
 #include "../Format/Ascii/AsciiFormat.hpp"
 #include "../Format/MGMT/MGMTFormat.hpp"
-#include "../Format/Flatbuffers/FlatbuffersFormatExtractor.hpp"
-#include "../Format/Flatbuffers/FlatbuffersFormatBuilder.hpp"
+#include "../Format/Flatbuffers/FlatbuffersFormat.hpp"
 
 namespace Packet {
 
@@ -19,11 +16,11 @@ namespace Packet {
   public:
     static const uint16_t command_code(Packet::Type type) {
       throw std::runtime_error("command_code(Packet::Type) not defined.");
-    }
+    };
 
     static const uint16_t event_code(Packet::Type type) {
       throw std::runtime_error("event_code(Packet::Type) not defined.");
-    }
+    };
 
     virtual std::vector<uint8_t> serialize() const {
       switch(m_current_type) {
@@ -74,16 +71,6 @@ namespace Packet {
       }
     };
 
-    virtual const Packet::Type current_type() const {
-      return m_current_type;
-    };
-
-    void translate() {
-      std::swap(m_current_type, m_translated_type);
-      after_translate();
-    };
-    virtual void after_translate() {};
-
     virtual std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const {
       throw std::runtime_error("serialize(MGMTFormatBuilder&) not defined.");
     };
@@ -103,6 +90,16 @@ namespace Packet {
     virtual void import(FlatbuffersFormatExtractor& extractor) {
       throw std::runtime_error("import(FlatbuffersFormatExtractor&) not defined.");
     };
+
+    virtual const Packet::Type current_type() const {
+      return m_current_type;
+    };
+
+    void translate() {
+      std::swap(m_current_type, m_translated_type);
+      after_translate();
+    };
+    virtual void after_translate() {};
 
     const std::string stringify() const override {
       AsciiFormatBuilder builder;

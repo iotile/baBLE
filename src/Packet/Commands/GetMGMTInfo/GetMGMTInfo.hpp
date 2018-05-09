@@ -18,9 +18,6 @@ namespace Packet::Commands {
 
         case Packet::Type::FLATBUFFERS:
           return static_cast<uint16_t>(Schemas::Payload::GetMGMTInfo);
-
-        default:
-          throw std::runtime_error("Current type has no known id (GetMGMTInfo).");
       }
     };
 
@@ -40,8 +37,11 @@ namespace Packet::Commands {
 
     void import(MGMTFormatExtractor& extractor) override {
       CommandPacket::import(extractor);
-      m_version = extractor.get_value<uint8_t>();
-      m_revision = extractor.get_value<uint16_t>();
+
+      if (m_native_status == 0) {
+        m_version = extractor.get_value<uint8_t>();
+        m_revision = extractor.get_value<uint16_t>();
+      }
     };
 
     std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override {
@@ -58,7 +58,7 @@ namespace Packet::Commands {
       CommandPacket::serialize(builder);
       auto payload = Schemas::CreateGetMGMTInfo(builder, m_version, m_revision);
 
-      return builder.build(payload, Schemas::Payload::GetMGMTInfo);
+      return builder.build(payload, Schemas::Payload::GetMGMTInfo, m_native_class, m_status, m_native_status);
     }
 
     std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override {

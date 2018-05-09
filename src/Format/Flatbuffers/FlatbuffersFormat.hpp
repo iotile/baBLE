@@ -3,9 +3,11 @@
 
 #include <iterator>
 #include <vector>
-#include <flatbuffers/flatbuffers.h>
 #include <Packet_generated.h>
 #include "../AbstractFormat.hpp"
+#include "FlatbuffersFormatBuilder.hpp"
+#include "FlatbuffersFormatExtractor.hpp"
+#include "../../Exceptions/WrongFormat/WrongFormatException.hpp"
 
 class FlatbuffersFormat : public AbstractFormat {
 
@@ -31,7 +33,7 @@ public:
     bool packet_valid = Schemas::VerifyPacketBuffer(packet_verifier);
 
     if (!packet_valid) {
-      throw std::invalid_argument("Flatbuffers packet is not valid. Can't extract command code from it.");
+      throw Exceptions::WrongFormatException("Flatbuffers packet is not valid. Can't extract command code from it.");
     }
 
     auto fb_packet = Schemas::GetPacket(data.data());

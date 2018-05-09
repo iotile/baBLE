@@ -24,7 +24,11 @@ namespace Packet::Events {
       return {};
     };
 
-    void import(MGMTFormatExtractor& extractor) override {};
+    void import(MGMTFormatExtractor& extractor) override {
+      m_native_class = "MGMT";
+    };
+
+    std::string m_native_class;
 
   };
 

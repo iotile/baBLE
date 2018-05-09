@@ -6,11 +6,11 @@ MGMTSocket::MGMTSocket(std::shared_ptr<AbstractFormat> format)
 
   m_socket = socket(PF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC | SOCK_NONBLOCK, BTPROTO_HCI);
   if (m_socket < 0) {
-    throw std::runtime_error("Error while creating the MGMT socket.");
+    throw Exceptions::SocketException("Error while creating the MGMT socket.");
   }
 
   if(!bind_socket()) {
-    throw std::runtime_error("Error while binding the MGMT socket.");
+    throw Exceptions::SocketException("Error while binding the MGMT socket.");
   }
 
   set_writable(true);
@@ -19,7 +19,7 @@ MGMTSocket::MGMTSocket(std::shared_ptr<AbstractFormat> format)
 bool MGMTSocket::bind_socket() {
   struct sockaddr_hci addr{
       AF_BLUETOOTH,
-      HCI_DEV_NONE,
+      Format::MGMT::non_controller_id,
       HCI_CHANNEL_CONTROL
   };
 
@@ -27,8 +27,6 @@ bool MGMTSocket::bind_socket() {
 }
 
 bool MGMTSocket::send(const std::vector<uint8_t>& data) {
-  LOG.info("Sending data...", "MGMT socket");
-
   if (!m_writable) {
     LOG.debug("Already sending a message. Queuing...");
     m_send_queue.push(data);
@@ -36,9 +34,10 @@ bool MGMTSocket::send(const std::vector<uint8_t>& data) {
 
   } else {
     set_writable(false);
+    LOG.info("Sending data...", "MGMT socket");
     if (write(m_socket, data.data(), data.size()) < 0) {
       LOG.error("Error while sending a message to MGMT socket: " + std::string(strerror(errno)), "MGMTSocket");
-      throw std::runtime_error("Error occured while sending the packet through MGMT socket.");
+      throw Exceptions::SocketException("Error occured while sending the packet through MGMT socket.");
     }
   }
 
@@ -54,7 +53,7 @@ std::vector<uint8_t> MGMTSocket::receive() {
 
   if (length_read < m_header_length) {
     LOG.error("Error while reading the header: " + std::string(strerror(errno)), "MGMTSocket");
-    throw std::runtime_error("Can't read header on the MGMT socket.");
+    throw Exceptions::SocketException("Can't read header on the MGMT socket.");
   }
 
   size_t payload_length = m_format->extract_payload_length(header);
@@ -64,7 +63,7 @@ std::vector<uint8_t> MGMTSocket::receive() {
 
   if (length_read < m_header_length + payload_length) {
     LOG.error("Error while reading the payload: " + std::string(strerror(errno)), "MGMTSocket");
-    throw std::runtime_error("Can't read payload on the MGMT socket.");
+    throw Exceptions::SocketException("Can't read payload on the MGMT socket.");
   }
 
   return result;
@@ -93,7 +92,7 @@ void MGMTSocket::set_writable(bool is_writable) {
   m_writable = is_writable;
 
   if (m_writable) {
-    while (!m_send_queue.empty()) {
+    if (!m_send_queue.empty()) {
       send(m_send_queue.front());
       m_send_queue.pop();
     }

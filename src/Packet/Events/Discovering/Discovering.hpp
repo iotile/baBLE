@@ -18,9 +18,6 @@ namespace Packet::Events {
 
         case Packet::Type::FLATBUFFERS:
           return static_cast<uint16_t>(Schemas::Payload::Discovering);
-
-        default:
-          throw std::runtime_error("Current type has no known id (Discovering).");
       }
     };
 
@@ -50,7 +47,7 @@ namespace Packet::Events {
       EventPacket::serialize(builder);
       auto payload = Schemas::CreateDiscovering(builder, m_controller_id, m_address_type, m_discovering);
 
-      return builder.build(payload, Schemas::Payload::Discovering);
+      return builder.build(payload, Schemas::Payload::Discovering, m_native_class);
     }
 
   private:

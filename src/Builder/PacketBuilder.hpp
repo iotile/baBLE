@@ -4,9 +4,11 @@
 #include <functional>
 #include <memory>
 #include <iostream>
+#include <unordered_map>
 #include "../Packet/constants.hpp"
 #include "../Packet/AbstractPacket.hpp"
 #include "../Format/AbstractFormat.hpp"
+#include "../Exceptions/NotFound/NotFoundException.hpp"
 
 class PacketBuilder {
 
@@ -83,7 +85,7 @@ public:
     } else if (m_building_format->is_event(type_code)) {
       return build_event(type_code, raw_data);
     } else {
-      throw std::invalid_argument("Given data to build a packet has no known type: " + std::to_string(type_code));
+      throw Exceptions::NotFoundException("Given data to build a packet has no known type: " + std::to_string(type_code));
     }
   };
 
@@ -92,19 +94,19 @@ public:
 
     auto it = m_commands.find(command_code);
     if (it == m_commands.end()) {
-      throw std::invalid_argument("Command code not found in PacketBuilder registry: " + std::to_string(command_code));
+      throw Exceptions::NotFoundException("Command code not found in PacketBuilder registry: " + std::to_string(command_code));
     }
 
     PacketConstructor fn = it->second;
     std::unique_ptr<Packet::AbstractPacket> packet = fn();
     packet->import(raw_data);
     return packet;
-  }
+  };
 
   std::unique_ptr<Packet::AbstractPacket> build_event(uint16_t event_code, const std::vector<uint8_t>& raw_data) {
     auto it = m_events.find(event_code);
     if (it == m_events.end()) {
-      throw std::invalid_argument("Event code not found in PacketBuilder registry: " + std::to_string(event_code));
+      throw Exceptions::NotFoundException("Event code not found in PacketBuilder registry: " + std::to_string(event_code));
     }
 
     // Get command from command_code
@@ -112,14 +114,14 @@ public:
     std::unique_ptr<Packet::AbstractPacket> packet = fn();
     packet->import(raw_data);
     return packet;
-  }
+  };
 
 private:
   std::shared_ptr<AbstractFormat> m_building_format;
   std::shared_ptr<AbstractFormat> m_output_format;
 
-  std::unordered_map<uint16_t, PacketConstructor> m_commands;
-  std::unordered_map<uint16_t, PacketConstructor> m_events;
+  std::unordered_map<uint16_t, PacketConstructor> m_commands{};
+  std::unordered_map<uint16_t, PacketConstructor> m_events{};
 
 };
 

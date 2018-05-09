@@ -1,8 +1,11 @@
 #ifndef BABLE_LINUX_ABSTRACTFORMAT_HPP
 #define BABLE_LINUX_ABSTRACTFORMAT_HPP
 
+#include <cstdint>
+#include <memory>
 #include <vector>
 #include "../Packet/constants.hpp"
+#include "../Exceptions/AbstractException.hpp"
 
 class AbstractFormat {
 

@@ -18,6 +18,8 @@ struct DeviceFound;
 
 struct Discovering;
 
+struct BaBLEError;
+
 struct Packet;
 
 enum class Payload : uint8_t {
@@ -27,18 +29,20 @@ enum class Payload : uint8_t {
   StopScan = 3,
   DeviceFound = 4,
   Discovering = 5,
+  BaBLEError = 6,
   MIN = NONE,
-  MAX = Discovering
+  MAX = BaBLEError
 };
 
-inline const Payload (&EnumValuesPayload())[6] {
+inline const Payload (&EnumValuesPayload())[7] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::GetMGMTInfo,
     Payload::StartScan,
     Payload::StopScan,
     Payload::DeviceFound,
-    Payload::Discovering
+    Payload::Discovering,
+    Payload::BaBLEError
   };
   return values;
 }
@@ -51,6 +55,7 @@ inline const char * const *EnumNamesPayload() {
     "StopScan",
     "DeviceFound",
     "Discovering",
+    "BaBLEError",
     nullptr
   };
   return names;
@@ -85,8 +90,68 @@ template<> struct PayloadTraits<Discovering> {
   static const Payload enum_value = Payload::Discovering;
 };
 
+template<> struct PayloadTraits<BaBLEError> {
+  static const Payload enum_value = Payload::BaBLEError;
+};
+
 bool VerifyPayload(flatbuffers::Verifier &verifier, const void *obj, Payload type);
 bool VerifyPayloadVector(flatbuffers::Verifier &verifier, const flatbuffers::Vector<flatbuffers::Offset<void>> *values, const flatbuffers::Vector<uint8_t> *types);
+
+enum class StatusCode : uint8_t {
+  Success = 0,
+  SocketError = 1,
+  NotFound = 2,
+  WrongFormat = 3,
+  InvalidCommand = 4,
+  Unknown = 5,
+  Rejected = 6,
+  Denied = 7,
+  Cancelled = 8,
+  NotPowered = 9,
+  Failed = 10,
+  MIN = Success,
+  MAX = Failed
+};
+
+inline const StatusCode (&EnumValuesStatusCode())[11] {
+  static const StatusCode values[] = {
+    StatusCode::Success,
+    StatusCode::SocketError,
+    StatusCode::NotFound,
+    StatusCode::WrongFormat,
+    StatusCode::InvalidCommand,
+    StatusCode::Unknown,
+    StatusCode::Rejected,
+    StatusCode::Denied,
+    StatusCode::Cancelled,
+    StatusCode::NotPowered,
+    StatusCode::Failed
+  };
+  return values;
+}
+
+inline const char * const *EnumNamesStatusCode() {
+  static const char * const names[] = {
+    "Success",
+    "SocketError",
+    "NotFound",
+    "WrongFormat",
+    "InvalidCommand",
+    "Unknown",
+    "Rejected",
+    "Denied",
+    "Cancelled",
+    "NotPowered",
+    "Failed",
+    nullptr
+  };
+  return names;
+}
+
+inline const char *EnumNameStatusCode(StatusCode e) {
+  const size_t index = static_cast<int>(e);
+  return EnumNamesStatusCode()[index];
+}
 
 struct GetMGMTInfo FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
@@ -434,10 +499,62 @@ inline flatbuffers::Offset<Discovering> CreateDiscovering(
   return builder_.Finish();
 }
 
+struct BaBLEError FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_MESSAGE = 4
+  };
+  const flatbuffers::String *message() const {
+    return GetPointer<const flatbuffers::String *>(VT_MESSAGE);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_MESSAGE) &&
+           verifier.Verify(message()) &&
+           verifier.EndTable();
+  }
+};
+
+struct BaBLEErrorBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_message(flatbuffers::Offset<flatbuffers::String> message) {
+    fbb_.AddOffset(BaBLEError::VT_MESSAGE, message);
+  }
+  explicit BaBLEErrorBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  BaBLEErrorBuilder &operator=(const BaBLEErrorBuilder &);
+  flatbuffers::Offset<BaBLEError> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<BaBLEError>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<BaBLEError> CreateBaBLEError(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<flatbuffers::String> message = 0) {
+  BaBLEErrorBuilder builder_(_fbb);
+  builder_.add_message(message);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<BaBLEError> CreateBaBLEErrorDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    const char *message = nullptr) {
+  return Schemas::CreateBaBLEError(
+      _fbb,
+      message ? _fbb.CreateString(message) : 0);
+}
+
 struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_PAYLOAD_TYPE = 4,
-    VT_PAYLOAD = 6
+    VT_PAYLOAD = 6,
+    VT_STATUS = 8,
+    VT_NATIVE_STATUS = 10,
+    VT_NATIVE_CLASS = 12
   };
   Payload payload_type() const {
     return static_cast<Payload>(GetField<uint8_t>(VT_PAYLOAD_TYPE, 0));
@@ -461,11 +578,27 @@ struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const Discovering *payload_as_Discovering() const {
     return payload_type() == Payload::Discovering ? static_cast<const Discovering *>(payload()) : nullptr;
   }
+  const BaBLEError *payload_as_BaBLEError() const {
+    return payload_type() == Payload::BaBLEError ? static_cast<const BaBLEError *>(payload()) : nullptr;
+  }
+  StatusCode status() const {
+    return static_cast<StatusCode>(GetField<uint8_t>(VT_STATUS, 0));
+  }
+  uint8_t native_status() const {
+    return GetField<uint8_t>(VT_NATIVE_STATUS, 0);
+  }
+  const flatbuffers::String *native_class() const {
+    return GetPointer<const flatbuffers::String *>(VT_NATIVE_CLASS);
+  }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint8_t>(verifier, VT_PAYLOAD_TYPE) &&
            VerifyOffset(verifier, VT_PAYLOAD) &&
            VerifyPayload(verifier, payload(), payload_type()) &&
+           VerifyField<uint8_t>(verifier, VT_STATUS) &&
+           VerifyField<uint8_t>(verifier, VT_NATIVE_STATUS) &&
+           VerifyOffset(verifier, VT_NATIVE_CLASS) &&
+           verifier.Verify(native_class()) &&
            verifier.EndTable();
   }
 };
@@ -490,6 +623,10 @@ template<> inline const Discovering *Packet::payload_as<Discovering>() const {
   return payload_as_Discovering();
 }
 
+template<> inline const BaBLEError *Packet::payload_as<BaBLEError>() const {
+  return payload_as_BaBLEError();
+}
+
 struct PacketBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
@@ -498,6 +635,15 @@ struct PacketBuilder {
   }
   void add_payload(flatbuffers::Offset<void> payload) {
     fbb_.AddOffset(Packet::VT_PAYLOAD, payload);
+  }
+  void add_status(StatusCode status) {
+    fbb_.AddElement<uint8_t>(Packet::VT_STATUS, static_cast<uint8_t>(status), 0);
+  }
+  void add_native_status(uint8_t native_status) {
+    fbb_.AddElement<uint8_t>(Packet::VT_NATIVE_STATUS, native_status, 0);
+  }
+  void add_native_class(flatbuffers::Offset<flatbuffers::String> native_class) {
+    fbb_.AddOffset(Packet::VT_NATIVE_CLASS, native_class);
   }
   explicit PacketBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -514,11 +660,33 @@ struct PacketBuilder {
 inline flatbuffers::Offset<Packet> CreatePacket(
     flatbuffers::FlatBufferBuilder &_fbb,
     Payload payload_type = Payload::NONE,
-    flatbuffers::Offset<void> payload = 0) {
+    flatbuffers::Offset<void> payload = 0,
+    StatusCode status = StatusCode::Success,
+    uint8_t native_status = 0,
+    flatbuffers::Offset<flatbuffers::String> native_class = 0) {
   PacketBuilder builder_(_fbb);
+  builder_.add_native_class(native_class);
   builder_.add_payload(payload);
+  builder_.add_native_status(native_status);
+  builder_.add_status(status);
   builder_.add_payload_type(payload_type);
   return builder_.Finish();
+}
+
+inline flatbuffers::Offset<Packet> CreatePacketDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    Payload payload_type = Payload::NONE,
+    flatbuffers::Offset<void> payload = 0,
+    StatusCode status = StatusCode::Success,
+    uint8_t native_status = 0,
+    const char *native_class = nullptr) {
+  return Schemas::CreatePacket(
+      _fbb,
+      payload_type,
+      payload,
+      status,
+      native_status,
+      native_class ? _fbb.CreateString(native_class) : 0);
 }
 
 inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *obj, Payload type) {
@@ -544,6 +712,10 @@ inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *obj, Payl
     }
     case Payload::Discovering: {
       auto ptr = reinterpret_cast<const Discovering *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::BaBLEError: {
+      auto ptr = reinterpret_cast<const BaBLEError *>(obj);
       return verifier.VerifyTable(ptr);
     }
     default: return false;

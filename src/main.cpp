@@ -1,18 +1,16 @@
 #include <memory>
 #include <uvw.hpp>
 #include "Log/Log.hpp"
+#include "Format/Ascii/AsciiFormat.hpp"
 #include "Format/MGMT/MGMTFormat.hpp"
 #include "Format/Flatbuffers/FlatbuffersFormat.hpp"
 #include "Transport/Socket/MGMT/MGMTSocket.hpp"
 #include "Transport/Socket/StdIO/StdIOSocket.hpp"
-#include "Builder/PacketBuilder.hpp"
-#include "Packet/Commands/GetMGMTInfo/GetMGMTInfo.hpp"
-#include "Packet/Commands/Scan/StartScan.hpp"
-#include "Packet/Commands/Scan/StopScan.hpp"
-#include "Packet/Events/DeviceFound/DeviceFound.hpp"
-#include "Packet/Events/Discovering/Discovering.hpp"
 #include "Transport/SocketContainer/SocketContainer.hpp"
-#include "Format/Ascii/AsciiFormat.hpp"
+#include "Builder/PacketBuilder.hpp"
+#include "Exceptions/AbstractException.hpp"
+#include "Packet/BaBLEError/BaBLEErrorPacket.hpp"
+#include "bootstrap.hpp"
 
 using namespace std;
 using namespace uvw;
@@ -23,14 +21,9 @@ void cleanly_stop_loop(Loop& loop) {
     handle.close();
   });
   loop.stop();
+  LOG.debug("Handles stopped.");
 }
 
-// TUESDAY 1st May =>
-// TODO: remove unused includes
-// TODO: clean code
-// TODO: handle errors properly (if exception OR status in complete event OR status in status event) -> forward to bable socket
-
-// TODO: idea -> put all registration into a bootstap.cpp file with a bootstrap() function
 int main() {
   ENABLE_LOGGING(DEBUG);
 
@@ -65,45 +58,45 @@ int main() {
 
   // Builder
   PacketBuilder mgmt_builder(mgmt_format, stdio_socket->format());
-  mgmt_builder
-      .register_command<Packet::Commands::GetMGMTInfo>()
-      .register_command<Packet::Commands::StartScan>()
-      .register_command<Packet::Commands::StopScan>()
-      .register_event<Packet::Events::DeviceFound>()
-      .register_event<Packet::Events::Discovering>();
+  Bootstrap::register_mgmt_packets(mgmt_builder);
 
   PacketBuilder stdio_builder(stdio_socket->format());
-  stdio_builder
-    .set_output_format(mgmt_socket->format())
-      .register_command<Packet::Commands::GetMGMTInfo>()
-      .register_command<Packet::Commands::StartScan>()
-      .register_command<Packet::Commands::StopScan>();
+  Bootstrap::register_stdio_packets(stdio_builder, mgmt_socket->format());
 
   // Poll sockets
-  mgmt_socket->poll(loop, [&mgmt_builder, &socket_container](const std::vector<uint8_t>& received_data) {
+  mgmt_socket->poll(loop, [&mgmt_builder, &socket_container, &stdio_socket](const std::vector<uint8_t>& received_data) {
     try {
       std::unique_ptr<Packet::AbstractPacket> packet = mgmt_builder.build(received_data);
       LOG.debug("Packet built", "MGMT poller");
-      LOG.debug(*packet, "MGMT poller");
+
       packet->translate();
       LOG.debug("Packet translated", "MGMT poller");
+
       socket_container.send(std::move(packet));
 
-    } catch (const exception& err) {
-      LOG.error(err.what(), "MGMT poller");
+    } catch (const Exceptions::AbstractException& err) {
+      LOG.error(err.stringify(), "MGMT poller");
+      std::unique_ptr<Packet::Errors::BaBLEErrorPacket> error_packet = make_unique<Packet::Errors::BaBLEErrorPacket>(stdio_socket->format()->packet_type());
+      error_packet->import(err);
+      socket_container.send(std::move(error_packet));
     }
   });
 
-  stdio_socket->poll(loop, [&stdio_builder, &socket_container](const std::vector<uint8_t>& received_data) {
+  stdio_socket->poll(loop, [&stdio_builder, &socket_container, &stdio_socket](const std::vector<uint8_t>& received_data) {
     try {
       std::unique_ptr<Packet::AbstractPacket> packet = stdio_builder.build(received_data);
       LOG.debug("Packet built", "BABLE poller");
+
       packet->translate();
       LOG.debug("Packet translated", "BABLE poller");
+
       socket_container.send(std::move(packet));
 
-    } catch (const exception& err) {
-      LOG.error(err.what(), "BABLE poller");
+    } catch (const Exceptions::AbstractException& err) {
+      LOG.error(err.stringify(), "BABLE poller");
+      std::unique_ptr<Packet::Errors::BaBLEErrorPacket> error_packet = make_unique<Packet::Errors::BaBLEErrorPacket>(stdio_socket->format()->packet_type());
+      error_packet->import(err);
+      socket_container.send(std::move(error_packet));
     }
   });
 

@@ -2,6 +2,7 @@
 #define BABLE_LINUX_COMMANDS_STARTSCAN_HPP
 
 #include "../CommandPacket.hpp"
+#include "../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 
 namespace Packet::Commands {
 
@@ -18,9 +19,6 @@ namespace Packet::Commands {
 
         case Packet::Type::FLATBUFFERS:
           return static_cast<uint16_t>(Schemas::Payload::StartScan);
-
-        default:
-          throw std::runtime_error("Current type has no known id (StartScan).");
       }
     };
 
@@ -37,7 +35,7 @@ namespace Packet::Commands {
         m_address_type = static_cast<uint8_t>(stoi(extractor.get()));
 
       } catch (const std::runtime_error& err) {
-        throw std::runtime_error("Missing arguments for 'StartScan' packet. Usage: <command_code>,<controller_id>,<address_type>");
+        throw Exceptions::InvalidCommandException("Missing arguments for 'StartScan' packet. Usage: <uuid>,<command_code>,<controller_id>,<address_type>");
       }
     };
 
@@ -51,7 +49,10 @@ namespace Packet::Commands {
 
     void import(MGMTFormatExtractor& extractor) override {
       CommandPacket::import(extractor);
-      m_address_type = extractor.get_value<uint8_t>();
+
+      if (m_native_status == 0){
+        m_address_type = extractor.get_value<uint8_t>();
+      }
     };
 
     std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override {
@@ -67,7 +68,7 @@ namespace Packet::Commands {
       CommandPacket::serialize(builder);
       auto payload = Schemas::CreateStartScan(builder, m_controller_id, m_address_type);
 
-      return builder.build(payload, Schemas::Payload::StartScan);
+      return builder.build(payload, Schemas::Payload::StartScan, m_native_class, m_status, m_native_status);
     }
 
     std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override {

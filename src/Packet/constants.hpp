@@ -1,9 +1,9 @@
-#ifndef BABLE_LINUX_MGMT_CODES_HPP
-#define BABLE_LINUX_MGMT_CODES_HPP
+#ifndef BABLE_LINUX_PACKET_CONSTANTS_HPP
+#define BABLE_LINUX_PACKET_CONSTANTS_HPP
 
 namespace Packet {
 
-  enum Type {
+  enum class Type {
     MGMT,
     ASCII,
     FLATBUFFERS
@@ -11,4 +11,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_MGMT_CODES_HPP
+#endif //BABLE_LINUX_PACKET_CONSTANTS_HPP

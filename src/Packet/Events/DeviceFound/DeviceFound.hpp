@@ -18,9 +18,6 @@ namespace Packet::Events {
 
         case Packet::Type::FLATBUFFERS:
           return static_cast<uint16_t>(Schemas::Payload::DeviceFound);
-
-        default:
-          throw std::runtime_error("Current type has no known id (DeviceFound).");
       }
     };
 
@@ -47,7 +44,6 @@ namespace Packet::Events {
 
         } catch (std::invalid_argument& err) {
           LOG.error("Can't parse EIR", "DeviceFound");
-          LOG.debug(m_eir_data, "DeviceFound");
         }
       }
     };
@@ -92,7 +88,7 @@ namespace Packet::Events {
           device_name
       );
 
-      return builder.build(payload, Schemas::Payload::DeviceFound);
+      return builder.build(payload, Schemas::Payload::DeviceFound, m_native_class);
     }
 
   private:

@@ -2,6 +2,7 @@
 #define BABLE_LINUX_MGMTSOCKET_HPP
 
 #include <cerrno>
+#include <cstring>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <utility>
@@ -11,10 +12,10 @@
 
 #include "../../AbstractSocket.hpp"
 #include "../../../Log/Log.hpp"
-#include "../../../Packet/constants.hpp"
+#include "../../../Format/MGMT/constants.hpp"
+#include "../../../Exceptions/Socket/SocketException.hpp"
 
 #define BTPROTO_HCI   1
-#define HCI_DEV_NONE  0xffff
 #define HCI_CHANNEL_CONTROL 3
 
 struct sockaddr_hci {

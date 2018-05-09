@@ -26,7 +26,10 @@ set(SOURCES_FILES
         src/Packet/Events/DeviceFound/DeviceFound.hpp
         src/Packet/Events/Discovering/Discovering.cpp
         src/Packet/Events/Discovering/Discovering.hpp
+        src/Packet/BaBLEError/BaBLEErrorPacket.cpp
+        src/Packet/BaBLEError/BaBLEErrorPacket.hpp
         src/Format/AbstractFormat.hpp
+        src/Format/MGMT/constants.hpp
         src/Format/MGMT/MGMTFormat.cpp
         src/Format/MGMT/MGMTFormat.hpp
         src/Format/MGMT/MGMTFormatBuilder.cpp
@@ -39,6 +42,7 @@ set(SOURCES_FILES
         src/Format/Flatbuffers/FlatbuffersFormatBuilder.hpp
         src/Format/Flatbuffers/FlatbuffersFormatExtractor.cpp
         src/Format/Flatbuffers/FlatbuffersFormatExtractor.hpp
+        src/Format/Ascii/constants.hpp
         src/Format/Ascii/AsciiFormat.cpp
         src/Format/Ascii/AsciiFormat.hpp
         src/Format/Ascii/AsciiFormatBuilder.cpp
@@ -54,8 +58,17 @@ set(SOURCES_FILES
         src/Transport/Socket/MGMT/MGMTSocket.hpp
         src/Transport/Socket/StdIO/StdIOSocket.cpp
         src/Transport/Socket/StdIO/StdIOSocket.hpp
-        src/Format/MGMT/constants.hpp
-        src/Format/Ascii/constants.hpp)
+        src/Exceptions/constants.hpp
+        src/Exceptions/AbstractException.hpp
+        src/Exceptions/NotFound/NotFoundException.cpp
+        src/Exceptions/NotFound/NotFoundException.hpp
+        src/Exceptions/WrongFormat/WrongFormatException.cpp
+        src/Exceptions/WrongFormat/WrongFormatException.hpp
+        src/Exceptions/Socket/SocketException.cpp
+        src/Exceptions/Socket/SocketException.hpp
+        src/Exceptions/InvalidCommand/InvalidCommandException.cpp
+        src/Exceptions/InvalidCommand/InvalidCommandException.hpp
+        src/bootstrap.hpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies

@@ -2,12 +2,10 @@
 #define BABLE_LINUX_MGMT_CONSTANTS_HPP
 
 #include <cstdint>
-#include <string>
-#include <unordered_map>
 
 namespace Format::MGMT {
 
-  const size_t header_length = 6;
+  const std::size_t header_length = 6;
   const uint16_t non_controller_id = 0xFFFF;
 
   enum CommandCode {
@@ -43,30 +41,6 @@ namespace Format::MGMT {
     RFKilled= 0x12,
     AlreadyPaired= 0x13,
     PermissionDenied= 0x14
-  };
-
-  const std::unordered_map<uint8_t, std::string> StatusString = {
-      { StatusCode::Success, "Success" },
-      { StatusCode::UnknownCommand, "Unknown command" },
-      { StatusCode::NotConnected, "Not connected" },
-      { StatusCode::Failed, "Failed" },
-      { StatusCode::ConnectFailed, "Connect failed" },
-      { StatusCode::AuthenticationFailed, "Authentication failed" },
-      { StatusCode::NotPaired, "Not paired" },
-      { StatusCode::NoResources, "No resources" },
-      { StatusCode::Timeout, "Timeout" },
-      { StatusCode::AlreadyConnected, "Already connected" },
-      { StatusCode::Busy, "Busy" },
-      { StatusCode::Rejected, "Rejected" },
-      { StatusCode::NotSupported, "Not supported" },
-      { StatusCode::InvalidParameters, "Invalid parameters" },
-      { StatusCode::Disconnected, "Disconnected" },
-      { StatusCode::NotPowered, "Not powered" },
-      { StatusCode::Cancelled, "Cancelled" },
-      { StatusCode::InvalidIndex, "Invalid index" },
-      { StatusCode::RFKilled, "RF killed" },
-      { StatusCode::AlreadyPaired, "Already paired" },
-      { StatusCode::PermissionDenied, "Permission denied" },
   };
 
 }

@@ -1,11 +1,10 @@
 #ifndef BABLE_LINUX_ABSTRACTSOCKET_HPP
 #define BABLE_LINUX_ABSTRACTSOCKET_HPP
 
+#include <memory>
 #include <uvw.hpp>
+#include <vector>
 #include "../Format/AbstractFormat.hpp"
-#include "../Packet/AbstractPacket.hpp"
-#include "../Packet/constants.hpp"
-#include "../Log/Log.hpp"
 
 class AbstractSocket {
 

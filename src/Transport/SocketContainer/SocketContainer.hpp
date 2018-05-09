@@ -5,6 +5,8 @@
 #include <memory>
 #include <unordered_map>
 #include "../AbstractSocket.hpp"
+#include "../../Packet/AbstractPacket.hpp"
+#include "../../Exceptions/NotFound/NotFoundException.hpp"
 
 class SocketContainer {
 
@@ -16,17 +18,17 @@ public:
     return *this;
   }
 
-  void send(std::unique_ptr<Packet::AbstractPacket> packet) {
+  bool send(std::unique_ptr<Packet::AbstractPacket> packet) {
     Packet::Type type = packet->current_type();
 
     auto it = m_sockets.find(type);
     if (it == m_sockets.end()) {
-      throw std::invalid_argument("Can't find socket in SocketContainer for given packet type: " + std::to_string(type));
+      throw Exceptions::NotFoundException("Can't find socket in SocketContainer for given packet type.");
     }
     std::shared_ptr<AbstractSocket> socket = it->second;
 
     std::vector<uint8_t> data = packet->serialize();
-    socket->send(data);
+    return socket->send(data);
   };
 
 private:

@@ -7,7 +7,8 @@
 #include <stdexcept>
 #include <vector>
 #include "../../Log/Log.hpp"
-#include "constants.hpp"
+#include "./constants.hpp"
+#include "../../Exceptions/WrongFormat/WrongFormatException.hpp"
 
 #if __BYTE_ORDER__ == __ORDER_PDP_ENDIAN__
 #error "Byte order not suported (PDP endian)"
@@ -25,7 +26,7 @@ class MGMTFormatExtractor {
 public:
   static uint16_t extract_event_code(const std::vector<uint8_t>& data) {
     if (data.size() < 2) {
-      throw std::invalid_argument("Given MGMT data are too small (< 2 bytes). Can't extract event code.");
+      throw Exceptions::WrongFormatException("Given MGMT data are too small (< 2 bytes). Can't extract event code.");
     }
 
     // Use little endian
@@ -39,7 +40,7 @@ public:
 
     if (isRequest) {
       if (data.size() < 2) {
-        throw std::invalid_argument("Given MGMT data are too small (< 2 bytes). Can't extract command code.");
+        throw Exceptions::WrongFormatException("Given MGMT data are too small (< 2 bytes). Can't extract command code.");
       }
 
       // Use little endian
@@ -47,13 +48,13 @@ public:
 
     } else {
       if (data.size() < 8) {
-        throw std::invalid_argument("Given MGMT data are too small (< 8 bytes). Can't extract command code.");
+        throw Exceptions::WrongFormatException("Given MGMT data are too small (< 8 bytes). Can't extract command code.");
       }
 
       uint16_t event_code = extract_event_code(data);
 
       if (event_code != 0x0001 && event_code != 0x0002) {
-        throw std::invalid_argument("Can't extract command code from given MGMT data: no command code inside");
+        throw Exceptions::WrongFormatException("Can't extract command code from given MGMT data: no command code inside");
       }
 
       // Use little endian
@@ -65,7 +66,7 @@ public:
 
   static uint16_t extract_payload_length(const std::vector<uint8_t>& data) {
     if (data.size() < 6) {
-      throw std::invalid_argument("Given MGMT data are too small (< 6 bytes). Can't extract payload length.");
+      throw Exceptions::WrongFormatException("Given MGMT data are too small (< 6 bytes). Can't extract payload length.");
     }
 
     // Use little endian
@@ -81,7 +82,7 @@ public:
 
   void parse_header(const std::vector<uint8_t>& data) {
     if (data.size() < Format::MGMT::header_length) {
-      throw std::invalid_argument("Given MGMT data are too small (< 6 bytes). Can't parse header.");
+      throw Exceptions::WrongFormatException("Given MGMT data are too small (< 6 bytes). Can't parse header.");
     }
 
     m_event_code = (static_cast<uint16_t>(data.at(1)) << 8) | data.at(0);
@@ -94,7 +95,7 @@ public:
     const size_t nb_bytes = sizeof(T);
 
     if (nb_bytes > m_payload.size()) {
-      throw std::invalid_argument("Can't deserialize given type: not enough bytes in payload.");
+      throw Exceptions::WrongFormatException("Can't deserialize given type: not enough bytes in payload.");
     }
 
     T result;
@@ -145,7 +146,7 @@ public:
 
   EIR parse_eir(const std::vector<uint8_t>& data) {
     if (data.size() < 3) {
-      throw std::invalid_argument("Given EIR data are too small. Can't extract anything from it.");
+      throw Exceptions::WrongFormatException("Given EIR data are too small. Can't extract anything from it.");
     }
 
     EIR result = EIR();
@@ -188,7 +189,7 @@ public:
           break;
 
         default:
-          LOG.debug("Unknown EIR type received: " + std::to_string(type), "DeviceFoundEvent");
+          LOG.warning("Unknown EIR type received: " + std::to_string(type), "DeviceFoundEvent");
           break;
       }
 

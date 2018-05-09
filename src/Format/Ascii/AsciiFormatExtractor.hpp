@@ -5,13 +5,14 @@
 #include <vector>
 #include <stdexcept>
 #include "./constants.hpp"
+#include "../../Exceptions/WrongFormat/WrongFormatException.hpp"
 
 class AsciiFormatExtractor {
 
 public:
   static uint16_t extract_command_code(const std::vector<uint8_t>& data) {
     if (data.empty()) {
-      throw std::invalid_argument("Given ASCII data are too small (< 1 bytes). Can't extract command code.");
+      throw Exceptions::WrongFormatException("Given ASCII data are too small (< 1 bytes). Can't extract command code.");
     }
 
     std::string data_str;
@@ -53,7 +54,7 @@ public:
 
   std::string get() {
     if (m_stack_pointer >= m_payload.size()) {
-      throw std::runtime_error("No more data to get from AsciiFormatExtractor");
+      throw Exceptions::WrongFormatException("No more data to get from AsciiFormatExtractor");
     }
 
     std::string result = m_payload.at(m_stack_pointer);
