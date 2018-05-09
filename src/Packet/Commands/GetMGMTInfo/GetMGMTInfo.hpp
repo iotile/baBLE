@@ -21,50 +21,15 @@ namespace Packet::Commands {
       }
     };
 
-    GetMGMTInfo(Packet::Type initial_type, Packet::Type translated_type)
-        : CommandPacket(initial_type, translated_type) {
-      m_version = 0;
-      m_revision = 0;
-    };
+    GetMGMTInfo(Packet::Type initial_type, Packet::Type translated_type);
 
-    void import(AsciiFormatExtractor& extractor) override {
-      CommandPacket::import(extractor);
-    };
+    void import(AsciiFormatExtractor& extractor) override;
+    void import(FlatbuffersFormatExtractor& extractor) override;
+    void import(MGMTFormatExtractor& extractor) override;
 
-    void import(FlatbuffersFormatExtractor& extractor) override {
-      CommandPacket::import(extractor);
-    };
-
-    void import(MGMTFormatExtractor& extractor) override {
-      CommandPacket::import(extractor);
-
-      if (m_native_status == 0) {
-        m_version = extractor.get_value<uint8_t>();
-        m_revision = extractor.get_value<uint16_t>();
-      }
-    };
-
-    std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override {
-      CommandPacket::serialize(builder);
-      builder
-          .set_name("GetMGMTInfo")
-          .add("Version", m_version)
-          .add("Revision", m_revision);
-
-      return builder.build();
-    };
-
-    std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override {
-      CommandPacket::serialize(builder);
-      auto payload = Schemas::CreateGetMGMTInfo(builder, m_version, m_revision);
-
-      return builder.build(payload, Schemas::Payload::GetMGMTInfo, m_native_class, m_status, m_native_status);
-    }
-
-    std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override {
-      CommandPacket::serialize(builder);
-      return builder.build();
-    };
+    std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
+    std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
+    std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override;
 
   private:
     uint8_t m_version;

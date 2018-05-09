@@ -21,34 +21,12 @@ namespace Packet::Events {
       }
     };
 
-    Discovering(Packet::Type initial_type, Packet::Type translated_type)
-        : EventPacket(initial_type, translated_type) {
-      m_address_type = 0;
-      m_discovering = 0;
-    };
+    Discovering(Packet::Type initial_type, Packet::Type translated_type);
 
-    void import(MGMTFormatExtractor& extractor) override {
-      EventPacket::import(extractor);
-      m_address_type = extractor.get_value<uint8_t>();
-      m_discovering = extractor.get_value<uint8_t>();
-    };
+    void import(MGMTFormatExtractor& extractor) override;
 
-    std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override {
-      EventPacket::serialize(builder);
-      builder
-          .set_name("Discovering")
-          .add("Address type", m_address_type)
-          .add("Discovering", m_discovering);
-
-      return builder.build();
-    };
-
-    std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override {
-      EventPacket::serialize(builder);
-      auto payload = Schemas::CreateDiscovering(builder, m_controller_id, m_address_type, m_discovering);
-
-      return builder.build(payload, Schemas::Payload::Discovering, m_native_class);
-    }
+    std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
+    std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
 
   private:
     uint8_t m_address_type;

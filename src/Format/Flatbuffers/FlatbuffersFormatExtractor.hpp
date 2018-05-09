@@ -8,21 +8,23 @@
 class FlatbuffersFormatExtractor {
 
 public:
-  explicit FlatbuffersFormatExtractor(const std::vector<uint8_t> & data) {
-    m_data.assign(data.begin(), data.end());
-    m_packet = Schemas::GetPacket(data.data());
-  };
+  // Constructors
+  explicit FlatbuffersFormatExtractor(const std::vector<uint8_t> & data);
 
+  // Getters
   template<typename T>
-  T get_payload(Schemas::Payload payload_type) {
-    auto payload = static_cast<T>(m_packet->payload());
-    return payload;
-  };
+  T get_payload(Schemas::Payload payload_type) const;
 
 private:
   std::vector<uint8_t> m_data;
   const Schemas::Packet* m_packet;
 
+};
+
+template<typename T>
+T FlatbuffersFormatExtractor::get_payload(Schemas::Payload payload_type) const {
+  auto payload = static_cast<T>(m_packet->payload());
+  return payload;
 };
 
 #endif //BABLE_LINUX_FLATBUFFERSFORMATEXTRACTOR_HPP

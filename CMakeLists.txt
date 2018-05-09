@@ -30,20 +30,17 @@ set(SOURCES_FILES
         src/Packet/BaBLEError/BaBLEErrorPacket.hpp
         src/Format/AbstractFormat.hpp
         src/Format/MGMT/constants.hpp
-        src/Format/MGMT/MGMTFormat.cpp
         src/Format/MGMT/MGMTFormat.hpp
         src/Format/MGMT/MGMTFormatBuilder.cpp
         src/Format/MGMT/MGMTFormatBuilder.hpp
         src/Format/MGMT/MGMTFormatExtractor.cpp
         src/Format/MGMT/MGMTFormatExtractor.hpp
-        src/Format/Flatbuffers/FlatbuffersFormat.cpp
         src/Format/Flatbuffers/FlatbuffersFormat.hpp
         src/Format/Flatbuffers/FlatbuffersFormatBuilder.cpp
         src/Format/Flatbuffers/FlatbuffersFormatBuilder.hpp
         src/Format/Flatbuffers/FlatbuffersFormatExtractor.cpp
         src/Format/Flatbuffers/FlatbuffersFormatExtractor.hpp
         src/Format/Ascii/constants.hpp
-        src/Format/Ascii/AsciiFormat.cpp
         src/Format/Ascii/AsciiFormat.hpp
         src/Format/Ascii/AsciiFormatBuilder.cpp
         src/Format/Ascii/AsciiFormatBuilder.hpp
@@ -60,13 +57,9 @@ set(SOURCES_FILES
         src/Transport/Socket/StdIO/StdIOSocket.hpp
         src/Exceptions/constants.hpp
         src/Exceptions/AbstractException.hpp
-        src/Exceptions/NotFound/NotFoundException.cpp
         src/Exceptions/NotFound/NotFoundException.hpp
-        src/Exceptions/WrongFormat/WrongFormatException.cpp
         src/Exceptions/WrongFormat/WrongFormatException.hpp
-        src/Exceptions/Socket/SocketException.cpp
         src/Exceptions/Socket/SocketException.hpp
-        src/Exceptions/InvalidCommand/InvalidCommandException.cpp
         src/Exceptions/InvalidCommand/InvalidCommandException.hpp
         src/bootstrap.hpp)
 add_executable(baBLE_linux ${SOURCES_FILES})

@@ -3,6 +3,7 @@
 
 #include <string>
 
+// Interface making a class "loggable" meaning that we can have a string representation to log
 class Loggable {
 
 public:
