@@ -1,14 +1,16 @@
 #include "StdIOSocket.hpp"
 
-StdIOSocket::StdIOSocket(std::shared_ptr<AbstractFormat> format)
-: AbstractSocket(std::move(format)) {
+using namespace std;
+
+StdIOSocket::StdIOSocket(shared_ptr<AbstractFormat> format)
+: AbstractSocket(move(format)) {
   m_header_length = 4;
   m_payload_length = 0;
   m_header.reserve(m_header_length);
 }
 
-bool StdIOSocket::send(const std::vector<uint8_t>& data) {
-  std::vector<uint8_t> result = generate_header(data);
+bool StdIOSocket::send(const vector<uint8_t>& data) {
+  vector<uint8_t> result = generate_header(data);
   result.insert(result.end(), data.begin(), data.end());
 
   fwrite(result.data(), sizeof(uint8_t), result.size(), stdout);
@@ -17,7 +19,7 @@ bool StdIOSocket::send(const std::vector<uint8_t>& data) {
   return true;
 }
 
-void StdIOSocket::poll(std::shared_ptr<uvw::Loop> loop, CallbackFunction on_received) {
+void StdIOSocket::poll(shared_ptr<uvw::Loop> loop, CallbackFunction on_received) {
   auto poller = loop->resource<uvw::PipeHandle>(false);
   poller->open(STDIO_ID::in);
   poller->on<uvw::DataEvent>([this, on_received](const uvw::DataEvent& event, const uvw::PipeHandle& handle){
@@ -26,7 +28,7 @@ void StdIOSocket::poll(std::shared_ptr<uvw::Loop> loop, CallbackFunction on_rece
     auto remaining_data = reinterpret_cast<uint8_t*>(event.data.get());
 
     while (remaining_data_length > 0) {
-      LOG.debug("Remaining data: " + std::to_string(remaining_data_length), "StdIOSocket");
+      LOG.debug("Remaining data: " + to_string(remaining_data_length), "StdIOSocket");
       if (!receive(remaining_data, remaining_data_length)) {
         return;
       }
@@ -43,10 +45,10 @@ void StdIOSocket::poll(std::shared_ptr<uvw::Loop> loop, CallbackFunction on_rece
   poller->read();
 }
 
-std::vector<uint8_t> StdIOSocket::generate_header(const std::vector<uint8_t>& data) {
+vector<uint8_t> StdIOSocket::generate_header(const vector<uint8_t>& data) {
   auto payload_length = static_cast<uint16_t>(data.size());
 
-  std::vector<uint8_t> header;
+  vector<uint8_t> header;
   header.reserve(m_header_length);
 
   header.push_back(static_cast<uint8_t>(MAGIC_CODE >> 8));
@@ -64,21 +66,21 @@ bool StdIOSocket::receive(const uint8_t* data, size_t length) {
 
   if (m_header.size() < m_header_length) {
     if (m_header.empty()) {
-      consumed_data = std::min<size_t>(length, m_header_length);
+      consumed_data = min<size_t>(length, m_header_length);
       m_header.assign(data, data + consumed_data);
     } else {
-      consumed_data = std::min<size_t>(length, m_header_length - m_header.size());
+      consumed_data = min<size_t>(length, m_header_length - m_header.size());
       m_header.insert(m_header.end(), data, data + consumed_data);
     }
 
     if (m_header.size() < m_header_length) {
-      LOG.debug(std::to_string(m_payload.size()) + "/"  +  std::to_string(m_payload_length) + " bytes received (header)", "StdIOSocket");
+      LOG.debug(to_string(m_payload.size()) + "/"  +  to_string(m_payload_length) + " bytes received (header)", "StdIOSocket");
       return false;
     }
 
     uint16_t magic_code = (m_header.at(0) << 8) | m_header.at(1);
     if (magic_code != MAGIC_CODE) {
-      LOG.error("Packet with wrong magic code received: " + std::to_string(magic_code));
+      LOG.error("Packet with wrong magic code received: " + to_string(magic_code));
       m_header.clear();
       return false;
     }
@@ -90,10 +92,10 @@ bool StdIOSocket::receive(const uint8_t* data, size_t length) {
     }
   }
 
-  m_payload.insert(m_payload.end(), data + consumed_data, data + std::min(consumed_data + m_payload_length, length));
+  m_payload.insert(m_payload.end(), data + consumed_data, data + min(consumed_data + m_payload_length, length));
 
   if (m_payload.size() < m_payload_length) {
-    LOG.debug(std::to_string(m_payload.size()) + "/"  +  std::to_string(m_payload_length) + " bytes received", "StdIOSocket");
+    LOG.debug(to_string(m_payload.size()) + "/"  +  to_string(m_payload_length) + " bytes received", "StdIOSocket");
     return false;
   }
 

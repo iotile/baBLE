@@ -7,6 +7,8 @@
 #include "Packet/Commands/GetMGMTInfo/GetMGMTInfo.hpp"
 #include "Packet/Commands/Scan/StartScan.hpp"
 #include "Packet/Commands/Scan/StopScan.hpp"
+#include "Packet/Commands/AddDevice/AddDevice.hpp"
+#include "Packet/Events/DeviceConnected/DeviceConnected.hpp"
 #include "Packet/Events/DeviceFound/DeviceFound.hpp"
 #include "Packet/Events/Discovering/Discovering.hpp"
 
@@ -20,6 +22,8 @@ namespace Bootstrap {
         .register_command<Packet::Commands::GetMGMTInfo>()
         .register_command<Packet::Commands::StartScan>()
         .register_command<Packet::Commands::StopScan>()
+        .register_command<Packet::Commands::AddDevice>()
+        .register_event<Packet::Events::DeviceConnected>()
         .register_event<Packet::Events::DeviceFound>()
         .register_event<Packet::Events::Discovering>();
   }
@@ -30,7 +34,8 @@ namespace Bootstrap {
         .set_output_format(std::move(mgmt_format))
         .register_command<Packet::Commands::GetMGMTInfo>()
         .register_command<Packet::Commands::StartScan>()
-        .register_command<Packet::Commands::StopScan>();
+        .register_command<Packet::Commands::StopScan>()
+        .register_command<Packet::Commands::AddDevice>();
   }
 
 }

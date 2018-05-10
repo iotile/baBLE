@@ -1,5 +1,7 @@
 #include "BaBLEErrorPacket.hpp"
 
+using namespace std;
+
 namespace Packet::Errors {
 
   BaBLEErrorPacket::BaBLEErrorPacket(Packet::Type output_type)
@@ -8,7 +10,7 @@ namespace Packet::Errors {
     m_type = Exceptions::Type::Unknown;
   }
 
-  std::vector<uint8_t> BaBLEErrorPacket::serialize(AsciiFormatBuilder& builder) const {
+  vector<uint8_t> BaBLEErrorPacket::serialize(AsciiFormatBuilder& builder) const {
     builder
       .set_name("BaBLEError")
       .add("Type", m_name)
@@ -16,7 +18,7 @@ namespace Packet::Errors {
     return {};
   };
 
-  std::vector<uint8_t> BaBLEErrorPacket::serialize(FlatbuffersFormatBuilder& builder) const {
+  vector<uint8_t> BaBLEErrorPacket::serialize(FlatbuffersFormatBuilder& builder) const {
     auto message = builder.CreateString(m_message);
     Schemas::StatusCode status_code;
 

@@ -61,7 +61,7 @@ set(SOURCES_FILES
         src/Exceptions/WrongFormat/WrongFormatException.hpp
         src/Exceptions/Socket/SocketException.hpp
         src/Exceptions/InvalidCommand/InvalidCommandException.hpp
-        src/bootstrap.hpp)
+        src/bootstrap.hpp src/Packet/Commands/AddDevice/AddDevice.cpp src/Packet/Commands/AddDevice/AddDevice.hpp src/Packet/Events/DeviceConnected/DeviceConnected.cpp src/Packet/Events/DeviceConnected/DeviceConnected.hpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies

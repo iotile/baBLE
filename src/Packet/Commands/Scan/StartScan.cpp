@@ -1,5 +1,7 @@
 #include "StartScan.hpp"
 
+using namespace std;
+
 namespace Packet::Commands {
 
   StartScan::StartScan(Packet::Type initial_type, Packet::Type translated_type)
@@ -14,8 +16,8 @@ namespace Packet::Commands {
       m_controller_id = static_cast<uint16_t>(stoi(extractor.get()));
       m_address_type = static_cast<uint8_t>(stoi(extractor.get()));
 
-    } catch (const std::runtime_error& err) {
-      throw Exceptions::InvalidCommandException("Missing arguments for 'StartScan' packet. Usage: <uuid>,<command_code>,<controller_id>,<address_type>");
+    } catch (const runtime_error& err) {
+      throw Exceptions::InvalidCommandException("Missing arguments for 'StartScan' packet. Usage: <command_code>,<controller_id>,<address_type>");
     }
   };
 
@@ -35,7 +37,7 @@ namespace Packet::Commands {
     }
   };
 
-  std::vector<uint8_t> StartScan::serialize(AsciiFormatBuilder& builder) const {
+  vector<uint8_t> StartScan::serialize(AsciiFormatBuilder& builder) const {
     CommandPacket::serialize(builder);
     builder
       .set_name("StartScan")
@@ -44,14 +46,14 @@ namespace Packet::Commands {
     return builder.build();
   };
 
-  std::vector<uint8_t> StartScan::serialize(FlatbuffersFormatBuilder& builder) const {
+  vector<uint8_t> StartScan::serialize(FlatbuffersFormatBuilder& builder) const {
     CommandPacket::serialize(builder);
     auto payload = Schemas::CreateStartScan(builder, m_controller_id, m_address_type);
 
     return builder.build(payload, Schemas::Payload::StartScan, m_native_class, m_status, m_native_status);
   }
 
-  std::vector<uint8_t> StartScan::serialize(MGMTFormatBuilder& builder) const {
+  vector<uint8_t> StartScan::serialize(MGMTFormatBuilder& builder) const {
     CommandPacket::serialize(builder);
     builder.add(m_address_type);
     return builder.build();

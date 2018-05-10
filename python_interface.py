@@ -3,7 +3,8 @@ import sys
 import time
 import flatbuffers
 
-from Schemas import Packet, Payload, GetMGMTInfo, StartScan, StopScan, Discovering, DeviceFound, BaBLEError, StatusCode
+from Schemas import Packet, Payload, GetMGMTInfo, StartScan, StopScan, Discovering, DeviceFound, BaBLEError, StatusCode,\
+                    AddDevice, DeviceConnected
 
 def status_code_to_string(status_code):
     if status_code == StatusCode.StatusCode().Success:
@@ -43,30 +44,27 @@ process = subprocess.Popen(["./build/debug/baBLE_linux"],
 # process.stdin.write("5,0")
 
 ## Flatbuffers
-builder = flatbuffers.Builder(0)
-# GetMGMTInfo.GetMGMTInfoStart(builder)
-# payload = GetMGMTInfo.GetMGMTInfoEnd(builder)
 
+#StartScan
+builder = flatbuffers.Builder(0)
 StartScan.StartScanStart(builder)
 StartScan.StartScanAddControllerId(builder, 0)
 StartScan.StartScanAddAddressType(builder, 0x07)
 payload = StartScan.StartScanEnd(builder)
 
 Packet.PacketStart(builder)
-# Packet.PacketAddPayloadType(builder, Payload.Payload().GetMGMTInfo)
 Packet.PacketAddPayloadType(builder, Payload.Payload().StartScan)
 Packet.PacketAddPayload(builder, payload)
 packet = Packet.PacketEnd(builder)
 
 builder.Finish(packet)
-
 buf = builder.Output()
 # buf = b'\xFF\xFF' + buf
 buf = b'\xCA\xFE' + len(buf).to_bytes(2, byteorder='little') + buf
 # process.stdin.write(buf)
 
-#time.sleep(2)
 
+# Stop scan
 builder2 = flatbuffers.Builder(0)
 
 StopScan.StopScanStart(builder2)
@@ -80,10 +78,35 @@ Packet.PacketAddPayload(builder2, payload2)
 packet2 = Packet.PacketEnd(builder2)
 
 builder2.Finish(packet2)
-
 buf2 = builder2.Output()
 buf2 = b'\xCA\xFE' + len(buf2).to_bytes(2, byteorder='little') + buf2
-process.stdin.write(buf)
+
+# AddDevice
+builder3 = flatbuffers.Builder(0)
+
+AddDevice.AddDeviceStartAddressVector(builder3, 6)
+# address_list = [0xC4, 0xF0, 0xA5, 0xE6, 0x8A, 0x91]
+address_list = [0x91, 0x8A, 0xE6, 0xA5, 0xF0, 0xC4]
+for element in reversed(address_list):
+    builder3.PrependByte(element)
+address = builder3.EndVector(6)
+
+AddDevice.AddDeviceStart(builder3)
+AddDevice.AddDeviceAddControllerId(builder3, 0)
+AddDevice.AddDeviceAddAddress(builder3, address)
+AddDevice.AddDeviceAddAddressType(builder3, 2)
+payload3 = AddDevice.AddDeviceEnd(builder3)
+
+Packet.PacketStart(builder3)
+Packet.PacketAddPayloadType(builder3, Payload.Payload().AddDevice)
+Packet.PacketAddPayload(builder3, payload3)
+packet3 = Packet.PacketEnd(builder3)
+
+builder3.Finish(packet3)
+buf3 = builder3.Output()
+buf3 = b'\xCA\xFE' + len(buf3).to_bytes(2, byteorder='little') + buf3
+
+process.stdin.write(buf3)
 
 header_length = 4
 
@@ -139,6 +162,16 @@ try:
             print("StopScan",
                   "Status:", status, "Native class: ", native_class, "Native status:", native_status,
                   "Controller id:", controller_id, "Address type:", address_type)
+        elif packet.PayloadType() == Payload.Payload().AddDevice:
+            add_device = AddDevice.AddDevice()
+            add_device.Init(packet.Payload().Bytes, packet.Payload().Pos)
+            controller_id = add_device.ControllerId()
+            address_type = add_device.AddressType()
+            address = add_device.AddressAsNumpy()
+
+            print("AddDevice",
+                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
+                  "Controller id:", controller_id, "Address type:", address_type, "Address:", address)
         elif packet.PayloadType() == Payload.Payload().Discovering:
             discovering = Discovering.Discovering()
             discovering.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -167,6 +200,22 @@ try:
                   "Controller id:", controller_id, "Address type:", address_type, "Address:", address,
                   "RSSI:", rssi, "Flags:", flags, "Device UUID:", device_uuid, "Company id:", company_id,
                   "Device name:", device_name)
+
+        elif packet.PayloadType() == Payload.Payload().DeviceConnected:
+            deviceconnected = DeviceConnected.DeviceConnected()
+            deviceconnected.Init(packet.Payload().Bytes, packet.Payload().Pos)
+            controller_id = deviceconnected.ControllerId()
+            address_type = deviceconnected.AddressType()
+            address = deviceconnected.Address()
+            flags = deviceconnected.FlagsAsNumpy()
+            device_uuid = deviceconnected.Uuid()
+            company_id = deviceconnected.CompanyId()
+            device_name = deviceconnected.DeviceName()
+
+            print("DeviceConnected",
+                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
+                  "Controller id:", controller_id, "Address type:", address_type, "Address:", address,
+                  "Flags:", flags, "Device UUID:", device_uuid, "Company id:", company_id, "Device name:", device_name)
 
         elif packet.PayloadType() == Payload.Payload().BaBLEError:
             error = BaBLEError.BaBLEError()

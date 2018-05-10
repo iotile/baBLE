@@ -1,21 +1,19 @@
-#include "DeviceFound.hpp"
+#include "DeviceConnected.hpp"
 
 using namespace std;
 
 namespace Packet::Events {
 
-  DeviceFound::DeviceFound(Packet::Type initial_type, Packet::Type translated_type)
+  DeviceConnected::DeviceConnected(Packet::Type initial_type, Packet::Type translated_type)
       : EventPacket(initial_type, translated_type) {
     m_address_type = 0;
-    m_rssi = 0;
     m_eir_data_length = 0;
   }
 
-  void DeviceFound::import(MGMTFormatExtractor& extractor) {
+  void DeviceConnected::import(MGMTFormatExtractor& extractor) {
     EventPacket::import(extractor);
     m_address = extractor.get_array<uint8_t, 6>();
     m_address_type = extractor.get_value<uint8_t>();
-    m_rssi = extractor.get_value<int8_t>();
     m_flags = extractor.get_array<uint8_t, 4>();
     m_eir_data_length = extractor.get_value<uint16_t>();
 
@@ -30,14 +28,13 @@ namespace Packet::Events {
     }
   };
 
-  vector<uint8_t> DeviceFound::serialize(AsciiFormatBuilder& builder) const {
+  vector<uint8_t> DeviceConnected::serialize(AsciiFormatBuilder& builder) const {
     EventPacket::serialize(builder);
 
     builder
-        .set_name("DeviceFound")
+        .set_name("DeviceConnected")
         .add("Address", AsciiFormat::format_bd_address(m_address))
         .add("Address type", m_address_type)
-        .add("RSSI", m_rssi)
         .add("Flags", m_flags)
         .add("EIR data length: ", m_eir_data_length)
         .add("EIR flags: ", m_eir.flags)
@@ -48,7 +45,7 @@ namespace Packet::Events {
     return builder.build();
   };
 
-  vector<uint8_t> DeviceFound::serialize(FlatbuffersFormatBuilder& builder) const {
+  vector<uint8_t> DeviceConnected::serialize(FlatbuffersFormatBuilder& builder) const {
     EventPacket::serialize(builder);
 
     vector<uint8_t> flags_vector(m_flags.begin(), m_flags.end());
@@ -58,19 +55,18 @@ namespace Packet::Events {
     auto uuid = builder.CreateString(AsciiFormat::format_uuid(m_eir.uuid));
     auto device_name = builder.CreateString(AsciiFormat::bytes_to_string(m_eir.device_name));
 
-    auto payload = Schemas::CreateDeviceFound(
+    auto payload = Schemas::CreateDeviceConnected(
         builder,
         m_controller_id,
         address,
         m_address_type,
-        m_rssi,
         flags,
         uuid,
         m_eir.company_id,
         device_name
     );
 
-    return builder.build(payload, Schemas::Payload::DeviceFound, m_native_class);
+    return builder.build(payload, Schemas::Payload::DeviceConnected, m_native_class);
   }
 
 }

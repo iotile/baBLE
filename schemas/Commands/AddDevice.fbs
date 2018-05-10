@@ -1,0 +1,7 @@
+namespace Schemas;
+
+table AddDevice {
+  controller_id:uint16;
+  address:[uint8];
+  address_type:uint8 = 2;  // LE Random
+}
