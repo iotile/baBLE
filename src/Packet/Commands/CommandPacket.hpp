@@ -2,8 +2,6 @@
 #define BABLE_LINUX_COMMANDPACKET_HPP
 
 #include "../AbstractPacket.hpp"
-#include "../../Serializer/Serializer.hpp"
-#include "../constants.hpp"
 
 namespace Packet::Commands {
 
@@ -11,59 +9,98 @@ namespace Packet::Commands {
   class CommandPacket : public AbstractPacket {
 
   protected:
-    CommandPacket(Packet::Type initial_type, Packet::Type translated_type): AbstractPacket(initial_type, translated_type) {
+    CommandPacket(Packet::Type initial_type, Packet::Type translated_type)
+        : AbstractPacket(initial_type, translated_type) {
       m_command_code = T::command_code(m_current_type);
-      m_controller_id = 0xFFFF;
-      m_params_length = 0;
-    };
-
-    std::string to_ascii() const override {
-      std::stringstream result;
-      generate_header(result);
-
-      return result.str();
-    };
-
-    Serializer to_mgmt() const override {
-      Serializer ser;
-      generate_header(ser);
-
-      return ser;
+      m_controller_id = Format::MGMT::non_controller_id;
+      m_status = Schemas::StatusCode::Success;
+      m_native_status = 0;
     };
 
     void after_translate() override {
       m_command_code = T::command_code(m_current_type);
     };
 
+    std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override {
+      builder.set_code(m_command_code);
+
+      return {};
+    };
+
+    std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override {
+      std::string status_name = Schemas::EnumNameStatusCode(m_status);
+
+      builder
+          .add("Type", "Command")
+          .add("Command code", m_command_code)
+          .add("Status", status_name)
+          .add("Native status", m_native_status);
+
+      return {};
+    };
+
+    std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override {
+      return {};
+    };
+
+    void import(MGMTFormatExtractor& extractor) override {
+      m_command_code = extractor.get_value<uint16_t>();
+      m_native_status = extractor.get_value<uint8_t>();
+      m_native_class = "MGMT";
+
+      switch (m_native_status) {
+        case Format::MGMT::Success:
+          m_status = Schemas::StatusCode::Success;
+          break;
+
+        case Format::MGMT::Busy:
+        case Format::MGMT::Rejected:
+        case Format::MGMT::NotSupported:
+        case Format::MGMT::AlreadyPaired:
+          m_status = Schemas::StatusCode::Rejected;
+          break;
+
+        case Format::MGMT::PermissionDenied:
+          m_status = Schemas::StatusCode::Denied;
+          break;
+
+        case Format::MGMT::Cancelled:
+          m_status = Schemas::StatusCode::Cancelled;
+          break;
+
+        case Format::MGMT::NotPowered:
+          m_status = Schemas::StatusCode::NotPowered;
+          break;
+
+        case Format::MGMT::Failed:
+        case Format::MGMT::ConnectFailed:
+        case Format::MGMT::AuthenticationFailed:
+        case Format::MGMT::RFKilled:
+          m_status = Schemas::StatusCode::Failed;
+          break;
+
+        case Format::MGMT::UnknownCommand:
+        case Format::MGMT::InvalidParameters:
+        case Format::MGMT::InvalidIndex:
+          m_status = Schemas::StatusCode::InvalidCommand;
+          break;
+
+        default:
+          m_status = Schemas::StatusCode::Unknown;
+          break;
+      }
+    };
+
+    void import(AsciiFormatExtractor& extractor) override {
+      m_command_code = static_cast<uint16_t>(stoi(extractor.get()));
+    };
+
+    void import(FlatbuffersFormatExtractor& extractor) override {};
+
     uint16_t m_command_code;
-    uint16_t m_controller_id;
-    uint16_t m_params_length;
-
-  private:
-    void generate_header(Serializer& ser) const {
-      switch(m_current_type) {
-        case Packet::MGMT:
-          ser << m_command_code << m_controller_id << m_params_length;
-          break;
-
-        default:
-          throw std::runtime_error("Can't generate header for current packet type.");
-      }
-    }
-
-    void generate_header(std::stringstream& str) const {
-      switch(m_current_type) {
-        case Packet::ASCII:
-          str << "<CommandPacket> "
-              << "Controller ID: " << std::to_string(m_controller_id) << ", "
-              << "Parameters length: " << std::to_string(m_params_length) << ", "
-              << "Command code: " << std::to_string(m_command_code);
-          break;
-
-        default:
-          throw std::runtime_error("Can't generate header for current packet type.");
-      }
-    }
+    uint8_t m_native_status;
+    std::string m_native_class;
+    Schemas::StatusCode m_status;
 
   };
 

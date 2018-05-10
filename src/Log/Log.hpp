@@ -6,12 +6,15 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "Loggable.hpp"
 #include "../utils/colors.hpp"
+#include "../utils/stream_formats.hpp"
 
 #define DEFAULT_NAME "General"
 
+// Singleton used to log messages with colors and using a coherent format
 class Log {
 
 public:
@@ -39,6 +42,9 @@ public:
   void debug(const std::string& message, const std::string &name = DEFAULT_NAME);
   void debug(const Loggable& object, const std::string &name = DEFAULT_NAME);
 
+  template<typename T>
+  void debug(std::vector<T> bytes, const std::string &name = DEFAULT_NAME);
+
 private:
   Log();
   Log(Log const&);
@@ -48,6 +54,17 @@ private:
   std::string get_level_name(const Level& level);
 
   unsigned char m_log_level;
+};
+
+template<typename T>
+void Log::debug(std::vector<T> bytes, const std::string &name) {
+  std::stringstream message_stream;
+  message_stream << "[ ";
+  for(auto it = bytes.begin(); it != bytes.end(); ++it) {
+    message_stream << HEX(*it) << " ";
+  }
+  message_stream << "]";
+  debug(message_stream.str(), name);
 };
 
 #define LOG Log::get()

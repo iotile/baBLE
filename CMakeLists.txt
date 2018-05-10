@@ -12,50 +12,56 @@ set(SOURCES_FILES
         src/Log/Log.cpp
         src/Log/Log.hpp
         src/Log/Loggable.hpp
-        src/Serializer/AbstractSerializer.cpp
-        src/Serializer/AbstractSerializer.hpp
-        src/Serializer/Serializer.cpp
-        src/Serializer/Serializer.hpp
-        src/Serializer/Deserializer.cpp
-        src/Serializer/Deserializer.hpp
-        src/Socket/AbstractSocket.hpp
-        src/Socket/SocketManager.hpp
-        src/Socket/MGMT/MGMTSocket.cpp
-        src/Socket/MGMT/MGMTSocket.hpp
-        src/Socket/HCI/HCISocket.cpp
-        src/Socket/HCI/HCISocket.hpp
-        src/Socket/StdIO/StdIOSocket.cpp
-        src/Socket/StdIO/StdIOSocket.hpp
         src/Packet/constants.hpp
         src/Packet/AbstractPacket.hpp
+        src/Packet/Commands/CommandPacket.hpp
         src/Packet/Commands/GetMGMTInfo/GetMGMTInfo.cpp
         src/Packet/Commands/GetMGMTInfo/GetMGMTInfo.hpp
-        src/Packet/Commands/CommandPacket.hpp
-        src/Packet/Responses/ResponsePacket.hpp
-        src/Packet/Responses/GetMGMTInfo/GetMGMTInfo.cpp
-        src/Packet/Responses/GetMGMTInfo/GetMGMTInfo.hpp
-        src/Builder/AbstractBuilder.hpp
-        src/Builder/MGMT/MGMTBuilder.cpp
-        src/Builder/MGMT/MGMTBuilder.hpp
-        src/Builder/Ascii/AsciiBuilder.cpp
-        src/Builder/Ascii/AsciiBuilder.hpp
-        src/Poller/Poller.cpp
-        src/Poller/Poller.hpp
-        src/Poller/PipePoller.cpp
-        src/Poller/PipePoller.hpp
         src/Packet/Commands/Scan/StartScan.cpp
         src/Packet/Commands/Scan/StartScan.hpp
-        src/Packet/Responses/Scan/StartScan.cpp
-        src/Packet/Responses/Scan/StartScan.hpp
+        src/Packet/Commands/Scan/StopScan.cpp
+        src/Packet/Commands/Scan/StopScan.hpp
         src/Packet/Events/EventPacket.hpp
         src/Packet/Events/DeviceFound/DeviceFound.cpp
         src/Packet/Events/DeviceFound/DeviceFound.hpp
         src/Packet/Events/Discovering/Discovering.cpp
         src/Packet/Events/Discovering/Discovering.hpp
-        src/Packet/Commands/Scan/StopScan.cpp
-        src/Packet/Commands/Scan/StopScan.hpp
-        src/Packet/Responses/Scan/StopScan.cpp
-        src/Packet/Responses/Scan/StopScan.hpp src/Builder/Flatbuffers/FlatbuffersBuilder.cpp src/Builder/Flatbuffers/FlatbuffersBuilder.hpp)
+        src/Packet/BaBLEError/BaBLEErrorPacket.cpp
+        src/Packet/BaBLEError/BaBLEErrorPacket.hpp
+        src/Format/AbstractFormat.hpp
+        src/Format/MGMT/constants.hpp
+        src/Format/MGMT/MGMTFormat.hpp
+        src/Format/MGMT/MGMTFormatBuilder.cpp
+        src/Format/MGMT/MGMTFormatBuilder.hpp
+        src/Format/MGMT/MGMTFormatExtractor.cpp
+        src/Format/MGMT/MGMTFormatExtractor.hpp
+        src/Format/Flatbuffers/FlatbuffersFormat.hpp
+        src/Format/Flatbuffers/FlatbuffersFormatBuilder.cpp
+        src/Format/Flatbuffers/FlatbuffersFormatBuilder.hpp
+        src/Format/Flatbuffers/FlatbuffersFormatExtractor.cpp
+        src/Format/Flatbuffers/FlatbuffersFormatExtractor.hpp
+        src/Format/Ascii/constants.hpp
+        src/Format/Ascii/AsciiFormat.hpp
+        src/Format/Ascii/AsciiFormatBuilder.cpp
+        src/Format/Ascii/AsciiFormatBuilder.hpp
+        src/Format/Ascii/AsciiFormatExtractor.cpp
+        src/Format/Ascii/AsciiFormatExtractor.hpp
+        src/Builder/PacketBuilder.cpp
+        src/Builder/PacketBuilder.hpp
+        src/Transport/AbstractSocket.hpp
+        src/Transport/SocketContainer/SocketContainer.cpp
+        src/Transport/SocketContainer/SocketContainer.hpp
+        src/Transport/Socket/MGMT/MGMTSocket.cpp
+        src/Transport/Socket/MGMT/MGMTSocket.hpp
+        src/Transport/Socket/StdIO/StdIOSocket.cpp
+        src/Transport/Socket/StdIO/StdIOSocket.hpp
+        src/Exceptions/constants.hpp
+        src/Exceptions/AbstractException.hpp
+        src/Exceptions/NotFound/NotFoundException.hpp
+        src/Exceptions/WrongFormat/WrongFormatException.hpp
+        src/Exceptions/Socket/SocketException.hpp
+        src/Exceptions/InvalidCommand/InvalidCommandException.hpp
+        src/bootstrap.hpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies
