@@ -12,7 +12,8 @@ namespace Format::MGMT {
     GetMGMTInfo= 0x0001,
     StartScan= 0x0023,
     StopScan= 0x0024,
-    AddDevice= 0x0033
+    AddDevice= 0x0033,
+    RemoveDevice= 0x0034
   };
 
   enum EventCode {

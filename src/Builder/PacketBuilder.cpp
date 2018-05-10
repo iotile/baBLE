@@ -60,3 +60,19 @@ unique_ptr<Packet::AbstractPacket> PacketBuilder::build_event(uint16_t event_cod
   packet->import(raw_data);
   return packet;
 };
+
+const std::string PacketBuilder::stringify() const {
+  std::stringstream result;
+  result << "Commands: " << std::endl;
+
+  for (auto& element : m_commands) {
+    result << "\t" << element.first << std::endl;
+  }
+
+  result << std::endl << "Events: " << std::endl;
+  for (auto& element : m_events) {
+    result << "\t" << element.first << std::endl;
+  }
+
+  return result.str();
+};

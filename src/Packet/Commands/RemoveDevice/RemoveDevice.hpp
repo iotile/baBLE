@@ -1,28 +1,28 @@
-#ifndef BABLE_LINUX_ADDDEVICE_HPP
-#define BABLE_LINUX_ADDDEVICE_HPP
+#ifndef BABLE_LINUX_REMOVEDEVICE_HPP
+#define BABLE_LINUX_REMOVEDEVICE_HPP
 
 #include "../CommandPacket.hpp"
 #include "../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 
 namespace Packet::Commands {
 
-  class AddDevice : public CommandPacket<AddDevice> {
+  class RemoveDevice : public CommandPacket<RemoveDevice> {
 
   public:
     static const uint16_t command_code(Packet::Type type) {
       switch(type) {
         case Packet::Type::MGMT:
-          return Format::MGMT::CommandCode::AddDevice;
+          return Format::MGMT::CommandCode::RemoveDevice;
 
         case Packet::Type::ASCII:
-          return Format::Ascii::CommandCode::AddDevice;
+          return Format::Ascii::CommandCode::RemoveDevice;
 
         case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(Schemas::Payload::AddDevice);
+          return static_cast<uint16_t>(Schemas::Payload::RemoveDevice);
       }
     };
 
-    AddDevice(Packet::Type initial_type, Packet::Type translated_type);
+    RemoveDevice(Packet::Type initial_type, Packet::Type translated_type);
 
     void import(AsciiFormatExtractor& extractor) override;
     void import(FlatbuffersFormatExtractor& extractor) override;
@@ -40,4 +40,4 @@ namespace Packet::Commands {
 
 }
 
-#endif //BABLE_LINUX_ADDDEVICE_HPP
+#endif //BABLE_LINUX_REMOVEDEVICE_HPP

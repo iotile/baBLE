@@ -10,7 +10,7 @@
 #include "../Exceptions/NotFound/NotFoundException.hpp"
 
 // Used to register all the packets on startup and then build them from received raw bytes.
-class PacketBuilder {
+class PacketBuilder : public Loggable {
 
   // Define packet constructor function prototype
   using PacketConstructor = std::function<std::unique_ptr<Packet::AbstractPacket>()>;
@@ -33,6 +33,8 @@ public:
   std::unique_ptr<Packet::AbstractPacket> build(const std::vector<uint8_t>& raw_data);
   std::unique_ptr<Packet::AbstractPacket> build_command(const std::vector<uint8_t>& raw_data);
   std::unique_ptr<Packet::AbstractPacket> build_event(uint16_t event_code, const std::vector<uint8_t>& raw_data);
+
+  const std::string stringify() const override;
 
 private:
   std::shared_ptr<AbstractFormat> m_building_format; // Format used to import data after building packet

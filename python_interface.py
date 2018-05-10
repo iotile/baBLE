@@ -4,7 +4,7 @@ import time
 import flatbuffers
 
 from Schemas import Packet, Payload, GetMGMTInfo, StartScan, StopScan, Discovering, DeviceFound, BaBLEError, StatusCode,\
-                    AddDevice, DeviceConnected
+                    AddDevice, DeviceConnected, RemoveDevice
 
 def status_code_to_string(status_code):
     if status_code == StatusCode.StatusCode().Success:
@@ -82,31 +82,57 @@ buf2 = builder2.Output()
 buf2 = b'\xCA\xFE' + len(buf2).to_bytes(2, byteorder='little') + buf2
 
 # AddDevice
-builder3 = flatbuffers.Builder(0)
+# builder3 = flatbuffers.Builder(0)
+#
+# AddDevice.AddDeviceStartAddressVector(builder3, 6)
+# # address_list = [0xC4, 0xF0, 0xA5, 0xE6, 0x8A, 0x91]
+# address_list = [0x91, 0x8A, 0xE6, 0xA5, 0xF0, 0xC4]
+# for element in reversed(address_list):
+#     builder3.PrependByte(element)
+# address = builder3.EndVector(6)
+#
+# AddDevice.AddDeviceStart(builder3)
+# AddDevice.AddDeviceAddControllerId(builder3, 0)
+# AddDevice.AddDeviceAddAddress(builder3, address)
+# AddDevice.AddDeviceAddAddressType(builder3, 2)
+# payload3 = AddDevice.AddDeviceEnd(builder3)
+#
+# Packet.PacketStart(builder3)
+# Packet.PacketAddPayloadType(builder3, Payload.Payload().AddDevice)
+# Packet.PacketAddPayload(builder3, payload3)
+# packet3 = Packet.PacketEnd(builder3)
+#
+# builder3.Finish(packet3)
+# buf3 = builder3.Output()
+# buf3 = b'\xCA\xFE' + len(buf3).to_bytes(2, byteorder='little') + buf3
 
-AddDevice.AddDeviceStartAddressVector(builder3, 6)
+# RemoveDevice
+builder4 = flatbuffers.Builder(0)
+
+RemoveDevice.RemoveDeviceStartAddressVector(builder4, 6)
 # address_list = [0xC4, 0xF0, 0xA5, 0xE6, 0x8A, 0x91]
 address_list = [0x91, 0x8A, 0xE6, 0xA5, 0xF0, 0xC4]
 for element in reversed(address_list):
-    builder3.PrependByte(element)
-address = builder3.EndVector(6)
+    builder4.PrependByte(element)
+address = builder4.EndVector(6)
 
-AddDevice.AddDeviceStart(builder3)
-AddDevice.AddDeviceAddControllerId(builder3, 0)
-AddDevice.AddDeviceAddAddress(builder3, address)
-AddDevice.AddDeviceAddAddressType(builder3, 2)
-payload3 = AddDevice.AddDeviceEnd(builder3)
+RemoveDevice.RemoveDeviceStart(builder4)
+RemoveDevice.RemoveDeviceAddControllerId(builder4, 0)
+RemoveDevice.RemoveDeviceAddAddress(builder4, address)
+RemoveDevice.RemoveDeviceAddAddressType(builder4, 2)
+payload4 = RemoveDevice.RemoveDeviceEnd(builder4)
 
-Packet.PacketStart(builder3)
-Packet.PacketAddPayloadType(builder3, Payload.Payload().AddDevice)
-Packet.PacketAddPayload(builder3, payload3)
-packet3 = Packet.PacketEnd(builder3)
+Packet.PacketStart(builder4)
+Packet.PacketAddPayloadType(builder4, Payload.Payload().RemoveDevice)
+Packet.PacketAddPayload(builder4, payload4)
+packet4 = Packet.PacketEnd(builder4)
 
-builder3.Finish(packet3)
-buf3 = builder3.Output()
-buf3 = b'\xCA\xFE' + len(buf3).to_bytes(2, byteorder='little') + buf3
+builder4.Finish(packet4)
+buf4 = builder4.Output()
+buf4 = b'\xCA\xFE' + len(buf4).to_bytes(2, byteorder='little') + buf4
 
-process.stdin.write(buf3)
+print(buf4)
+process.stdin.write(buf4)
 
 header_length = 4
 
@@ -170,6 +196,17 @@ try:
             address = add_device.AddressAsNumpy()
 
             print("AddDevice",
+                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
+                  "Controller id:", controller_id, "Address type:", address_type, "Address:", address)
+
+        elif packet.PayloadType() == Payload.Payload().RemoveDevice:
+            remove_device = RemoveDevice.RemoveDevice()
+            remove_device.Init(packet.Payload().Bytes, packet.Payload().Pos)
+            controller_id = remove_device.ControllerId()
+            address_type = remove_device.AddressType()
+            address = remove_device.AddressAsNumpy()
+
+            print("RemoveDevice",
                   "Status:", status, "Native class: ", native_class, "Native status:", native_status,
                   "Controller id:", controller_id, "Address type:", address_type, "Address:", address)
         elif packet.PayloadType() == Payload.Payload().Discovering:
