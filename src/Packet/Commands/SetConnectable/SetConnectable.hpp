@@ -1,31 +1,31 @@
-#ifndef BABLE_LINUX_SETDISCOVERABLE_HPP
-#define BABLE_LINUX_SETDISCOVERABLE_HPP
+#ifndef BABLE_LINUX_SETCONNECTABLE_HPP
+#define BABLE_LINUX_SETCONNECTABLE_HPP
 
 #include "../CommandPacket.hpp"
 #include "../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 
 namespace Packet::Commands {
 
-  class SetDiscoverable : public CommandPacket<SetDiscoverable> {
+  class SetConnectable : public CommandPacket<SetConnectable> {
 
   public:
     static const uint16_t command_code(Packet::Type type) {
       switch(type) {
         case Packet::Type::MGMT:
-          return Format::MGMT::CommandCode::SetDiscoverable;
+          return Format::MGMT::CommandCode::SetConnectable;
 
         case Packet::Type::ASCII:
-          return Format::Ascii::CommandCode::SetDiscoverable;
+          return Format::Ascii::CommandCode::SetConnectable;
 
         case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(Schemas::Payload::SetDiscoverable);
+          return static_cast<uint16_t>(Schemas::Payload::SetConnectable);
 
         case Packet::Type::NONE:
           return 0;
       }
     };
 
-    SetDiscoverable(Packet::Type initial_type, Packet::Type translated_type);
+    SetConnectable(Packet::Type initial_type, Packet::Type translated_type);
 
     void import(AsciiFormatExtractor& extractor) override;
     void import(FlatbuffersFormatExtractor& extractor) override;
@@ -36,11 +36,10 @@ namespace Packet::Commands {
     std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override;
 
   private:
-    uint8_t m_state;
-    uint16_t m_timeout;
+    bool m_state;
 
   };
 
 }
 
-#endif //BABLE_LINUX_SETDISCOVERABLE_HPP
+#endif //BABLE_LINUX_SETCONNECTABLE_HPP

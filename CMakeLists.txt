@@ -61,7 +61,25 @@ set(SOURCES_FILES
         src/Exceptions/WrongFormat/WrongFormatException.hpp
         src/Exceptions/Socket/SocketException.hpp
         src/Exceptions/InvalidCommand/InvalidCommandException.hpp
-        src/bootstrap.hpp src/Packet/Commands/AddDevice/AddDevice.cpp src/Packet/Commands/AddDevice/AddDevice.hpp src/Packet/Events/DeviceConnected/DeviceConnected.cpp src/Packet/Events/DeviceConnected/DeviceConnected.hpp src/Packet/Commands/RemoveDevice/RemoveDevice.cpp src/Packet/Commands/RemoveDevice/RemoveDevice.hpp src/Packet/Commands/Disconnect/Disconnect.cpp src/Packet/Commands/Disconnect/Disconnect.hpp src/Packet/Events/DeviceDisconnected/DeviceDisconnected.cpp src/Packet/Events/DeviceDisconnected/DeviceDisconnected.hpp src/Packet/Commands/SetPowered/SetPowered.cpp src/Packet/Commands/SetPowered/SetPowered.hpp src/Packet/Events/ClassOfDeviceChanged/ClassOfDeviceChanged.cpp src/Packet/Events/ClassOfDeviceChanged/ClassOfDeviceChanged.hpp src/Packet/Commands/SetDiscoverable/SetDiscoverable.cpp src/Packet/Commands/SetDiscoverable/SetDiscoverable.hpp)
+        src/bootstrap.hpp
+        src/Packet/Commands/AddDevice/AddDevice.cpp
+        src/Packet/Commands/AddDevice/AddDevice.hpp
+        src/Packet/Events/DeviceConnected/DeviceConnected.cpp
+        src/Packet/Events/DeviceConnected/DeviceConnected.hpp
+        src/Packet/Commands/RemoveDevice/RemoveDevice.cpp
+        src/Packet/Commands/RemoveDevice/RemoveDevice.hpp
+        src/Packet/Commands/Disconnect/Disconnect.cpp
+        src/Packet/Commands/Disconnect/Disconnect.hpp
+        src/Packet/Events/DeviceDisconnected/DeviceDisconnected.cpp
+        src/Packet/Events/DeviceDisconnected/DeviceDisconnected.hpp
+        src/Packet/Commands/SetPowered/SetPowered.cpp
+        src/Packet/Commands/SetPowered/SetPowered.hpp
+        src/Packet/Events/ClassOfDeviceChanged/ClassOfDeviceChanged.cpp
+        src/Packet/Events/ClassOfDeviceChanged/ClassOfDeviceChanged.hpp
+        src/Packet/Commands/SetDiscoverable/SetDiscoverable.cpp
+        src/Packet/Commands/SetDiscoverable/SetDiscoverable.hpp
+        src/Packet/Commands/SetConnectable/SetConnectable.cpp
+        src/Packet/Commands/SetConnectable/SetConnectable.hpp src/Packet/Events/NewSettings/NewSettings.cpp src/Packet/Events/NewSettings/NewSettings.hpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies

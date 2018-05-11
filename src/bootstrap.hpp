@@ -10,13 +10,15 @@
 #include "Packet/Commands/AddDevice/AddDevice.hpp"
 #include "Packet/Commands/RemoveDevice/RemoveDevice.hpp"
 #include "Packet/Commands/Disconnect/Disconnect.hpp"
+#include "Packet/Commands/SetPowered/SetPowered.hpp"
+#include "Packet/Commands/SetDiscoverable/SetDiscoverable.hpp"
+#include "Packet/Commands/SetConnectable/SetConnectable.hpp"
 #include "Packet/Events/DeviceConnected/DeviceConnected.hpp"
 #include "Packet/Events/DeviceDisconnected/DeviceDisconnected.hpp"
 #include "Packet/Events/DeviceFound/DeviceFound.hpp"
 #include "Packet/Events/Discovering/Discovering.hpp"
-#include "Packet/Commands/SetPowered/SetPowered.hpp"
 #include "Packet/Events/ClassOfDeviceChanged/ClassOfDeviceChanged.hpp"
-#include "Packet/Commands/SetDiscoverable/SetDiscoverable.hpp"
+#include "Packet/Events/NewSettings/NewSettings.hpp"
 
 using namespace std;
 
@@ -34,12 +36,14 @@ namespace Bootstrap {
         .register_command<Packet::Commands::Disconnect>()
         .register_command<Packet::Commands::SetPowered>()
         .register_command<Packet::Commands::SetDiscoverable>()
+        .register_command<Packet::Commands::SetConnectable>()
         .register_event<Packet::Events::DeviceConnected>()
         .register_event<Packet::Events::DeviceDisconnected>()
         .register_event<Packet::Events::DeviceFound>()
         .register_event<Packet::Events::Discovering>()
       .set_output_format(nullptr)
-        .register_event<Packet::Events::ClassOfDeviceChanged>();
+        .register_event<Packet::Events::ClassOfDeviceChanged>()
+        .register_event<Packet::Events::NewSettings>();
   }
 
   // Stdio builder
@@ -53,7 +57,8 @@ namespace Bootstrap {
         .register_command<Packet::Commands::RemoveDevice>()
         .register_command<Packet::Commands::Disconnect>()
         .register_command<Packet::Commands::SetPowered>()
-        .register_command<Packet::Commands::SetDiscoverable>();
+        .register_command<Packet::Commands::SetDiscoverable>()
+        .register_command<Packet::Commands::SetConnectable>();
   }
 
 }

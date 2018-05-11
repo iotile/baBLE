@@ -48,7 +48,7 @@ namespace Packet::Commands {
 
     if (m_native_status == 0){
       auto m_current_settings = extractor.get_value<uint32_t>();
-      m_state = static_cast<uint8_t>(m_current_settings & 1 << 3);
+      m_state = static_cast<uint8_t>((m_current_settings & 1 << 3) > 0);
     }
   }
 

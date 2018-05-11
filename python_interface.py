@@ -4,7 +4,8 @@ import time
 import flatbuffers
 
 from Schemas import Packet, Payload, GetMGMTInfo, StartScan, StopScan, Discovering, DeviceFound, BaBLEError, StatusCode,\
-                    AddDevice, DeviceConnected, RemoveDevice, Disconnect, DeviceDisconnected, SetPowered, SetDiscoverable
+                    AddDevice, DeviceConnected, RemoveDevice, Disconnect, DeviceDisconnected, SetPowered, SetDiscoverable,\
+                    SetConnectable
 
 def status_code_to_string(status_code):
     if status_code == StatusCode.StatusCode().Success:
@@ -171,23 +172,40 @@ process = subprocess.Popen(["./build/debug/baBLE_linux"],
 # buf6 = b'\xCA\xFE' + len(buf6).to_bytes(2, byteorder='little') + buf6
 
 # SetDiscoverable
-builder7 = flatbuffers.Builder(0)
+# builder7 = flatbuffers.Builder(0)
+#
+# SetDiscoverable.SetDiscoverableStart(builder7)
+# SetDiscoverable.SetDiscoverableAddControllerId(builder7, 0)
+# SetDiscoverable.SetDiscoverableAddState(builder7, False)
+# payload7 = SetDiscoverable.SetDiscoverableEnd(builder7)
+#
+# Packet.PacketStart(builder7)
+# Packet.PacketAddPayloadType(builder7, Payload.Payload().SetDiscoverable)
+# Packet.PacketAddPayload(builder7, payload7)
+# packet7 = Packet.PacketEnd(builder7)
+#
+# builder7.Finish(packet7)
+# buf7 = builder7.Output()
+# buf7 = b'\xCA\xFE' + len(buf7).to_bytes(2, byteorder='little') + buf7
 
-SetDiscoverable.SetDiscoverableStart(builder7)
-SetDiscoverable.SetDiscoverableAddControllerId(builder7, 0)
-SetDiscoverable.SetDiscoverableAddState(builder7, False)
-payload7 = SetDiscoverable.SetDiscoverableEnd(builder7)
+# SetConnectable
+builder8 = flatbuffers.Builder(0)
 
-Packet.PacketStart(builder7)
-Packet.PacketAddPayloadType(builder7, Payload.Payload().SetDiscoverable)
-Packet.PacketAddPayload(builder7, payload7)
-packet7 = Packet.PacketEnd(builder7)
+SetConnectable.SetConnectableStart(builder8)
+SetConnectable.SetConnectableAddControllerId(builder8, 0)
+SetConnectable.SetConnectableAddState(builder8, False)
+payload8 = SetConnectable.SetConnectableEnd(builder8)
 
-builder7.Finish(packet7)
-buf7 = builder7.Output()
-buf7 = b'\xCA\xFE' + len(buf7).to_bytes(2, byteorder='little') + buf7
+Packet.PacketStart(builder8)
+Packet.PacketAddPayloadType(builder8, Payload.Payload().SetConnectable)
+Packet.PacketAddPayload(builder8, payload8)
+packet8 = Packet.PacketEnd(builder8)
 
-process.stdin.write(buf7)
+builder8.Finish(packet8)
+buf8 = builder8.Output()
+buf8 = b'\xCA\xFE' + len(buf8).to_bytes(2, byteorder='little') + buf8
+
+process.stdin.write(buf8)
 
 header_length = 4
 
@@ -353,6 +371,16 @@ try:
             print("SetDiscoverable",
                   "Status:", status, "Native class: ", native_class, "Native status:", native_status,
                   "Controller id:", controller_id, "State:", state, "Timeout:", timeout)
+
+        elif packet.PayloadType() == Payload.Payload().SetConnectable:
+            set_connectable = SetConnectable.SetConnectable()
+            set_connectable.Init(packet.Payload().Bytes, packet.Payload().Pos)
+            controller_id = set_connectable.ControllerId()
+            state = set_connectable.State()
+
+            print("SetConnectable",
+                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
+                  "Controller id:", controller_id, "State:", state)
 
         elif packet.PayloadType() == Payload.Payload().BaBLEError:
             error = BaBLEError.BaBLEError()

@@ -13,7 +13,8 @@ namespace Format::Ascii {
     RemoveDevice= 0x0005,
     Disconnect= 0x0006,
     SetPowered= 0x0007,
-    SetDiscoverable= 0x0008
+    SetDiscoverable= 0x0008,
+    SetConnectable= 0x0009
   };
 
   enum EventCode {
@@ -21,7 +22,8 @@ namespace Format::Ascii {
     Discovering= 0x0200,
     DeviceConnected= 0x0300,
     DeviceDisconnected=0x0400,
-    ClassOfDeviceChanged= 0x0500
+    ClassOfDeviceChanged= 0x0500,
+    NewSettings= 0x0600
   };
 
 }
