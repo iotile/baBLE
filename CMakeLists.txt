@@ -21,11 +21,41 @@ set(SOURCES_FILES
         src/Packet/Commands/Scan/StartScan.hpp
         src/Packet/Commands/Scan/StopScan.cpp
         src/Packet/Commands/Scan/StopScan.hpp
+        src/Packet/Commands/AddDevice/AddDevice.cpp
+        src/Packet/Commands/AddDevice/AddDevice.hpp
+        src/Packet/Commands/RemoveDevice/RemoveDevice.cpp
+        src/Packet/Commands/RemoveDevice/RemoveDevice.hpp
+        src/Packet/Commands/Disconnect/Disconnect.cpp
+        src/Packet/Commands/Disconnect/Disconnect.hpp
+        src/Packet/Commands/SetPowered/SetPowered.cpp
+        src/Packet/Commands/SetPowered/SetPowered.hpp
+        src/Packet/Commands/SetDiscoverable/SetDiscoverable.cpp
+        src/Packet/Commands/SetDiscoverable/SetDiscoverable.hpp
+        src/Packet/Commands/SetConnectable/SetConnectable.cpp
+        src/Packet/Commands/SetConnectable/SetConnectable.hpp
+        src/Packet/Commands/GetControllersList/GetControllersList.cpp
+        src/Packet/Commands/GetControllersList/GetControllersList.hpp
+        src/Packet/Commands/GetControllerInfo/GetControllerInfo.cpp
+        src/Packet/Commands/GetControllerInfo/GetControllerInfo.hpp
+        src/Packet/Commands/GetConnectedDevices/GetConnectedDevices.cpp
+        src/Packet/Commands/GetConnectedDevices/GetConnectedDevices.hpp
         src/Packet/Events/EventPacket.hpp
         src/Packet/Events/DeviceFound/DeviceFound.cpp
         src/Packet/Events/DeviceFound/DeviceFound.hpp
         src/Packet/Events/Discovering/Discovering.cpp
         src/Packet/Events/Discovering/Discovering.hpp
+        src/Packet/Events/DeviceConnected/DeviceConnected.cpp
+        src/Packet/Events/DeviceConnected/DeviceConnected.hpp
+        src/Packet/Events/DeviceDisconnected/DeviceDisconnected.cpp
+        src/Packet/Events/DeviceDisconnected/DeviceDisconnected.hpp
+        src/Packet/Events/ClassOfDeviceChanged/ClassOfDeviceChanged.cpp
+        src/Packet/Events/ClassOfDeviceChanged/ClassOfDeviceChanged.hpp
+        src/Packet/Events/NewSettings/NewSettings.cpp
+        src/Packet/Events/NewSettings/NewSettings.hpp
+        src/Packet/Events/ControllerAdded/ControllerAdded.cpp
+        src/Packet/Events/ControllerAdded/ControllerAdded.hpp
+        src/Packet/Events/ControllerRemoved/ControllerRemoved.cpp
+        src/Packet/Events/ControllerRemoved/ControllerRemoved.hpp
         src/Packet/BaBLEError/BaBLEErrorPacket.cpp
         src/Packet/BaBLEError/BaBLEErrorPacket.hpp
         src/Format/AbstractFormat.hpp
@@ -61,25 +91,7 @@ set(SOURCES_FILES
         src/Exceptions/WrongFormat/WrongFormatException.hpp
         src/Exceptions/Socket/SocketException.hpp
         src/Exceptions/InvalidCommand/InvalidCommandException.hpp
-        src/bootstrap.hpp
-        src/Packet/Commands/AddDevice/AddDevice.cpp
-        src/Packet/Commands/AddDevice/AddDevice.hpp
-        src/Packet/Events/DeviceConnected/DeviceConnected.cpp
-        src/Packet/Events/DeviceConnected/DeviceConnected.hpp
-        src/Packet/Commands/RemoveDevice/RemoveDevice.cpp
-        src/Packet/Commands/RemoveDevice/RemoveDevice.hpp
-        src/Packet/Commands/Disconnect/Disconnect.cpp
-        src/Packet/Commands/Disconnect/Disconnect.hpp
-        src/Packet/Events/DeviceDisconnected/DeviceDisconnected.cpp
-        src/Packet/Events/DeviceDisconnected/DeviceDisconnected.hpp
-        src/Packet/Commands/SetPowered/SetPowered.cpp
-        src/Packet/Commands/SetPowered/SetPowered.hpp
-        src/Packet/Events/ClassOfDeviceChanged/ClassOfDeviceChanged.cpp
-        src/Packet/Events/ClassOfDeviceChanged/ClassOfDeviceChanged.hpp
-        src/Packet/Commands/SetDiscoverable/SetDiscoverable.cpp
-        src/Packet/Commands/SetDiscoverable/SetDiscoverable.hpp
-        src/Packet/Commands/SetConnectable/SetConnectable.cpp
-        src/Packet/Commands/SetConnectable/SetConnectable.hpp src/Packet/Events/NewSettings/NewSettings.cpp src/Packet/Events/NewSettings/NewSettings.hpp src/Packet/Commands/GetControllersList/GetControllersList.cpp src/Packet/Commands/GetControllersList/GetControllersList.hpp src/Packet/Events/ControllerAdded/ControllerAdded.cpp src/Packet/Events/ControllerAdded/ControllerAdded.hpp src/Packet/Events/ControllerRemoved/ControllerRemoved.cpp src/Packet/Events/ControllerRemoved/ControllerRemoved.hpp src/Packet/Commands/GetControllerInfo/GetControllerInfo.cpp src/Packet/Commands/GetControllerInfo/GetControllerInfo.hpp src/Packet/Commands/GetConnectedDevices/GetConnectedDevices.cpp src/Packet/Commands/GetConnectedDevices/GetConnectedDevices.hpp)
+        src/bootstrap.hpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies
