@@ -18,6 +18,9 @@ namespace Packet::Commands {
 
         case Packet::Type::FLATBUFFERS:
           return static_cast<uint16_t>(Schemas::Payload::GetMGMTInfo);
+
+        case Packet::Type::NONE:
+          return 0;
       }
     };
 

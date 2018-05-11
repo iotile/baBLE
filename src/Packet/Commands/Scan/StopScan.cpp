@@ -16,7 +16,7 @@ namespace Packet::Commands {
       m_controller_id = static_cast<uint16_t>(stoi(extractor.get()));
       m_address_type = static_cast<uint8_t>(stoi(extractor.get()));
 
-    } catch (const runtime_error& err) {
+    } catch (const Exceptions::WrongFormatException& err) {
       throw Exceptions::InvalidCommandException("Missing arguments for 'StopScan' packet. Usage: <command_code>,<controller_id>,<address_type>");
     }
   };

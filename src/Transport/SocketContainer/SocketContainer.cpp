@@ -12,6 +12,11 @@ SocketContainer& SocketContainer::register_socket(shared_ptr<AbstractSocket> soc
 bool SocketContainer::send(unique_ptr<Packet::AbstractPacket> packet) {
   Packet::Type type = packet->current_type();
 
+  if (type == Packet::Type::NONE) {
+    LOG.debug("Packet ignored: " + packet->stringify());
+    return true;
+  }
+
   auto it = m_sockets.find(type);
   if (it == m_sockets.end()) {
     throw Exceptions::NotFoundException("Can't find socket in SocketContainer for given packet type.");

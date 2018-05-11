@@ -8,11 +8,6 @@ PacketBuilder::PacketBuilder(shared_ptr<AbstractFormat> building_format) {
   m_output_format = nullptr;
 };
 
-PacketBuilder::PacketBuilder(shared_ptr<AbstractFormat> building_format, shared_ptr<AbstractFormat> output_format) {
-m_building_format = move(building_format);
-m_output_format = move(output_format);
-};
-
 // Setters
 PacketBuilder& PacketBuilder::set_output_format(shared_ptr<AbstractFormat> output_format) {
   m_output_format = move(output_format);

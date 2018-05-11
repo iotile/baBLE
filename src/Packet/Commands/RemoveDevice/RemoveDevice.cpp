@@ -26,7 +26,7 @@ namespace Packet::Commands {
         item_address = static_cast<uint8_t>(stoi(item));
       }
 
-    } catch (const runtime_error& err) {
+    } catch (const Exceptions::WrongFormatException& err) {
       throw Exceptions::InvalidCommandException("Missing arguments for 'RemoveDevice' packet. Usage: <command_code>,<controller_id>,<address_type>,<address>");
     } catch (const bad_cast& err) {
       throw Exceptions::InvalidCommandException("Invalid address argument for 'RemoveDevice' packet.");

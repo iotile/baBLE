@@ -10,6 +10,7 @@ namespace Format::MGMT {
 
   enum CommandCode {
     GetMGMTInfo= 0x0001,
+    SetPowered= 0x0005,
     Disconnect= 0x0014,
     StartScan= 0x0023,
     StopScan= 0x0024,
@@ -18,6 +19,7 @@ namespace Format::MGMT {
   };
 
   enum EventCode {
+    ClassOfDeviceChanged= 0x0007,
     DeviceConnected= 0x000B,
     DeviceDisconnected= 0x000C,
     DeviceFound= 0x0012,

@@ -4,6 +4,7 @@ include "./Commands/StopScan.fbs";
 include "./Commands/AddDevice.fbs";
 include "./Commands/RemoveDevice.fbs";
 include "./Commands/Disconnect.fbs";
+include "./Commands/SetPowered.fbs";
 include "./Events/DeviceConnected.fbs";
 include "./Events/DeviceDisconnected.fbs";
 include "./Events/DeviceFound.fbs";
@@ -18,6 +19,7 @@ union Payload {
   Disconnect,
   GetMGMTInfo,
   RemoveDevice,
+  SetPowered,
   StartScan,
   StopScan,
 

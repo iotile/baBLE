@@ -1,31 +1,31 @@
-#ifndef BABLE_LINUX_REMOVEDEVICE_HPP
-#define BABLE_LINUX_REMOVEDEVICE_HPP
+#ifndef BABLE_LINUX_SETPOWERED_HPP
+#define BABLE_LINUX_SETPOWERED_HPP
 
 #include "../CommandPacket.hpp"
 #include "../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 
 namespace Packet::Commands {
 
-  class RemoveDevice : public CommandPacket<RemoveDevice> {
+  class SetPowered : public CommandPacket<SetPowered> {
 
   public:
     static const uint16_t command_code(Packet::Type type) {
       switch(type) {
         case Packet::Type::MGMT:
-          return Format::MGMT::CommandCode::RemoveDevice;
+          return Format::MGMT::CommandCode::SetPowered;
 
         case Packet::Type::ASCII:
-          return Format::Ascii::CommandCode::RemoveDevice;
+          return Format::Ascii::CommandCode::SetPowered;
 
         case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(Schemas::Payload::RemoveDevice);
+          return static_cast<uint16_t>(Schemas::Payload::SetPowered);
 
         case Packet::Type::NONE:
           return 0;
       }
     };
 
-    RemoveDevice(Packet::Type initial_type, Packet::Type translated_type);
+    SetPowered(Packet::Type initial_type, Packet::Type translated_type);
 
     void import(AsciiFormatExtractor& extractor) override;
     void import(FlatbuffersFormatExtractor& extractor) override;
@@ -36,11 +36,10 @@ namespace Packet::Commands {
     std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override;
 
   private:
-    uint8_t m_address_type;
-    std::array<uint8_t, 6> m_address{};
+    bool m_state;
 
   };
 
 }
 
-#endif //BABLE_LINUX_REMOVEDEVICE_HPP
+#endif //BABLE_LINUX_SETPOWERED_HPP

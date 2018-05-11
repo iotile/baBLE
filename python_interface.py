@@ -4,7 +4,7 @@ import time
 import flatbuffers
 
 from Schemas import Packet, Payload, GetMGMTInfo, StartScan, StopScan, Discovering, DeviceFound, BaBLEError, StatusCode,\
-                    AddDevice, DeviceConnected, RemoveDevice, Disconnect, DeviceDisconnected
+                    AddDevice, DeviceConnected, RemoveDevice, Disconnect, DeviceDisconnected, SetPowered
 
 def status_code_to_string(status_code):
     if status_code == StatusCode.StatusCode().Success:
@@ -130,30 +130,47 @@ process = subprocess.Popen(["./build/debug/baBLE_linux"],
 # buf4 = b'\xCA\xFE' + len(buf4).to_bytes(2, byteorder='little') + buf4
 
 # Disconnect
-builder5 = flatbuffers.Builder(0)
+# builder5 = flatbuffers.Builder(0)
+#
+# Disconnect.DisconnectStartAddressVector(builder5, 6)
+# address_list = [0xC4, 0xF0, 0xA5, 0xE6, 0x8A, 0x91]
+# for element in address_list:
+#     builder5.PrependByte(element)
+# address = builder5.EndVector(6)
+#
+# Disconnect.DisconnectStart(builder5)
+# Disconnect.DisconnectAddControllerId(builder5, 0)
+# Disconnect.DisconnectAddAddress(builder5, address)
+# Disconnect.DisconnectAddAddressType(builder5, 2)
+# payload5 = Disconnect.DisconnectEnd(builder5)
+#
+# Packet.PacketStart(builder5)
+# Packet.PacketAddPayloadType(builder5, Payload.Payload().Disconnect)
+# Packet.PacketAddPayload(builder5, payload5)
+# packet5 = Packet.PacketEnd(builder5)
+#
+# builder5.Finish(packet5)
+# buf5 = builder5.Output()
+# buf5 = b'\xCA\xFE' + len(buf5).to_bytes(2, byteorder='little') + buf5
 
-RemoveDevice.RemoveDeviceStartAddressVector(builder5, 6)
-address_list = [0xC4, 0xF0, 0xA5, 0xE6, 0x8A, 0x91]
-for element in address_list:
-    builder5.PrependByte(element)
-address = builder5.EndVector(6)
+# Disconnect
+builder6 = flatbuffers.Builder(0)
 
-RemoveDevice.RemoveDeviceStart(builder5)
-RemoveDevice.RemoveDeviceAddControllerId(builder5, 0)
-RemoveDevice.RemoveDeviceAddAddress(builder5, address)
-RemoveDevice.RemoveDeviceAddAddressType(builder5, 2)
-payload5 = RemoveDevice.RemoveDeviceEnd(builder5)
+SetPowered.SetPoweredStart(builder6)
+SetPowered.SetPoweredAddControllerId(builder6, 0)
+SetPowered.SetPoweredAddState(builder6, False)
+payload6 = SetPowered.SetPoweredEnd(builder6)
 
-Packet.PacketStart(builder5)
-Packet.PacketAddPayloadType(builder5, Payload.Payload().Disconnect)
-Packet.PacketAddPayload(builder5, payload5)
-packet5 = Packet.PacketEnd(builder5)
+Packet.PacketStart(builder6)
+Packet.PacketAddPayloadType(builder6, Payload.Payload().SetPowered)
+Packet.PacketAddPayload(builder6, payload6)
+packet6 = Packet.PacketEnd(builder6)
 
-builder5.Finish(packet5)
-buf5 = builder5.Output()
-buf5 = b'\xCA\xFE' + len(buf5).to_bytes(2, byteorder='little') + buf5
+builder6.Finish(packet6)
+buf6 = builder6.Output()
+buf6 = b'\xCA\xFE' + len(buf6).to_bytes(2, byteorder='little') + buf6
 
-process.stdin.write(buf5)
+process.stdin.write(buf6)
 
 header_length = 4
 
@@ -298,6 +315,16 @@ try:
             print("Disconnect",
                   "Status:", status, "Native class: ", native_class, "Native status:", native_status,
                   "Controller id:", controller_id, "Address type:", address_type, "Address:", address)
+
+        elif packet.PayloadType() == Payload.Payload().SetPowered:
+            set_powered = SetPowered.SetPowered()
+            set_powered.Init(packet.Payload().Bytes, packet.Payload().Pos)
+            controller_id = set_powered.ControllerId()
+            state = set_powered.State()
+
+            print("SetPowered",
+                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
+                  "Controller id:", controller_id, "State:", state)
 
         elif packet.PayloadType() == Payload.Payload().BaBLEError:
             error = BaBLEError.BaBLEError()

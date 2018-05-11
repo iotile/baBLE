@@ -18,7 +18,6 @@ class PacketBuilder : public Loggable {
 public:
   // Constructors
   explicit PacketBuilder(std::shared_ptr<AbstractFormat> building_format);
-  PacketBuilder(std::shared_ptr<AbstractFormat> building_format, std::shared_ptr<AbstractFormat> output_format) ;
 
   // Setters
   PacketBuilder& set_output_format(std::shared_ptr<AbstractFormat> output_format);
@@ -48,10 +47,6 @@ private:
 
 template<class T>
 PacketBuilder& PacketBuilder::register_command() {
-  if (m_output_format == nullptr) {
-    throw std::runtime_error("No output format specified in PacketBuilder. Can't register command.");
-  }
-
   const Packet::Type initial_type = m_building_format->packet_type();
   uint16_t command_code = T::command_code(initial_type);
 
@@ -60,7 +55,13 @@ PacketBuilder& PacketBuilder::register_command() {
     throw std::invalid_argument("Packet already registered");
   }
 
-  const Packet::Type translated_type = m_output_format->packet_type();
+  Packet::Type translated_type;
+
+  if (m_output_format == nullptr) {
+    translated_type = Packet::Type::NONE;
+  } else {
+    translated_type = m_output_format->packet_type();
+  }
 
   m_commands.emplace(command_code, [initial_type, translated_type](){
     return std::make_unique<T>(initial_type, translated_type);
@@ -71,10 +72,6 @@ PacketBuilder& PacketBuilder::register_command() {
 
 template<class T>
 PacketBuilder& PacketBuilder::register_event() {
-  if (m_output_format == nullptr) {
-    throw std::runtime_error("No output format specified in PacketBuilder. Can't register event.");
-  }
-
   const Packet::Type initial_type = m_building_format->packet_type();
   uint16_t event_code = T::event_code(initial_type);
 
@@ -83,7 +80,13 @@ PacketBuilder& PacketBuilder::register_event() {
     throw std::invalid_argument("Packet already registered");
   }
 
-  const Packet::Type translated_type = m_output_format->packet_type();
+  Packet::Type translated_type;
+
+  if (m_output_format == nullptr) {
+    translated_type = Packet::Type::NONE;
+  } else {
+    translated_type = m_output_format->packet_type();
+  }
 
   m_events.emplace(event_code, [initial_type, translated_type](){
     return std::make_unique<T>(initial_type, translated_type);

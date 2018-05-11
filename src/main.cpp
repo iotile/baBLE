@@ -57,8 +57,8 @@ int main() {
       .register_socket(stdio_socket);
 
   // Builder
-  PacketBuilder mgmt_builder(mgmt_format, stdio_socket->format());
-  Bootstrap::register_mgmt_packets(mgmt_builder);
+  PacketBuilder mgmt_builder(mgmt_format);
+  Bootstrap::register_mgmt_packets(mgmt_builder, stdio_socket->format());
 
   PacketBuilder stdio_builder(stdio_socket->format());
   Bootstrap::register_stdio_packets(stdio_builder, mgmt_socket->format());
