@@ -5,7 +5,8 @@ import flatbuffers
 
 from Schemas import Packet, Payload, GetMGMTInfo, StartScan, StopScan, Discovering, DeviceFound, BaBLEError, StatusCode,\
                     AddDevice, DeviceConnected, RemoveDevice, Disconnect, DeviceDisconnected, SetPowered, SetDiscoverable,\
-                    SetConnectable, GetControllersList, ControllerAdded, ControllerRemoved, GetControllerInfo
+                    SetConnectable, GetControllersList, ControllerAdded, ControllerRemoved, GetControllerInfo, \
+                    GetConnectedDevices
 
 def status_code_to_string(status_code):
     if status_code == StatusCode.StatusCode().Success:
@@ -125,12 +126,17 @@ builder = flatbuffers.Builder(0)
 # payload = GetControllersList.GetControllersListEnd(builder)
 
 ## GetControllerInfo
-GetControllerInfo.GetControllerInfoStart(builder)
-GetControllerInfo.GetControllerInfoAddControllerId(builder, 0)
-payload = GetControllerInfo.GetControllerInfoEnd(builder)
+# GetControllerInfo.GetControllerInfoStart(builder)
+# GetControllerInfo.GetControllerInfoAddControllerId(builder, 0)
+# payload = GetControllerInfo.GetControllerInfoEnd(builder)
+
+## GetConnectedDevices
+GetConnectedDevices.GetConnectedDevicesStart(builder)
+GetConnectedDevices.GetConnectedDevicesAddControllerId(builder, 0)
+payload = GetConnectedDevices.GetConnectedDevicesEnd(builder)
 
 Packet.PacketStart(builder)
-Packet.PacketAddPayloadType(builder, Payload.Payload().GetControllerInfo)
+Packet.PacketAddPayloadType(builder, Payload.Payload().GetConnectedDevices)
 Packet.PacketAddPayload(builder, payload)
 packet = Packet.PacketEnd(builder)
 
@@ -318,7 +324,7 @@ try:
         elif packet.PayloadType() == Payload.Payload().GetControllersList:
             controllers_list = GetControllersList.GetControllersList()
             controllers_list.Init(packet.Payload().Bytes, packet.Payload().Pos)
-            num_controllers = controllers_list.NumControllers()
+            num_controllers = controllers_list.ControllersLength()
             controllers = controllers_list.ControllersAsNumpy()
 
             print("GetControllersList",
@@ -361,6 +367,18 @@ try:
                   "Powered:", powered, "Connectable:", connectable, "Discoverable:", discoverable,
                   "LE supported:", low_energy, "Name:", name)
 
+        elif packet.PayloadType() == Payload.Payload().GetConnectedDevices:
+            connected_devices = GetConnectedDevices.GetConnectedDevices()
+            connected_devices.Init(packet.Payload().Bytes, packet.Payload().Pos)
+            controller_id = connected_devices.ControllerId()
+            num_connections = connected_devices.DevicesLength()
+            devices = []
+            for i in range(num_connections):
+                devices.append(connected_devices.Devices(i))
+
+            print("GetConnectedDevices",
+                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id, "Num connections:", num_connections, "Device addresses:", devices)
 
         elif packet.PayloadType() == Payload.Payload().BaBLEError:
             error = BaBLEError.BaBLEError()

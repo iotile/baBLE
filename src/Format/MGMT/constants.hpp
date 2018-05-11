@@ -16,6 +16,7 @@ namespace Format::MGMT {
     SetDiscoverable= 0x0006,
     SetConnectable= 0x0007,
     Disconnect= 0x0014,
+    GetConnections= 0x0015,
     StartScan= 0x0023,
     StopScan= 0x0024,
     AddDevice= 0x0033,

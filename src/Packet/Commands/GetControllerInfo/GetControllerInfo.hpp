@@ -42,8 +42,8 @@ namespace Packet::Commands {
     uint32_t m_supported_settings;
     uint32_t m_current_settings;
     std::array<uint8_t, 3> m_class_of_device{};
-    std::array<uint8_t, 249> m_name{};
-    std::array<uint8_t, 11> m_short_name{};
+    std::string m_name;
+    std::string m_short_name;
 
   };
 

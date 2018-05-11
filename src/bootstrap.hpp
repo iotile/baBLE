@@ -23,6 +23,7 @@
 #include "Packet/Events/ControllerAdded/ControllerAdded.hpp"
 #include "Packet/Events/ControllerRemoved/ControllerRemoved.hpp"
 #include "Packet/Commands/GetControllerInfo/GetControllerInfo.hpp"
+#include "Packet/Commands/GetConnectedDevices/GetConnectedDevices.hpp"
 
 using namespace std;
 
@@ -35,6 +36,7 @@ namespace Bootstrap {
         .register_command<Packet::Commands::GetMGMTInfo>()
         .register_command<Packet::Commands::GetControllersList>()
         .register_command<Packet::Commands::GetControllerInfo>()
+        .register_command<Packet::Commands::GetConnectedDevices>()
         .register_command<Packet::Commands::StartScan>()
         .register_command<Packet::Commands::StopScan>()
         .register_command<Packet::Commands::AddDevice>()
@@ -61,6 +63,7 @@ namespace Bootstrap {
         .register_command<Packet::Commands::GetMGMTInfo>()
         .register_command<Packet::Commands::GetControllersList>()
         .register_command<Packet::Commands::GetControllerInfo>()
+        .register_command<Packet::Commands::GetConnectedDevices>()
         .register_command<Packet::Commands::StartScan>()
         .register_command<Packet::Commands::StopScan>()
         .register_command<Packet::Commands::AddDevice>()

@@ -5,9 +5,7 @@ using namespace std;
 namespace Packet::Commands {
 
   GetControllersList::GetControllersList(Packet::Type initial_type, Packet::Type translated_type)
-      : CommandPacket(initial_type, translated_type) {
-    m_num_controllers = 0;
-  };
+      : CommandPacket(initial_type, translated_type) {};
 
   void GetControllersList::import(AsciiFormatExtractor& extractor) {
     CommandPacket::import(extractor);
@@ -21,7 +19,7 @@ namespace Packet::Commands {
     CommandPacket::import(extractor);
 
     if (m_native_status == 0) {
-      m_num_controllers = extractor.get_value<uint16_t>();
+      auto m_num_controllers = extractor.get_value<uint16_t>();
       m_controllers = extractor.get_vector<uint16_t>(m_num_controllers);
     }
   };
@@ -30,7 +28,7 @@ namespace Packet::Commands {
     CommandPacket::serialize(builder);
     builder
         .set_name("GetControllersList")
-        .add("Num. of controllers", m_num_controllers)
+        .add("Num. of controllers", m_controllers.size())
         .add("Controllers ID", m_controllers);
 
     return builder.build();
@@ -40,7 +38,7 @@ namespace Packet::Commands {
     CommandPacket::serialize(builder);
 
     auto controllers = builder.CreateVector(m_controllers);
-    auto payload = Schemas::CreateGetControllersList(builder, m_num_controllers, controllers);
+    auto payload = Schemas::CreateGetControllersList(builder, controllers);
 
     return builder.build(payload, Schemas::Payload::GetControllersList, m_native_class, m_status, m_native_status);
   }

@@ -44,8 +44,14 @@ namespace Packet::Commands {
       m_supported_settings = extractor.get_value<uint32_t>();
       m_current_settings = extractor.get_value<uint32_t>();
       m_class_of_device = extractor.get_array<uint8_t, 3>();
-      m_name = extractor.get_array<uint8_t, 249>();
-      m_short_name = extractor.get_array<uint8_t, 11>();
+
+      std::array<uint8_t, 249> name_array = extractor.get_array<uint8_t, 249>();
+      m_name = AsciiFormat::bytes_to_string(name_array);
+
+      std::array<uint8_t, 11> short_name_array = extractor.get_array<uint8_t, 11>();
+      if (short_name_array[0] != 0) {
+        m_short_name = AsciiFormat::bytes_to_string(short_name_array);
+      }
     }
   };
 
@@ -59,8 +65,8 @@ namespace Packet::Commands {
         .add("Supported settings", m_supported_settings)
         .add("Current settings", m_current_settings)
         .add("Class of device", m_class_of_device)
-        .add("Name", AsciiFormat::bytes_to_string(m_name))
-        .add("Short name", AsciiFormat::bytes_to_string(m_short_name));
+        .add("Name", m_name)
+        .add("Short name", m_short_name);
 
     return builder.build();
   };
@@ -69,7 +75,7 @@ namespace Packet::Commands {
     CommandPacket::serialize(builder);
 
     auto address = builder.CreateString(AsciiFormat::format_bd_address(m_address));
-    auto name = builder.CreateString(AsciiFormat::bytes_to_string(m_name));
+    auto name = builder.CreateString(m_name);
 
     bool powered = (m_current_settings & 1) > 0;
     bool connectable = (m_current_settings & 1 << 1) > 0;

@@ -1,30 +1,31 @@
-#ifndef BABLE_LINUX_GETCONTROLLERSLIST_HPP
-#define BABLE_LINUX_GETCONTROLLERSLIST_HPP
+#ifndef BABLE_LINUX_GETCONNECTEDDEVICES_HPP
+#define BABLE_LINUX_GETCONNECTEDDEVICES_HPP
 
 #include "../CommandPacket.hpp"
+#include "../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 
 namespace Packet::Commands {
 
-  class GetControllersList : public CommandPacket<GetControllersList> {
+  class GetConnectedDevices : public CommandPacket<GetConnectedDevices> {
 
   public:
     static const uint16_t command_code(Packet::Type type) {
       switch(type) {
         case Packet::Type::MGMT:
-          return Format::MGMT::CommandCode::GetControllersList;
+          return Format::MGMT::CommandCode::GetConnections;
 
         case Packet::Type::ASCII:
-          return Format::Ascii::CommandCode::GetControllersList;
+          return Format::Ascii::CommandCode::GetConnectedDevices;
 
         case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(Schemas::Payload::GetControllersList);
+          return static_cast<uint16_t>(Schemas::Payload::GetConnectedDevices);
 
         case Packet::Type::NONE:
           return 0;
       }
     };
 
-    GetControllersList(Packet::Type initial_type, Packet::Type translated_type);
+    GetConnectedDevices(Packet::Type initial_type, Packet::Type translated_type);
 
     void import(AsciiFormatExtractor& extractor) override;
     void import(FlatbuffersFormatExtractor& extractor) override;
@@ -35,10 +36,10 @@ namespace Packet::Commands {
     std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override;
 
   private:
-    std::vector<uint16_t> m_controllers;
+    std::vector<std::string> m_devices;
 
   };
 
 }
 
-#endif //BABLE_LINUX_GETCONTROLLERSLIST_HPP
+#endif //BABLE_LINUX_GETCONNECTEDDEVICES_HPP

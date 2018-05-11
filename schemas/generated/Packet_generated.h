@@ -14,6 +14,8 @@ struct GetControllersList;
 
 struct GetControllerInfo;
 
+struct GetConnectedDevices;
+
 struct StartScan;
 
 struct StopScan;
@@ -50,31 +52,33 @@ enum class Payload : uint8_t {
   NONE = 0,
   AddDevice = 1,
   Disconnect = 2,
-  GetControllerInfo = 3,
-  GetControllersList = 4,
-  GetMGMTInfo = 5,
-  RemoveDevice = 6,
-  SetConnectable = 7,
-  SetDiscoverable = 8,
-  SetPowered = 9,
-  StartScan = 10,
-  StopScan = 11,
-  ControllerAdded = 12,
-  ControllerRemoved = 13,
-  DeviceConnected = 14,
-  DeviceDisconnected = 15,
-  DeviceFound = 16,
-  Discovering = 17,
-  BaBLEError = 18,
+  GetConnectedDevices = 3,
+  GetControllerInfo = 4,
+  GetControllersList = 5,
+  GetMGMTInfo = 6,
+  RemoveDevice = 7,
+  SetConnectable = 8,
+  SetDiscoverable = 9,
+  SetPowered = 10,
+  StartScan = 11,
+  StopScan = 12,
+  ControllerAdded = 13,
+  ControllerRemoved = 14,
+  DeviceConnected = 15,
+  DeviceDisconnected = 16,
+  DeviceFound = 17,
+  Discovering = 18,
+  BaBLEError = 19,
   MIN = NONE,
   MAX = BaBLEError
 };
 
-inline const Payload (&EnumValuesPayload())[19] {
+inline const Payload (&EnumValuesPayload())[20] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::AddDevice,
     Payload::Disconnect,
+    Payload::GetConnectedDevices,
     Payload::GetControllerInfo,
     Payload::GetControllersList,
     Payload::GetMGMTInfo,
@@ -100,6 +104,7 @@ inline const char * const *EnumNamesPayload() {
     "NONE",
     "AddDevice",
     "Disconnect",
+    "GetConnectedDevices",
     "GetControllerInfo",
     "GetControllersList",
     "GetMGMTInfo",
@@ -136,6 +141,10 @@ template<> struct PayloadTraits<AddDevice> {
 
 template<> struct PayloadTraits<Disconnect> {
   static const Payload enum_value = Payload::Disconnect;
+};
+
+template<> struct PayloadTraits<GetConnectedDevices> {
+  static const Payload enum_value = Payload::GetConnectedDevices;
 };
 
 template<> struct PayloadTraits<GetControllerInfo> {
@@ -316,18 +325,13 @@ inline flatbuffers::Offset<GetMGMTInfo> CreateGetMGMTInfo(
 
 struct GetControllersList FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_NUM_CONTROLLERS = 4,
-    VT_CONTROLLERS = 6
+    VT_CONTROLLERS = 4
   };
-  uint16_t num_controllers() const {
-    return GetField<uint16_t>(VT_NUM_CONTROLLERS, 0);
-  }
   const flatbuffers::Vector<uint16_t> *controllers() const {
     return GetPointer<const flatbuffers::Vector<uint16_t> *>(VT_CONTROLLERS);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint16_t>(verifier, VT_NUM_CONTROLLERS) &&
            VerifyOffset(verifier, VT_CONTROLLERS) &&
            verifier.Verify(controllers()) &&
            verifier.EndTable();
@@ -337,9 +341,6 @@ struct GetControllersList FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct GetControllersListBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_num_controllers(uint16_t num_controllers) {
-    fbb_.AddElement<uint16_t>(GetControllersList::VT_NUM_CONTROLLERS, num_controllers, 0);
-  }
   void add_controllers(flatbuffers::Offset<flatbuffers::Vector<uint16_t>> controllers) {
     fbb_.AddOffset(GetControllersList::VT_CONTROLLERS, controllers);
   }
@@ -357,21 +358,17 @@ struct GetControllersListBuilder {
 
 inline flatbuffers::Offset<GetControllersList> CreateGetControllersList(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint16_t num_controllers = 0,
     flatbuffers::Offset<flatbuffers::Vector<uint16_t>> controllers = 0) {
   GetControllersListBuilder builder_(_fbb);
   builder_.add_controllers(controllers);
-  builder_.add_num_controllers(num_controllers);
   return builder_.Finish();
 }
 
 inline flatbuffers::Offset<GetControllersList> CreateGetControllersListDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint16_t num_controllers = 0,
     const std::vector<uint16_t> *controllers = nullptr) {
   return Schemas::CreateGetControllersList(
       _fbb,
-      num_controllers,
       controllers ? _fbb.CreateVector<uint16_t>(*controllers) : 0);
 }
 
@@ -507,6 +504,68 @@ inline flatbuffers::Offset<GetControllerInfo> CreateGetControllerInfoDirect(
       discoverable,
       low_energy,
       name ? _fbb.CreateString(name) : 0);
+}
+
+struct GetConnectedDevices FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_CONTROLLER_ID = 4,
+    VT_DEVICES = 6
+  };
+  uint16_t controller_id() const {
+    return GetField<uint16_t>(VT_CONTROLLER_ID, 0);
+  }
+  const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *devices() const {
+    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *>(VT_DEVICES);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint16_t>(verifier, VT_CONTROLLER_ID) &&
+           VerifyOffset(verifier, VT_DEVICES) &&
+           verifier.Verify(devices()) &&
+           verifier.VerifyVectorOfStrings(devices()) &&
+           verifier.EndTable();
+  }
+};
+
+struct GetConnectedDevicesBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_controller_id(uint16_t controller_id) {
+    fbb_.AddElement<uint16_t>(GetConnectedDevices::VT_CONTROLLER_ID, controller_id, 0);
+  }
+  void add_devices(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> devices) {
+    fbb_.AddOffset(GetConnectedDevices::VT_DEVICES, devices);
+  }
+  explicit GetConnectedDevicesBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  GetConnectedDevicesBuilder &operator=(const GetConnectedDevicesBuilder &);
+  flatbuffers::Offset<GetConnectedDevices> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<GetConnectedDevices>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<GetConnectedDevices> CreateGetConnectedDevices(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t controller_id = 0,
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> devices = 0) {
+  GetConnectedDevicesBuilder builder_(_fbb);
+  builder_.add_devices(devices);
+  builder_.add_controller_id(controller_id);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<GetConnectedDevices> CreateGetConnectedDevicesDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t controller_id = 0,
+    const std::vector<flatbuffers::Offset<flatbuffers::String>> *devices = nullptr) {
+  return Schemas::CreateGetConnectedDevices(
+      _fbb,
+      controller_id,
+      devices ? _fbb.CreateVector<flatbuffers::Offset<flatbuffers::String>>(*devices) : 0);
 }
 
 struct StartScan FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
@@ -1544,6 +1603,9 @@ struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const Disconnect *payload_as_Disconnect() const {
     return payload_type() == Payload::Disconnect ? static_cast<const Disconnect *>(payload()) : nullptr;
   }
+  const GetConnectedDevices *payload_as_GetConnectedDevices() const {
+    return payload_type() == Payload::GetConnectedDevices ? static_cast<const GetConnectedDevices *>(payload()) : nullptr;
+  }
   const GetControllerInfo *payload_as_GetControllerInfo() const {
     return payload_type() == Payload::GetControllerInfo ? static_cast<const GetControllerInfo *>(payload()) : nullptr;
   }
@@ -1620,6 +1682,10 @@ template<> inline const AddDevice *Packet::payload_as<AddDevice>() const {
 
 template<> inline const Disconnect *Packet::payload_as<Disconnect>() const {
   return payload_as_Disconnect();
+}
+
+template<> inline const GetConnectedDevices *Packet::payload_as<GetConnectedDevices>() const {
+  return payload_as_GetConnectedDevices();
 }
 
 template<> inline const GetControllerInfo *Packet::payload_as<GetControllerInfo>() const {
@@ -1759,6 +1825,10 @@ inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *obj, Payl
     }
     case Payload::Disconnect: {
       auto ptr = reinterpret_cast<const Disconnect *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::GetConnectedDevices: {
+      auto ptr = reinterpret_cast<const GetConnectedDevices *>(obj);
       return verifier.VerifyTable(ptr);
     }
     case Payload::GetControllerInfo: {
