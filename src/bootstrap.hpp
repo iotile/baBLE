@@ -19,6 +19,7 @@
 #include "Packet/Events/Discovering/Discovering.hpp"
 #include "Packet/Events/ClassOfDeviceChanged/ClassOfDeviceChanged.hpp"
 #include "Packet/Events/NewSettings/NewSettings.hpp"
+#include "Packet/Commands/GetControllersList/GetControllersList.hpp"
 
 using namespace std;
 
@@ -29,6 +30,7 @@ namespace Bootstrap {
     mgmt_builder
       .set_output_format(std::move(output_format))
         .register_command<Packet::Commands::GetMGMTInfo>()
+        .register_command<Packet::Commands::GetControllersList>()
         .register_command<Packet::Commands::StartScan>()
         .register_command<Packet::Commands::StopScan>()
         .register_command<Packet::Commands::AddDevice>()
@@ -51,6 +53,7 @@ namespace Bootstrap {
     stdio_builder
       .set_output_format(std::move(mgmt_format))
         .register_command<Packet::Commands::GetMGMTInfo>()
+        .register_command<Packet::Commands::GetControllersList>()
         .register_command<Packet::Commands::StartScan>()
         .register_command<Packet::Commands::StopScan>()
         .register_command<Packet::Commands::AddDevice>()

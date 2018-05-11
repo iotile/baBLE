@@ -10,6 +10,7 @@ namespace Format::MGMT {
 
   enum CommandCode {
     GetMGMTInfo= 0x0001,
+    GetControllersList= 0x0003,
     SetPowered= 0x0005,
     SetDiscoverable= 0x0006,
     SetConnectable= 0x0007,

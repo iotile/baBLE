@@ -5,7 +5,7 @@ import flatbuffers
 
 from Schemas import Packet, Payload, GetMGMTInfo, StartScan, StopScan, Discovering, DeviceFound, BaBLEError, StatusCode,\
                     AddDevice, DeviceConnected, RemoveDevice, Disconnect, DeviceDisconnected, SetPowered, SetDiscoverable,\
-                    SetConnectable
+                    SetConnectable, GetControllersList
 
 def status_code_to_string(status_code):
     if status_code == StatusCode.StatusCode().Success:
@@ -40,172 +40,101 @@ process = subprocess.Popen(["./build/debug/baBLE_linux"],
                            bufsize=0,
                            universal_newlines=False)
 
-## ASCII
+#### ASCII
 # process.stdin.write(b'\xCA\xFE' + len("1").to_bytes(2, byteorder='little') + bytes("2,0,7", encoding="utf-8"))
 # process.stdin.write(bytes("2,0", encoding="utf-8"))
 # time.sleep(2)
 # process.stdin.write("5,0")
 
-## Flatbuffers
+#### Flatbuffers
+builder = flatbuffers.Builder(0)
 
-#StartScan
-# builder = flatbuffers.Builder(0)
+## StartScan
 # StartScan.StartScanStart(builder)
 # StartScan.StartScanAddControllerId(builder, 0)
 # StartScan.StartScanAddAddressType(builder, 0x07)
 # payload = StartScan.StartScanEnd(builder)
-#
-# Packet.PacketStart(builder)
-# Packet.PacketAddPayloadType(builder, Payload.Payload().StartScan)
-# Packet.PacketAddPayload(builder, payload)
-# packet = Packet.PacketEnd(builder)
-#
-# builder.Finish(packet)
-# buf = builder.Output()
-# # buf = b'\xFF\xFF' + buf
-# buf = b'\xCA\xFE' + len(buf).to_bytes(2, byteorder='little') + buf
 
-# Stop scan
-# builder2 = flatbuffers.Builder(0)
-#
-# StopScan.StopScanStart(builder2)
-# StopScan.StopScanAddControllerId(builder2, 0)
-# StopScan.StopScanAddAddressType(builder2, 0x07)
-# payload2 = StopScan.StopScanEnd(builder2)
-#
-# Packet.PacketStart(builder2)
-# Packet.PacketAddPayloadType(builder2, Payload.Payload().StopScan)
-# Packet.PacketAddPayload(builder2, payload2)
-# packet2 = Packet.PacketEnd(builder2)
-#
-# builder2.Finish(packet2)
-# buf2 = builder2.Output()
-# buf2 = b'\xCA\xFE' + len(buf2).to_bytes(2, byteorder='little') + buf2
+## Stop scan
+# StopScan.StopScanStart(builder)
+# StopScan.StopScanAddControllerId(builder, 0)
+# StopScan.StopScanAddAddressType(builder, 0x07)
+# payload = StopScan.StopScanEnd(builder)
 
-# AddDevice
-# builder3 = flatbuffers.Builder(0)
-#
-# AddDevice.AddDeviceStartAddressVector(builder3, 6)
+## AddDevice
+# AddDevice.AddDeviceStartAddressVector(builder, 6)
 # address_list = [0xC4, 0xF0, 0xA5, 0xE6, 0x8A, 0x91]
 # for element in address_list:
-#     builder3.PrependByte(element)
-# address = builder3.EndVector(6)
+#     builder.PrependByte(element)
+# address = builder.EndVector(6)
 #
-# AddDevice.AddDeviceStart(builder3)
-# AddDevice.AddDeviceAddControllerId(builder3, 0)
-# AddDevice.AddDeviceAddAddress(builder3, address)
-# AddDevice.AddDeviceAddAddressType(builder3, 2)
-# payload3 = AddDevice.AddDeviceEnd(builder3)
-#
-# Packet.PacketStart(builder3)
-# Packet.PacketAddPayloadType(builder3, Payload.Payload().AddDevice)
-# Packet.PacketAddPayload(builder3, payload3)
-# packet3 = Packet.PacketEnd(builder3)
-#
-# builder3.Finish(packet3)
-# buf3 = builder3.Output()
-# buf3 = b'\xCA\xFE' + len(buf3).to_bytes(2, byteorder='little') + buf3
+# AddDevice.AddDeviceStart(builder)
+# AddDevice.AddDeviceAddControllerId(builder, 0)
+# AddDevice.AddDeviceAddAddress(builder, address)
+# AddDevice.AddDeviceAddAddressType(builder, 2)
+# payload = AddDevice.AddDeviceEnd(builder)
 
-# RemoveDevice
-# builder4 = flatbuffers.Builder(0)
-#
-# RemoveDevice.RemoveDeviceStartAddressVector(builder4, 6)
+## RemoveDevice
+# RemoveDevice.RemoveDeviceStartAddressVector(builder, 6)
 # address_list = [0xC4, 0xF0, 0xA5, 0xE6, 0x8A, 0x91]
 # for element in address_list:
-#     builder4.PrependByte(element)
-# address = builder4.EndVector(6)
+#     builder.PrependByte(element)
+# address = builder.EndVector(6)
 #
-# RemoveDevice.RemoveDeviceStart(builder4)
-# RemoveDevice.RemoveDeviceAddControllerId(builder4, 0)
-# RemoveDevice.RemoveDeviceAddAddress(builder4, address)
-# RemoveDevice.RemoveDeviceAddAddressType(builder4, 2)
-# payload4 = RemoveDevice.RemoveDeviceEnd(builder4)
-#
-# Packet.PacketStart(builder4)
-# Packet.PacketAddPayloadType(builder4, Payload.Payload().RemoveDevice)
-# Packet.PacketAddPayload(builder4, payload4)
-# packet4 = Packet.PacketEnd(builder4)
-#
-# builder4.Finish(packet4)
-# buf4 = builder4.Output()
-# buf4 = b'\xCA\xFE' + len(buf4).to_bytes(2, byteorder='little') + buf4
+# RemoveDevice.RemoveDeviceStart(builder)
+# RemoveDevice.RemoveDeviceAddControllerId(builder, 0)
+# RemoveDevice.RemoveDeviceAddAddress(builder, address)
+# RemoveDevice.RemoveDeviceAddAddressType(builder, 2)
+# payload = RemoveDevice.RemoveDeviceEnd(builder)
 
-# Disconnect
-# builder5 = flatbuffers.Builder(0)
-#
-# Disconnect.DisconnectStartAddressVector(builder5, 6)
+## Disconnect
+# Disconnect.DisconnectStartAddressVector(builder, 6)
 # address_list = [0xC4, 0xF0, 0xA5, 0xE6, 0x8A, 0x91]
 # for element in address_list:
-#     builder5.PrependByte(element)
-# address = builder5.EndVector(6)
+#     builder.PrependByte(element)
+# address = builder.EndVector(6)
 #
-# Disconnect.DisconnectStart(builder5)
-# Disconnect.DisconnectAddControllerId(builder5, 0)
-# Disconnect.DisconnectAddAddress(builder5, address)
-# Disconnect.DisconnectAddAddressType(builder5, 2)
-# payload5 = Disconnect.DisconnectEnd(builder5)
-#
-# Packet.PacketStart(builder5)
-# Packet.PacketAddPayloadType(builder5, Payload.Payload().Disconnect)
-# Packet.PacketAddPayload(builder5, payload5)
-# packet5 = Packet.PacketEnd(builder5)
-#
-# builder5.Finish(packet5)
-# buf5 = builder5.Output()
-# buf5 = b'\xCA\xFE' + len(buf5).to_bytes(2, byteorder='little') + buf5
+# Disconnect.DisconnectStart(builder)
+# Disconnect.DisconnectAddControllerId(builder, 0)
+# Disconnect.DisconnectAddAddress(builder, address)
+# Disconnect.DisconnectAddAddressType(builder, 2)
+# payload = Disconnect.DisconnectEnd(builder)
 
-# SetPowered
-# builder6 = flatbuffers.Builder(0)
-#
-# SetPowered.SetPoweredStart(builder6)
-# SetPowered.SetPoweredAddControllerId(builder6, 0)
-# SetPowered.SetPoweredAddState(builder6, False)
-# payload6 = SetPowered.SetPoweredEnd(builder6)
-#
-# Packet.PacketStart(builder6)
-# Packet.PacketAddPayloadType(builder6, Payload.Payload().SetPowered)
-# Packet.PacketAddPayload(builder6, payload6)
-# packet6 = Packet.PacketEnd(builder6)
-#
-# builder6.Finish(packet6)
-# buf6 = builder6.Output()
-# buf6 = b'\xCA\xFE' + len(buf6).to_bytes(2, byteorder='little') + buf6
+## SetPowered
+# SetPowered.SetPoweredStart(builder)
+# SetPowered.SetPoweredAddControllerId(builder, 0)
+# SetPowered.SetPoweredAddState(builder, False)
+# payload = SetPowered.SetPoweredEnd(builder)
 
-# SetDiscoverable
-# builder7 = flatbuffers.Builder(0)
-#
-# SetDiscoverable.SetDiscoverableStart(builder7)
-# SetDiscoverable.SetDiscoverableAddControllerId(builder7, 0)
-# SetDiscoverable.SetDiscoverableAddState(builder7, False)
-# payload7 = SetDiscoverable.SetDiscoverableEnd(builder7)
-#
-# Packet.PacketStart(builder7)
-# Packet.PacketAddPayloadType(builder7, Payload.Payload().SetDiscoverable)
-# Packet.PacketAddPayload(builder7, payload7)
-# packet7 = Packet.PacketEnd(builder7)
-#
-# builder7.Finish(packet7)
-# buf7 = builder7.Output()
-# buf7 = b'\xCA\xFE' + len(buf7).to_bytes(2, byteorder='little') + buf7
 
-# SetConnectable
-builder8 = flatbuffers.Builder(0)
+## SetDiscoverable
+# SetDiscoverable.SetDiscoverableStart(builder)
+# SetDiscoverable.SetDiscoverableAddControllerId(builder, 0)
+# SetDiscoverable.SetDiscoverableAddState(builder, False)
+# payload = SetDiscoverable.SetDiscoverableEnd(builder)
 
-SetConnectable.SetConnectableStart(builder8)
-SetConnectable.SetConnectableAddControllerId(builder8, 0)
-SetConnectable.SetConnectableAddState(builder8, False)
-payload8 = SetConnectable.SetConnectableEnd(builder8)
 
-Packet.PacketStart(builder8)
-Packet.PacketAddPayloadType(builder8, Payload.Payload().SetConnectable)
-Packet.PacketAddPayload(builder8, payload8)
-packet8 = Packet.PacketEnd(builder8)
+## SetConnectable
+# SetConnectable.SetConnectableStart(builder)
+# SetConnectable.SetConnectableAddControllerId(builder, 0)
+# SetConnectable.SetConnectableAddState(builder, False)
+# payload = SetConnectable.SetConnectableEnd(builder)
 
-builder8.Finish(packet8)
-buf8 = builder8.Output()
-buf8 = b'\xCA\xFE' + len(buf8).to_bytes(2, byteorder='little') + buf8
+## GetControllersList
+GetControllersList.GetControllersListStart(builder)
+payload = GetControllersList.GetControllersListEnd(builder)
 
-process.stdin.write(buf8)
+
+Packet.PacketStart(builder)
+Packet.PacketAddPayloadType(builder, Payload.Payload().GetControllersList)
+Packet.PacketAddPayload(builder, payload)
+packet = Packet.PacketEnd(builder)
+
+builder.Finish(packet)
+
+buf = builder.Output()
+buf = b'\xCA\xFE' + len(buf).to_bytes(2, byteorder='little') + buf
+process.stdin.write(buf)
 
 header_length = 4
 
@@ -381,6 +310,16 @@ try:
             print("SetConnectable",
                   "Status:", status, "Native class: ", native_class, "Native status:", native_status,
                   "Controller id:", controller_id, "State:", state)
+
+        elif packet.PayloadType() == Payload.Payload().GetControllersList:
+            controllers_list = GetControllersList.GetControllersList()
+            controllers_list.Init(packet.Payload().Bytes, packet.Payload().Pos)
+            num_controllers = controllers_list.NumControllers()
+            controllers = controllers_list.ControllersAsNumpy()
+
+            print("GetControllersList",
+                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
+                  "Num controllers:", num_controllers, "Controllers ID:", controllers)
 
         elif packet.PayloadType() == Payload.Payload().BaBLEError:
             error = BaBLEError.BaBLEError()

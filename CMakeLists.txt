@@ -79,7 +79,7 @@ set(SOURCES_FILES
         src/Packet/Commands/SetDiscoverable/SetDiscoverable.cpp
         src/Packet/Commands/SetDiscoverable/SetDiscoverable.hpp
         src/Packet/Commands/SetConnectable/SetConnectable.cpp
-        src/Packet/Commands/SetConnectable/SetConnectable.hpp src/Packet/Events/NewSettings/NewSettings.cpp src/Packet/Events/NewSettings/NewSettings.hpp)
+        src/Packet/Commands/SetConnectable/SetConnectable.hpp src/Packet/Events/NewSettings/NewSettings.cpp src/Packet/Events/NewSettings/NewSettings.hpp src/Packet/Commands/GetControllersList/GetControllersList.cpp src/Packet/Commands/GetControllersList/GetControllersList.hpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies
