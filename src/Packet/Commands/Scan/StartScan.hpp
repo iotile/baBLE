@@ -19,6 +19,9 @@ namespace Packet::Commands {
 
         case Packet::Type::FLATBUFFERS:
           return static_cast<uint16_t>(Schemas::Payload::StartScan);
+
+        case Packet::Type::NONE:
+          return 0;
       }
     };
 

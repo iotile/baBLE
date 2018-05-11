@@ -1,0 +1,9 @@
+namespace Schemas;
+
+table ControllerAdded {
+  controller_id:uint16;
+}
+
+table ControllerRemoved {
+  controller_id:uint16;
+}

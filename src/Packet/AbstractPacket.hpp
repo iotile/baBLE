@@ -44,6 +44,9 @@ namespace Packet {
           FlatbuffersFormatBuilder builder(0);
           return serialize(builder);
         }
+
+        case Packet::Type::NONE:
+          throw std::runtime_error("Can't serialize NONE type packet.");
       }
     };
 
@@ -68,6 +71,9 @@ namespace Packet {
           FlatbuffersFormatExtractor extractor(raw_data);
           return import(extractor);
         }
+
+        case Packet::Type::NONE:
+          throw std::runtime_error("Can't import data into NONE type packet.");
       }
     };
 

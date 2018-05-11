@@ -11,6 +11,7 @@ namespace Format::MGMT {
   enum CommandCode {
     GetMGMTInfo= 0x0001,
     GetControllersList= 0x0003,
+    GetControllerInfo= 0x0004,
     SetPowered= 0x0005,
     SetDiscoverable= 0x0006,
     SetConnectable= 0x0007,
@@ -22,6 +23,8 @@ namespace Format::MGMT {
   };
 
   enum EventCode {
+    IndexAdded= 0x0004,
+    IndexRemoved= 0x0005,
     NewSettings= 0x0006,
     ClassOfDeviceChanged= 0x0007,
     DeviceConnected= 0x000B,

@@ -16,6 +16,7 @@ namespace Format::Ascii {
     SetDiscoverable= 0x0008,
     SetConnectable= 0x0009,
     GetControllersList= 0x000A,
+    GetControllerInfo= 0x000B
   };
 
   enum EventCode {
@@ -24,7 +25,9 @@ namespace Format::Ascii {
     DeviceConnected= 0x0300,
     DeviceDisconnected=0x0400,
     ClassOfDeviceChanged= 0x0500,
-    NewSettings= 0x0600
+    NewSettings= 0x0600,
+    ControllerAdded= 0x0700,
+    ControllerRemoved= 0x0800
   };
 
 }

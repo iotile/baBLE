@@ -5,7 +5,7 @@ import flatbuffers
 
 from Schemas import Packet, Payload, GetMGMTInfo, StartScan, StopScan, Discovering, DeviceFound, BaBLEError, StatusCode,\
                     AddDevice, DeviceConnected, RemoveDevice, Disconnect, DeviceDisconnected, SetPowered, SetDiscoverable,\
-                    SetConnectable, GetControllersList
+                    SetConnectable, GetControllersList, ControllerAdded, ControllerRemoved, GetControllerInfo
 
 def status_code_to_string(status_code):
     if status_code == StatusCode.StatusCode().Success:
@@ -121,12 +121,16 @@ builder = flatbuffers.Builder(0)
 # payload = SetConnectable.SetConnectableEnd(builder)
 
 ## GetControllersList
-GetControllersList.GetControllersListStart(builder)
-payload = GetControllersList.GetControllersListEnd(builder)
+# GetControllersList.GetControllersListStart(builder)
+# payload = GetControllersList.GetControllersListEnd(builder)
 
+## GetControllerInfo
+GetControllerInfo.GetControllerInfoStart(builder)
+GetControllerInfo.GetControllerInfoAddControllerId(builder, 0)
+payload = GetControllerInfo.GetControllerInfoEnd(builder)
 
 Packet.PacketStart(builder)
-Packet.PacketAddPayloadType(builder, Payload.Payload().GetControllersList)
+Packet.PacketAddPayloadType(builder, Payload.Payload().GetControllerInfo)
 Packet.PacketAddPayload(builder, payload)
 packet = Packet.PacketEnd(builder)
 
@@ -320,6 +324,43 @@ try:
             print("GetControllersList",
                   "Status:", status, "Native class: ", native_class, "Native status:", native_status,
                   "Num controllers:", num_controllers, "Controllers ID:", controllers)
+
+        elif packet.PayloadType() == Payload.Payload().ControllerAdded:
+            controller_added = ControllerAdded.ControllerAdded()
+            controller_added.Init(packet.Payload().Bytes, packet.Payload().Pos)
+            controller_id = controller_added.ControllerId()
+
+            print("ControllerAdded",
+                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id)
+
+        elif packet.PayloadType() == Payload.Payload().ControllerRemoved:
+            controller_removed = ControllerRemoved.ControllerRemoved()
+            controller_removed.Init(packet.Payload().Bytes, packet.Payload().Pos)
+            controller_id = controller_removed.ControllerId()
+
+            print("ControllerRemoved",
+                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id)
+
+        elif packet.PayloadType() == Payload.Payload().GetControllerInfo:
+            controller_info = GetControllerInfo.GetControllerInfo()
+            controller_info.Init(packet.Payload().Bytes, packet.Payload().Pos)
+            controller_id = controller_info.ControllerId()
+            address = controller_info.Address()
+            bt_version = controller_info.BtVersion()
+            powered = controller_info.Powered()
+            connectable = controller_info.Connectable()
+            discoverable = controller_info.Discoverable()
+            low_energy = controller_info.LowEnergy()
+            name = controller_info.Name()
+
+            print("GetControllerInfo",
+                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id, "Address:", address, "Bluetooth version:", bt_version,
+                  "Powered:", powered, "Connectable:", connectable, "Discoverable:", discoverable,
+                  "LE supported:", low_energy, "Name:", name)
+
 
         elif packet.PayloadType() == Payload.Payload().BaBLEError:
             error = BaBLEError.BaBLEError()

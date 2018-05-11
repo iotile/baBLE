@@ -37,7 +37,7 @@ namespace Packet::Commands {
     CommandPacket::import(extractor);
 
     if (m_native_status == 0){
-    m_address_type = extractor.get_value<uint8_t>();
+      m_address_type = extractor.get_value<uint8_t>();
     }
   };
 

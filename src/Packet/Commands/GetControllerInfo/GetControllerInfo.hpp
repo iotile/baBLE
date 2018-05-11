@@ -1,31 +1,31 @@
-#ifndef BABLE_LINUX_COMMANDS_STOPSCAN_HPP
-#define BABLE_LINUX_COMMANDS_STOPSCAN_HPP
+#ifndef BABLE_LINUX_GETCONTROLLERINFO_HPP
+#define BABLE_LINUX_GETCONTROLLERINFO_HPP
 
 #include "../CommandPacket.hpp"
 #include "../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 
 namespace Packet::Commands {
 
-  class StopScan : public CommandPacket<StopScan> {
+  class GetControllerInfo : public CommandPacket<GetControllerInfo> {
 
   public:
     static const uint16_t command_code(Packet::Type type) {
       switch(type) {
         case Packet::Type::MGMT:
-          return Format::MGMT::CommandCode::StopScan;
+          return Format::MGMT::CommandCode::GetControllerInfo;
 
         case Packet::Type::ASCII:
-          return Format::Ascii::CommandCode::StopScan;
+          return Format::Ascii::CommandCode::GetControllerInfo;
 
         case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(Schemas::Payload::StopScan);
+          return static_cast<uint16_t>(Schemas::Payload::GetControllerInfo);
 
         case Packet::Type::NONE:
           return 0;
       }
     };
 
-    StopScan(Packet::Type initial_type, Packet::Type translated_type);
+    GetControllerInfo(Packet::Type initial_type, Packet::Type translated_type);
 
     void import(AsciiFormatExtractor& extractor) override;
     void import(FlatbuffersFormatExtractor& extractor) override;
@@ -36,10 +36,18 @@ namespace Packet::Commands {
     std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override;
 
   private:
-    uint8_t m_address_type;
+    std::array<uint8_t, 6> m_address{};
+    uint8_t m_bluetooth_version;
+    uint16_t m_manufacturer;
+    uint32_t m_supported_settings;
+    uint32_t m_current_settings;
+    std::array<uint8_t, 3> m_class_of_device{};
+    std::array<uint8_t, 249> m_name{};
+    std::array<uint8_t, 11> m_short_name{};
 
   };
 
 }
 
-#endif //BABLE_LINUX_COMMANDS_STOPSCAN_HPP
+
+#endif //BABLE_LINUX_GETCONTROLLERINFO_HPP

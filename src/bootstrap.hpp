@@ -20,6 +20,9 @@
 #include "Packet/Events/ClassOfDeviceChanged/ClassOfDeviceChanged.hpp"
 #include "Packet/Events/NewSettings/NewSettings.hpp"
 #include "Packet/Commands/GetControllersList/GetControllersList.hpp"
+#include "Packet/Events/ControllerAdded/ControllerAdded.hpp"
+#include "Packet/Events/ControllerRemoved/ControllerRemoved.hpp"
+#include "Packet/Commands/GetControllerInfo/GetControllerInfo.hpp"
 
 using namespace std;
 
@@ -31,6 +34,7 @@ namespace Bootstrap {
       .set_output_format(std::move(output_format))
         .register_command<Packet::Commands::GetMGMTInfo>()
         .register_command<Packet::Commands::GetControllersList>()
+        .register_command<Packet::Commands::GetControllerInfo>()
         .register_command<Packet::Commands::StartScan>()
         .register_command<Packet::Commands::StopScan>()
         .register_command<Packet::Commands::AddDevice>()
@@ -43,6 +47,8 @@ namespace Bootstrap {
         .register_event<Packet::Events::DeviceDisconnected>()
         .register_event<Packet::Events::DeviceFound>()
         .register_event<Packet::Events::Discovering>()
+        .register_event<Packet::Events::ControllerAdded>()
+        .register_event<Packet::Events::ControllerRemoved>()
       .set_output_format(nullptr)
         .register_event<Packet::Events::ClassOfDeviceChanged>()
         .register_event<Packet::Events::NewSettings>();
@@ -54,6 +60,7 @@ namespace Bootstrap {
       .set_output_format(std::move(mgmt_format))
         .register_command<Packet::Commands::GetMGMTInfo>()
         .register_command<Packet::Commands::GetControllersList>()
+        .register_command<Packet::Commands::GetControllerInfo>()
         .register_command<Packet::Commands::StartScan>()
         .register_command<Packet::Commands::StopScan>()
         .register_command<Packet::Commands::AddDevice>()
