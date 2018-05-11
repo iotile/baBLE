@@ -29,7 +29,9 @@ namespace Packet::Commands {
     } catch (const Exceptions::WrongFormatException& err) {
       throw Exceptions::InvalidCommandException("Missing arguments for 'Disconnect' packet. Usage: <command_code>,<controller_id>,<address_type>,<address>");
     } catch (const bad_cast& err) {
-      throw Exceptions::InvalidCommandException("Invalid address argument for 'Disconnect' packet.");
+      throw Exceptions::InvalidCommandException("Invalid arguments for 'Disconnect' packet. Can't cast");
+    } catch (const std::invalid_argument& err) {
+      throw Exceptions::InvalidCommandException("Invalid arguments for 'Disconnect' packet.");
     }
   };
 

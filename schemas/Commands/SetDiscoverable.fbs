@@ -2,7 +2,8 @@
 
 namespace Schemas;
 
-table SetPowered {
+table SetDiscoverable {
   controller_id:uint16;
   state:bool;
+  timeout:uint16 = 0; // No timeout
 }

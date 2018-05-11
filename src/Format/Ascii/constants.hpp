@@ -8,19 +8,20 @@ namespace Format::Ascii {
   enum CommandCode {
     GetMGMTInfo= 0x0001,
     StartScan= 0x0002,
-    StopScan= 0x0005,
-    AddDevice= 0x0006,
-    RemoveDevice= 0x0008,
-    Disconnect= 0x0009,
-    SetPowered= 0x000B
+    StopScan= 0x0003,
+    AddDevice= 0x0004,
+    RemoveDevice= 0x0005,
+    Disconnect= 0x0006,
+    SetPowered= 0x0007,
+    SetDiscoverable= 0x0008
   };
 
   enum EventCode {
-    DeviceFound= 0x0003,
-    Discovering= 0x0004,
-    DeviceConnected= 0x0007,
-    DeviceDisconnected=0x000A,
-    ClassOfDeviceChanged= 0x000C
+    DeviceFound= 0x0100,
+    Discovering= 0x0200,
+    DeviceConnected= 0x0300,
+    DeviceDisconnected=0x0400,
+    ClassOfDeviceChanged= 0x0500
   };
 
 }

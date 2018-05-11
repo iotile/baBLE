@@ -16,6 +16,7 @@
 #include "Packet/Events/Discovering/Discovering.hpp"
 #include "Packet/Commands/SetPowered/SetPowered.hpp"
 #include "Packet/Events/ClassOfDeviceChanged/ClassOfDeviceChanged.hpp"
+#include "Packet/Commands/SetDiscoverable/SetDiscoverable.hpp"
 
 using namespace std;
 
@@ -32,6 +33,7 @@ namespace Bootstrap {
         .register_command<Packet::Commands::RemoveDevice>()
         .register_command<Packet::Commands::Disconnect>()
         .register_command<Packet::Commands::SetPowered>()
+        .register_command<Packet::Commands::SetDiscoverable>()
         .register_event<Packet::Events::DeviceConnected>()
         .register_event<Packet::Events::DeviceDisconnected>()
         .register_event<Packet::Events::DeviceFound>()
@@ -50,7 +52,8 @@ namespace Bootstrap {
         .register_command<Packet::Commands::AddDevice>()
         .register_command<Packet::Commands::RemoveDevice>()
         .register_command<Packet::Commands::Disconnect>()
-        .register_command<Packet::Commands::SetPowered>();
+        .register_command<Packet::Commands::SetPowered>()
+        .register_command<Packet::Commands::SetDiscoverable>();
   }
 
 }

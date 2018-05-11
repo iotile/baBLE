@@ -14,10 +14,14 @@ namespace Packet::Commands {
 
     try {
       m_controller_id = static_cast<uint16_t>(stoi(extractor.get()));
-      m_state = static_cast<uint8_t>(stoi(extractor.get()));
+      m_state = static_cast<bool>(stoi(extractor.get()));
 
     } catch (const Exceptions::WrongFormatException& err) {
       throw Exceptions::InvalidCommandException("Missing arguments for 'SetPowered' packet. Usage: <command_code>,<controller_id>,<state>");
+    } catch (const std::bad_cast& err) {
+      throw Exceptions::InvalidCommandException("Invalid arguments for 'SetPowered' packet. Can't cast.");
+    } catch (const std::invalid_argument& err) {
+      throw Exceptions::InvalidCommandException("Invalid arguments for 'SetPowered' packet.");
     }
   };
 

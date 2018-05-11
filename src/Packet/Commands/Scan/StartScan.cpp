@@ -18,6 +18,10 @@ namespace Packet::Commands {
 
     } catch (const Exceptions::WrongFormatException& err) {
       throw Exceptions::InvalidCommandException("Missing arguments for 'StartScan' packet. Usage: <command_code>,<controller_id>,<address_type>");
+    } catch (const std::bad_cast& err) {
+      throw Exceptions::InvalidCommandException("Invalid arguments for 'StartScan' packet. Can't cast.");
+    } catch (const std::invalid_argument& err) {
+      throw Exceptions::InvalidCommandException("Invalid arguments for 'StartScan' packet.");
     }
   };
 

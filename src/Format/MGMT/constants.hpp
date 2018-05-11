@@ -11,6 +11,7 @@ namespace Format::MGMT {
   enum CommandCode {
     GetMGMTInfo= 0x0001,
     SetPowered= 0x0005,
+    SetDiscoverable= 0x0006,
     Disconnect= 0x0014,
     StartScan= 0x0023,
     StopScan= 0x0024,

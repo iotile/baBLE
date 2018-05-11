@@ -22,6 +22,8 @@ struct Disconnect;
 
 struct SetPowered;
 
+struct SetDiscoverable;
+
 struct DeviceConnected;
 
 struct DeviceDisconnected;
@@ -40,25 +42,27 @@ enum class Payload : uint8_t {
   Disconnect = 2,
   GetMGMTInfo = 3,
   RemoveDevice = 4,
-  SetPowered = 5,
-  StartScan = 6,
-  StopScan = 7,
-  DeviceConnected = 8,
-  DeviceDisconnected = 9,
-  DeviceFound = 10,
-  Discovering = 11,
-  BaBLEError = 12,
+  SetDiscoverable = 5,
+  SetPowered = 6,
+  StartScan = 7,
+  StopScan = 8,
+  DeviceConnected = 9,
+  DeviceDisconnected = 10,
+  DeviceFound = 11,
+  Discovering = 12,
+  BaBLEError = 13,
   MIN = NONE,
   MAX = BaBLEError
 };
 
-inline const Payload (&EnumValuesPayload())[13] {
+inline const Payload (&EnumValuesPayload())[14] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::AddDevice,
     Payload::Disconnect,
     Payload::GetMGMTInfo,
     Payload::RemoveDevice,
+    Payload::SetDiscoverable,
     Payload::SetPowered,
     Payload::StartScan,
     Payload::StopScan,
@@ -78,6 +82,7 @@ inline const char * const *EnumNamesPayload() {
     "Disconnect",
     "GetMGMTInfo",
     "RemoveDevice",
+    "SetDiscoverable",
     "SetPowered",
     "StartScan",
     "StopScan",
@@ -114,6 +119,10 @@ template<> struct PayloadTraits<GetMGMTInfo> {
 
 template<> struct PayloadTraits<RemoveDevice> {
   static const Payload enum_value = Payload::RemoveDevice;
+};
+
+template<> struct PayloadTraits<SetDiscoverable> {
+  static const Payload enum_value = Payload::SetDiscoverable;
 };
 
 template<> struct PayloadTraits<SetPowered> {
@@ -629,6 +638,66 @@ inline flatbuffers::Offset<SetPowered> CreateSetPowered(
   return builder_.Finish();
 }
 
+struct SetDiscoverable FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_CONTROLLER_ID = 4,
+    VT_STATE = 6,
+    VT_TIMEOUT = 8
+  };
+  uint16_t controller_id() const {
+    return GetField<uint16_t>(VT_CONTROLLER_ID, 0);
+  }
+  bool state() const {
+    return GetField<uint8_t>(VT_STATE, 0) != 0;
+  }
+  uint16_t timeout() const {
+    return GetField<uint16_t>(VT_TIMEOUT, 0);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint16_t>(verifier, VT_CONTROLLER_ID) &&
+           VerifyField<uint8_t>(verifier, VT_STATE) &&
+           VerifyField<uint16_t>(verifier, VT_TIMEOUT) &&
+           verifier.EndTable();
+  }
+};
+
+struct SetDiscoverableBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_controller_id(uint16_t controller_id) {
+    fbb_.AddElement<uint16_t>(SetDiscoverable::VT_CONTROLLER_ID, controller_id, 0);
+  }
+  void add_state(bool state) {
+    fbb_.AddElement<uint8_t>(SetDiscoverable::VT_STATE, static_cast<uint8_t>(state), 0);
+  }
+  void add_timeout(uint16_t timeout) {
+    fbb_.AddElement<uint16_t>(SetDiscoverable::VT_TIMEOUT, timeout, 0);
+  }
+  explicit SetDiscoverableBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  SetDiscoverableBuilder &operator=(const SetDiscoverableBuilder &);
+  flatbuffers::Offset<SetDiscoverable> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<SetDiscoverable>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<SetDiscoverable> CreateSetDiscoverable(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t controller_id = 0,
+    bool state = false,
+    uint16_t timeout = 0) {
+  SetDiscoverableBuilder builder_(_fbb);
+  builder_.add_timeout(timeout);
+  builder_.add_controller_id(controller_id);
+  builder_.add_state(state);
+  return builder_.Finish();
+}
+
 struct DeviceConnected FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_CONTROLLER_ID = 4,
@@ -1111,6 +1180,9 @@ struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const RemoveDevice *payload_as_RemoveDevice() const {
     return payload_type() == Payload::RemoveDevice ? static_cast<const RemoveDevice *>(payload()) : nullptr;
   }
+  const SetDiscoverable *payload_as_SetDiscoverable() const {
+    return payload_type() == Payload::SetDiscoverable ? static_cast<const SetDiscoverable *>(payload()) : nullptr;
+  }
   const SetPowered *payload_as_SetPowered() const {
     return payload_type() == Payload::SetPowered ? static_cast<const SetPowered *>(payload()) : nullptr;
   }
@@ -1171,6 +1243,10 @@ template<> inline const GetMGMTInfo *Packet::payload_as<GetMGMTInfo>() const {
 
 template<> inline const RemoveDevice *Packet::payload_as<RemoveDevice>() const {
   return payload_as_RemoveDevice();
+}
+
+template<> inline const SetDiscoverable *Packet::payload_as<SetDiscoverable>() const {
+  return payload_as_SetDiscoverable();
 }
 
 template<> inline const SetPowered *Packet::payload_as<SetPowered>() const {
@@ -1286,6 +1362,10 @@ inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *obj, Payl
     }
     case Payload::RemoveDevice: {
       auto ptr = reinterpret_cast<const RemoveDevice *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::SetDiscoverable: {
+      auto ptr = reinterpret_cast<const SetDiscoverable *>(obj);
       return verifier.VerifyTable(ptr);
     }
     case Payload::SetPowered: {
