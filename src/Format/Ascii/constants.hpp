@@ -10,13 +10,15 @@ namespace Format::Ascii {
     StartScan= 0x0002,
     StopScan= 0x0005,
     AddDevice= 0x0006,
-    RemoveDevice= 0x0008
+    RemoveDevice= 0x0008,
+    Disconnect= 0x0009
   };
 
   enum EventCode {
     DeviceFound= 0x0003,
     Discovering= 0x0004,
-    DeviceConnected= 0x0007
+    DeviceConnected= 0x0007,
+    DeviceDisconnected=0x000A
   };
 
 }

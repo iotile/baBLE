@@ -8,10 +8,12 @@
 #include "Packet/Commands/Scan/StartScan.hpp"
 #include "Packet/Commands/Scan/StopScan.hpp"
 #include "Packet/Commands/AddDevice/AddDevice.hpp"
+#include "Packet/Commands/RemoveDevice/RemoveDevice.hpp"
+#include "Packet/Commands/Disconnect/Disconnect.hpp"
 #include "Packet/Events/DeviceConnected/DeviceConnected.hpp"
+#include "Packet/Events/DeviceDisconnected/DeviceDisconnected.hpp"
 #include "Packet/Events/DeviceFound/DeviceFound.hpp"
 #include "Packet/Events/Discovering/Discovering.hpp"
-#include "Packet/Commands/RemoveDevice/RemoveDevice.hpp"
 
 using namespace std;
 
@@ -25,7 +27,9 @@ namespace Bootstrap {
         .register_command<Packet::Commands::StopScan>()
         .register_command<Packet::Commands::AddDevice>()
         .register_command<Packet::Commands::RemoveDevice>()
+        .register_command<Packet::Commands::Disconnect>()
         .register_event<Packet::Events::DeviceConnected>()
+        .register_event<Packet::Events::DeviceDisconnected>()
         .register_event<Packet::Events::DeviceFound>()
         .register_event<Packet::Events::Discovering>();
   }
@@ -38,7 +42,8 @@ namespace Bootstrap {
         .register_command<Packet::Commands::StartScan>()
         .register_command<Packet::Commands::StopScan>()
         .register_command<Packet::Commands::AddDevice>()
-        .register_command<Packet::Commands::RemoveDevice>();
+        .register_command<Packet::Commands::RemoveDevice>()
+        .register_command<Packet::Commands::Disconnect>();
   }
 
 }

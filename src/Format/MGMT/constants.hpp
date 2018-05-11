@@ -10,6 +10,7 @@ namespace Format::MGMT {
 
   enum CommandCode {
     GetMGMTInfo= 0x0001,
+    Disconnect= 0x0014,
     StartScan= 0x0023,
     StopScan= 0x0024,
     AddDevice= 0x0033,
@@ -18,6 +19,7 @@ namespace Format::MGMT {
 
   enum EventCode {
     DeviceConnected= 0x000B,
+    DeviceDisconnected= 0x000C,
     DeviceFound= 0x0012,
     Discovering= 0x0013
   };
@@ -44,6 +46,14 @@ namespace Format::MGMT {
     RFKilled= 0x12,
     AlreadyPaired= 0x13,
     PermissionDenied= 0x14
+  };
+
+  const std::string Reasons[] = {
+    "Unspecified",
+    "Connection timeout",
+    "Connection terminated by local host",
+    "Connection terminated by remote host",
+    "Connection terminated due to authentication failure"
   };
 
 }

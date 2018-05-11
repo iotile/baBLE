@@ -86,7 +86,6 @@ int main() {
     try {
       std::unique_ptr<Packet::AbstractPacket> packet = stdio_builder.build(received_data);
       LOG.debug("Packet built", "BABLE poller");
-      LOG.debug(*packet);
 
       packet->translate();
       LOG.debug("Packet translated", "BABLE poller");

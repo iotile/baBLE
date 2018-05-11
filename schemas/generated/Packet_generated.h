@@ -18,7 +18,11 @@ struct AddDevice;
 
 struct RemoveDevice;
 
+struct Disconnect;
+
 struct DeviceConnected;
+
+struct DeviceDisconnected;
 
 struct DeviceFound;
 
@@ -31,27 +35,31 @@ struct Packet;
 enum class Payload : uint8_t {
   NONE = 0,
   AddDevice = 1,
-  GetMGMTInfo = 2,
-  RemoveDevice = 3,
-  StartScan = 4,
-  StopScan = 5,
-  DeviceConnected = 6,
-  DeviceFound = 7,
-  Discovering = 8,
-  BaBLEError = 9,
+  Disconnect = 2,
+  GetMGMTInfo = 3,
+  RemoveDevice = 4,
+  StartScan = 5,
+  StopScan = 6,
+  DeviceConnected = 7,
+  DeviceDisconnected = 8,
+  DeviceFound = 9,
+  Discovering = 10,
+  BaBLEError = 11,
   MIN = NONE,
   MAX = BaBLEError
 };
 
-inline const Payload (&EnumValuesPayload())[10] {
+inline const Payload (&EnumValuesPayload())[12] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::AddDevice,
+    Payload::Disconnect,
     Payload::GetMGMTInfo,
     Payload::RemoveDevice,
     Payload::StartScan,
     Payload::StopScan,
     Payload::DeviceConnected,
+    Payload::DeviceDisconnected,
     Payload::DeviceFound,
     Payload::Discovering,
     Payload::BaBLEError
@@ -63,11 +71,13 @@ inline const char * const *EnumNamesPayload() {
   static const char * const names[] = {
     "NONE",
     "AddDevice",
+    "Disconnect",
     "GetMGMTInfo",
     "RemoveDevice",
     "StartScan",
     "StopScan",
     "DeviceConnected",
+    "DeviceDisconnected",
     "DeviceFound",
     "Discovering",
     "BaBLEError",
@@ -89,6 +99,10 @@ template<> struct PayloadTraits<AddDevice> {
   static const Payload enum_value = Payload::AddDevice;
 };
 
+template<> struct PayloadTraits<Disconnect> {
+  static const Payload enum_value = Payload::Disconnect;
+};
+
 template<> struct PayloadTraits<GetMGMTInfo> {
   static const Payload enum_value = Payload::GetMGMTInfo;
 };
@@ -107,6 +121,10 @@ template<> struct PayloadTraits<StopScan> {
 
 template<> struct PayloadTraits<DeviceConnected> {
   static const Payload enum_value = Payload::DeviceConnected;
+};
+
+template<> struct PayloadTraits<DeviceDisconnected> {
+  static const Payload enum_value = Payload::DeviceDisconnected;
 };
 
 template<> struct PayloadTraits<DeviceFound> {
@@ -136,11 +154,12 @@ enum class StatusCode : uint8_t {
   Cancelled = 8,
   NotPowered = 9,
   Failed = 10,
+  NotConnected = 11,
   MIN = Success,
-  MAX = Failed
+  MAX = NotConnected
 };
 
-inline const StatusCode (&EnumValuesStatusCode())[11] {
+inline const StatusCode (&EnumValuesStatusCode())[12] {
   static const StatusCode values[] = {
     StatusCode::Success,
     StatusCode::SocketError,
@@ -152,7 +171,8 @@ inline const StatusCode (&EnumValuesStatusCode())[11] {
     StatusCode::Denied,
     StatusCode::Cancelled,
     StatusCode::NotPowered,
-    StatusCode::Failed
+    StatusCode::Failed,
+    StatusCode::NotConnected
   };
   return values;
 }
@@ -170,6 +190,7 @@ inline const char * const *EnumNamesStatusCode() {
     "Cancelled",
     "NotPowered",
     "Failed",
+    "NotConnected",
     nullptr
   };
   return names;
@@ -476,6 +497,79 @@ inline flatbuffers::Offset<RemoveDevice> CreateRemoveDeviceDirect(
       address_type);
 }
 
+struct Disconnect FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_CONTROLLER_ID = 4,
+    VT_ADDRESS = 6,
+    VT_ADDRESS_TYPE = 8
+  };
+  uint16_t controller_id() const {
+    return GetField<uint16_t>(VT_CONTROLLER_ID, 0);
+  }
+  const flatbuffers::Vector<uint8_t> *address() const {
+    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_ADDRESS);
+  }
+  uint8_t address_type() const {
+    return GetField<uint8_t>(VT_ADDRESS_TYPE, 2);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint16_t>(verifier, VT_CONTROLLER_ID) &&
+           VerifyOffset(verifier, VT_ADDRESS) &&
+           verifier.Verify(address()) &&
+           VerifyField<uint8_t>(verifier, VT_ADDRESS_TYPE) &&
+           verifier.EndTable();
+  }
+};
+
+struct DisconnectBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_controller_id(uint16_t controller_id) {
+    fbb_.AddElement<uint16_t>(Disconnect::VT_CONTROLLER_ID, controller_id, 0);
+  }
+  void add_address(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> address) {
+    fbb_.AddOffset(Disconnect::VT_ADDRESS, address);
+  }
+  void add_address_type(uint8_t address_type) {
+    fbb_.AddElement<uint8_t>(Disconnect::VT_ADDRESS_TYPE, address_type, 2);
+  }
+  explicit DisconnectBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  DisconnectBuilder &operator=(const DisconnectBuilder &);
+  flatbuffers::Offset<Disconnect> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<Disconnect>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<Disconnect> CreateDisconnect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t controller_id = 0,
+    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> address = 0,
+    uint8_t address_type = 2) {
+  DisconnectBuilder builder_(_fbb);
+  builder_.add_address(address);
+  builder_.add_controller_id(controller_id);
+  builder_.add_address_type(address_type);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<Disconnect> CreateDisconnectDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t controller_id = 0,
+    const std::vector<uint8_t> *address = nullptr,
+    uint8_t address_type = 2) {
+  return Schemas::CreateDisconnect(
+      _fbb,
+      controller_id,
+      address ? _fbb.CreateVector<uint8_t>(*address) : 0,
+      address_type);
+}
+
 struct DeviceConnected FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_CONTROLLER_ID = 4,
@@ -598,6 +692,92 @@ inline flatbuffers::Offset<DeviceConnected> CreateDeviceConnectedDirect(
       uuid ? _fbb.CreateString(uuid) : 0,
       company_id,
       device_name ? _fbb.CreateString(device_name) : 0);
+}
+
+struct DeviceDisconnected FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_CONTROLLER_ID = 4,
+    VT_ADDRESS = 6,
+    VT_ADDRESS_TYPE = 8,
+    VT_REASON = 10
+  };
+  uint16_t controller_id() const {
+    return GetField<uint16_t>(VT_CONTROLLER_ID, 0);
+  }
+  const flatbuffers::String *address() const {
+    return GetPointer<const flatbuffers::String *>(VT_ADDRESS);
+  }
+  uint8_t address_type() const {
+    return GetField<uint8_t>(VT_ADDRESS_TYPE, 0);
+  }
+  const flatbuffers::String *reason() const {
+    return GetPointer<const flatbuffers::String *>(VT_REASON);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint16_t>(verifier, VT_CONTROLLER_ID) &&
+           VerifyOffset(verifier, VT_ADDRESS) &&
+           verifier.Verify(address()) &&
+           VerifyField<uint8_t>(verifier, VT_ADDRESS_TYPE) &&
+           VerifyOffset(verifier, VT_REASON) &&
+           verifier.Verify(reason()) &&
+           verifier.EndTable();
+  }
+};
+
+struct DeviceDisconnectedBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_controller_id(uint16_t controller_id) {
+    fbb_.AddElement<uint16_t>(DeviceDisconnected::VT_CONTROLLER_ID, controller_id, 0);
+  }
+  void add_address(flatbuffers::Offset<flatbuffers::String> address) {
+    fbb_.AddOffset(DeviceDisconnected::VT_ADDRESS, address);
+  }
+  void add_address_type(uint8_t address_type) {
+    fbb_.AddElement<uint8_t>(DeviceDisconnected::VT_ADDRESS_TYPE, address_type, 0);
+  }
+  void add_reason(flatbuffers::Offset<flatbuffers::String> reason) {
+    fbb_.AddOffset(DeviceDisconnected::VT_REASON, reason);
+  }
+  explicit DeviceDisconnectedBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  DeviceDisconnectedBuilder &operator=(const DeviceDisconnectedBuilder &);
+  flatbuffers::Offset<DeviceDisconnected> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<DeviceDisconnected>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<DeviceDisconnected> CreateDeviceDisconnected(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t controller_id = 0,
+    flatbuffers::Offset<flatbuffers::String> address = 0,
+    uint8_t address_type = 0,
+    flatbuffers::Offset<flatbuffers::String> reason = 0) {
+  DeviceDisconnectedBuilder builder_(_fbb);
+  builder_.add_reason(reason);
+  builder_.add_address(address);
+  builder_.add_controller_id(controller_id);
+  builder_.add_address_type(address_type);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<DeviceDisconnected> CreateDeviceDisconnectedDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t controller_id = 0,
+    const char *address = nullptr,
+    uint8_t address_type = 0,
+    const char *reason = nullptr) {
+  return Schemas::CreateDeviceDisconnected(
+      _fbb,
+      controller_id,
+      address ? _fbb.CreateString(address) : 0,
+      address_type,
+      reason ? _fbb.CreateString(reason) : 0);
 }
 
 struct DeviceFound FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
@@ -863,6 +1043,9 @@ struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const AddDevice *payload_as_AddDevice() const {
     return payload_type() == Payload::AddDevice ? static_cast<const AddDevice *>(payload()) : nullptr;
   }
+  const Disconnect *payload_as_Disconnect() const {
+    return payload_type() == Payload::Disconnect ? static_cast<const Disconnect *>(payload()) : nullptr;
+  }
   const GetMGMTInfo *payload_as_GetMGMTInfo() const {
     return payload_type() == Payload::GetMGMTInfo ? static_cast<const GetMGMTInfo *>(payload()) : nullptr;
   }
@@ -877,6 +1060,9 @@ struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   const DeviceConnected *payload_as_DeviceConnected() const {
     return payload_type() == Payload::DeviceConnected ? static_cast<const DeviceConnected *>(payload()) : nullptr;
+  }
+  const DeviceDisconnected *payload_as_DeviceDisconnected() const {
+    return payload_type() == Payload::DeviceDisconnected ? static_cast<const DeviceDisconnected *>(payload()) : nullptr;
   }
   const DeviceFound *payload_as_DeviceFound() const {
     return payload_type() == Payload::DeviceFound ? static_cast<const DeviceFound *>(payload()) : nullptr;
@@ -913,6 +1099,10 @@ template<> inline const AddDevice *Packet::payload_as<AddDevice>() const {
   return payload_as_AddDevice();
 }
 
+template<> inline const Disconnect *Packet::payload_as<Disconnect>() const {
+  return payload_as_Disconnect();
+}
+
 template<> inline const GetMGMTInfo *Packet::payload_as<GetMGMTInfo>() const {
   return payload_as_GetMGMTInfo();
 }
@@ -931,6 +1121,10 @@ template<> inline const StopScan *Packet::payload_as<StopScan>() const {
 
 template<> inline const DeviceConnected *Packet::payload_as<DeviceConnected>() const {
   return payload_as_DeviceConnected();
+}
+
+template<> inline const DeviceDisconnected *Packet::payload_as<DeviceDisconnected>() const {
+  return payload_as_DeviceDisconnected();
 }
 
 template<> inline const DeviceFound *Packet::payload_as<DeviceFound>() const {
@@ -1016,6 +1210,10 @@ inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *obj, Payl
       auto ptr = reinterpret_cast<const AddDevice *>(obj);
       return verifier.VerifyTable(ptr);
     }
+    case Payload::Disconnect: {
+      auto ptr = reinterpret_cast<const Disconnect *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
     case Payload::GetMGMTInfo: {
       auto ptr = reinterpret_cast<const GetMGMTInfo *>(obj);
       return verifier.VerifyTable(ptr);
@@ -1034,6 +1232,10 @@ inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *obj, Payl
     }
     case Payload::DeviceConnected: {
       auto ptr = reinterpret_cast<const DeviceConnected *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::DeviceDisconnected: {
+      auto ptr = reinterpret_cast<const DeviceDisconnected *>(obj);
       return verifier.VerifyTable(ptr);
     }
     case Payload::DeviceFound: {
