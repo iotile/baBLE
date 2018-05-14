@@ -1,0 +1,8 @@
+// Only on Linux
+
+namespace Schemas;
+
+table SetConnectable {
+  controller_id:uint16;
+  state:bool;
+}

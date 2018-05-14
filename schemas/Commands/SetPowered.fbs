@@ -1,0 +1,8 @@
+// Only on Linux
+
+namespace Schemas;
+
+table SetPowered {
+  controller_id:uint16;
+  state:bool;
+}

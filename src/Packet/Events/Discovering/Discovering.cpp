@@ -1,5 +1,7 @@
 #include "Discovering.hpp"
 
+using namespace std;
+
 namespace Packet::Events {
 
   Discovering::Discovering(Packet::Type initial_type, Packet::Type translated_type)
@@ -14,7 +16,7 @@ namespace Packet::Events {
     m_discovering = extractor.get_value<uint8_t>();
   };
 
-  std::vector<uint8_t> Discovering::serialize(AsciiFormatBuilder& builder) const {
+  vector<uint8_t> Discovering::serialize(AsciiFormatBuilder& builder) const {
     EventPacket::serialize(builder);
     builder
     .set_name("Discovering")
@@ -24,7 +26,7 @@ namespace Packet::Events {
     return builder.build();
   };
 
-  std::vector<uint8_t> Discovering::serialize(FlatbuffersFormatBuilder& builder) const {
+  vector<uint8_t> Discovering::serialize(FlatbuffersFormatBuilder& builder) const {
     EventPacket::serialize(builder);
     auto payload = Schemas::CreateDiscovering(builder, m_controller_id, m_address_type, m_discovering);
 

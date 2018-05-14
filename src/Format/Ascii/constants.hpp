@@ -8,12 +8,27 @@ namespace Format::Ascii {
   enum CommandCode {
     GetMGMTInfo= 0x0001,
     StartScan= 0x0002,
-    StopScan= 0x005
+    StopScan= 0x0003,
+    AddDevice= 0x0004,
+    RemoveDevice= 0x0005,
+    Disconnect= 0x0006,
+    SetPowered= 0x0007,
+    SetDiscoverable= 0x0008,
+    SetConnectable= 0x0009,
+    GetControllersList= 0x000A,
+    GetControllerInfo= 0x000B,
+    GetConnectedDevices= 0x000C
   };
 
   enum EventCode {
-    DeviceFound= 0x003,
-    Discovering= 0x004
+    DeviceFound= 0x0100,
+    Discovering= 0x0200,
+    DeviceConnected= 0x0300,
+    DeviceDisconnected=0x0400,
+    ClassOfDeviceChanged= 0x0500,
+    NewSettings= 0x0600,
+    ControllerAdded= 0x0700,
+    ControllerRemoved= 0x0800
   };
 
 }

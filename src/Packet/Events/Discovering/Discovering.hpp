@@ -18,6 +18,9 @@ namespace Packet::Events {
 
         case Packet::Type::FLATBUFFERS:
           return static_cast<uint16_t>(Schemas::Payload::Discovering);
+
+        case Packet::Type::NONE:
+          return 0;
       }
     };
 

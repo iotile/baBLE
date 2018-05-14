@@ -1,5 +1,7 @@
 #include "MGMTFormatBuilder.hpp"
 
+using namespace std;
+
 // Constructors
 MGMTFormatBuilder::MGMTFormatBuilder(uint16_t controller_id) {
   m_code = 0;
@@ -13,7 +15,7 @@ MGMTFormatBuilder& MGMTFormatBuilder::set_code(uint16_t code) {
 }
 
 // To add data to current building object
-MGMTFormatBuilder& MGMTFormatBuilder::add(const std::string& value) {
+MGMTFormatBuilder& MGMTFormatBuilder::add(const string& value) {
   for (const char& c : value) {
     this->add<char>(c);
   }
@@ -23,8 +25,8 @@ MGMTFormatBuilder& MGMTFormatBuilder::add(const std::string& value) {
 };
 
 // To build and finish the result object
-std::vector<uint8_t> MGMTFormatBuilder::build() {
-  std::vector<uint8_t> result = generate_header();
+vector<uint8_t> MGMTFormatBuilder::build() {
+  vector<uint8_t> result = generate_header();
 
   result.insert(result.end(), m_formatted_data.begin(), m_formatted_data.end());
 
@@ -32,10 +34,10 @@ std::vector<uint8_t> MGMTFormatBuilder::build() {
 };
 
 // Private
-std::vector<uint8_t> MGMTFormatBuilder::generate_header() {
+vector<uint8_t> MGMTFormatBuilder::generate_header() {
   auto params_length = static_cast<uint16_t>(m_formatted_data.size());
 
-  std::vector<uint8_t> header;
+  vector<uint8_t> header;
   header.reserve(Format::MGMT::header_length);
 
   // Use little-endian

@@ -85,6 +85,10 @@ namespace Packet::Commands {
           m_status = Schemas::StatusCode::InvalidCommand;
           break;
 
+        case Format::MGMT::NotConnected:
+          m_status = Schemas::StatusCode::NotConnected;
+          break;
+
         default:
           m_status = Schemas::StatusCode::Unknown;
           break;

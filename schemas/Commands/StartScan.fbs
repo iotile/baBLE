@@ -2,5 +2,5 @@ namespace Schemas;
 
 table StartScan {
   controller_id:uint16;
-  address_type:uint8 = 0x06;
+  address_type:uint8 = 0x06; // LE (public & random)
 }

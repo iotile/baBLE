@@ -1,18 +1,48 @@
 include "./Commands/GetMGMTInfo.fbs";
+include "./Commands/GetControllersList.fbs";
+include "./Commands/GetControllerInfo.fbs";
+include "./Commands/GetConnectedDevices.fbs";
 include "./Commands/StartScan.fbs";
 include "./Commands/StopScan.fbs";
+include "./Commands/AddDevice.fbs";
+include "./Commands/RemoveDevice.fbs";
+include "./Commands/Disconnect.fbs";
+include "./Commands/SetPowered.fbs";
+include "./Commands/SetDiscoverable.fbs";
+include "./Commands/SetConnectable.fbs";
+include "./Events/DeviceConnected.fbs";
+include "./Events/DeviceDisconnected.fbs";
 include "./Events/DeviceFound.fbs";
 include "./Events/Discovering.fbs";
+include "./Events/ControllerChanged.fbs";
 include "./Errors/BaBLEError.fbs";
 
 namespace Schemas;
 
 union Payload {
+  // Commands
+  AddDevice,
+  Disconnect,
+  GetConnectedDevices,
+  GetControllerInfo,
+  GetControllersList,
   GetMGMTInfo,
+  RemoveDevice,
+  SetConnectable,
+  SetDiscoverable,
+  SetPowered,
   StartScan,
   StopScan,
+
+  // Events
+  ControllerAdded,
+  ControllerRemoved,
+  DeviceConnected,
+  DeviceDisconnected,
   DeviceFound,
   Discovering,
+
+  // Errors
   BaBLEError
 }
 
@@ -27,7 +57,8 @@ enum StatusCode:uint8 {
   Denied = 0x07,
   Cancelled = 0x08,
   NotPowered = 0x09,
-  Failed = 0x0A
+  Failed = 0x0A,
+  NotConnected = 0x0B
 }
 
 table Packet {

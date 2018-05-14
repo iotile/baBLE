@@ -37,11 +37,16 @@ public:
     return uuid.str();
   }
 
-  static std::string bytes_to_string(const std::vector<uint8_t>& bytes) {
+  template<typename T>
+  static std::string bytes_to_string(const T& bytes) {
     std::stringstream result;
 
-    for(auto& v : bytes) {
-      result << char(v);
+    typename T::const_iterator it;
+    for(it = bytes.begin(); it != bytes.end(); ++it) {
+      if (*it == 0) {
+        break;
+      }
+      result << char(*it);
     }
 
     return result.str();

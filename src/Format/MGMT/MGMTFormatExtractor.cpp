@@ -1,7 +1,9 @@
 #include "MGMTFormatExtractor.hpp"
 
+using namespace std;
+
 // Static
-uint16_t MGMTFormatExtractor::extract_event_code(const std::vector<uint8_t>& data) {
+uint16_t MGMTFormatExtractor::extract_event_code(const vector<uint8_t>& data) {
   if (data.size() < 2) {
     throw Exceptions::WrongFormatException("Given MGMT data are too small (< 2 bytes). Can't extract event code.");
   }
@@ -12,7 +14,7 @@ uint16_t MGMTFormatExtractor::extract_event_code(const std::vector<uint8_t>& dat
   return event_code;
 };
 
-uint16_t MGMTFormatExtractor::extract_command_code(const std::vector<uint8_t>& data, bool isRequest) {
+uint16_t MGMTFormatExtractor::extract_command_code(const vector<uint8_t>& data, bool isRequest) {
   uint16_t command_code;
 
   if (isRequest) {
@@ -41,7 +43,7 @@ uint16_t MGMTFormatExtractor::extract_command_code(const std::vector<uint8_t>& d
   return command_code;
 };
 
-uint16_t MGMTFormatExtractor::extract_payload_length(const std::vector<uint8_t>& data) {
+uint16_t MGMTFormatExtractor::extract_payload_length(const vector<uint8_t>& data) {
   if (data.size() < 6) {
     throw Exceptions::WrongFormatException("Given MGMT data are too small (< 6 bytes). Can't extract payload length.");
   }
@@ -52,14 +54,14 @@ uint16_t MGMTFormatExtractor::extract_payload_length(const std::vector<uint8_t>&
 };
 
 // Constructors
-MGMTFormatExtractor::MGMTFormatExtractor(const std::vector<uint8_t>& data)
+MGMTFormatExtractor::MGMTFormatExtractor(const vector<uint8_t>& data)
     : m_event_code(0), m_controller_id(0), m_params_length(0) {
   parse_header(data);
   m_payload.assign(data.rbegin(), data.rend() - 6);
 };
 
 // Parsers
-void MGMTFormatExtractor::parse_header(const std::vector<uint8_t>& data) {
+void MGMTFormatExtractor::parse_header(const vector<uint8_t>& data) {
   if (data.size() < Format::MGMT::header_length) {
     throw Exceptions::WrongFormatException("Given MGMT data are too small (< 6 bytes). Can't parse header.");
   }
@@ -69,7 +71,7 @@ void MGMTFormatExtractor::parse_header(const std::vector<uint8_t>& data) {
   m_params_length = (static_cast<uint16_t>(data.at(5)) << 8) | data.at(4);
 };
 
-EIR MGMTFormatExtractor::parse_eir(const std::vector<uint8_t>& data) {
+EIR MGMTFormatExtractor::parse_eir(const vector<uint8_t>& data) {
   if (data.size() < 3) {
     throw Exceptions::WrongFormatException("Given EIR data are too small. Can't extract anything from it.");
   }
@@ -114,7 +116,7 @@ EIR MGMTFormatExtractor::parse_eir(const std::vector<uint8_t>& data) {
         break;
 
       default:
-        LOG.warning("Unknown EIR type received: " + std::to_string(type), "DeviceFoundEvent");
+        LOG.warning("Unknown EIR type received: " + to_string(type), "DeviceFoundEvent");
         break;
     }
 

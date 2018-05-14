@@ -1,0 +1,6 @@
+namespace Schemas;
+
+table GetConnectedDevices {
+  controller_id:uint16;
+  devices:[string];
+}

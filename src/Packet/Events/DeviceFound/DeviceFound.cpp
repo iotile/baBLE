@@ -1,5 +1,7 @@
 #include "DeviceFound.hpp"
 
+using namespace std;
+
 namespace Packet::Events {
 
   DeviceFound::DeviceFound(Packet::Type initial_type, Packet::Type translated_type)
@@ -22,17 +24,17 @@ namespace Packet::Events {
 
       try {
         m_eir = extractor.parse_eir(m_eir_data);
-      } catch (std::invalid_argument& err) {
+      } catch (invalid_argument& err) {
         LOG.error("Can't parse EIR", "DeviceFound");
       }
     }
   };
 
-  std::vector<uint8_t> DeviceFound::serialize(AsciiFormatBuilder& builder) const {
+  vector<uint8_t> DeviceFound::serialize(AsciiFormatBuilder& builder) const {
     EventPacket::serialize(builder);
 
     builder
-        .set_name("Discovering")
+        .set_name("DeviceFound")
         .add("Address", AsciiFormat::format_bd_address(m_address))
         .add("Address type", m_address_type)
         .add("RSSI", m_rssi)
@@ -46,10 +48,10 @@ namespace Packet::Events {
     return builder.build();
   };
 
-  std::vector<uint8_t> DeviceFound::serialize(FlatbuffersFormatBuilder& builder) const {
+  vector<uint8_t> DeviceFound::serialize(FlatbuffersFormatBuilder& builder) const {
     EventPacket::serialize(builder);
 
-    std::vector<uint8_t> flags_vector(m_flags.begin(), m_flags.end());
+    vector<uint8_t> flags_vector(m_flags.begin(), m_flags.end());
 
     auto address = builder.CreateString(AsciiFormat::format_bd_address(m_address));
     auto flags = builder.CreateVector(flags_vector);

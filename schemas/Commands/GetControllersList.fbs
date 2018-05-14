@@ -1,0 +1,5 @@
+namespace Schemas;
+
+table GetControllersList {
+  controllers:[uint16];
+}

@@ -1,5 +1,7 @@
 #include "GetMGMTInfo.hpp"
 
+using namespace std;
+
 namespace Packet::Commands {
 
   GetMGMTInfo::GetMGMTInfo(Packet::Type initial_type, Packet::Type translated_type)
@@ -25,7 +27,7 @@ namespace Packet::Commands {
     }
   };
 
-  std::vector<uint8_t> GetMGMTInfo::serialize(AsciiFormatBuilder& builder) const {
+  vector<uint8_t> GetMGMTInfo::serialize(AsciiFormatBuilder& builder) const {
     CommandPacket::serialize(builder);
     builder
       .set_name("GetMGMTInfo")
@@ -35,14 +37,14 @@ namespace Packet::Commands {
     return builder.build();
   };
 
-  std::vector<uint8_t> GetMGMTInfo::serialize(FlatbuffersFormatBuilder& builder) const {
+  vector<uint8_t> GetMGMTInfo::serialize(FlatbuffersFormatBuilder& builder) const {
     CommandPacket::serialize(builder);
     auto payload = Schemas::CreateGetMGMTInfo(builder, m_version, m_revision);
 
     return builder.build(payload, Schemas::Payload::GetMGMTInfo, m_native_class, m_status, m_native_status);
   }
 
-  std::vector<uint8_t> GetMGMTInfo::serialize(MGMTFormatBuilder& builder) const {
+  vector<uint8_t> GetMGMTInfo::serialize(MGMTFormatBuilder& builder) const {
     CommandPacket::serialize(builder);
     return builder.build();
   };
