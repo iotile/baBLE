@@ -9,7 +9,7 @@ SocketContainer& SocketContainer::register_socket(shared_ptr<AbstractSocket> soc
   return *this;
 }
 
-bool SocketContainer::send(unique_ptr<Packet::AbstractPacket> packet) {
+bool SocketContainer::send(const shared_ptr<Packet::AbstractPacket>& packet) {
   Packet::Type type = packet->current_type();
 
   if (type == Packet::Type::NONE) {

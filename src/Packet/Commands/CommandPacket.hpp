@@ -11,14 +11,14 @@ namespace Packet::Commands {
   protected:
     CommandPacket(Packet::Type initial_type, Packet::Type translated_type)
         : AbstractPacket(initial_type, translated_type) {
-      m_command_code = T::command_code(m_current_type);
+      m_command_code = T::command_code(current_type());
       m_controller_id = Format::MGMT::non_controller_id;
       m_status = Schemas::StatusCode::Success;
       m_native_status = 0;
     };
 
     void after_translate() override {
-      m_command_code = T::command_code(m_current_type);
+      m_command_code = T::command_code(current_type());
     };
 
     std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override {

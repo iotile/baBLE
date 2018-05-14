@@ -15,7 +15,7 @@ public:
   SocketContainer& register_socket(std::shared_ptr<AbstractSocket> socket);
 
   // Send a packet using the matching registered socket
-  bool send(std::unique_ptr<Packet::AbstractPacket> packet);
+  bool send(const std::shared_ptr<Packet::AbstractPacket>& packet);
 
 private:
   std::unordered_map<Packet::Type, std::shared_ptr<AbstractSocket>> m_sockets;

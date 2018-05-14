@@ -35,6 +35,16 @@ namespace Packet::Commands {
     std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
     std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override;
 
+    uint16_t expected_response() override {
+      return command_code(m_translated_type);
+    };
+
+    bool on_response_received(Packet::Type packet_type, const std::vector<uint8_t>& raw_data) override {
+      LOG.critical("RESPONSE RECEIVED");
+      AbstractPacket::import(raw_data);
+      return true;
+    };
+
   private:
     std::vector<std::string> m_devices;
 

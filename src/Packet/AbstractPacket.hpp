@@ -23,7 +23,7 @@ namespace Packet {
     };
 
     virtual std::vector<uint8_t> serialize() const {
-      switch(m_current_type) {
+      switch(current_type()) {
         case Packet::Type::MGMT:
         {
           MGMTFormatBuilder builder(m_controller_id);
@@ -51,7 +51,7 @@ namespace Packet {
     };
 
     virtual void import(const std::vector<uint8_t>& raw_data) {
-      switch(m_current_type) {
+      switch(current_type()) {
         case Packet::Type::MGMT:
         {
           MGMTFormatExtractor extractor(raw_data);
@@ -97,15 +97,22 @@ namespace Packet {
       throw std::runtime_error("import(FlatbuffersFormatExtractor&) not defined.");
     };
 
-    virtual const Packet::Type current_type() const {
-      return m_current_type;
+    const Packet::Type current_type() const {
+      return translated ? m_translated_type : m_initial_type;
     };
 
     void translate() {
-      std::swap(m_current_type, m_translated_type);
+      translated = !translated;
       after_translate();
     };
     virtual void after_translate() {};
+
+    virtual uint16_t expected_response() {
+      return 0;
+    };
+    virtual bool on_response_received(Packet::Type packet_type, const std::vector<uint8_t>& raw_data) {
+      throw std::runtime_error("on_response_received(vector<uint8_t>&) callback not defined.");
+    };
 
     const std::string stringify() const override {
       AsciiFormatBuilder builder;
@@ -120,11 +127,14 @@ namespace Packet {
 
   protected:
     AbstractPacket(Packet::Type initial_type, Packet::Type translated_type)
-        : m_current_type(initial_type), m_translated_type(translated_type), m_event_code(0), m_controller_id(0) {};
+        : m_initial_type(initial_type), m_translated_type(translated_type), translated(false),
+          m_uuid(""), m_event_code(0), m_controller_id(0) {};
 
-    Packet::Type m_current_type;
+    Packet::Type m_initial_type;
     Packet::Type m_translated_type;
+    bool translated;
 
+    std::string m_uuid;
     uint16_t m_event_code;
     uint16_t m_controller_id;
 

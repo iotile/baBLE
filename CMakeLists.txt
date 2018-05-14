@@ -76,8 +76,8 @@ set(SOURCES_FILES
         src/Format/Ascii/AsciiFormatBuilder.hpp
         src/Format/Ascii/AsciiFormatExtractor.cpp
         src/Format/Ascii/AsciiFormatExtractor.hpp
-        src/Builder/PacketBuilder.cpp
-        src/Builder/PacketBuilder.hpp
+        src/PacketContainer/PacketContainer.cpp
+        src/PacketContainer/PacketContainer.hpp
         src/Transport/AbstractSocket.hpp
         src/Transport/SocketContainer/SocketContainer.cpp
         src/Transport/SocketContainer/SocketContainer.hpp

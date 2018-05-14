@@ -2,6 +2,7 @@
 #define BABLE_LINUX_PACKETBUILDER_HPP
 
 #include <functional>
+#include <map>
 #include <memory>
 #include <iostream>
 #include <unordered_map>
@@ -10,28 +11,30 @@
 #include "../Exceptions/NotFound/NotFoundException.hpp"
 
 // Used to register all the packets on startup and then build them from received raw bytes.
-class PacketBuilder : public Loggable {
+class PacketContainer : public Loggable {
 
   // Define packet constructor function prototype
-  using PacketConstructor = std::function<std::unique_ptr<Packet::AbstractPacket>()>;
+  using PacketConstructor = std::function<std::shared_ptr<Packet::AbstractPacket>()>;
 
 public:
+  static void wait_response(std::shared_ptr<Packet::AbstractPacket> packet);
+
   // Constructors
-  explicit PacketBuilder(std::shared_ptr<AbstractFormat> building_format);
+  explicit PacketContainer(std::shared_ptr<AbstractFormat> building_format);
 
   // Setters
-  PacketBuilder& set_output_format(std::shared_ptr<AbstractFormat> output_format);
+  PacketContainer& set_output_format(std::shared_ptr<AbstractFormat> output_format);
 
   // To register packets
   template<class T>
-  PacketBuilder& register_command();
+  PacketContainer& register_command();
   template<class T>
-  PacketBuilder& register_event();
+  PacketContainer& register_event();
 
   // To build packets
-  std::unique_ptr<Packet::AbstractPacket> build(const std::vector<uint8_t>& raw_data);
-  std::unique_ptr<Packet::AbstractPacket> build_command(const std::vector<uint8_t>& raw_data);
-  std::unique_ptr<Packet::AbstractPacket> build_event(uint16_t event_code, const std::vector<uint8_t>& raw_data);
+  std::shared_ptr<Packet::AbstractPacket> build(const std::vector<uint8_t>& raw_data);
+  std::shared_ptr<Packet::AbstractPacket> build_command(const std::vector<uint8_t>& raw_data);
+  std::shared_ptr<Packet::AbstractPacket> build_event(uint16_t event_code, const std::vector<uint8_t>& raw_data);
 
   const std::string stringify() const override;
 
@@ -43,10 +46,12 @@ private:
   std::unordered_map<uint16_t, PacketConstructor> m_commands{};
   std::unordered_map<uint16_t, PacketConstructor> m_events{};
 
+  static std::map<std::tuple<Packet::Type, uint16_t>, std::shared_ptr<Packet::AbstractPacket>> m_waiting_packets;
+
 };
 
 template<class T>
-PacketBuilder& PacketBuilder::register_command() {
+PacketContainer& PacketContainer::register_command() {
   const Packet::Type initial_type = m_building_format->packet_type();
   uint16_t command_code = T::command_code(initial_type);
 
@@ -64,14 +69,14 @@ PacketBuilder& PacketBuilder::register_command() {
   }
 
   m_commands.emplace(command_code, [initial_type, translated_type](){
-    return std::make_unique<T>(initial_type, translated_type);
+    return std::make_shared<T>(initial_type, translated_type);
   });
 
   return *this;
 };
 
 template<class T>
-PacketBuilder& PacketBuilder::register_event() {
+PacketContainer& PacketContainer::register_event() {
   const Packet::Type initial_type = m_building_format->packet_type();
   uint16_t event_code = T::event_code(initial_type);
 
@@ -89,7 +94,7 @@ PacketBuilder& PacketBuilder::register_event() {
   }
 
   m_events.emplace(event_code, [initial_type, translated_type](){
-    return std::make_unique<T>(initial_type, translated_type);
+    return std::make_shared<T>(initial_type, translated_type);
   });
 
   return *this;

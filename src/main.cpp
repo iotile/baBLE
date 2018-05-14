@@ -7,7 +7,7 @@
 #include "Transport/Socket/MGMT/MGMTSocket.hpp"
 #include "Transport/Socket/StdIO/StdIOSocket.hpp"
 #include "Transport/SocketContainer/SocketContainer.hpp"
-#include "Builder/PacketBuilder.hpp"
+#include "PacketContainer/PacketContainer.hpp"
 #include "Exceptions/AbstractException.hpp"
 #include "Packet/BaBLEError/BaBLEErrorPacket.hpp"
 #include "bootstrap.hpp"
@@ -56,47 +56,55 @@ int main() {
       .register_socket(mgmt_socket)
       .register_socket(stdio_socket);
 
-  // Builder
-  PacketBuilder mgmt_builder(mgmt_format);
-  Bootstrap::register_mgmt_packets(mgmt_builder, stdio_socket->format());
+  // PacketContainer
+  PacketContainer mgmt_packet_container(mgmt_format);
+  Bootstrap::register_mgmt_packets(mgmt_packet_container, stdio_socket->format());
 
-  PacketBuilder stdio_builder(stdio_socket->format());
-  Bootstrap::register_stdio_packets(stdio_builder, mgmt_socket->format());
+  PacketContainer stdio_packet_container(stdio_socket->format());
+  Bootstrap::register_stdio_packets(stdio_packet_container, mgmt_socket->format());
 
   // Poll sockets
-  mgmt_socket->poll(loop, [&mgmt_builder, &socket_container, &stdio_socket](const std::vector<uint8_t>& received_data) {
+  mgmt_socket->poll(loop, [&mgmt_packet_container, &socket_container, &stdio_socket](const std::vector<uint8_t>& received_data) {
     try {
-      std::unique_ptr<Packet::AbstractPacket> packet = mgmt_builder.build(received_data);
+      std::shared_ptr<Packet::AbstractPacket> packet = mgmt_packet_container.build(received_data);
       LOG.debug("Packet built", "MGMT poller");
 
       packet->translate();
       LOG.debug("Packet translated", "MGMT poller");
 
-      socket_container.send(std::move(packet));
+      if(packet->expected_response() != 0) {
+        PacketContainer::wait_response(packet);
+      }
+
+      socket_container.send(packet);
 
     } catch (const Exceptions::AbstractException& err) {
       LOG.error(err.stringify(), "MGMT poller");
-      std::unique_ptr<Packet::Errors::BaBLEErrorPacket> error_packet = make_unique<Packet::Errors::BaBLEErrorPacket>(stdio_socket->format()->packet_type());
+      std::shared_ptr<Packet::Errors::BaBLEErrorPacket> error_packet = make_shared<Packet::Errors::BaBLEErrorPacket>(stdio_socket->format()->packet_type());
       error_packet->import(err);
-      socket_container.send(std::move(error_packet));
+      socket_container.send(error_packet);
     }
   });
 
-  stdio_socket->poll(loop, [&stdio_builder, &socket_container, &stdio_socket](const std::vector<uint8_t>& received_data) {
+  stdio_socket->poll(loop, [&stdio_packet_container, &socket_container, &stdio_socket](const std::vector<uint8_t>& received_data) {
     try {
-      std::unique_ptr<Packet::AbstractPacket> packet = stdio_builder.build(received_data);
+      std::shared_ptr<Packet::AbstractPacket> packet = stdio_packet_container.build(received_data);
       LOG.debug("Packet built", "BABLE poller");
 
       packet->translate();
       LOG.debug("Packet translated", "BABLE poller");
 
-      socket_container.send(std::move(packet));
+      if(packet->expected_response() != 0) {
+        PacketContainer::wait_response(packet);
+      }
+
+      socket_container.send(packet);
 
     } catch (const Exceptions::AbstractException& err) {
       LOG.error(err.stringify(), "BABLE poller");
-      std::unique_ptr<Packet::Errors::BaBLEErrorPacket> error_packet = make_unique<Packet::Errors::BaBLEErrorPacket>(stdio_socket->format()->packet_type());
+      std::shared_ptr<Packet::Errors::BaBLEErrorPacket> error_packet = make_shared<Packet::Errors::BaBLEErrorPacket>(stdio_socket->format()->packet_type());
       error_packet->import(err);
-      socket_container.send(std::move(error_packet));
+      socket_container.send(error_packet);
     }
   });
 

@@ -3,7 +3,7 @@
 
 #include <memory>
 #include "Format/AbstractFormat.hpp"
-#include "Builder/PacketBuilder.hpp"
+#include "PacketContainer/PacketContainer.hpp"
 #include "Packet/Commands/GetMGMTInfo/GetMGMTInfo.hpp"
 #include "Packet/Commands/Scan/StartScan.hpp"
 #include "Packet/Commands/Scan/StopScan.hpp"
@@ -29,9 +29,9 @@ using namespace std;
 
 namespace Bootstrap {
 
-  // MGMT builder
-  void register_mgmt_packets(PacketBuilder& mgmt_builder, shared_ptr<AbstractFormat> output_format) {
-    mgmt_builder
+  // MGMT
+  void register_mgmt_packets(PacketContainer& mgmt_packet_container, shared_ptr<AbstractFormat> output_format) {
+    mgmt_packet_container
       .set_output_format(std::move(output_format))
         .register_command<Packet::Commands::GetMGMTInfo>()
         .register_command<Packet::Commands::GetControllersList>()
@@ -56,9 +56,9 @@ namespace Bootstrap {
         .register_event<Packet::Events::NewSettings>();
   }
 
-  // Stdio builder
-  void register_stdio_packets(PacketBuilder& stdio_builder, shared_ptr<AbstractFormat> mgmt_format) {
-    stdio_builder
+  // Stdio
+  void register_stdio_packets(PacketContainer& stdio_packet_container, shared_ptr<AbstractFormat> mgmt_format) {
+    stdio_packet_container
       .set_output_format(std::move(mgmt_format))
         .register_command<Packet::Commands::GetMGMTInfo>()
         .register_command<Packet::Commands::GetControllersList>()
