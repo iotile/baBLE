@@ -12,52 +12,52 @@ set(SOURCES_FILES
         src/Log/Log.cpp
         src/Log/Log.hpp
         src/Log/Loggable.hpp
-        src/Packet/constants.hpp
-        src/Packet/AbstractPacket.hpp
-        src/Packet/Commands/CommandPacket.hpp
-        src/Packet/Commands/GetMGMTInfo/GetMGMTInfo.cpp
-        src/Packet/Commands/GetMGMTInfo/GetMGMTInfo.hpp
-        src/Packet/Commands/Scan/StartScan.cpp
-        src/Packet/Commands/Scan/StartScan.hpp
-        src/Packet/Commands/Scan/StopScan.cpp
-        src/Packet/Commands/Scan/StopScan.hpp
-        src/Packet/Commands/AddDevice/AddDevice.cpp
-        src/Packet/Commands/AddDevice/AddDevice.hpp
-        src/Packet/Commands/RemoveDevice/RemoveDevice.cpp
-        src/Packet/Commands/RemoveDevice/RemoveDevice.hpp
-        src/Packet/Commands/Disconnect/Disconnect.cpp
-        src/Packet/Commands/Disconnect/Disconnect.hpp
-        src/Packet/Commands/SetPowered/SetPowered.cpp
-        src/Packet/Commands/SetPowered/SetPowered.hpp
-        src/Packet/Commands/SetDiscoverable/SetDiscoverable.cpp
-        src/Packet/Commands/SetDiscoverable/SetDiscoverable.hpp
-        src/Packet/Commands/SetConnectable/SetConnectable.cpp
-        src/Packet/Commands/SetConnectable/SetConnectable.hpp
-        src/Packet/Commands/GetControllersList/GetControllersList.cpp
-        src/Packet/Commands/GetControllersList/GetControllersList.hpp
-        src/Packet/Commands/GetControllerInfo/GetControllerInfo.cpp
-        src/Packet/Commands/GetControllerInfo/GetControllerInfo.hpp
-        src/Packet/Commands/GetConnectedDevices/GetConnectedDevices.cpp
-        src/Packet/Commands/GetConnectedDevices/GetConnectedDevices.hpp
-        src/Packet/Events/EventPacket.hpp
-        src/Packet/Events/DeviceFound/DeviceFound.cpp
-        src/Packet/Events/DeviceFound/DeviceFound.hpp
-        src/Packet/Events/Discovering/Discovering.cpp
-        src/Packet/Events/Discovering/Discovering.hpp
-        src/Packet/Events/DeviceConnected/DeviceConnected.cpp
-        src/Packet/Events/DeviceConnected/DeviceConnected.hpp
-        src/Packet/Events/DeviceDisconnected/DeviceDisconnected.cpp
-        src/Packet/Events/DeviceDisconnected/DeviceDisconnected.hpp
-        src/Packet/Events/ClassOfDeviceChanged/ClassOfDeviceChanged.cpp
-        src/Packet/Events/ClassOfDeviceChanged/ClassOfDeviceChanged.hpp
-        src/Packet/Events/NewSettings/NewSettings.cpp
-        src/Packet/Events/NewSettings/NewSettings.hpp
-        src/Packet/Events/ControllerAdded/ControllerAdded.cpp
-        src/Packet/Events/ControllerAdded/ControllerAdded.hpp
-        src/Packet/Events/ControllerRemoved/ControllerRemoved.cpp
-        src/Packet/Events/ControllerRemoved/ControllerRemoved.hpp
-        src/Packet/BaBLEError/BaBLEErrorPacket.cpp
-        src/Packet/BaBLEError/BaBLEErrorPacket.hpp
+        src/Application/Packets/constants.hpp
+        src/Application/AbstractPacket.hpp
+        src/Application/Packets/Commands/CommandPacket.hpp
+        src/Application/Packets/Commands/GetMGMTInfo/GetMGMTInfo.cpp
+        src/Application/Packets/Commands/GetMGMTInfo/GetMGMTInfo.hpp
+        src/Application/Packets/Commands/Scan/StartScan.cpp
+        src/Application/Packets/Commands/Scan/StartScan.hpp
+        src/Application/Packets/Commands/Scan/StopScan.cpp
+        src/Application/Packets/Commands/Scan/StopScan.hpp
+        src/Application/Packets/Commands/AddDevice/AddDevice.cpp
+        src/Application/Packets/Commands/AddDevice/AddDevice.hpp
+        src/Application/Packets/Commands/RemoveDevice/RemoveDevice.cpp
+        src/Application/Packets/Commands/RemoveDevice/RemoveDevice.hpp
+        src/Application/Packets/Commands/Disconnect/Disconnect.cpp
+        src/Application/Packets/Commands/Disconnect/Disconnect.hpp
+        src/Application/Packets/Commands/SetPowered/SetPowered.cpp
+        src/Application/Packets/Commands/SetPowered/SetPowered.hpp
+        src/Application/Packets/Commands/SetDiscoverable/SetDiscoverable.cpp
+        src/Application/Packets/Commands/SetDiscoverable/SetDiscoverable.hpp
+        src/Application/Packets/Commands/SetConnectable/SetConnectable.cpp
+        src/Application/Packets/Commands/SetConnectable/SetConnectable.hpp
+        src/Application/Packets/Commands/GetControllersList/GetControllersList.cpp
+        src/Application/Packets/Commands/GetControllersList/GetControllersList.hpp
+        src/Application/Packets/Commands/GetControllerInfo/GetControllerInfo.cpp
+        src/Application/Packets/Commands/GetControllerInfo/GetControllerInfo.hpp
+        src/Application/Packets/Commands/GetConnectedDevices/GetConnectedDevices.cpp
+        src/Application/Packets/Commands/GetConnectedDevices/GetConnectedDevices.hpp
+        src/Application/Packets/Events/EventPacket.hpp
+        src/Application/Packets/Events/DeviceFound/DeviceFound.cpp
+        src/Application/Packets/Events/DeviceFound/DeviceFound.hpp
+        src/Application/Packets/Events/Discovering/Discovering.cpp
+        src/Application/Packets/Events/Discovering/Discovering.hpp
+        src/Application/Packets/Events/DeviceConnected/DeviceConnected.cpp
+        src/Application/Packets/Events/DeviceConnected/DeviceConnected.hpp
+        src/Application/Packets/Events/DeviceDisconnected/DeviceDisconnected.cpp
+        src/Application/Packets/Events/DeviceDisconnected/DeviceDisconnected.hpp
+        src/Application/Packets/Events/ClassOfDeviceChanged/ClassOfDeviceChanged.cpp
+        src/Application/Packets/Events/ClassOfDeviceChanged/ClassOfDeviceChanged.hpp
+        src/Application/Packets/Events/NewSettings/NewSettings.cpp
+        src/Application/Packets/Events/NewSettings/NewSettings.hpp
+        src/Application/Packets/Events/ControllerAdded/ControllerAdded.cpp
+        src/Application/Packets/Events/ControllerAdded/ControllerAdded.hpp
+        src/Application/Packets/Events/ControllerRemoved/ControllerRemoved.cpp
+        src/Application/Packets/Events/ControllerRemoved/ControllerRemoved.hpp
+        src/Application/Packets/Errors/BaBLEError/BaBLEErrorPacket.cpp
+        src/Application/Packets/Errors/BaBLEError/BaBLEErrorPacket.hpp
         src/Format/AbstractFormat.hpp
         src/Format/MGMT/constants.hpp
         src/Format/MGMT/MGMTFormat.hpp
@@ -76,8 +76,8 @@ set(SOURCES_FILES
         src/Format/Ascii/AsciiFormatBuilder.hpp
         src/Format/Ascii/AsciiFormatExtractor.cpp
         src/Format/Ascii/AsciiFormatExtractor.hpp
-        src/PacketContainer/PacketContainer.cpp
-        src/PacketContainer/PacketContainer.hpp
+        src/Application/PacketContainer/PacketContainer.cpp
+        src/Application/PacketContainer/PacketContainer.hpp
         src/Transport/AbstractSocket.hpp
         src/Transport/SocketContainer/SocketContainer.cpp
         src/Transport/SocketContainer/SocketContainer.hpp

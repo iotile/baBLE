@@ -7,9 +7,9 @@
 #include "Transport/Socket/MGMT/MGMTSocket.hpp"
 #include "Transport/Socket/StdIO/StdIOSocket.hpp"
 #include "Transport/SocketContainer/SocketContainer.hpp"
-#include "PacketContainer/PacketContainer.hpp"
+#include "Application/PacketContainer/PacketContainer.hpp"
 #include "Exceptions/AbstractException.hpp"
-#include "Packet/BaBLEError/BaBLEErrorPacket.hpp"
+#include "Application/Packets/Errors/BaBLEError/BaBLEErrorPacket.hpp"
 #include "bootstrap.hpp"
 
 using namespace std;
@@ -24,7 +24,7 @@ void cleanly_stop_loop(Loop& loop) {
   LOG.debug("Handles stopped.");
 }
 
-// TODO: now uuid can be added thanks to the new system. Is it needed ? Is it compatible with Mac/Windows implementation ?
+// TODO: now uuid can be added thanks to the new response system. Is it needed ? Is it compatible with Mac/Windows implementation ?
 int main() {
   ENABLE_LOGGING(DEBUG);
 

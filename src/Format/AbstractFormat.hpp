@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <memory>
 #include <vector>
-#include "../Packet/constants.hpp"
+#include "../Application/Packets/constants.hpp"
 #include "../Exceptions/AbstractException.hpp"
 
 class AbstractFormat {
