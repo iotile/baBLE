@@ -2,9 +2,9 @@
 
 using namespace std;
 
-MGMTSocket::MGMTSocket(shared_ptr<AbstractFormat> format)
+MGMTSocket::MGMTSocket(shared_ptr<MGMTFormat> format)
     : AbstractSocket(move(format)) {
-  m_header_length = m_format->header_length();
+  m_header_length = Format::MGMT::header_length;
 
   m_socket = socket(PF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC | SOCK_NONBLOCK, BTPROTO_HCI);
   if (m_socket < 0) {

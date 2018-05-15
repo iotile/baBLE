@@ -13,10 +13,6 @@ public:
     return Packet::Type::MGMT;
   };
 
-  const size_t header_length() const override {
-    return Format::MGMT::header_length;
-  };
-
   bool is_command(uint16_t type_code) override {
     return type_code == 0x0001 || type_code == 0x0002;
   };

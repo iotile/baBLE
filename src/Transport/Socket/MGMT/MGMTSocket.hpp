@@ -12,7 +12,7 @@
 
 #include "../../AbstractSocket.hpp"
 #include "../../../Log/Log.hpp"
-#include "../../../Format/MGMT/constants.hpp"
+#include "../../../Format/MGMT/MGMTFormat.hpp"
 #include "../../../Exceptions/Socket/SocketException.hpp"
 
 #define BTPROTO_HCI   1
@@ -27,7 +27,7 @@ struct sockaddr_hci {
 class MGMTSocket : public AbstractSocket {
 
 public:
-  explicit MGMTSocket(std::shared_ptr<AbstractFormat> format);
+  explicit MGMTSocket(std::shared_ptr<MGMTFormat> format);
 
   bool send(const std::vector<uint8_t>& data) override;
   void poll(std::shared_ptr<uvw::Loop> loop, CallbackFunction on_received) override;

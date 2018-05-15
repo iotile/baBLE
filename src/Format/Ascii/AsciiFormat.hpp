@@ -56,10 +56,6 @@ public:
     return Packet::Type::ASCII;
   };
 
-  const size_t header_length() const override {
-    return 0;
-  };
-
   bool is_command(uint16_t type_code) override {
     return true;
   };
