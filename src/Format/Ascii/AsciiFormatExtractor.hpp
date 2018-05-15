@@ -5,12 +5,14 @@
 #include <vector>
 #include <stdexcept>
 #include "./constants.hpp"
+#include "../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 #include "../../Exceptions/WrongFormat/WrongFormatException.hpp"
 
 class AsciiFormatExtractor {
 
 public:
   static uint16_t extract_command_code(const std::vector<uint8_t>& data);
+  static uint16_t extract_controller_id(const std::vector<uint8_t>& data);
 
   // Constructors
   explicit AsciiFormatExtractor(const std::vector<uint8_t>& data);
@@ -21,10 +23,21 @@ public:
   // Getters
   std::string get();
 
+  inline uint16_t get_command_code() {
+    return m_command_code;
+  };
+
+  inline uint16_t get_controller_id() {
+    return m_controller_id;
+  };
+
 
 private:
   std::vector<std::string> m_payload;
   size_t m_stack_pointer;
+
+  uint16_t m_command_code;
+  uint16_t m_controller_id;
 
 };
 

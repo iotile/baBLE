@@ -9,11 +9,10 @@ namespace Packet::Commands {
     m_address_type = 0;
   };
 
-  void Disconnect::import(AsciiFormatExtractor& extractor) {
-    CommandPacket::import(extractor);
+  void Disconnect::unserialize(AsciiFormatExtractor& extractor) {
+    CommandPacket::unserialize(extractor);
 
     try {
-      m_controller_id = static_cast<uint16_t>(stoi(extractor.get()));
       m_address_type = static_cast<uint8_t>(stoi(extractor.get()));
 
       string address_str = extractor.get();
@@ -35,11 +34,10 @@ namespace Packet::Commands {
     }
   };
 
-  void Disconnect::import(FlatbuffersFormatExtractor& extractor) {
-    CommandPacket::import(extractor);
+  void Disconnect::unserialize(FlatbuffersFormatExtractor& extractor) {
+    CommandPacket::unserialize(extractor);
     auto payload = extractor.get_payload<const Schemas::Disconnect*>(Schemas::Payload::Disconnect);
 
-    m_controller_id = payload->controller_id();
     m_address_type = payload->address_type();
 
     auto raw_fb_address = payload->address();
@@ -49,8 +47,8 @@ namespace Packet::Commands {
     copy(raw_fb_address->begin(), raw_fb_address->end(), m_address.begin());
   };
 
-  void Disconnect::import(MGMTFormatExtractor& extractor) {
-    CommandPacket::import(extractor);
+  void Disconnect::unserialize(MGMTFormatExtractor& extractor) {
+    CommandPacket::unserialize(extractor);
 
     if (m_native_status == 0){
       m_address = extractor.get_array<uint8_t, 6>();
@@ -73,9 +71,9 @@ namespace Packet::Commands {
 
     auto address = builder.CreateVector(m_address.data(), m_address.size());
 
-    auto payload = Schemas::CreateDisconnect(builder, m_controller_id, address, m_address_type);
+    auto payload = Schemas::CreateDisconnect(builder, address, m_address_type);
 
-    return builder.build(payload, Schemas::Payload::Disconnect, m_native_class, m_status, m_native_status);
+    return builder.build(m_controller_id, payload, Schemas::Payload::Disconnect, m_native_class, m_status, m_native_status);
   }
 
   vector<uint8_t> Disconnect::serialize(MGMTFormatBuilder& builder) const {

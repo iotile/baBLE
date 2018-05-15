@@ -26,7 +26,7 @@ namespace Packet::Events {
 
     DeviceConnected(Packet::Type initial_type, Packet::Type translated_type);
 
-    void import(MGMTFormatExtractor& extractor) override;
+    void unserialize(MGMTFormatExtractor& extractor) override;
 
     std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
     std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
@@ -37,7 +37,7 @@ namespace Packet::Events {
     std::array<uint8_t, 4> m_flags{};
     uint16_t m_eir_data_length;
     std::vector<uint8_t> m_eir_data;
-    EIR m_eir{};
+    Format::MGMT::EIR m_eir{};
   };
 
 }

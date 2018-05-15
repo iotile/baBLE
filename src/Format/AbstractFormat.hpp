@@ -15,6 +15,7 @@ public:
 
   virtual uint16_t extract_type_code(const std::vector<uint8_t>& data) = 0;
   virtual uint16_t extract_command_code(const std::vector<uint8_t>& data) = 0;
+  virtual uint16_t extract_controller_id(const std::vector<uint8_t>& data) = 0;
   virtual uint16_t extract_payload_length(const std::vector<uint8_t>& data) = 0;
 
   virtual bool is_command(uint16_t type_code) = 0;

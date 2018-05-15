@@ -26,9 +26,9 @@ namespace Packet::Commands {
 
     GetMGMTInfo(Packet::Type initial_type, Packet::Type translated_type);
 
-    void import(AsciiFormatExtractor& extractor) override;
-    void import(FlatbuffersFormatExtractor& extractor) override;
-    void import(MGMTFormatExtractor& extractor) override;
+    void unserialize(AsciiFormatExtractor& extractor) override;
+    void unserialize(FlatbuffersFormatExtractor& extractor) override;
+    void unserialize(MGMTFormatExtractor& extractor) override;
 
     std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
     std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;

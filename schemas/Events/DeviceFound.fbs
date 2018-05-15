@@ -1,7 +1,6 @@
 namespace Schemas;
 
 table DeviceFound {
-  controller_id:uint16;
   address:string;
   address_type:uint8;
   rssi:int8;

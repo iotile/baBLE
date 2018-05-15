@@ -10,11 +10,10 @@ namespace Packet::Commands {
     m_timeout = 0;
   }
 
-  void SetDiscoverable::import(AsciiFormatExtractor& extractor) {
-    CommandPacket::import(extractor);
+  void SetDiscoverable::unserialize(AsciiFormatExtractor& extractor) {
+    CommandPacket::unserialize(extractor);
 
     try {
-      m_controller_id = static_cast<uint16_t>(stoi(extractor.get()));
       m_state = static_cast<uint8_t>(stoi(extractor.get()));
       m_timeout = static_cast<uint16_t>(stoi(extractor.get()));
 
@@ -34,17 +33,16 @@ namespace Packet::Commands {
     }
   }
 
-  void SetDiscoverable::import(FlatbuffersFormatExtractor& extractor) {
-    CommandPacket::import(extractor);
+  void SetDiscoverable::unserialize(FlatbuffersFormatExtractor& extractor) {
+    CommandPacket::unserialize(extractor);
     auto payload = extractor.get_payload<const Schemas::SetDiscoverable*>(Schemas::Payload::SetDiscoverable);
 
-    m_controller_id = payload->controller_id();
     m_state = static_cast<uint8_t>(payload->state());
     m_timeout = payload->timeout();
   }
 
-  void SetDiscoverable::import(MGMTFormatExtractor& extractor) {
-    CommandPacket::import(extractor);
+  void SetDiscoverable::unserialize(MGMTFormatExtractor& extractor) {
+    CommandPacket::unserialize(extractor);
 
     if (m_native_status == 0){
       auto m_current_settings = extractor.get_value<uint32_t>();
@@ -65,9 +63,9 @@ namespace Packet::Commands {
   vector<uint8_t> SetDiscoverable::serialize(FlatbuffersFormatBuilder& builder) const {
     CommandPacket::serialize(builder);
 
-    auto payload = Schemas::CreateSetDiscoverable(builder, m_controller_id, m_state, m_timeout);
+    auto payload = Schemas::CreateSetDiscoverable(builder, m_state, m_timeout);
 
-    return builder.build(payload, Schemas::Payload::SetDiscoverable, m_native_class, m_status, m_native_status);
+    return builder.build(m_controller_id, payload, Schemas::Payload::SetDiscoverable, m_native_class, m_status, m_native_status);
   }
 
   vector<uint8_t> SetDiscoverable::serialize(MGMTFormatBuilder& builder) const {

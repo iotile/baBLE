@@ -7,8 +7,8 @@ namespace Packet::Events {
   ClassOfDeviceChanged::ClassOfDeviceChanged(Packet::Type initial_type, Packet::Type translated_type)
       : EventPacket(initial_type, translated_type) {};
 
-  void ClassOfDeviceChanged::import(MGMTFormatExtractor& extractor) {
-    EventPacket::import(extractor);
+  void ClassOfDeviceChanged::unserialize(MGMTFormatExtractor& extractor) {
+    EventPacket::unserialize(extractor);
     m_class_of_device = extractor.get_array<uint8_t, 3>();
   };
 

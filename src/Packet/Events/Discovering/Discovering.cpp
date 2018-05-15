@@ -10,8 +10,8 @@ namespace Packet::Events {
     m_discovering = 0;
   };
 
-  void Discovering::import(MGMTFormatExtractor& extractor) {
-    EventPacket::import(extractor);
+  void Discovering::unserialize(MGMTFormatExtractor& extractor) {
+    EventPacket::unserialize(extractor);
     m_address_type = extractor.get_value<uint8_t>();
     m_discovering = extractor.get_value<uint8_t>();
   };
@@ -28,9 +28,9 @@ namespace Packet::Events {
 
   vector<uint8_t> Discovering::serialize(FlatbuffersFormatBuilder& builder) const {
     EventPacket::serialize(builder);
-    auto payload = Schemas::CreateDiscovering(builder, m_controller_id, m_address_type, m_discovering);
+    auto payload = Schemas::CreateDiscovering(builder, m_address_type, m_discovering);
 
-    return builder.build(payload, Schemas::Payload::Discovering, m_native_class);
+    return builder.build(m_controller_id, payload, Schemas::Payload::Discovering, m_native_class);
   }
 
 }

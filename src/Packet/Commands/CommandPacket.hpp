@@ -8,6 +8,11 @@ namespace Packet::Commands {
   template<class T>
   class CommandPacket : public AbstractPacket {
 
+  public:
+    std::tuple<Schemas::StatusCode, uint8_t, std::string> get_full_status() {
+      return std::make_tuple(m_status, m_native_status, m_native_class);
+    }
+
   protected:
     CommandPacket(Packet::Type initial_type, Packet::Type translated_type)
         : AbstractPacket(initial_type, translated_type) {
@@ -15,17 +20,17 @@ namespace Packet::Commands {
       m_controller_id = Format::MGMT::non_controller_id;
       m_status = Schemas::StatusCode::Success;
       m_native_status = 0;
-    };
+    }
 
     void after_translate() override {
       m_command_code = T::command_code(current_type());
-    };
+    }
 
     std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override {
       builder.set_code(m_command_code);
 
       return {};
-    };
+    }
 
     std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override {
       std::string status_name = Schemas::EnumNameStatusCode(m_status);
@@ -37,13 +42,13 @@ namespace Packet::Commands {
           .add("Native status", m_native_status);
 
       return {};
-    };
+    }
 
     std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override {
       return {};
-    };
+    }
 
-    void import(MGMTFormatExtractor& extractor) override {
+    void unserialize(MGMTFormatExtractor& extractor) override {
       m_command_code = extractor.get_value<uint16_t>();
       m_native_status = extractor.get_value<uint8_t>();
       m_native_class = "MGMT";
@@ -93,13 +98,13 @@ namespace Packet::Commands {
           m_status = Schemas::StatusCode::Unknown;
           break;
       }
-    };
+    }
 
-    void import(AsciiFormatExtractor& extractor) override {
-      m_command_code = static_cast<uint16_t>(stoi(extractor.get()));
-    };
+    void unserialize(AsciiFormatExtractor& extractor) override {
+      m_command_code = extractor.get_command_code();
+    }
 
-    void import(FlatbuffersFormatExtractor& extractor) override {};
+    void unserialize(FlatbuffersFormatExtractor& extractor) override {}
 
     uint16_t m_command_code;
     uint8_t m_native_status;

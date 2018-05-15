@@ -1,5 +1,7 @@
+include "./Models/Controller.fbs";
+
 namespace Schemas;
 
 table GetControllersList {
-  controllers:[uint16];
+  controllers:[Controller];
 }

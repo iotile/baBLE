@@ -10,8 +10,8 @@ namespace Packet::Events {
     m_raw_reason = 0;
   }
 
-  void DeviceDisconnected::import(MGMTFormatExtractor& extractor) {
-    EventPacket::import(extractor);
+  void DeviceDisconnected::unserialize(MGMTFormatExtractor& extractor) {
+    EventPacket::unserialize(extractor);
     m_address = extractor.get_array<uint8_t, 6>();
     m_address_type = extractor.get_value<uint8_t>();
     m_raw_reason = extractor.get_value<uint8_t>();
@@ -39,13 +39,12 @@ namespace Packet::Events {
 
     auto payload = Schemas::CreateDeviceDisconnected(
         builder,
-        m_controller_id,
         address,
         m_address_type,
         reason
     );
 
-    return builder.build(payload, Schemas::Payload::DeviceDisconnected, m_native_class);
+    return builder.build(m_controller_id, payload, Schemas::Payload::DeviceDisconnected, m_native_class);
   }
 
 }

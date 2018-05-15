@@ -27,23 +27,20 @@ namespace Packet::Commands {
 
     GetControllerInfo(Packet::Type initial_type, Packet::Type translated_type);
 
-    void import(AsciiFormatExtractor& extractor) override;
-    void import(FlatbuffersFormatExtractor& extractor) override;
-    void import(MGMTFormatExtractor& extractor) override;
+    Format::MGMT::Controller get_controller_info() {
+      return m_controller_info;
+    }
+
+    void unserialize(AsciiFormatExtractor& extractor) override;
+    void unserialize(FlatbuffersFormatExtractor& extractor) override;
+    void unserialize(MGMTFormatExtractor& extractor) override;
 
     std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
     std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
     std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override;
 
   private:
-    std::array<uint8_t, 6> m_address{};
-    uint8_t m_bluetooth_version;
-    uint16_t m_manufacturer;
-    uint32_t m_supported_settings;
-    uint32_t m_current_settings;
-    std::array<uint8_t, 3> m_class_of_device{};
-    std::string m_name;
-    std::string m_short_name;
+    Format::MGMT::Controller m_controller_info;
 
   };
 

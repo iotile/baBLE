@@ -29,6 +29,10 @@ public:
     return MGMTFormatExtractor::extract_command_code(data);
   }
 
+  uint16_t extract_controller_id(const std::vector<uint8_t>& data) override {
+    return MGMTFormatExtractor::extract_controller_id(data);
+  }
+
   uint16_t extract_type_code(const std::vector<uint8_t>& data) override {
     return MGMTFormatExtractor::extract_event_code(data);
   }

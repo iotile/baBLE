@@ -26,7 +26,7 @@ namespace Packet::Events {
 
     Discovering(Packet::Type initial_type, Packet::Type translated_type);
 
-    void import(MGMTFormatExtractor& extractor) override;
+    void unserialize(MGMTFormatExtractor& extractor) override;
 
     std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
     std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;

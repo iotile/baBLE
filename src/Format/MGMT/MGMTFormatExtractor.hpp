@@ -14,19 +14,12 @@
 #error "Byte order not suported (PDP endian)"
 #endif
 
-// Structure representing the Extended Inquiry Response data
-struct EIR {
-  uint8_t flags = 0;
-  std::vector<uint8_t> uuid;
-  uint16_t company_id = 0;
-  std::vector<uint8_t> device_name;
-};
-
 class MGMTFormatExtractor {
 
 public:
   static uint16_t extract_event_code(const std::vector<uint8_t>& data);
   static uint16_t extract_command_code(const std::vector<uint8_t>& data, bool isRequest = false);
+  static uint16_t extract_controller_id(const std::vector<uint8_t>& data);
   static uint16_t extract_payload_length(const std::vector<uint8_t>& data);
 
   // Constructors
@@ -50,7 +43,7 @@ public:
 
   // Parsers
   void parse_header(const std::vector<uint8_t>& data);
-  EIR parse_eir(const std::vector<uint8_t>& data);
+  Format::MGMT::EIR parse_eir(const std::vector<uint8_t>& data);
 
 private:
   uint16_t m_event_code;

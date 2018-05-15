@@ -10,8 +10,8 @@ namespace Packet::Events {
     m_eir_data_length = 0;
   }
 
-  void DeviceConnected::import(MGMTFormatExtractor& extractor) {
-    EventPacket::import(extractor);
+  void DeviceConnected::unserialize(MGMTFormatExtractor& extractor) {
+    EventPacket::unserialize(extractor);
     m_address = extractor.get_array<uint8_t, 6>();
     m_address_type = extractor.get_value<uint8_t>();
     m_flags = extractor.get_array<uint8_t, 4>();
@@ -57,7 +57,6 @@ namespace Packet::Events {
 
     auto payload = Schemas::CreateDeviceConnected(
         builder,
-        m_controller_id,
         address,
         m_address_type,
         flags,
@@ -66,7 +65,7 @@ namespace Packet::Events {
         device_name
     );
 
-    return builder.build(payload, Schemas::Payload::DeviceConnected, m_native_class);
+    return builder.build(m_controller_id, payload, Schemas::Payload::DeviceConnected, m_native_class);
   }
 
 }

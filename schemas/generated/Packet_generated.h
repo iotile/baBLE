@@ -10,6 +10,8 @@ namespace Schemas {
 
 struct GetMGMTInfo;
 
+struct Controller;
+
 struct GetControllersList;
 
 struct GetControllerInfo;
@@ -323,58 +325,9 @@ inline flatbuffers::Offset<GetMGMTInfo> CreateGetMGMTInfo(
   return builder_.Finish();
 }
 
-struct GetControllersList FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct Controller FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_CONTROLLERS = 4
-  };
-  const flatbuffers::Vector<uint16_t> *controllers() const {
-    return GetPointer<const flatbuffers::Vector<uint16_t> *>(VT_CONTROLLERS);
-  }
-  bool Verify(flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_CONTROLLERS) &&
-           verifier.Verify(controllers()) &&
-           verifier.EndTable();
-  }
-};
-
-struct GetControllersListBuilder {
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_controllers(flatbuffers::Offset<flatbuffers::Vector<uint16_t>> controllers) {
-    fbb_.AddOffset(GetControllersList::VT_CONTROLLERS, controllers);
-  }
-  explicit GetControllersListBuilder(flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  GetControllersListBuilder &operator=(const GetControllersListBuilder &);
-  flatbuffers::Offset<GetControllersList> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<GetControllersList>(end);
-    return o;
-  }
-};
-
-inline flatbuffers::Offset<GetControllersList> CreateGetControllersList(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<flatbuffers::Vector<uint16_t>> controllers = 0) {
-  GetControllersListBuilder builder_(_fbb);
-  builder_.add_controllers(controllers);
-  return builder_.Finish();
-}
-
-inline flatbuffers::Offset<GetControllersList> CreateGetControllersListDirect(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    const std::vector<uint16_t> *controllers = nullptr) {
-  return Schemas::CreateGetControllersList(
-      _fbb,
-      controllers ? _fbb.CreateVector<uint16_t>(*controllers) : 0);
-}
-
-struct GetControllerInfo FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
-    VT_CONTROLLER_ID = 4,
+    VT_ID = 4,
     VT_ADDRESS = 6,
     VT_BT_VERSION = 8,
     VT_POWERED = 10,
@@ -383,8 +336,8 @@ struct GetControllerInfo FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_LOW_ENERGY = 16,
     VT_NAME = 18
   };
-  uint16_t controller_id() const {
-    return GetField<uint16_t>(VT_CONTROLLER_ID, 0);
+  uint16_t id() const {
+    return GetField<uint16_t>(VT_ID, 0);
   }
   const flatbuffers::String *address() const {
     return GetPointer<const flatbuffers::String *>(VT_ADDRESS);
@@ -409,7 +362,7 @@ struct GetControllerInfo FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint16_t>(verifier, VT_CONTROLLER_ID) &&
+           VerifyField<uint16_t>(verifier, VT_ID) &&
            VerifyOffset(verifier, VT_ADDRESS) &&
            verifier.Verify(address()) &&
            VerifyField<uint8_t>(verifier, VT_BT_VERSION) &&
@@ -423,32 +376,159 @@ struct GetControllerInfo FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
 };
 
+struct ControllerBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_id(uint16_t id) {
+    fbb_.AddElement<uint16_t>(Controller::VT_ID, id, 0);
+  }
+  void add_address(flatbuffers::Offset<flatbuffers::String> address) {
+    fbb_.AddOffset(Controller::VT_ADDRESS, address);
+  }
+  void add_bt_version(uint8_t bt_version) {
+    fbb_.AddElement<uint8_t>(Controller::VT_BT_VERSION, bt_version, 0);
+  }
+  void add_powered(bool powered) {
+    fbb_.AddElement<uint8_t>(Controller::VT_POWERED, static_cast<uint8_t>(powered), 0);
+  }
+  void add_connectable(bool connectable) {
+    fbb_.AddElement<uint8_t>(Controller::VT_CONNECTABLE, static_cast<uint8_t>(connectable), 0);
+  }
+  void add_discoverable(bool discoverable) {
+    fbb_.AddElement<uint8_t>(Controller::VT_DISCOVERABLE, static_cast<uint8_t>(discoverable), 0);
+  }
+  void add_low_energy(bool low_energy) {
+    fbb_.AddElement<uint8_t>(Controller::VT_LOW_ENERGY, static_cast<uint8_t>(low_energy), 0);
+  }
+  void add_name(flatbuffers::Offset<flatbuffers::String> name) {
+    fbb_.AddOffset(Controller::VT_NAME, name);
+  }
+  explicit ControllerBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ControllerBuilder &operator=(const ControllerBuilder &);
+  flatbuffers::Offset<Controller> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<Controller>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<Controller> CreateController(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t id = 0,
+    flatbuffers::Offset<flatbuffers::String> address = 0,
+    uint8_t bt_version = 0,
+    bool powered = false,
+    bool connectable = false,
+    bool discoverable = false,
+    bool low_energy = false,
+    flatbuffers::Offset<flatbuffers::String> name = 0) {
+  ControllerBuilder builder_(_fbb);
+  builder_.add_name(name);
+  builder_.add_address(address);
+  builder_.add_id(id);
+  builder_.add_low_energy(low_energy);
+  builder_.add_discoverable(discoverable);
+  builder_.add_connectable(connectable);
+  builder_.add_powered(powered);
+  builder_.add_bt_version(bt_version);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<Controller> CreateControllerDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t id = 0,
+    const char *address = nullptr,
+    uint8_t bt_version = 0,
+    bool powered = false,
+    bool connectable = false,
+    bool discoverable = false,
+    bool low_energy = false,
+    const char *name = nullptr) {
+  return Schemas::CreateController(
+      _fbb,
+      id,
+      address ? _fbb.CreateString(address) : 0,
+      bt_version,
+      powered,
+      connectable,
+      discoverable,
+      low_energy,
+      name ? _fbb.CreateString(name) : 0);
+}
+
+struct GetControllersList FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_CONTROLLERS = 4
+  };
+  const flatbuffers::Vector<flatbuffers::Offset<Controller>> *controllers() const {
+    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<Controller>> *>(VT_CONTROLLERS);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_CONTROLLERS) &&
+           verifier.Verify(controllers()) &&
+           verifier.VerifyVectorOfTables(controllers()) &&
+           verifier.EndTable();
+  }
+};
+
+struct GetControllersListBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_controllers(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<Controller>>> controllers) {
+    fbb_.AddOffset(GetControllersList::VT_CONTROLLERS, controllers);
+  }
+  explicit GetControllersListBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  GetControllersListBuilder &operator=(const GetControllersListBuilder &);
+  flatbuffers::Offset<GetControllersList> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<GetControllersList>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<GetControllersList> CreateGetControllersList(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<Controller>>> controllers = 0) {
+  GetControllersListBuilder builder_(_fbb);
+  builder_.add_controllers(controllers);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<GetControllersList> CreateGetControllersListDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    const std::vector<flatbuffers::Offset<Controller>> *controllers = nullptr) {
+  return Schemas::CreateGetControllersList(
+      _fbb,
+      controllers ? _fbb.CreateVector<flatbuffers::Offset<Controller>>(*controllers) : 0);
+}
+
+struct GetControllerInfo FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_CONTROLLER_INFO = 4
+  };
+  const Controller *controller_info() const {
+    return GetPointer<const Controller *>(VT_CONTROLLER_INFO);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_CONTROLLER_INFO) &&
+           verifier.VerifyTable(controller_info()) &&
+           verifier.EndTable();
+  }
+};
+
 struct GetControllerInfoBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_controller_id(uint16_t controller_id) {
-    fbb_.AddElement<uint16_t>(GetControllerInfo::VT_CONTROLLER_ID, controller_id, 0);
-  }
-  void add_address(flatbuffers::Offset<flatbuffers::String> address) {
-    fbb_.AddOffset(GetControllerInfo::VT_ADDRESS, address);
-  }
-  void add_bt_version(uint8_t bt_version) {
-    fbb_.AddElement<uint8_t>(GetControllerInfo::VT_BT_VERSION, bt_version, 0);
-  }
-  void add_powered(bool powered) {
-    fbb_.AddElement<uint8_t>(GetControllerInfo::VT_POWERED, static_cast<uint8_t>(powered), 0);
-  }
-  void add_connectable(bool connectable) {
-    fbb_.AddElement<uint8_t>(GetControllerInfo::VT_CONNECTABLE, static_cast<uint8_t>(connectable), 0);
-  }
-  void add_discoverable(bool discoverable) {
-    fbb_.AddElement<uint8_t>(GetControllerInfo::VT_DISCOVERABLE, static_cast<uint8_t>(discoverable), 0);
-  }
-  void add_low_energy(bool low_energy) {
-    fbb_.AddElement<uint8_t>(GetControllerInfo::VT_LOW_ENERGY, static_cast<uint8_t>(low_energy), 0);
-  }
-  void add_name(flatbuffers::Offset<flatbuffers::String> name) {
-    fbb_.AddOffset(GetControllerInfo::VT_NAME, name);
+  void add_controller_info(flatbuffers::Offset<Controller> controller_info) {
+    fbb_.AddOffset(GetControllerInfo::VT_CONTROLLER_INFO, controller_info);
   }
   explicit GetControllerInfoBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -464,62 +544,21 @@ struct GetControllerInfoBuilder {
 
 inline flatbuffers::Offset<GetControllerInfo> CreateGetControllerInfo(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint16_t controller_id = 0,
-    flatbuffers::Offset<flatbuffers::String> address = 0,
-    uint8_t bt_version = 0,
-    bool powered = false,
-    bool connectable = false,
-    bool discoverable = false,
-    bool low_energy = false,
-    flatbuffers::Offset<flatbuffers::String> name = 0) {
+    flatbuffers::Offset<Controller> controller_info = 0) {
   GetControllerInfoBuilder builder_(_fbb);
-  builder_.add_name(name);
-  builder_.add_address(address);
-  builder_.add_controller_id(controller_id);
-  builder_.add_low_energy(low_energy);
-  builder_.add_discoverable(discoverable);
-  builder_.add_connectable(connectable);
-  builder_.add_powered(powered);
-  builder_.add_bt_version(bt_version);
+  builder_.add_controller_info(controller_info);
   return builder_.Finish();
-}
-
-inline flatbuffers::Offset<GetControllerInfo> CreateGetControllerInfoDirect(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    uint16_t controller_id = 0,
-    const char *address = nullptr,
-    uint8_t bt_version = 0,
-    bool powered = false,
-    bool connectable = false,
-    bool discoverable = false,
-    bool low_energy = false,
-    const char *name = nullptr) {
-  return Schemas::CreateGetControllerInfo(
-      _fbb,
-      controller_id,
-      address ? _fbb.CreateString(address) : 0,
-      bt_version,
-      powered,
-      connectable,
-      discoverable,
-      low_energy,
-      name ? _fbb.CreateString(name) : 0);
 }
 
 struct GetConnectedDevices FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_CONTROLLER_ID = 4,
-    VT_DEVICES = 6
+    VT_DEVICES = 4
   };
-  uint16_t controller_id() const {
-    return GetField<uint16_t>(VT_CONTROLLER_ID, 0);
-  }
   const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *devices() const {
     return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *>(VT_DEVICES);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint16_t>(verifier, VT_CONTROLLER_ID) &&
            VerifyOffset(verifier, VT_DEVICES) &&
            verifier.Verify(devices()) &&
            verifier.VerifyVectorOfStrings(devices()) &&
@@ -530,9 +569,6 @@ struct GetConnectedDevices FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table 
 struct GetConnectedDevicesBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_controller_id(uint16_t controller_id) {
-    fbb_.AddElement<uint16_t>(GetConnectedDevices::VT_CONTROLLER_ID, controller_id, 0);
-  }
   void add_devices(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> devices) {
     fbb_.AddOffset(GetConnectedDevices::VT_DEVICES, devices);
   }
@@ -550,38 +586,29 @@ struct GetConnectedDevicesBuilder {
 
 inline flatbuffers::Offset<GetConnectedDevices> CreateGetConnectedDevices(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint16_t controller_id = 0,
     flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> devices = 0) {
   GetConnectedDevicesBuilder builder_(_fbb);
   builder_.add_devices(devices);
-  builder_.add_controller_id(controller_id);
   return builder_.Finish();
 }
 
 inline flatbuffers::Offset<GetConnectedDevices> CreateGetConnectedDevicesDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint16_t controller_id = 0,
     const std::vector<flatbuffers::Offset<flatbuffers::String>> *devices = nullptr) {
   return Schemas::CreateGetConnectedDevices(
       _fbb,
-      controller_id,
       devices ? _fbb.CreateVector<flatbuffers::Offset<flatbuffers::String>>(*devices) : 0);
 }
 
 struct StartScan FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_CONTROLLER_ID = 4,
-    VT_ADDRESS_TYPE = 6
+    VT_ADDRESS_TYPE = 4
   };
-  uint16_t controller_id() const {
-    return GetField<uint16_t>(VT_CONTROLLER_ID, 0);
-  }
   uint8_t address_type() const {
     return GetField<uint8_t>(VT_ADDRESS_TYPE, 6);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint16_t>(verifier, VT_CONTROLLER_ID) &&
            VerifyField<uint8_t>(verifier, VT_ADDRESS_TYPE) &&
            verifier.EndTable();
   }
@@ -590,9 +617,6 @@ struct StartScan FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct StartScanBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_controller_id(uint16_t controller_id) {
-    fbb_.AddElement<uint16_t>(StartScan::VT_CONTROLLER_ID, controller_id, 0);
-  }
   void add_address_type(uint8_t address_type) {
     fbb_.AddElement<uint8_t>(StartScan::VT_ADDRESS_TYPE, address_type, 6);
   }
@@ -610,28 +634,21 @@ struct StartScanBuilder {
 
 inline flatbuffers::Offset<StartScan> CreateStartScan(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint16_t controller_id = 0,
     uint8_t address_type = 6) {
   StartScanBuilder builder_(_fbb);
-  builder_.add_controller_id(controller_id);
   builder_.add_address_type(address_type);
   return builder_.Finish();
 }
 
 struct StopScan FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_CONTROLLER_ID = 4,
-    VT_ADDRESS_TYPE = 6
+    VT_ADDRESS_TYPE = 4
   };
-  uint16_t controller_id() const {
-    return GetField<uint16_t>(VT_CONTROLLER_ID, 0);
-  }
   uint8_t address_type() const {
     return GetField<uint8_t>(VT_ADDRESS_TYPE, 6);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint16_t>(verifier, VT_CONTROLLER_ID) &&
            VerifyField<uint8_t>(verifier, VT_ADDRESS_TYPE) &&
            verifier.EndTable();
   }
@@ -640,9 +657,6 @@ struct StopScan FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct StopScanBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_controller_id(uint16_t controller_id) {
-    fbb_.AddElement<uint16_t>(StopScan::VT_CONTROLLER_ID, controller_id, 0);
-  }
   void add_address_type(uint8_t address_type) {
     fbb_.AddElement<uint8_t>(StopScan::VT_ADDRESS_TYPE, address_type, 6);
   }
@@ -660,23 +674,17 @@ struct StopScanBuilder {
 
 inline flatbuffers::Offset<StopScan> CreateStopScan(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint16_t controller_id = 0,
     uint8_t address_type = 6) {
   StopScanBuilder builder_(_fbb);
-  builder_.add_controller_id(controller_id);
   builder_.add_address_type(address_type);
   return builder_.Finish();
 }
 
 struct AddDevice FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_CONTROLLER_ID = 4,
-    VT_ADDRESS = 6,
-    VT_ADDRESS_TYPE = 8
+    VT_ADDRESS = 4,
+    VT_ADDRESS_TYPE = 6
   };
-  uint16_t controller_id() const {
-    return GetField<uint16_t>(VT_CONTROLLER_ID, 0);
-  }
   const flatbuffers::Vector<uint8_t> *address() const {
     return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_ADDRESS);
   }
@@ -685,7 +693,6 @@ struct AddDevice FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint16_t>(verifier, VT_CONTROLLER_ID) &&
            VerifyOffset(verifier, VT_ADDRESS) &&
            verifier.Verify(address()) &&
            VerifyField<uint8_t>(verifier, VT_ADDRESS_TYPE) &&
@@ -696,9 +703,6 @@ struct AddDevice FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct AddDeviceBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_controller_id(uint16_t controller_id) {
-    fbb_.AddElement<uint16_t>(AddDevice::VT_CONTROLLER_ID, controller_id, 0);
-  }
   void add_address(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> address) {
     fbb_.AddOffset(AddDevice::VT_ADDRESS, address);
   }
@@ -719,37 +723,29 @@ struct AddDeviceBuilder {
 
 inline flatbuffers::Offset<AddDevice> CreateAddDevice(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint16_t controller_id = 0,
     flatbuffers::Offset<flatbuffers::Vector<uint8_t>> address = 0,
     uint8_t address_type = 2) {
   AddDeviceBuilder builder_(_fbb);
   builder_.add_address(address);
-  builder_.add_controller_id(controller_id);
   builder_.add_address_type(address_type);
   return builder_.Finish();
 }
 
 inline flatbuffers::Offset<AddDevice> CreateAddDeviceDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint16_t controller_id = 0,
     const std::vector<uint8_t> *address = nullptr,
     uint8_t address_type = 2) {
   return Schemas::CreateAddDevice(
       _fbb,
-      controller_id,
       address ? _fbb.CreateVector<uint8_t>(*address) : 0,
       address_type);
 }
 
 struct RemoveDevice FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_CONTROLLER_ID = 4,
-    VT_ADDRESS = 6,
-    VT_ADDRESS_TYPE = 8
+    VT_ADDRESS = 4,
+    VT_ADDRESS_TYPE = 6
   };
-  uint16_t controller_id() const {
-    return GetField<uint16_t>(VT_CONTROLLER_ID, 0);
-  }
   const flatbuffers::Vector<uint8_t> *address() const {
     return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_ADDRESS);
   }
@@ -758,7 +754,6 @@ struct RemoveDevice FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint16_t>(verifier, VT_CONTROLLER_ID) &&
            VerifyOffset(verifier, VT_ADDRESS) &&
            verifier.Verify(address()) &&
            VerifyField<uint8_t>(verifier, VT_ADDRESS_TYPE) &&
@@ -769,9 +764,6 @@ struct RemoveDevice FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct RemoveDeviceBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_controller_id(uint16_t controller_id) {
-    fbb_.AddElement<uint16_t>(RemoveDevice::VT_CONTROLLER_ID, controller_id, 0);
-  }
   void add_address(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> address) {
     fbb_.AddOffset(RemoveDevice::VT_ADDRESS, address);
   }
@@ -792,37 +784,29 @@ struct RemoveDeviceBuilder {
 
 inline flatbuffers::Offset<RemoveDevice> CreateRemoveDevice(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint16_t controller_id = 0,
     flatbuffers::Offset<flatbuffers::Vector<uint8_t>> address = 0,
     uint8_t address_type = 2) {
   RemoveDeviceBuilder builder_(_fbb);
   builder_.add_address(address);
-  builder_.add_controller_id(controller_id);
   builder_.add_address_type(address_type);
   return builder_.Finish();
 }
 
 inline flatbuffers::Offset<RemoveDevice> CreateRemoveDeviceDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint16_t controller_id = 0,
     const std::vector<uint8_t> *address = nullptr,
     uint8_t address_type = 2) {
   return Schemas::CreateRemoveDevice(
       _fbb,
-      controller_id,
       address ? _fbb.CreateVector<uint8_t>(*address) : 0,
       address_type);
 }
 
 struct Disconnect FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_CONTROLLER_ID = 4,
-    VT_ADDRESS = 6,
-    VT_ADDRESS_TYPE = 8
+    VT_ADDRESS = 4,
+    VT_ADDRESS_TYPE = 6
   };
-  uint16_t controller_id() const {
-    return GetField<uint16_t>(VT_CONTROLLER_ID, 0);
-  }
   const flatbuffers::Vector<uint8_t> *address() const {
     return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_ADDRESS);
   }
@@ -831,7 +815,6 @@ struct Disconnect FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint16_t>(verifier, VT_CONTROLLER_ID) &&
            VerifyOffset(verifier, VT_ADDRESS) &&
            verifier.Verify(address()) &&
            VerifyField<uint8_t>(verifier, VT_ADDRESS_TYPE) &&
@@ -842,9 +825,6 @@ struct Disconnect FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct DisconnectBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_controller_id(uint16_t controller_id) {
-    fbb_.AddElement<uint16_t>(Disconnect::VT_CONTROLLER_ID, controller_id, 0);
-  }
   void add_address(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> address) {
     fbb_.AddOffset(Disconnect::VT_ADDRESS, address);
   }
@@ -865,42 +845,33 @@ struct DisconnectBuilder {
 
 inline flatbuffers::Offset<Disconnect> CreateDisconnect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint16_t controller_id = 0,
     flatbuffers::Offset<flatbuffers::Vector<uint8_t>> address = 0,
     uint8_t address_type = 2) {
   DisconnectBuilder builder_(_fbb);
   builder_.add_address(address);
-  builder_.add_controller_id(controller_id);
   builder_.add_address_type(address_type);
   return builder_.Finish();
 }
 
 inline flatbuffers::Offset<Disconnect> CreateDisconnectDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint16_t controller_id = 0,
     const std::vector<uint8_t> *address = nullptr,
     uint8_t address_type = 2) {
   return Schemas::CreateDisconnect(
       _fbb,
-      controller_id,
       address ? _fbb.CreateVector<uint8_t>(*address) : 0,
       address_type);
 }
 
 struct SetPowered FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_CONTROLLER_ID = 4,
-    VT_STATE = 6
+    VT_STATE = 4
   };
-  uint16_t controller_id() const {
-    return GetField<uint16_t>(VT_CONTROLLER_ID, 0);
-  }
   bool state() const {
     return GetField<uint8_t>(VT_STATE, 0) != 0;
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint16_t>(verifier, VT_CONTROLLER_ID) &&
            VerifyField<uint8_t>(verifier, VT_STATE) &&
            verifier.EndTable();
   }
@@ -909,9 +880,6 @@ struct SetPowered FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct SetPoweredBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_controller_id(uint16_t controller_id) {
-    fbb_.AddElement<uint16_t>(SetPowered::VT_CONTROLLER_ID, controller_id, 0);
-  }
   void add_state(bool state) {
     fbb_.AddElement<uint8_t>(SetPowered::VT_STATE, static_cast<uint8_t>(state), 0);
   }
@@ -929,23 +897,17 @@ struct SetPoweredBuilder {
 
 inline flatbuffers::Offset<SetPowered> CreateSetPowered(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint16_t controller_id = 0,
     bool state = false) {
   SetPoweredBuilder builder_(_fbb);
-  builder_.add_controller_id(controller_id);
   builder_.add_state(state);
   return builder_.Finish();
 }
 
 struct SetDiscoverable FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_CONTROLLER_ID = 4,
-    VT_STATE = 6,
-    VT_TIMEOUT = 8
+    VT_STATE = 4,
+    VT_TIMEOUT = 6
   };
-  uint16_t controller_id() const {
-    return GetField<uint16_t>(VT_CONTROLLER_ID, 0);
-  }
   bool state() const {
     return GetField<uint8_t>(VT_STATE, 0) != 0;
   }
@@ -954,7 +916,6 @@ struct SetDiscoverable FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint16_t>(verifier, VT_CONTROLLER_ID) &&
            VerifyField<uint8_t>(verifier, VT_STATE) &&
            VerifyField<uint16_t>(verifier, VT_TIMEOUT) &&
            verifier.EndTable();
@@ -964,9 +925,6 @@ struct SetDiscoverable FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct SetDiscoverableBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_controller_id(uint16_t controller_id) {
-    fbb_.AddElement<uint16_t>(SetDiscoverable::VT_CONTROLLER_ID, controller_id, 0);
-  }
   void add_state(bool state) {
     fbb_.AddElement<uint8_t>(SetDiscoverable::VT_STATE, static_cast<uint8_t>(state), 0);
   }
@@ -987,30 +945,23 @@ struct SetDiscoverableBuilder {
 
 inline flatbuffers::Offset<SetDiscoverable> CreateSetDiscoverable(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint16_t controller_id = 0,
     bool state = false,
     uint16_t timeout = 0) {
   SetDiscoverableBuilder builder_(_fbb);
   builder_.add_timeout(timeout);
-  builder_.add_controller_id(controller_id);
   builder_.add_state(state);
   return builder_.Finish();
 }
 
 struct SetConnectable FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_CONTROLLER_ID = 4,
-    VT_STATE = 6
+    VT_STATE = 4
   };
-  uint16_t controller_id() const {
-    return GetField<uint16_t>(VT_CONTROLLER_ID, 0);
-  }
   bool state() const {
     return GetField<uint8_t>(VT_STATE, 0) != 0;
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint16_t>(verifier, VT_CONTROLLER_ID) &&
            VerifyField<uint8_t>(verifier, VT_STATE) &&
            verifier.EndTable();
   }
@@ -1019,9 +970,6 @@ struct SetConnectable FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct SetConnectableBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_controller_id(uint16_t controller_id) {
-    fbb_.AddElement<uint16_t>(SetConnectable::VT_CONTROLLER_ID, controller_id, 0);
-  }
   void add_state(bool state) {
     fbb_.AddElement<uint8_t>(SetConnectable::VT_STATE, static_cast<uint8_t>(state), 0);
   }
@@ -1039,27 +987,21 @@ struct SetConnectableBuilder {
 
 inline flatbuffers::Offset<SetConnectable> CreateSetConnectable(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint16_t controller_id = 0,
     bool state = false) {
   SetConnectableBuilder builder_(_fbb);
-  builder_.add_controller_id(controller_id);
   builder_.add_state(state);
   return builder_.Finish();
 }
 
 struct DeviceConnected FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_CONTROLLER_ID = 4,
-    VT_ADDRESS = 6,
-    VT_ADDRESS_TYPE = 8,
-    VT_FLAGS = 10,
-    VT_UUID = 12,
-    VT_COMPANY_ID = 14,
-    VT_DEVICE_NAME = 16
+    VT_ADDRESS = 4,
+    VT_ADDRESS_TYPE = 6,
+    VT_FLAGS = 8,
+    VT_UUID = 10,
+    VT_COMPANY_ID = 12,
+    VT_DEVICE_NAME = 14
   };
-  uint16_t controller_id() const {
-    return GetField<uint16_t>(VT_CONTROLLER_ID, 0);
-  }
   const flatbuffers::String *address() const {
     return GetPointer<const flatbuffers::String *>(VT_ADDRESS);
   }
@@ -1080,7 +1022,6 @@ struct DeviceConnected FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint16_t>(verifier, VT_CONTROLLER_ID) &&
            VerifyOffset(verifier, VT_ADDRESS) &&
            verifier.Verify(address()) &&
            VerifyField<uint8_t>(verifier, VT_ADDRESS_TYPE) &&
@@ -1098,9 +1039,6 @@ struct DeviceConnected FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct DeviceConnectedBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_controller_id(uint16_t controller_id) {
-    fbb_.AddElement<uint16_t>(DeviceConnected::VT_CONTROLLER_ID, controller_id, 0);
-  }
   void add_address(flatbuffers::Offset<flatbuffers::String> address) {
     fbb_.AddOffset(DeviceConnected::VT_ADDRESS, address);
   }
@@ -1133,7 +1071,6 @@ struct DeviceConnectedBuilder {
 
 inline flatbuffers::Offset<DeviceConnected> CreateDeviceConnected(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint16_t controller_id = 0,
     flatbuffers::Offset<flatbuffers::String> address = 0,
     uint8_t address_type = 0,
     flatbuffers::Offset<flatbuffers::Vector<uint8_t>> flags = 0,
@@ -1146,14 +1083,12 @@ inline flatbuffers::Offset<DeviceConnected> CreateDeviceConnected(
   builder_.add_flags(flags);
   builder_.add_address(address);
   builder_.add_company_id(company_id);
-  builder_.add_controller_id(controller_id);
   builder_.add_address_type(address_type);
   return builder_.Finish();
 }
 
 inline flatbuffers::Offset<DeviceConnected> CreateDeviceConnectedDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint16_t controller_id = 0,
     const char *address = nullptr,
     uint8_t address_type = 0,
     const std::vector<uint8_t> *flags = nullptr,
@@ -1162,7 +1097,6 @@ inline flatbuffers::Offset<DeviceConnected> CreateDeviceConnectedDirect(
     const char *device_name = nullptr) {
   return Schemas::CreateDeviceConnected(
       _fbb,
-      controller_id,
       address ? _fbb.CreateString(address) : 0,
       address_type,
       flags ? _fbb.CreateVector<uint8_t>(*flags) : 0,
@@ -1173,14 +1107,10 @@ inline flatbuffers::Offset<DeviceConnected> CreateDeviceConnectedDirect(
 
 struct DeviceDisconnected FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_CONTROLLER_ID = 4,
-    VT_ADDRESS = 6,
-    VT_ADDRESS_TYPE = 8,
-    VT_REASON = 10
+    VT_ADDRESS = 4,
+    VT_ADDRESS_TYPE = 6,
+    VT_REASON = 8
   };
-  uint16_t controller_id() const {
-    return GetField<uint16_t>(VT_CONTROLLER_ID, 0);
-  }
   const flatbuffers::String *address() const {
     return GetPointer<const flatbuffers::String *>(VT_ADDRESS);
   }
@@ -1192,7 +1122,6 @@ struct DeviceDisconnected FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint16_t>(verifier, VT_CONTROLLER_ID) &&
            VerifyOffset(verifier, VT_ADDRESS) &&
            verifier.Verify(address()) &&
            VerifyField<uint8_t>(verifier, VT_ADDRESS_TYPE) &&
@@ -1205,9 +1134,6 @@ struct DeviceDisconnected FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct DeviceDisconnectedBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_controller_id(uint16_t controller_id) {
-    fbb_.AddElement<uint16_t>(DeviceDisconnected::VT_CONTROLLER_ID, controller_id, 0);
-  }
   void add_address(flatbuffers::Offset<flatbuffers::String> address) {
     fbb_.AddOffset(DeviceDisconnected::VT_ADDRESS, address);
   }
@@ -1231,27 +1157,23 @@ struct DeviceDisconnectedBuilder {
 
 inline flatbuffers::Offset<DeviceDisconnected> CreateDeviceDisconnected(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint16_t controller_id = 0,
     flatbuffers::Offset<flatbuffers::String> address = 0,
     uint8_t address_type = 0,
     flatbuffers::Offset<flatbuffers::String> reason = 0) {
   DeviceDisconnectedBuilder builder_(_fbb);
   builder_.add_reason(reason);
   builder_.add_address(address);
-  builder_.add_controller_id(controller_id);
   builder_.add_address_type(address_type);
   return builder_.Finish();
 }
 
 inline flatbuffers::Offset<DeviceDisconnected> CreateDeviceDisconnectedDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint16_t controller_id = 0,
     const char *address = nullptr,
     uint8_t address_type = 0,
     const char *reason = nullptr) {
   return Schemas::CreateDeviceDisconnected(
       _fbb,
-      controller_id,
       address ? _fbb.CreateString(address) : 0,
       address_type,
       reason ? _fbb.CreateString(reason) : 0);
@@ -1259,18 +1181,14 @@ inline flatbuffers::Offset<DeviceDisconnected> CreateDeviceDisconnectedDirect(
 
 struct DeviceFound FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_CONTROLLER_ID = 4,
-    VT_ADDRESS = 6,
-    VT_ADDRESS_TYPE = 8,
-    VT_RSSI = 10,
-    VT_FLAGS = 12,
-    VT_UUID = 14,
-    VT_COMPANY_ID = 16,
-    VT_DEVICE_NAME = 18
+    VT_ADDRESS = 4,
+    VT_ADDRESS_TYPE = 6,
+    VT_RSSI = 8,
+    VT_FLAGS = 10,
+    VT_UUID = 12,
+    VT_COMPANY_ID = 14,
+    VT_DEVICE_NAME = 16
   };
-  uint16_t controller_id() const {
-    return GetField<uint16_t>(VT_CONTROLLER_ID, 0);
-  }
   const flatbuffers::String *address() const {
     return GetPointer<const flatbuffers::String *>(VT_ADDRESS);
   }
@@ -1294,7 +1212,6 @@ struct DeviceFound FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint16_t>(verifier, VT_CONTROLLER_ID) &&
            VerifyOffset(verifier, VT_ADDRESS) &&
            verifier.Verify(address()) &&
            VerifyField<uint8_t>(verifier, VT_ADDRESS_TYPE) &&
@@ -1313,9 +1230,6 @@ struct DeviceFound FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct DeviceFoundBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_controller_id(uint16_t controller_id) {
-    fbb_.AddElement<uint16_t>(DeviceFound::VT_CONTROLLER_ID, controller_id, 0);
-  }
   void add_address(flatbuffers::Offset<flatbuffers::String> address) {
     fbb_.AddOffset(DeviceFound::VT_ADDRESS, address);
   }
@@ -1351,7 +1265,6 @@ struct DeviceFoundBuilder {
 
 inline flatbuffers::Offset<DeviceFound> CreateDeviceFound(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint16_t controller_id = 0,
     flatbuffers::Offset<flatbuffers::String> address = 0,
     uint8_t address_type = 0,
     int8_t rssi = 0,
@@ -1365,7 +1278,6 @@ inline flatbuffers::Offset<DeviceFound> CreateDeviceFound(
   builder_.add_flags(flags);
   builder_.add_address(address);
   builder_.add_company_id(company_id);
-  builder_.add_controller_id(controller_id);
   builder_.add_rssi(rssi);
   builder_.add_address_type(address_type);
   return builder_.Finish();
@@ -1373,7 +1285,6 @@ inline flatbuffers::Offset<DeviceFound> CreateDeviceFound(
 
 inline flatbuffers::Offset<DeviceFound> CreateDeviceFoundDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint16_t controller_id = 0,
     const char *address = nullptr,
     uint8_t address_type = 0,
     int8_t rssi = 0,
@@ -1383,7 +1294,6 @@ inline flatbuffers::Offset<DeviceFound> CreateDeviceFoundDirect(
     const char *device_name = nullptr) {
   return Schemas::CreateDeviceFound(
       _fbb,
-      controller_id,
       address ? _fbb.CreateString(address) : 0,
       address_type,
       rssi,
@@ -1395,13 +1305,9 @@ inline flatbuffers::Offset<DeviceFound> CreateDeviceFoundDirect(
 
 struct Discovering FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_CONTROLLER_ID = 4,
-    VT_ADDRESS_TYPE = 6,
-    VT_STATE = 8
+    VT_ADDRESS_TYPE = 4,
+    VT_STATE = 6
   };
-  uint16_t controller_id() const {
-    return GetField<uint16_t>(VT_CONTROLLER_ID, 0);
-  }
   uint8_t address_type() const {
     return GetField<uint8_t>(VT_ADDRESS_TYPE, 0);
   }
@@ -1410,7 +1316,6 @@ struct Discovering FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint16_t>(verifier, VT_CONTROLLER_ID) &&
            VerifyField<uint8_t>(verifier, VT_ADDRESS_TYPE) &&
            VerifyField<uint8_t>(verifier, VT_STATE) &&
            verifier.EndTable();
@@ -1420,9 +1325,6 @@ struct Discovering FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct DiscoveringBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_controller_id(uint16_t controller_id) {
-    fbb_.AddElement<uint16_t>(Discovering::VT_CONTROLLER_ID, controller_id, 0);
-  }
   void add_address_type(uint8_t address_type) {
     fbb_.AddElement<uint8_t>(Discovering::VT_ADDRESS_TYPE, address_type, 0);
   }
@@ -1443,26 +1345,17 @@ struct DiscoveringBuilder {
 
 inline flatbuffers::Offset<Discovering> CreateDiscovering(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint16_t controller_id = 0,
     uint8_t address_type = 0,
     bool state = false) {
   DiscoveringBuilder builder_(_fbb);
-  builder_.add_controller_id(controller_id);
   builder_.add_state(state);
   builder_.add_address_type(address_type);
   return builder_.Finish();
 }
 
 struct ControllerAdded FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
-    VT_CONTROLLER_ID = 4
-  };
-  uint16_t controller_id() const {
-    return GetField<uint16_t>(VT_CONTROLLER_ID, 0);
-  }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint16_t>(verifier, VT_CONTROLLER_ID) &&
            verifier.EndTable();
   }
 };
@@ -1470,9 +1363,6 @@ struct ControllerAdded FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct ControllerAddedBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_controller_id(uint16_t controller_id) {
-    fbb_.AddElement<uint16_t>(ControllerAdded::VT_CONTROLLER_ID, controller_id, 0);
-  }
   explicit ControllerAddedBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -1486,23 +1376,14 @@ struct ControllerAddedBuilder {
 };
 
 inline flatbuffers::Offset<ControllerAdded> CreateControllerAdded(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    uint16_t controller_id = 0) {
+    flatbuffers::FlatBufferBuilder &_fbb) {
   ControllerAddedBuilder builder_(_fbb);
-  builder_.add_controller_id(controller_id);
   return builder_.Finish();
 }
 
 struct ControllerRemoved FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
-    VT_CONTROLLER_ID = 4
-  };
-  uint16_t controller_id() const {
-    return GetField<uint16_t>(VT_CONTROLLER_ID, 0);
-  }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint16_t>(verifier, VT_CONTROLLER_ID) &&
            verifier.EndTable();
   }
 };
@@ -1510,9 +1391,6 @@ struct ControllerRemoved FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct ControllerRemovedBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_controller_id(uint16_t controller_id) {
-    fbb_.AddElement<uint16_t>(ControllerRemoved::VT_CONTROLLER_ID, controller_id, 0);
-  }
   explicit ControllerRemovedBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -1526,10 +1404,8 @@ struct ControllerRemovedBuilder {
 };
 
 inline flatbuffers::Offset<ControllerRemoved> CreateControllerRemoved(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    uint16_t controller_id = 0) {
+    flatbuffers::FlatBufferBuilder &_fbb) {
   ControllerRemovedBuilder builder_(_fbb);
-  builder_.add_controller_id(controller_id);
   return builder_.Finish();
 }
 
@@ -1586,9 +1462,10 @@ struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_PAYLOAD_TYPE = 4,
     VT_PAYLOAD = 6,
-    VT_STATUS = 8,
-    VT_NATIVE_STATUS = 10,
-    VT_NATIVE_CLASS = 12
+    VT_CONTROLLER_ID = 8,
+    VT_STATUS = 10,
+    VT_NATIVE_STATUS = 12,
+    VT_NATIVE_CLASS = 14
   };
   Payload payload_type() const {
     return static_cast<Payload>(GetField<uint8_t>(VT_PAYLOAD_TYPE, 0));
@@ -1654,6 +1531,9 @@ struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const BaBLEError *payload_as_BaBLEError() const {
     return payload_type() == Payload::BaBLEError ? static_cast<const BaBLEError *>(payload()) : nullptr;
   }
+  uint16_t controller_id() const {
+    return GetField<uint16_t>(VT_CONTROLLER_ID, 65535);
+  }
   StatusCode status() const {
     return static_cast<StatusCode>(GetField<uint8_t>(VT_STATUS, 0));
   }
@@ -1668,6 +1548,7 @@ struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            VerifyField<uint8_t>(verifier, VT_PAYLOAD_TYPE) &&
            VerifyOffset(verifier, VT_PAYLOAD) &&
            VerifyPayload(verifier, payload(), payload_type()) &&
+           VerifyField<uint16_t>(verifier, VT_CONTROLLER_ID) &&
            VerifyField<uint8_t>(verifier, VT_STATUS) &&
            VerifyField<uint8_t>(verifier, VT_NATIVE_STATUS) &&
            VerifyOffset(verifier, VT_NATIVE_CLASS) &&
@@ -1761,6 +1642,9 @@ struct PacketBuilder {
   void add_payload(flatbuffers::Offset<void> payload) {
     fbb_.AddOffset(Packet::VT_PAYLOAD, payload);
   }
+  void add_controller_id(uint16_t controller_id) {
+    fbb_.AddElement<uint16_t>(Packet::VT_CONTROLLER_ID, controller_id, 65535);
+  }
   void add_status(StatusCode status) {
     fbb_.AddElement<uint8_t>(Packet::VT_STATUS, static_cast<uint8_t>(status), 0);
   }
@@ -1786,12 +1670,14 @@ inline flatbuffers::Offset<Packet> CreatePacket(
     flatbuffers::FlatBufferBuilder &_fbb,
     Payload payload_type = Payload::NONE,
     flatbuffers::Offset<void> payload = 0,
+    uint16_t controller_id = 65535,
     StatusCode status = StatusCode::Success,
     uint8_t native_status = 0,
     flatbuffers::Offset<flatbuffers::String> native_class = 0) {
   PacketBuilder builder_(_fbb);
   builder_.add_native_class(native_class);
   builder_.add_payload(payload);
+  builder_.add_controller_id(controller_id);
   builder_.add_native_status(native_status);
   builder_.add_status(status);
   builder_.add_payload_type(payload_type);
@@ -1802,6 +1688,7 @@ inline flatbuffers::Offset<Packet> CreatePacketDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     Payload payload_type = Payload::NONE,
     flatbuffers::Offset<void> payload = 0,
+    uint16_t controller_id = 65535,
     StatusCode status = StatusCode::Success,
     uint8_t native_status = 0,
     const char *native_class = nullptr) {
@@ -1809,6 +1696,7 @@ inline flatbuffers::Offset<Packet> CreatePacketDirect(
       _fbb,
       payload_type,
       payload,
+      controller_id,
       status,
       native_status,
       native_class ? _fbb.CreateString(native_class) : 0);

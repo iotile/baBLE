@@ -29,17 +29,11 @@ public:
   };
 
   uint16_t extract_command_code(const std::vector<uint8_t>& data) override {
-    flatbuffers::Verifier packet_verifier(data.data(), data.size());
-    bool packet_valid = Schemas::VerifyPacketBuffer(packet_verifier);
+    return FlatbuffersFormatExtractor::extract_payload_type(data);
+  }
 
-    if (!packet_valid) {
-      throw Exceptions::WrongFormatException("Flatbuffers packet is not valid. Can't extract command code from it.");
-    }
-
-    auto fb_packet = Schemas::GetPacket(data.data());
-    auto payload_type = fb_packet->payload_type();
-
-    return static_cast<uint16_t>(payload_type);
+  uint16_t extract_controller_id(const std::vector<uint8_t>& data) override {
+    return FlatbuffersFormatExtractor::extract_controller_id(data);
   }
 
   uint16_t extract_type_code(const std::vector<uint8_t>& data) override {

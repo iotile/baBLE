@@ -24,6 +24,7 @@ void cleanly_stop_loop(Loop& loop) {
   LOG.debug("Handles stopped.");
 }
 
+// TODO: now uuid can be added thanks to the new system. Is it needed ? Is it compatible with Mac/Windows implementation ?
 int main() {
   ENABLE_LOGGING(DEBUG);
 
@@ -72,7 +73,7 @@ int main() {
       packet->translate();
       LOG.debug("Packet translated", "MGMT poller");
 
-      if(packet->expected_response() != 0) {
+      if(packet->expected_response_uuid() != 0) {
         PacketContainer::wait_response(packet);
       }
 
@@ -80,7 +81,9 @@ int main() {
 
     } catch (const Exceptions::AbstractException& err) {
       LOG.error(err.stringify(), "MGMT poller");
-      std::shared_ptr<Packet::Errors::BaBLEErrorPacket> error_packet = make_shared<Packet::Errors::BaBLEErrorPacket>(stdio_socket->format()->packet_type());
+      std::shared_ptr<Packet::Errors::BaBLEErrorPacket> error_packet = make_shared<Packet::Errors::BaBLEErrorPacket>(
+          stdio_socket->format()->packet_type()
+      );
       error_packet->import(err);
       socket_container.send(error_packet);
     }
@@ -94,7 +97,7 @@ int main() {
       packet->translate();
       LOG.debug("Packet translated", "BABLE poller");
 
-      if(packet->expected_response() != 0) {
+      if(packet->expected_response_uuid() != 0) {
         PacketContainer::wait_response(packet);
       }
 
@@ -102,7 +105,9 @@ int main() {
 
     } catch (const Exceptions::AbstractException& err) {
       LOG.error(err.stringify(), "BABLE poller");
-      std::shared_ptr<Packet::Errors::BaBLEErrorPacket> error_packet = make_shared<Packet::Errors::BaBLEErrorPacket>(stdio_socket->format()->packet_type());
+      std::shared_ptr<Packet::Errors::BaBLEErrorPacket> error_packet = make_shared<Packet::Errors::BaBLEErrorPacket>(
+          stdio_socket->format()->packet_type()
+      );
       error_packet->import(err);
       socket_container.send(error_packet);
     }

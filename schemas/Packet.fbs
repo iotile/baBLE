@@ -63,6 +63,7 @@ enum StatusCode:uint8 {
 
 table Packet {
   payload:Payload;
+  controller_id:uint16 = 0xFFFF;
   status:StatusCode = Success;
   native_status:uint8 = 0x00;
   native_class:string;

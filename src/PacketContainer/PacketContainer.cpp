@@ -3,10 +3,10 @@
 using namespace std;
 
 // Statics
-map<std::tuple<Packet::Type, uint16_t>, shared_ptr<Packet::AbstractPacket>> PacketContainer::m_waiting_packets{};
+map<std::tuple<Packet::Type, uint64_t>, shared_ptr<Packet::AbstractPacket>> PacketContainer::m_waiting_packets{};
 
 void PacketContainer::wait_response(shared_ptr<Packet::AbstractPacket> packet) {
-  m_waiting_packets.emplace(make_tuple(packet->current_type(), packet->expected_response()), move(packet));
+  m_waiting_packets.emplace(make_tuple(packet->current_type(), packet->expected_response_uuid()), move(packet));
 };
 
 // Constructors
@@ -37,11 +37,11 @@ shared_ptr<Packet::AbstractPacket> PacketContainer::build(const vector<uint8_t>&
 shared_ptr<Packet::AbstractPacket> PacketContainer::build_command(const vector<uint8_t>& raw_data) {
   // Extract command_code from data
   uint16_t command_code = m_building_format->extract_command_code(raw_data);
+  uint16_t controller_id = m_building_format->extract_controller_id(raw_data);
   Packet::Type packet_type = m_building_format->packet_type();
 
-  auto waiting_it = m_waiting_packets.find(make_tuple(packet_type, command_code));
+  auto waiting_it = m_waiting_packets.find(make_tuple(packet_type, Packet::AbstractPacket::compute_uuid(command_code, controller_id)));
   if (waiting_it != m_waiting_packets.end()) {
-
     shared_ptr<Packet::AbstractPacket> packet = waiting_it->second;
     if (packet->on_response_received(packet_type, raw_data)) {
       m_waiting_packets.erase(waiting_it);

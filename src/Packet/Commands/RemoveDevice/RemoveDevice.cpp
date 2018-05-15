@@ -9,11 +9,10 @@ namespace Packet::Commands {
     m_address_type = 0;
   };
 
-  void RemoveDevice::import(AsciiFormatExtractor& extractor) {
-    CommandPacket::import(extractor);
+  void RemoveDevice::unserialize(AsciiFormatExtractor& extractor) {
+    CommandPacket::unserialize(extractor);
 
     try {
-      m_controller_id = static_cast<uint16_t>(stoi(extractor.get()));
       m_address_type = static_cast<uint8_t>(stoi(extractor.get()));
 
       string address_str = extractor.get();
@@ -35,11 +34,10 @@ namespace Packet::Commands {
     }
   };
 
-  void RemoveDevice::import(FlatbuffersFormatExtractor& extractor) {
-    CommandPacket::import(extractor);
+  void RemoveDevice::unserialize(FlatbuffersFormatExtractor& extractor) {
+    CommandPacket::unserialize(extractor);
     auto payload = extractor.get_payload<const Schemas::RemoveDevice*>(Schemas::Payload::RemoveDevice);
 
-    m_controller_id = payload->controller_id();
     m_address_type = payload->address_type();
 
     auto raw_fb_address = payload->address();
@@ -49,8 +47,8 @@ namespace Packet::Commands {
     copy(raw_fb_address->begin(), raw_fb_address->end(), m_address.begin());
   };
 
-  void RemoveDevice::import(MGMTFormatExtractor& extractor) {
-    CommandPacket::import(extractor);
+  void RemoveDevice::unserialize(MGMTFormatExtractor& extractor) {
+    CommandPacket::unserialize(extractor);
 
     if (m_native_status == 0){
       m_address = extractor.get_array<uint8_t, 6>();
@@ -73,9 +71,9 @@ namespace Packet::Commands {
 
     auto address = builder.CreateVector(m_address.data(), m_address.size());
 
-    auto payload = Schemas::CreateRemoveDevice(builder, m_controller_id, address, m_address_type);
+    auto payload = Schemas::CreateRemoveDevice(builder, address, m_address_type);
 
-    return builder.build(payload, Schemas::Payload::RemoveDevice, m_native_class, m_status, m_native_status);
+    return builder.build(m_controller_id, payload, Schemas::Payload::RemoveDevice, m_native_class, m_status, m_native_status);
   }
 
   vector<uint8_t> RemoveDevice::serialize(MGMTFormatBuilder& builder) const {

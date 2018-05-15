@@ -2,6 +2,7 @@
 #define BABLE_LINUX_GETCONTROLLERSLIST_HPP
 
 #include "../CommandPacket.hpp"
+#include "../GetControllerInfo/GetControllerInfo.hpp"
 
 namespace Packet::Commands {
 
@@ -26,16 +27,26 @@ namespace Packet::Commands {
 
     GetControllersList(Packet::Type initial_type, Packet::Type translated_type);
 
-    void import(AsciiFormatExtractor& extractor) override;
-    void import(FlatbuffersFormatExtractor& extractor) override;
-    void import(MGMTFormatExtractor& extractor) override;
+    void unserialize(AsciiFormatExtractor& extractor) override;
+    void unserialize(FlatbuffersFormatExtractor& extractor) override;
+    void unserialize(MGMTFormatExtractor& extractor) override;
 
     std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
     std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
     std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override;
 
+    void after_translate() override;
+
+    uint64_t expected_response_uuid() override;
+    bool on_response_received(Packet::Type packet_type, const std::vector<uint8_t>& raw_data) override;
+
   private:
-    std::vector<uint16_t> m_controllers;
+    bool m_waiting_controllers_info;
+    uint16_t m_current_index;
+
+    std::unique_ptr<GetControllerInfo> m_controller_info_packet;
+    std::vector<uint16_t> m_controllers_ids;
+    std::vector<Format::MGMT::Controller> m_controllers;
 
   };
 

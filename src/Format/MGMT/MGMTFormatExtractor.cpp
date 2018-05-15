@@ -43,6 +43,19 @@ uint16_t MGMTFormatExtractor::extract_command_code(const vector<uint8_t>& data, 
   return command_code;
 };
 
+uint16_t MGMTFormatExtractor::extract_controller_id(const vector<uint8_t>& data) {
+  uint16_t controller_id;
+
+  if (data.size() < 4) {
+    throw Exceptions::WrongFormatException("Given MGMT data are too small (< 4 bytes). Can't extract controller id.");
+  }
+
+  // Use little endian
+  controller_id = (data.at(3) << 8) | data.at(2);
+
+  return controller_id;
+};
+
 uint16_t MGMTFormatExtractor::extract_payload_length(const vector<uint8_t>& data) {
   if (data.size() < 6) {
     throw Exceptions::WrongFormatException("Given MGMT data are too small (< 6 bytes). Can't extract payload length.");
@@ -71,12 +84,12 @@ void MGMTFormatExtractor::parse_header(const vector<uint8_t>& data) {
   m_params_length = (static_cast<uint16_t>(data.at(5)) << 8) | data.at(4);
 };
 
-EIR MGMTFormatExtractor::parse_eir(const vector<uint8_t>& data) {
+Format::MGMT::EIR MGMTFormatExtractor::parse_eir(const vector<uint8_t>& data) {
   if (data.size() < 3) {
     throw Exceptions::WrongFormatException("Given EIR data are too small. Can't extract anything from it.");
   }
 
-  EIR result = EIR();
+  Format::MGMT::EIR result = {};
 
   for(auto it = data.begin(); it != data.end(); ++it) {
     uint8_t field_length = *it;

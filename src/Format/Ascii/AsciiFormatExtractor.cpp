@@ -22,10 +22,48 @@ uint16_t AsciiFormatExtractor::extract_command_code(const vector<uint8_t>& data)
   return static_cast<uint16_t>(stoi(data_str));
 }
 
+uint16_t AsciiFormatExtractor::extract_controller_id(const vector<uint8_t>& data) {
+  if (data.size() < 2) {
+    throw Exceptions::WrongFormatException("Given ASCII data are too small (< 2 bytes). Can't extract controller id.");
+  }
+
+  string data_str;
+  size_t nb_delimiters = 0;
+  for (auto& value : data) {
+    auto c = static_cast<char>(value);
+
+    if (c == Format::Ascii::Delimiter) {
+      nb_delimiters++;
+
+      if (nb_delimiters > 1) {
+        break;
+      }
+    }
+
+    if (nb_delimiters > 0) {
+      data_str += c;
+    }
+  }
+
+  return static_cast<uint16_t>(stoi(data_str));
+}
+
 // Constructors
 AsciiFormatExtractor::AsciiFormatExtractor(const vector<uint8_t>& data) {
   m_stack_pointer = 0;
   parse_payload(data);
+
+  try {
+    m_command_code = static_cast<uint16_t>(stoi(get()));
+    m_controller_id = static_cast<uint16_t>(stoi(get()));
+
+  } catch (const Exceptions::WrongFormatException& err) {
+    throw Exceptions::InvalidCommandException("Invalid command. Usage: <command_code>,<controller_id>,<params...>");
+  } catch (const bad_cast& err) {
+    throw Exceptions::InvalidCommandException("<command_code> and <controller_id> must be 16bits numbers.");
+  } catch (const std::invalid_argument& err) {
+    throw Exceptions::InvalidCommandException("<command_code> and <controller_id> must be numbers.");
+  }
 }
 
 // Parser

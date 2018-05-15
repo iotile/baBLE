@@ -24,7 +24,7 @@ namespace Packet::Events {
       return {};
     };
 
-    void import(MGMTFormatExtractor& extractor) override {
+    void unserialize(MGMTFormatExtractor& extractor) override {
       m_native_class = "MGMT";
     };
 

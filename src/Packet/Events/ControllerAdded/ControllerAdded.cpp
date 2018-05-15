@@ -7,8 +7,8 @@ namespace Packet::Events {
   ControllerAdded::ControllerAdded(Packet::Type initial_type, Packet::Type translated_type)
       : EventPacket(initial_type, translated_type) {}
 
-  void ControllerAdded::import(MGMTFormatExtractor& extractor) {
-    EventPacket::import(extractor);
+  void ControllerAdded::unserialize(MGMTFormatExtractor& extractor) {
+    EventPacket::unserialize(extractor);
   };
 
   vector<uint8_t> ControllerAdded::serialize(AsciiFormatBuilder& builder) const {
@@ -22,9 +22,9 @@ namespace Packet::Events {
   vector<uint8_t> ControllerAdded::serialize(FlatbuffersFormatBuilder& builder) const {
     EventPacket::serialize(builder);
 
-    auto payload = Schemas::CreateControllerAdded(builder, m_controller_id);
+    auto payload = Schemas::CreateControllerAdded(builder);
 
-    return builder.build(payload, Schemas::Payload::ControllerAdded, m_native_class);
+    return builder.build(m_controller_id, payload, Schemas::Payload::ControllerAdded, m_native_class);
   }
 
 }

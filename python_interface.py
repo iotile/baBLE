@@ -122,8 +122,8 @@ builder = flatbuffers.Builder(0)
 # payload = SetConnectable.SetConnectableEnd(builder)
 
 ## GetControllersList
-# GetControllersList.GetControllersListStart(builder)
-# payload = GetControllersList.GetControllersListEnd(builder)
+GetControllersList.GetControllersListStart(builder)
+payload = GetControllersList.GetControllersListEnd(builder)
 
 ## GetControllerInfo
 # GetControllerInfo.GetControllerInfoStart(builder)
@@ -131,12 +131,12 @@ builder = flatbuffers.Builder(0)
 # payload = GetControllerInfo.GetControllerInfoEnd(builder)
 
 ## GetConnectedDevices
-GetConnectedDevices.GetConnectedDevicesStart(builder)
-GetConnectedDevices.GetConnectedDevicesAddControllerId(builder, 0)
-payload = GetConnectedDevices.GetConnectedDevicesEnd(builder)
+# GetConnectedDevices.GetConnectedDevicesStart(builder)
+# GetConnectedDevices.GetConnectedDevicesAddControllerId(builder, 0)
+# payload = GetConnectedDevices.GetConnectedDevicesEnd(builder)
 
 Packet.PacketStart(builder)
-Packet.PacketAddPayloadType(builder, Payload.Payload().GetConnectedDevices)
+Packet.PacketAddPayloadType(builder, Payload.Payload().GetControllersList)
 Packet.PacketAddPayload(builder, payload)
 packet = Packet.PacketEnd(builder)
 
@@ -169,6 +169,7 @@ try:
         # print(payload.decode(encoding="utf-8"))
 
         packet = Packet.Packet.GetRootAsPacket(payload, 0)
+        controller_id = packet.ControllerId()
         status = status_code_to_string(packet.Status())
         native_status = packet.NativeStatus()
         native_class = packet.NativeClass()
@@ -180,62 +181,56 @@ try:
             revision = getmgmtinfo.Revision()
 
             print("GetMGMTInfo",
-                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
-                  "Version:", version, "Revision:", revision)
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id, "Version:", version, "Revision:", revision)
         elif packet.PayloadType() == Payload.Payload().StartScan:
             startscan = StartScan.StartScan()
             startscan.Init(packet.Payload().Bytes, packet.Payload().Pos)
-            controller_id = startscan.ControllerId()
             address_type = startscan.AddressType()
 
             print("StartScan",
-                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
-                  "Controller id:", controller_id, "Address type:", address_type)
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id, "Address type:", address_type)
         elif packet.PayloadType() == Payload.Payload().StopScan:
             stopscan = StopScan.StopScan()
             stopscan.Init(packet.Payload().Bytes, packet.Payload().Pos)
-            controller_id = stopscan.ControllerId()
             address_type = stopscan.AddressType()
 
             print("StopScan",
-                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
-                  "Controller id:", controller_id, "Address type:", address_type)
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id, "Address type:", address_type)
         elif packet.PayloadType() == Payload.Payload().AddDevice:
             add_device = AddDevice.AddDevice()
             add_device.Init(packet.Payload().Bytes, packet.Payload().Pos)
-            controller_id = add_device.ControllerId()
             address_type = add_device.AddressType()
             address = add_device.AddressAsNumpy()
 
             print("AddDevice",
-                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
-                  "Controller id:", controller_id, "Address type:", address_type, "Address:", address)
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id, "Address type:", address_type, "Address:", address)
 
         elif packet.PayloadType() == Payload.Payload().RemoveDevice:
             remove_device = RemoveDevice.RemoveDevice()
             remove_device.Init(packet.Payload().Bytes, packet.Payload().Pos)
-            controller_id = remove_device.ControllerId()
             address_type = remove_device.AddressType()
             address = remove_device.AddressAsNumpy()
 
             print("RemoveDevice",
-                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
-                  "Controller id:", controller_id, "Address type:", address_type, "Address:", address)
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id, "Address type:", address_type, "Address:", address)
         elif packet.PayloadType() == Payload.Payload().Discovering:
             discovering = Discovering.Discovering()
             discovering.Init(packet.Payload().Bytes, packet.Payload().Pos)
-            controller_id = discovering.ControllerId()
             address_type = discovering.AddressType()
             state = discovering.State()
 
             print("Discovering",
-                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
-                  "Controller id:", controller_id, "Address type:", address_type, "State:", state)
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id, "Address type:", address_type, "State:", state)
 
         elif packet.PayloadType() == Payload.Payload().DeviceFound:
             devicefound = DeviceFound.DeviceFound()
             devicefound.Init(packet.Payload().Bytes, packet.Payload().Pos)
-            controller_id = devicefound.ControllerId()
             address_type = devicefound.AddressType()
             address = devicefound.Address()
             rssi = devicefound.Rssi()
@@ -245,15 +240,14 @@ try:
             device_name = devicefound.DeviceName()
 
             print("DeviceFound",
-                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
-                  "Controller id:", controller_id, "Address type:", address_type, "Address:", address,
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id, "Address type:", address_type, "Address:", address,
                   "RSSI:", rssi, "Flags:", flags, "Device UUID:", device_uuid, "Company id:", company_id,
                   "Device name:", device_name)
 
         elif packet.PayloadType() == Payload.Payload().DeviceConnected:
             device_connected = DeviceConnected.DeviceConnected()
             device_connected.Init(packet.Payload().Bytes, packet.Payload().Pos)
-            controller_id = device_connected.ControllerId()
             address_type = device_connected.AddressType()
             address = device_connected.Address()
             flags = device_connected.FlagsAsNumpy()
@@ -262,54 +256,50 @@ try:
             device_name = device_connected.DeviceName()
 
             print("DeviceConnected",
-                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
-                  "Controller id:", controller_id, "Address type:", address_type, "Address:", address,
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id, "Address type:", address_type, "Address:", address,
                   "Flags:", flags, "Device UUID:", device_uuid, "Company id:", company_id, "Device name:", device_name)
 
         elif packet.PayloadType() == Payload.Payload().DeviceDisconnected:
             device_disconnected = DeviceDisconnected.DeviceDisconnected()
             device_disconnected.Init(packet.Payload().Bytes, packet.Payload().Pos)
-            controller_id = device_disconnected.ControllerId()
             address_type = device_disconnected.AddressType()
             address = device_disconnected.Address()
             reason = device_disconnected.Reason()
 
             print("DeviceDisconnected",
-                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
-                  "Controller id:", controller_id, "Address type:", address_type, "Address:", address,
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id, "Address type:", address_type, "Address:", address,
                   "Reason:", reason)
 
         elif packet.PayloadType() == Payload.Payload().Disconnect:
             disconnect = Disconnect.Disconnect()
             disconnect.Init(packet.Payload().Bytes, packet.Payload().Pos)
-            controller_id = disconnect.ControllerId()
             address_type = disconnect.AddressType()
             address = disconnect.AddressAsNumpy()
 
             print("Disconnect",
-                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
-                  "Controller id:", controller_id, "Address type:", address_type, "Address:", address)
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id, "Address type:", address_type, "Address:", address)
 
         elif packet.PayloadType() == Payload.Payload().SetPowered:
             set_powered = SetPowered.SetPowered()
             set_powered.Init(packet.Payload().Bytes, packet.Payload().Pos)
-            controller_id = set_powered.ControllerId()
             state = set_powered.State()
 
             print("SetPowered",
-                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
-                  "Controller id:", controller_id, "State:", state)
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id, "State:", state)
 
         elif packet.PayloadType() == Payload.Payload().SetDiscoverable:
             set_discoverable = SetDiscoverable.SetDiscoverable()
             set_discoverable.Init(packet.Payload().Bytes, packet.Payload().Pos)
-            controller_id = set_discoverable.ControllerId()
             state = set_discoverable.State()
             timeout = set_discoverable.Timeout()
 
             print("SetDiscoverable",
-                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
-                  "Controller id:", controller_id, "State:", state, "Timeout:", timeout)
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id, "State:", state, "Timeout:", timeout)
 
         elif packet.PayloadType() == Payload.Payload().SetConnectable:
             set_connectable = SetConnectable.SetConnectable()
@@ -318,66 +308,66 @@ try:
             state = set_connectable.State()
 
             print("SetConnectable",
-                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
-                  "Controller id:", controller_id, "State:", state)
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id, "State:", state)
 
         elif packet.PayloadType() == Payload.Payload().GetControllersList:
             controllers_list = GetControllersList.GetControllersList()
             controllers_list.Init(packet.Payload().Bytes, packet.Payload().Pos)
             num_controllers = controllers_list.ControllersLength()
-            controllers = controllers_list.ControllersAsNumpy()
+            controllers = []
+
+            for i in range(num_controllers):
+                controllers.append(controllers_list.Controllers(i))
 
             print("GetControllersList",
-                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
-                  "Num controllers:", num_controllers, "Controllers ID:", controllers)
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id, "Num controllers:", num_controllers)
+
+            for controller in controllers:
+                print("\tController ID:", controller.Id(), "Address:", controller.Address(),
+                      "Bluetooth version:", controller.BtVersion(), "Powered:", controller.Powered(),
+                      "Connectable:", controller.Connectable(), "Discoverable:", controller.Discoverable(),
+                      "LE supported:", controller.LowEnergy(), "Name:", controller.Name())
 
         elif packet.PayloadType() == Payload.Payload().ControllerAdded:
             controller_added = ControllerAdded.ControllerAdded()
             controller_added.Init(packet.Payload().Bytes, packet.Payload().Pos)
-            controller_id = controller_added.ControllerId()
 
             print("ControllerAdded",
-                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id)
 
         elif packet.PayloadType() == Payload.Payload().ControllerRemoved:
             controller_removed = ControllerRemoved.ControllerRemoved()
             controller_removed.Init(packet.Payload().Bytes, packet.Payload().Pos)
-            controller_id = controller_removed.ControllerId()
 
             print("ControllerRemoved",
-                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id)
 
         elif packet.PayloadType() == Payload.Payload().GetControllerInfo:
             controller_info = GetControllerInfo.GetControllerInfo()
             controller_info.Init(packet.Payload().Bytes, packet.Payload().Pos)
-            controller_id = controller_info.ControllerId()
-            address = controller_info.Address()
-            bt_version = controller_info.BtVersion()
-            powered = controller_info.Powered()
-            connectable = controller_info.Connectable()
-            discoverable = controller_info.Discoverable()
-            low_energy = controller_info.LowEnergy()
-            name = controller_info.Name()
+            controller = controller_info.ControllerInfo()
 
             print("GetControllerInfo",
-                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
-                  "Controller ID:", controller_id, "Address:", address, "Bluetooth version:", bt_version,
-                  "Powered:", powered, "Connectable:", connectable, "Discoverable:", discoverable,
-                  "LE supported:", low_energy, "Name:", name)
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Controller ID: ", controller.Id(), "Address:", controller.Address(),
+                  "Bluetooth version:", controller.BtVersion(), "Powered:", controller.Powered(),
+                  "Connectable:", controller.Connectable(), "Discoverable:", controller.Discoverable(),
+                  "LE supported:", controller.LowEnergy(), "Name:", controller.Name())
 
         elif packet.PayloadType() == Payload.Payload().GetConnectedDevices:
             connected_devices = GetConnectedDevices.GetConnectedDevices()
             connected_devices.Init(packet.Payload().Bytes, packet.Payload().Pos)
-            controller_id = connected_devices.ControllerId()
             num_connections = connected_devices.DevicesLength()
             devices = []
             for i in range(num_connections):
                 devices.append(connected_devices.Devices(i))
 
             print("GetConnectedDevices",
-                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Num connections:", num_connections, "Device addresses:", devices)
 
         elif packet.PayloadType() == Payload.Payload().BaBLEError:
@@ -386,8 +376,8 @@ try:
             message = error.Message()
 
             print("BaBLEError",
-                  "Status:", status, "Native class: ", native_class, "Native status:", native_status,
-                  "Message:", message)
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id, "Message:", message)
         else:
             print('NOPE...')
 except KeyboardInterrupt:

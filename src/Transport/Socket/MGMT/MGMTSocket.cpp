@@ -77,7 +77,7 @@ void MGMTSocket::poll(shared_ptr<uvw::Loop> loop, CallbackFunction on_received) 
 
   poller->on<uvw::PollEvent>([this, on_received](const uvw::PollEvent& event, const uvw::PollHandle& handle){
     if (event.flags & uvw::PollHandle::Event::READABLE) {
-      LOG.debug("Reading data...", "MGMTSocket");
+      LOG.info("Reading data...", "MGMTSocket");
       vector<uint8_t> received_payload = receive();
       on_received(received_payload);
     } else if (event.flags & uvw::PollHandle::Event::WRITABLE) {

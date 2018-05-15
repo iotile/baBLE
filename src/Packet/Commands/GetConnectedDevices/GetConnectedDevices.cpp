@@ -5,32 +5,18 @@ using namespace std;
 namespace Packet::Commands {
 
   GetConnectedDevices::GetConnectedDevices(Packet::Type initial_type, Packet::Type translated_type)
-      : CommandPacket(initial_type, translated_type) {};
+      : CommandPacket(initial_type, translated_type) {}
 
-  void GetConnectedDevices::import(AsciiFormatExtractor& extractor) {
-    CommandPacket::import(extractor);
+  void GetConnectedDevices::unserialize(AsciiFormatExtractor& extractor) {
+    CommandPacket::unserialize(extractor);
+  }
 
-    try {
-      m_controller_id = static_cast<uint16_t>(stoi(extractor.get()));
+  void GetConnectedDevices::unserialize(FlatbuffersFormatExtractor& extractor) {
+    CommandPacket::unserialize(extractor);
+  }
 
-    } catch (const Exceptions::WrongFormatException& err) {
-      throw Exceptions::InvalidCommandException("Missing arguments for 'GetConnectedDevices' packet. Usage: <command_code>,<controller_id>");
-    } catch (const std::bad_cast& err) {
-      throw Exceptions::InvalidCommandException("Invalid arguments for 'GetConnectedDevices' packet. Can't cast.");
-    } catch (const std::invalid_argument& err) {
-      throw Exceptions::InvalidCommandException("Invalid arguments for 'GetConnectedDevices' packet.");
-    }
-  };
-
-  void GetConnectedDevices::import(FlatbuffersFormatExtractor& extractor) {
-    CommandPacket::import(extractor);
-    auto payload = extractor.get_payload<const Schemas::GetControllerInfo*>(Schemas::Payload::GetControllerInfo);
-
-    m_controller_id = payload->controller_id();
-  };
-
-  void GetConnectedDevices::import(MGMTFormatExtractor& extractor) {
-    CommandPacket::import(extractor);
+  void GetConnectedDevices::unserialize(MGMTFormatExtractor& extractor) {
+    CommandPacket::unserialize(extractor);
 
     if (m_native_status == 0) {
       auto m_num_connections = extractor.get_value<uint16_t>();
@@ -46,7 +32,7 @@ namespace Packet::Commands {
         current_address_type = extractor.get_value<uint8_t>();
       }
     }
-  };
+  }
 
   vector<uint8_t> GetConnectedDevices::serialize(AsciiFormatBuilder& builder) const {
     CommandPacket::serialize(builder);
@@ -56,7 +42,7 @@ namespace Packet::Commands {
         .add("Devices", m_devices);
 
     return builder.build();
-  };
+  }
 
   vector<uint8_t> GetConnectedDevices::serialize(FlatbuffersFormatBuilder& builder) const {
     CommandPacket::serialize(builder);
@@ -68,14 +54,14 @@ namespace Packet::Commands {
     }
 
     auto devices = builder.CreateVector(devices_fb_string);
-    auto payload = Schemas::CreateGetConnectedDevices(builder, m_controller_id, devices);
+    auto payload = Schemas::CreateGetConnectedDevices(builder, devices);
 
-    return builder.build(payload, Schemas::Payload::GetConnectedDevices, m_native_class, m_status, m_native_status);
+    return builder.build(m_controller_id, payload, Schemas::Payload::GetConnectedDevices, m_native_class, m_status, m_native_status);
   }
 
   vector<uint8_t> GetConnectedDevices::serialize(MGMTFormatBuilder& builder) const {
     CommandPacket::serialize(builder);
     return builder.build();
-  };
+  }
 
 }

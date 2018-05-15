@@ -46,7 +46,7 @@ namespace Packet::Errors {
 
     auto payload = Schemas::CreateBaBLEError(builder, message);
 
-    return builder.build(payload, Schemas::Payload::BaBLEError, "BaBLE", status_code);
+    return builder.build(m_controller_id, payload, Schemas::Payload::BaBLEError, "BaBLE", status_code);
   };
 
   void BaBLEErrorPacket::import(const Exceptions::AbstractException& exception) {

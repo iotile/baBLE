@@ -1,7 +1,6 @@
 namespace Schemas;
 
 table DeviceConnected {
-  controller_id:uint16;
   address:string;
   address_type:uint8;
   flags:[uint8];

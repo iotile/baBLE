@@ -11,8 +11,8 @@ namespace Packet::Events {
     m_eir_data_length = 0;
   }
 
-  void DeviceFound::import(MGMTFormatExtractor& extractor) {
-    EventPacket::import(extractor);
+  void DeviceFound::unserialize(MGMTFormatExtractor& extractor) {
+    EventPacket::unserialize(extractor);
     m_address = extractor.get_array<uint8_t, 6>();
     m_address_type = extractor.get_value<uint8_t>();
     m_rssi = extractor.get_value<int8_t>();
@@ -60,7 +60,6 @@ namespace Packet::Events {
 
     auto payload = Schemas::CreateDeviceFound(
         builder,
-        m_controller_id,
         address,
         m_address_type,
         m_rssi,
@@ -70,7 +69,7 @@ namespace Packet::Events {
         device_name
     );
 
-    return builder.build(payload, Schemas::Payload::DeviceFound, m_native_class);
+    return builder.build(m_controller_id, payload, Schemas::Payload::DeviceFound, m_native_class);
   }
 
 }

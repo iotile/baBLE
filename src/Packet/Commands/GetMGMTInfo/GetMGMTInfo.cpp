@@ -10,20 +10,20 @@ namespace Packet::Commands {
     m_revision = 0;
   };
 
-  void GetMGMTInfo::import(AsciiFormatExtractor& extractor) {
-    CommandPacket::import(extractor);
+  void GetMGMTInfo::unserialize(AsciiFormatExtractor& extractor) {
+    CommandPacket::unserialize(extractor);
   };
 
-  void GetMGMTInfo::import(FlatbuffersFormatExtractor& extractor) {
-    CommandPacket::import(extractor);
+  void GetMGMTInfo::unserialize(FlatbuffersFormatExtractor& extractor) {
+    CommandPacket::unserialize(extractor);
   };
 
-  void GetMGMTInfo::import(MGMTFormatExtractor& extractor) {
-    CommandPacket::import(extractor);
+  void GetMGMTInfo::unserialize(MGMTFormatExtractor& extractor) {
+    CommandPacket::unserialize(extractor);
 
     if (m_native_status == 0) {
-    m_version = extractor.get_value<uint8_t>();
-    m_revision = extractor.get_value<uint16_t>();
+      m_version = extractor.get_value<uint8_t>();
+      m_revision = extractor.get_value<uint16_t>();
     }
   };
 
@@ -41,7 +41,7 @@ namespace Packet::Commands {
     CommandPacket::serialize(builder);
     auto payload = Schemas::CreateGetMGMTInfo(builder, m_version, m_revision);
 
-    return builder.build(payload, Schemas::Payload::GetMGMTInfo, m_native_class, m_status, m_native_status);
+    return builder.build(m_controller_id, payload, Schemas::Payload::GetMGMTInfo, m_native_class, m_status, m_native_status);
   }
 
   vector<uint8_t> GetMGMTInfo::serialize(MGMTFormatBuilder& builder) const {

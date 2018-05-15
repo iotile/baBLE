@@ -22,6 +22,13 @@ namespace Packet {
       throw std::runtime_error("event_code(Packet::Type) not defined.");
     };
 
+    template<typename T_CONTROLLER, typename T_COMMAND, typename T_HANDLE = uint64_t>
+    static uint64_t compute_uuid(T_CONTROLLER controller_id, T_COMMAND command_code, T_HANDLE handle = 0) {
+      return static_cast<uint64_t>(controller_id) << 48
+          | static_cast<uint64_t>(command_code) << 32
+          | static_cast<uint64_t>(handle);
+    };
+
     virtual std::vector<uint8_t> serialize() const {
       switch(current_type()) {
         case Packet::Type::MGMT:
@@ -57,19 +64,21 @@ namespace Packet {
           MGMTFormatExtractor extractor(raw_data);
           m_event_code = extractor.get_event_code();
           m_controller_id = extractor.get_controller_id();
-          return import(extractor);
+          return unserialize(extractor);
         }
 
         case Packet::Type::ASCII:
         {
           AsciiFormatExtractor extractor(raw_data);
-          return import(extractor);
+          m_controller_id = extractor.get_controller_id();
+          return unserialize(extractor);
         }
 
         case Packet::Type::FLATBUFFERS:
         {
           FlatbuffersFormatExtractor extractor(raw_data);
-          return import(extractor);
+          m_controller_id = extractor.get_controller_id();
+          return unserialize(extractor);
         }
 
         case Packet::Type::NONE:
@@ -87,17 +96,17 @@ namespace Packet {
       throw std::runtime_error("serialize(FlatbuffersFormatBuilder&) not defined.");
     };
 
-    virtual void import(MGMTFormatExtractor& extractor) {
-      throw std::runtime_error("import(MGMTFormatExtractor&) not defined.");
+    virtual void unserialize(MGMTFormatExtractor& extractor) {
+      throw std::runtime_error("unserialize(MGMTFormatExtractor&) not defined.");
     };
-    virtual void import(AsciiFormatExtractor& extractor) {
-      throw std::runtime_error("import(AsciiFormatExtractor&) not defined.");
+    virtual void unserialize(AsciiFormatExtractor& extractor) {
+      throw std::runtime_error("unserialize(AsciiFormatExtractor&) not defined.");
     };
-    virtual void import(FlatbuffersFormatExtractor& extractor) {
-      throw std::runtime_error("import(FlatbuffersFormatExtractor&) not defined.");
+    virtual void unserialize(FlatbuffersFormatExtractor& extractor) {
+      throw std::runtime_error("unserialize(FlatbuffersFormatExtractor&) not defined.");
     };
 
-    const Packet::Type current_type() const {
+    virtual const Packet::Type current_type() const {
       return translated ? m_translated_type : m_initial_type;
     };
 
@@ -107,7 +116,7 @@ namespace Packet {
     };
     virtual void after_translate() {};
 
-    virtual uint16_t expected_response() {
+    virtual uint64_t expected_response_uuid() {
       return 0;
     };
     virtual bool on_response_received(Packet::Type packet_type, const std::vector<uint8_t>& raw_data) {
@@ -128,13 +137,12 @@ namespace Packet {
   protected:
     AbstractPacket(Packet::Type initial_type, Packet::Type translated_type)
         : m_initial_type(initial_type), m_translated_type(translated_type), translated(false),
-          m_uuid(""), m_event_code(0), m_controller_id(0) {};
+          m_event_code(0), m_controller_id(Format::MGMT::non_controller_id) {};
 
     Packet::Type m_initial_type;
     Packet::Type m_translated_type;
     bool translated;
 
-    std::string m_uuid;
     uint16_t m_event_code;
     uint16_t m_controller_id;
 

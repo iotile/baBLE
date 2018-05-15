@@ -1,12 +1,7 @@
+include "./Models/Controller.fbs";
+
 namespace Schemas;
 
 table GetControllerInfo {
-  controller_id:uint16;
-  address:string;
-  bt_version:uint8;
-  powered:bool;
-  connectable:bool;
-  discoverable:bool;
-  low_energy:bool;
-  name:string;
+  controller_info: Controller;
 }

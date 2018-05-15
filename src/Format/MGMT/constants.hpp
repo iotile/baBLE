@@ -1,7 +1,9 @@
 #ifndef BABLE_LINUX_MGMT_CONSTANTS_HPP
 #define BABLE_LINUX_MGMT_CONSTANTS_HPP
 
+#include <array>
 #include <cstdint>
+#include <vector>
 
 namespace Format::MGMT {
 
@@ -64,6 +66,27 @@ namespace Format::MGMT {
     "Connection terminated by local host",
     "Connection terminated by remote host",
     "Connection terminated due to authentication failure"
+  };
+
+  // Structure representing the Extended Inquiry Response data
+  struct EIR {
+    uint8_t flags = 0;
+    std::vector<uint8_t> uuid;
+    uint16_t company_id = 0;
+    std::vector<uint8_t> device_name;
+  };
+
+  // Structure representing a Bluetooth controller
+  struct Controller {
+    uint16_t id = 0;
+    std::string address;
+    uint8_t bluetooth_version = 0;
+    uint16_t manufacturer = 0;
+    uint32_t supported_settings = 0;
+    uint32_t current_settings = 0;
+    std::array<uint8_t, 3> class_of_device{};
+    std::string name;
+    std::string short_name;
   };
 
 }

@@ -1,7 +1,6 @@
 namespace Schemas;
 
 table DeviceDisconnected {
-  controller_id:uint16;
   address:string;
   address_type:uint8;
   reason:string;

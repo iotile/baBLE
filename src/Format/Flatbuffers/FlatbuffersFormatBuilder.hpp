@@ -9,7 +9,7 @@ public:
   using flatbuffers::FlatBufferBuilder::FlatBufferBuilder;
 
   template<class T>
-  std::vector<uint8_t> build(const flatbuffers::Offset<T>& payload, Schemas::Payload payload_type,
+  std::vector<uint8_t> build(uint16_t controller_id, const flatbuffers::Offset<T>& payload, Schemas::Payload payload_type,
                              const std::string& native_class,
                              Schemas::StatusCode status = Schemas::StatusCode::Success, uint8_t native_status = 0x00);
 
@@ -17,13 +17,14 @@ public:
 
 template<class T>
 std::vector<uint8_t> FlatbuffersFormatBuilder::build(
-    const flatbuffers::Offset<T>& payload, Schemas::Payload payload_type, const std::string& native_class,
-    Schemas::StatusCode status, uint8_t native_status
+    uint16_t controller_id, const flatbuffers::Offset<T>& payload, Schemas::Payload payload_type,
+    const std::string& native_class, Schemas::StatusCode status, uint8_t native_status
 ) {
 
   auto native_class_offset = CreateString(native_class);
 
   Schemas::PacketBuilder packet_builder(*this);
+  packet_builder.add_controller_id(controller_id);
   packet_builder.add_payload_type(payload_type);
   packet_builder.add_payload(payload.Union());
   packet_builder.add_status(status);

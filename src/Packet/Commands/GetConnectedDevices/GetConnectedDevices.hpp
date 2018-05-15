@@ -27,23 +27,13 @@ namespace Packet::Commands {
 
     GetConnectedDevices(Packet::Type initial_type, Packet::Type translated_type);
 
-    void import(AsciiFormatExtractor& extractor) override;
-    void import(FlatbuffersFormatExtractor& extractor) override;
-    void import(MGMTFormatExtractor& extractor) override;
+    void unserialize(AsciiFormatExtractor& extractor) override;
+    void unserialize(FlatbuffersFormatExtractor& extractor) override;
+    void unserialize(MGMTFormatExtractor& extractor) override;
 
     std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
     std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
     std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override;
-
-    uint16_t expected_response() override {
-      return command_code(m_translated_type);
-    };
-
-    bool on_response_received(Packet::Type packet_type, const std::vector<uint8_t>& raw_data) override {
-      LOG.critical("RESPONSE RECEIVED");
-      AbstractPacket::import(raw_data);
-      return true;
-    };
 
   private:
     std::vector<std::string> m_devices;

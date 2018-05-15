@@ -19,6 +19,7 @@ public:
 
   // Setters
   MGMTFormatBuilder& set_code(uint16_t code);
+  MGMTFormatBuilder& set_controller_id(uint16_t controller_id);
 
   // To add data to current building object
   template<typename T>

@@ -4,16 +4,22 @@
 #include <cstdint>
 #include <Packet_generated.h>
 #include <vector>
+#include "../../Exceptions/WrongFormat/WrongFormatException.hpp"
 
 class FlatbuffersFormatExtractor {
 
 public:
+  static uint16_t extract_payload_type(const std::vector<uint8_t>& data);
+  static uint16_t extract_controller_id(const std::vector<uint8_t>& data);
+  static void verify(const std::vector<uint8_t>& data);
+
   // Constructors
   explicit FlatbuffersFormatExtractor(const std::vector<uint8_t> & data);
 
   // Getters
   template<typename T>
   T get_payload(Schemas::Payload payload_type) const;
+  uint16_t get_controller_id() const;
 
 private:
   std::vector<uint8_t> m_data;

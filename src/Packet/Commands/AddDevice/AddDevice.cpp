@@ -7,13 +7,12 @@ namespace Packet::Commands {
   AddDevice::AddDevice(Packet::Type initial_type, Packet::Type translated_type)
       : CommandPacket(initial_type, translated_type) {
     m_address_type = 0;
-  };
+  }
 
-  void AddDevice::import(AsciiFormatExtractor& extractor) {
-    CommandPacket::import(extractor);
+  void AddDevice::unserialize(AsciiFormatExtractor& extractor) {
+    CommandPacket::unserialize(extractor);
 
     try {
-      m_controller_id = static_cast<uint16_t>(stoi(extractor.get()));
       m_address_type = static_cast<uint8_t>(stoi(extractor.get()));
 
       string address_str = extractor.get();
@@ -33,13 +32,12 @@ namespace Packet::Commands {
     } catch (const std::invalid_argument& err) {
       throw Exceptions::InvalidCommandException("Invalid arguments for 'AddDevice' packet.");
     }
-  };
+  }
 
-  void AddDevice::import(FlatbuffersFormatExtractor& extractor) {
-    CommandPacket::import(extractor);
+  void AddDevice::unserialize(FlatbuffersFormatExtractor& extractor) {
+    CommandPacket::unserialize(extractor);
     auto payload = extractor.get_payload<const Schemas::AddDevice*>(Schemas::Payload::AddDevice);
 
-    m_controller_id = payload->controller_id();
     m_address_type = payload->address_type();
 
     auto raw_fb_address = payload->address();
@@ -47,16 +45,16 @@ namespace Packet::Commands {
       throw Exceptions::InvalidCommandException("Given address is not valid: size different from expected.");
     }
     copy(raw_fb_address->begin(), raw_fb_address->end(), m_address.begin());
-  };
+  }
 
-  void AddDevice::import(MGMTFormatExtractor& extractor) {
-    CommandPacket::import(extractor);
+  void AddDevice::unserialize(MGMTFormatExtractor& extractor) {
+    CommandPacket::unserialize(extractor);
 
     if (m_native_status == 0){
       m_address = extractor.get_array<uint8_t, 6>();
       m_address_type = extractor.get_value<uint8_t>();
     }
-  };
+  }
 
   vector<uint8_t> AddDevice::serialize(AsciiFormatBuilder& builder) const {
     CommandPacket::serialize(builder);
@@ -66,16 +64,16 @@ namespace Packet::Commands {
         .add("Address", m_address);
 
     return builder.build();
-  };
+  }
 
   vector<uint8_t> AddDevice::serialize(FlatbuffersFormatBuilder& builder) const {
     CommandPacket::serialize(builder);
 
     auto address = builder.CreateVector(m_address.data(), m_address.size());
 
-    auto payload = Schemas::CreateAddDevice(builder, m_controller_id, address, m_address_type);
+    auto payload = Schemas::CreateAddDevice(builder, address, m_address_type);
 
-    return builder.build(payload, Schemas::Payload::AddDevice, m_native_class, m_status, m_native_status);
+    return builder.build(m_controller_id, payload, Schemas::Payload::AddDevice, m_native_class, m_status, m_native_status);
   }
 
   vector<uint8_t> AddDevice::serialize(MGMTFormatBuilder& builder) const {
@@ -88,6 +86,6 @@ namespace Packet::Commands {
         .add(m_address_type)
         .add(action);
     return builder.build();
-  };
+  }
 
 }

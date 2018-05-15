@@ -9,11 +9,10 @@ namespace Packet::Commands {
     m_state = false;
   }
 
-  void SetConnectable::import(AsciiFormatExtractor& extractor) {
-    CommandPacket::import(extractor);
+  void SetConnectable::unserialize(AsciiFormatExtractor& extractor) {
+    CommandPacket::unserialize(extractor);
 
     try {
-      m_controller_id = static_cast<uint16_t>(stoi(extractor.get()));
       m_state = static_cast<bool>(stoi(extractor.get()));
 
     } catch (const Exceptions::WrongFormatException& err) {
@@ -25,16 +24,15 @@ namespace Packet::Commands {
     }
   }
 
-  void SetConnectable::import(FlatbuffersFormatExtractor& extractor) {
-    CommandPacket::import(extractor);
+  void SetConnectable::unserialize(FlatbuffersFormatExtractor& extractor) {
+    CommandPacket::unserialize(extractor);
     auto payload = extractor.get_payload<const Schemas::SetConnectable*>(Schemas::Payload::SetConnectable);
 
-    m_controller_id = payload->controller_id();
     m_state = payload->state();
   }
 
-  void SetConnectable::import(MGMTFormatExtractor& extractor) {
-    CommandPacket::import(extractor);
+  void SetConnectable::unserialize(MGMTFormatExtractor& extractor) {
+    CommandPacket::unserialize(extractor);
 
     if (m_native_status == 0){
       auto m_current_settings = extractor.get_value<uint32_t>();
@@ -54,9 +52,9 @@ namespace Packet::Commands {
   vector<uint8_t> SetConnectable::serialize(FlatbuffersFormatBuilder& builder) const {
     CommandPacket::serialize(builder);
 
-    auto payload = Schemas::CreateSetConnectable(builder, m_controller_id, m_state);
+    auto payload = Schemas::CreateSetConnectable(builder, m_state);
 
-    return builder.build(payload, Schemas::Payload::SetConnectable, m_native_class, m_status, m_native_status);
+    return builder.build(m_controller_id, payload, Schemas::Payload::SetConnectable, m_native_class, m_status, m_native_status);
   }
 
   vector<uint8_t> SetConnectable::serialize(MGMTFormatBuilder& builder) const {

@@ -46,7 +46,7 @@ private:
   std::unordered_map<uint16_t, PacketConstructor> m_commands{};
   std::unordered_map<uint16_t, PacketConstructor> m_events{};
 
-  static std::map<std::tuple<Packet::Type, uint16_t>, std::shared_ptr<Packet::AbstractPacket>> m_waiting_packets;
+  static std::map<std::tuple<Packet::Type, uint64_t>, std::shared_ptr<Packet::AbstractPacket>> m_waiting_packets;
 
 };
 
