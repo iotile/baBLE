@@ -28,8 +28,6 @@ namespace Packet::Events {
       m_native_class = "MGMT";
     };
 
-    std::string m_native_class;
-
   };
 
 }

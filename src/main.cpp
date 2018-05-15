@@ -12,6 +12,8 @@
 #include "Application/Packets/Errors/BaBLEError/BaBLEErrorPacket.hpp"
 #include "bootstrap.hpp"
 
+#define EXPIRATION_DURATION_SECONDS 300
+
 using namespace std;
 using namespace uvw;
 
@@ -24,7 +26,6 @@ void cleanly_stop_loop(Loop& loop) {
   LOG.debug("Handles stopped.");
 }
 
-// TODO: now uuid can be added thanks to the new response system. Is it needed ? Is it compatible with Mac/Windows implementation ?
 int main() {
   ENABLE_LOGGING(DEBUG);
 
@@ -112,6 +113,12 @@ int main() {
       socket_container.send(error_packet);
     }
   });
+
+  shared_ptr<TimerHandle> expiration_timer = loop->resource<TimerHandle>();
+  expiration_timer->on<TimerEvent>([](const TimerEvent&, TimerHandle& t) {
+    PacketContainer::expire_waiting_packets(EXPIRATION_DURATION_SECONDS);
+  });
+  expiration_timer->start(chrono::seconds(EXPIRATION_DURATION_SECONDS), chrono::seconds(EXPIRATION_DURATION_SECONDS));
 
   // Start the loop
   LOG.info("Start loop...");

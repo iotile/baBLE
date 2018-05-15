@@ -24,7 +24,7 @@ namespace Packet::Events {
 
     auto payload = Schemas::CreateControllerAdded(builder);
 
-    return builder.build(m_controller_id, payload, Schemas::Payload::ControllerAdded, m_native_class);
+    return builder.build(payload, Schemas::Payload::ControllerAdded);
   }
 
 }

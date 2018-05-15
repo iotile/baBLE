@@ -20,17 +20,18 @@ namespace Packet::Commands {
       istringstream address_stream(address_str);
       for (uint8_t& item_address : m_address) {
         if (!getline(address_stream, item, ':')) {
-          throw Exceptions::InvalidCommandException("Can't parse <address> argument for 'AddDevice' packet.");
+          throw Exceptions::InvalidCommandException("Can't parse <address> argument for 'AddDevice' packet.", m_uuid_request);
         }
         item_address = static_cast<uint8_t>(stoi(item));
       }
 
     } catch (const Exceptions::WrongFormatException& err) {
-      throw Exceptions::InvalidCommandException("Missing arguments for 'AddDevice' packet. Usage: <command_code>,<controller_id>,<address_type>,<address>");
+      throw Exceptions::InvalidCommandException("Missing arguments for 'AddDevice' packet."
+                                                "Usage: <uuid>,<command_code>,<controller_id>,<address_type>,<address>", m_uuid_request);
     } catch (const bad_cast& err) {
-      throw Exceptions::InvalidCommandException("Invalid arguments for 'AddDevice' packet. Can't cast");
+      throw Exceptions::InvalidCommandException("Invalid arguments for 'AddDevice' packet. Can't cast.", m_uuid_request);
     } catch (const std::invalid_argument& err) {
-      throw Exceptions::InvalidCommandException("Invalid arguments for 'AddDevice' packet.");
+      throw Exceptions::InvalidCommandException("Invalid arguments for 'AddDevice' packet.", m_uuid_request);
     }
   }
 
@@ -42,7 +43,7 @@ namespace Packet::Commands {
 
     auto raw_fb_address = payload->address();
     if (raw_fb_address->size() != m_address.size()) {
-      throw Exceptions::InvalidCommandException("Given address is not valid: size different from expected.");
+      throw Exceptions::InvalidCommandException("Given address is not valid: size different from expected.", m_uuid_request);
     }
     copy(raw_fb_address->begin(), raw_fb_address->end(), m_address.begin());
   }
@@ -73,7 +74,7 @@ namespace Packet::Commands {
 
     auto payload = Schemas::CreateAddDevice(builder, address, m_address_type);
 
-    return builder.build(m_controller_id, payload, Schemas::Payload::AddDevice, m_native_class, m_status, m_native_status);
+    return builder.build(payload, Schemas::Payload::AddDevice);
   }
 
   vector<uint8_t> AddDevice::serialize(MGMTFormatBuilder& builder) const {

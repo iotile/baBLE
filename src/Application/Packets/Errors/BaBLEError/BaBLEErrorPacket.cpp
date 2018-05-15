@@ -8,6 +8,7 @@ namespace Packet::Errors {
     : AbstractPacket(output_type, output_type) {
     m_message = "";
     m_type = Exceptions::Type::Unknown;
+    m_native_class = "BaBLE";
   }
 
   vector<uint8_t> BaBLEErrorPacket::serialize(AsciiFormatBuilder& builder) const {
@@ -46,13 +47,16 @@ namespace Packet::Errors {
 
     auto payload = Schemas::CreateBaBLEError(builder, message);
 
-    return builder.build(m_controller_id, payload, Schemas::Payload::BaBLEError, "BaBLE", status_code);
+    return builder
+        .set_status(status_code)
+        .build(payload, Schemas::Payload::BaBLEError);
   };
 
   void BaBLEErrorPacket::import(const Exceptions::AbstractException& exception) {
     m_type = exception.exception_type();
     m_name = exception.exception_name();
     m_message = exception.stringify();
+    m_uuid_request = exception.uuid_request();
   };
 
 }

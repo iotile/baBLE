@@ -52,13 +52,11 @@ builder = flatbuffers.Builder(0)
 
 ## StartScan
 # StartScan.StartScanStart(builder)
-# StartScan.StartScanAddControllerId(builder, 0)
 # StartScan.StartScanAddAddressType(builder, 0x07)
 # payload = StartScan.StartScanEnd(builder)
 
 ## Stop scan
 # StopScan.StopScanStart(builder)
-# StopScan.StopScanAddControllerId(builder, 0)
 # StopScan.StopScanAddAddressType(builder, 0x07)
 # payload = StopScan.StopScanEnd(builder)
 
@@ -70,7 +68,6 @@ builder = flatbuffers.Builder(0)
 # address = builder.EndVector(6)
 #
 # AddDevice.AddDeviceStart(builder)
-# AddDevice.AddDeviceAddControllerId(builder, 0)
 # AddDevice.AddDeviceAddAddress(builder, address)
 # AddDevice.AddDeviceAddAddressType(builder, 2)
 # payload = AddDevice.AddDeviceEnd(builder)
@@ -83,7 +80,6 @@ builder = flatbuffers.Builder(0)
 # address = builder.EndVector(6)
 #
 # RemoveDevice.RemoveDeviceStart(builder)
-# RemoveDevice.RemoveDeviceAddControllerId(builder, 0)
 # RemoveDevice.RemoveDeviceAddAddress(builder, address)
 # RemoveDevice.RemoveDeviceAddAddressType(builder, 2)
 # payload = RemoveDevice.RemoveDeviceEnd(builder)
@@ -96,28 +92,24 @@ builder = flatbuffers.Builder(0)
 # address = builder.EndVector(6)
 #
 # Disconnect.DisconnectStart(builder)
-# Disconnect.DisconnectAddControllerId(builder, 0)
 # Disconnect.DisconnectAddAddress(builder, address)
 # Disconnect.DisconnectAddAddressType(builder, 2)
 # payload = Disconnect.DisconnectEnd(builder)
 
 ## SetPowered
 # SetPowered.SetPoweredStart(builder)
-# SetPowered.SetPoweredAddControllerId(builder, 0)
 # SetPowered.SetPoweredAddState(builder, False)
 # payload = SetPowered.SetPoweredEnd(builder)
 
 
 ## SetDiscoverable
 # SetDiscoverable.SetDiscoverableStart(builder)
-# SetDiscoverable.SetDiscoverableAddControllerId(builder, 0)
 # SetDiscoverable.SetDiscoverableAddState(builder, False)
 # payload = SetDiscoverable.SetDiscoverableEnd(builder)
 
 
 ## SetConnectable
 # SetConnectable.SetConnectableStart(builder)
-# SetConnectable.SetConnectableAddControllerId(builder, 0)
 # SetConnectable.SetConnectableAddState(builder, False)
 # payload = SetConnectable.SetConnectableEnd(builder)
 
@@ -127,15 +119,16 @@ payload = GetControllersList.GetControllersListEnd(builder)
 
 ## GetControllerInfo
 # GetControllerInfo.GetControllerInfoStart(builder)
-# GetControllerInfo.GetControllerInfoAddControllerId(builder, 0)
 # payload = GetControllerInfo.GetControllerInfoEnd(builder)
 
 ## GetConnectedDevices
 # GetConnectedDevices.GetConnectedDevicesStart(builder)
-# GetConnectedDevices.GetConnectedDevicesAddControllerId(builder, 0)
 # payload = GetConnectedDevices.GetConnectedDevicesEnd(builder)
 
+uuid_request = builder.CreateString("123456")
 Packet.PacketStart(builder)
+Packet.PacketAddUuid(builder, uuid_request)
+# Packet.PacketAddControllerId(builder, 0)
 Packet.PacketAddPayloadType(builder, Payload.Payload().GetControllersList)
 Packet.PacketAddPayload(builder, payload)
 packet = Packet.PacketEnd(builder)
@@ -144,6 +137,25 @@ builder.Finish(packet)
 
 buf = builder.Output()
 buf = b'\xCA\xFE' + len(buf).to_bytes(2, byteorder='little') + buf
+
+
+# builder2 = flatbuffers.Builder(0)
+# GetControllersList.GetControllersListStart(builder2)
+# payload2 = GetControllersList.GetControllersListEnd(builder2)
+#
+# uuid_request2 = builder2.CreateString("654321")
+# Packet.PacketStart(builder2)
+# Packet.PacketAddUuid(builder2, uuid_request2)
+# # Packet.PacketAddControllerId(builder, 0)
+# Packet.PacketAddPayloadType(builder2, Payload.Payload().GetControllersList)
+# Packet.PacketAddPayload(builder2, payload2)
+# packet2 = Packet.PacketEnd(builder2)
+#
+# builder2.Finish(packet2)
+#
+# buf2 = builder2.Output()
+# buf2 = b'\xCA\xFE' + len(buf2).to_bytes(2, byteorder='little') + buf2
+
 process.stdin.write(buf)
 
 header_length = 4
@@ -170,6 +182,7 @@ try:
 
         packet = Packet.Packet.GetRootAsPacket(payload, 0)
         controller_id = packet.ControllerId()
+        uuid = packet.Uuid()
         status = status_code_to_string(packet.Status())
         native_status = packet.NativeStatus()
         native_class = packet.NativeClass()
@@ -181,6 +194,7 @@ try:
             revision = getmgmtinfo.Revision()
 
             print("GetMGMTInfo",
+                  "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Version:", version, "Revision:", revision)
         elif packet.PayloadType() == Payload.Payload().StartScan:
@@ -189,6 +203,7 @@ try:
             address_type = startscan.AddressType()
 
             print("StartScan",
+                  "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Address type:", address_type)
         elif packet.PayloadType() == Payload.Payload().StopScan:
@@ -197,6 +212,7 @@ try:
             address_type = stopscan.AddressType()
 
             print("StopScan",
+                  "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Address type:", address_type)
         elif packet.PayloadType() == Payload.Payload().AddDevice:
@@ -206,6 +222,7 @@ try:
             address = add_device.AddressAsNumpy()
 
             print("AddDevice",
+                  "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Address type:", address_type, "Address:", address)
 
@@ -216,6 +233,7 @@ try:
             address = remove_device.AddressAsNumpy()
 
             print("RemoveDevice",
+                  "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Address type:", address_type, "Address:", address)
         elif packet.PayloadType() == Payload.Payload().Discovering:
@@ -225,6 +243,7 @@ try:
             state = discovering.State()
 
             print("Discovering",
+                  "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Address type:", address_type, "State:", state)
 
@@ -240,6 +259,7 @@ try:
             device_name = devicefound.DeviceName()
 
             print("DeviceFound",
+                  "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Address type:", address_type, "Address:", address,
                   "RSSI:", rssi, "Flags:", flags, "Device UUID:", device_uuid, "Company id:", company_id,
@@ -256,6 +276,7 @@ try:
             device_name = device_connected.DeviceName()
 
             print("DeviceConnected",
+                  "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Address type:", address_type, "Address:", address,
                   "Flags:", flags, "Device UUID:", device_uuid, "Company id:", company_id, "Device name:", device_name)
@@ -268,6 +289,7 @@ try:
             reason = device_disconnected.Reason()
 
             print("DeviceDisconnected",
+                  "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Address type:", address_type, "Address:", address,
                   "Reason:", reason)
@@ -279,6 +301,7 @@ try:
             address = disconnect.AddressAsNumpy()
 
             print("Disconnect",
+                  "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Address type:", address_type, "Address:", address)
 
@@ -288,6 +311,7 @@ try:
             state = set_powered.State()
 
             print("SetPowered",
+                  "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "State:", state)
 
@@ -298,6 +322,7 @@ try:
             timeout = set_discoverable.Timeout()
 
             print("SetDiscoverable",
+                  "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "State:", state, "Timeout:", timeout)
 
@@ -308,6 +333,7 @@ try:
             state = set_connectable.State()
 
             print("SetConnectable",
+                  "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "State:", state)
 
@@ -321,6 +347,7 @@ try:
                 controllers.append(controllers_list.Controllers(i))
 
             print("GetControllersList",
+                  "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Num controllers:", num_controllers)
 
@@ -335,6 +362,7 @@ try:
             controller_added.Init(packet.Payload().Bytes, packet.Payload().Pos)
 
             print("ControllerAdded",
+                  "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id)
 
@@ -343,6 +371,7 @@ try:
             controller_removed.Init(packet.Payload().Bytes, packet.Payload().Pos)
 
             print("ControllerRemoved",
+                  "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id)
 
@@ -352,6 +381,7 @@ try:
             controller = controller_info.ControllerInfo()
 
             print("GetControllerInfo",
+                  "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID: ", controller.Id(), "Address:", controller.Address(),
                   "Bluetooth version:", controller.BtVersion(), "Powered:", controller.Powered(),
@@ -367,6 +397,7 @@ try:
                 devices.append(connected_devices.Devices(i))
 
             print("GetConnectedDevices",
+                  "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Num connections:", num_connections, "Device addresses:", devices)
 
@@ -376,6 +407,7 @@ try:
             message = error.Message()
 
             print("BaBLEError",
+                  "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Message:", message)
         else:

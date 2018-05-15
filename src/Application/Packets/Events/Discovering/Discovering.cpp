@@ -30,7 +30,7 @@ namespace Packet::Events {
     EventPacket::serialize(builder);
     auto payload = Schemas::CreateDiscovering(builder, m_address_type, m_discovering);
 
-    return builder.build(m_controller_id, payload, Schemas::Payload::Discovering, m_native_class);
+    return builder.build(payload, Schemas::Payload::Discovering);
   }
 
 }

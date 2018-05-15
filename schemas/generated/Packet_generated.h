@@ -1460,13 +1460,17 @@ inline flatbuffers::Offset<BaBLEError> CreateBaBLEErrorDirect(
 
 struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_PAYLOAD_TYPE = 4,
-    VT_PAYLOAD = 6,
-    VT_CONTROLLER_ID = 8,
-    VT_STATUS = 10,
-    VT_NATIVE_STATUS = 12,
-    VT_NATIVE_CLASS = 14
+    VT_UUID = 4,
+    VT_PAYLOAD_TYPE = 6,
+    VT_PAYLOAD = 8,
+    VT_CONTROLLER_ID = 10,
+    VT_STATUS = 12,
+    VT_NATIVE_STATUS = 14,
+    VT_NATIVE_CLASS = 16
   };
+  const flatbuffers::String *uuid() const {
+    return GetPointer<const flatbuffers::String *>(VT_UUID);
+  }
   Payload payload_type() const {
     return static_cast<Payload>(GetField<uint8_t>(VT_PAYLOAD_TYPE, 0));
   }
@@ -1545,6 +1549,8 @@ struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_UUID) &&
+           verifier.Verify(uuid()) &&
            VerifyField<uint8_t>(verifier, VT_PAYLOAD_TYPE) &&
            VerifyOffset(verifier, VT_PAYLOAD) &&
            VerifyPayload(verifier, payload(), payload_type()) &&
@@ -1636,6 +1642,9 @@ template<> inline const BaBLEError *Packet::payload_as<BaBLEError>() const {
 struct PacketBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
+  void add_uuid(flatbuffers::Offset<flatbuffers::String> uuid) {
+    fbb_.AddOffset(Packet::VT_UUID, uuid);
+  }
   void add_payload_type(Payload payload_type) {
     fbb_.AddElement<uint8_t>(Packet::VT_PAYLOAD_TYPE, static_cast<uint8_t>(payload_type), 0);
   }
@@ -1668,6 +1677,7 @@ struct PacketBuilder {
 
 inline flatbuffers::Offset<Packet> CreatePacket(
     flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<flatbuffers::String> uuid = 0,
     Payload payload_type = Payload::NONE,
     flatbuffers::Offset<void> payload = 0,
     uint16_t controller_id = 65535,
@@ -1677,6 +1687,7 @@ inline flatbuffers::Offset<Packet> CreatePacket(
   PacketBuilder builder_(_fbb);
   builder_.add_native_class(native_class);
   builder_.add_payload(payload);
+  builder_.add_uuid(uuid);
   builder_.add_controller_id(controller_id);
   builder_.add_native_status(native_status);
   builder_.add_status(status);
@@ -1686,6 +1697,7 @@ inline flatbuffers::Offset<Packet> CreatePacket(
 
 inline flatbuffers::Offset<Packet> CreatePacketDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
+    const char *uuid = nullptr,
     Payload payload_type = Payload::NONE,
     flatbuffers::Offset<void> payload = 0,
     uint16_t controller_id = 65535,
@@ -1694,6 +1706,7 @@ inline flatbuffers::Offset<Packet> CreatePacketDirect(
     const char *native_class = nullptr) {
   return Schemas::CreatePacket(
       _fbb,
+      uuid ? _fbb.CreateString(uuid) : 0,
       payload_type,
       payload,
       controller_id,

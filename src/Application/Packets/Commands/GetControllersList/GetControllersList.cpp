@@ -10,12 +10,6 @@ namespace Packet::Commands {
     m_current_index = 0;
   }
 
-  void GetControllersList::translate() {
-    if (!m_waiting_controllers_info) {
-      AbstractPacket::translate();
-    }
-  }
-
   void GetControllersList::unserialize(AsciiFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
   }
@@ -91,7 +85,7 @@ namespace Packet::Commands {
     auto controllers_vector = builder.CreateVector(controllers);
     auto payload = Schemas::CreateGetControllersList(builder, controllers_vector);
 
-    return builder.build(m_controller_id, payload, Schemas::Payload::GetControllersList, m_native_class, m_status, m_native_status);
+    return builder.build(payload, Schemas::Payload::GetControllersList);
   }
 
   vector<uint8_t> GetControllersList::serialize(MGMTFormatBuilder& builder) const {
@@ -102,6 +96,12 @@ namespace Packet::Commands {
     } else {
       CommandPacket::serialize(builder);
       return builder.build();
+    }
+  }
+
+  void GetControllersList::translate() {
+    if (!m_waiting_controllers_info) {
+      AbstractPacket::translate();
     }
   }
 

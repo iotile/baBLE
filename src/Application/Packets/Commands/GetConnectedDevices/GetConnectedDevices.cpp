@@ -56,7 +56,7 @@ namespace Packet::Commands {
     auto devices = builder.CreateVector(devices_fb_string);
     auto payload = Schemas::CreateGetConnectedDevices(builder, devices);
 
-    return builder.build(m_controller_id, payload, Schemas::Payload::GetConnectedDevices, m_native_class, m_status, m_native_status);
+    return builder.build(payload, Schemas::Payload::GetConnectedDevices);
   }
 
   vector<uint8_t> GetConnectedDevices::serialize(MGMTFormatBuilder& builder) const {

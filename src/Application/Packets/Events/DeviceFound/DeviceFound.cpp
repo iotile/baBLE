@@ -69,7 +69,7 @@ namespace Packet::Events {
         device_name
     );
 
-    return builder.build(m_controller_id, payload, Schemas::Payload::DeviceFound, m_native_class);
+    return builder.build(payload, Schemas::Payload::DeviceFound);
   }
 
 }

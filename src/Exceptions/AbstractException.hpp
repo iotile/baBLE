@@ -18,12 +18,18 @@ namespace Exceptions {
       return stringify().c_str();
     };
 
+    std::string uuid_request() const {
+      return m_uuid_request;
+    };
+
   protected:
     explicit AbstractException(const std::string& message) {
       m_message = message;
+      m_uuid_request = "";
     };
 
     std::string m_message;
+    std::string m_uuid_request;
 
   };
 

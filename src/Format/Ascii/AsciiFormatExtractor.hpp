@@ -31,6 +31,10 @@ public:
     return m_controller_id;
   };
 
+  inline std::string get_uuid_request() {
+    return m_uuid_request;
+  };
+
 
 private:
   std::vector<std::string> m_payload;
@@ -38,6 +42,7 @@ private:
 
   uint16_t m_command_code;
   uint16_t m_controller_id;
+  std::string m_uuid_request;
 
 };
 

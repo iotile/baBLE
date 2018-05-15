@@ -40,3 +40,7 @@ FlatbuffersFormatExtractor::FlatbuffersFormatExtractor(const vector<uint8_t> & d
 uint16_t FlatbuffersFormatExtractor::get_controller_id() const {
   return m_packet->controller_id();
 }
+
+std::string FlatbuffersFormatExtractor::get_uuid_request() const {
+  return m_packet->uuid()->str();
+}

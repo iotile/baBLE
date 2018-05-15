@@ -1,6 +1,7 @@
 #ifndef BABLE_LINUX_PACKETBUILDER_HPP
 #define BABLE_LINUX_PACKETBUILDER_HPP
 
+#include <chrono>
 #include <functional>
 #include <map>
 #include <memory>
@@ -15,9 +16,11 @@ class PacketContainer : public Loggable {
 
   // Define packet constructor function prototype
   using PacketConstructor = std::function<std::shared_ptr<Packet::AbstractPacket>()>;
+  using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono::nanoseconds>;
 
 public:
   static void wait_response(std::shared_ptr<Packet::AbstractPacket> packet);
+  static void expire_waiting_packets(int64_t expiration_duration);
 
   // Constructors
   explicit PacketContainer(std::shared_ptr<AbstractFormat> building_format);
@@ -47,6 +50,7 @@ private:
   std::unordered_map<uint16_t, PacketConstructor> m_events{};
 
   static std::map<std::tuple<Packet::Type, uint64_t>, std::shared_ptr<Packet::AbstractPacket>> m_waiting_packets;
+  static std::map<TimePoint, std::tuple<Packet::Type, uint64_t>> m_expiration_waiting_packets;
 
 };
 

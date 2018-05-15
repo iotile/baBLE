@@ -41,7 +41,7 @@ namespace Packet::Commands {
     CommandPacket::serialize(builder);
     auto payload = Schemas::CreateGetMGMTInfo(builder, m_version, m_revision);
 
-    return builder.build(m_controller_id, payload, Schemas::Payload::GetMGMTInfo, m_native_class, m_status, m_native_status);
+    return builder.build(payload, Schemas::Payload::GetMGMTInfo);
   }
 
   vector<uint8_t> GetMGMTInfo::serialize(MGMTFormatBuilder& builder) const {

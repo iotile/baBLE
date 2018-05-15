@@ -62,6 +62,7 @@ enum StatusCode:uint8 {
 }
 
 table Packet {
+  uuid:string;
   payload:Payload;
   controller_id:uint16 = 0xFFFF;
   status:StatusCode = Success;

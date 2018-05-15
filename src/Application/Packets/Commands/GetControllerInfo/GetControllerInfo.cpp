@@ -83,7 +83,7 @@ namespace Packet::Commands {
     );
     auto payload = Schemas::CreateGetControllerInfo(builder, controller);
 
-    return builder.build(m_controller_id, payload, Schemas::Payload::GetControllerInfo, m_native_class, m_status, m_native_status);
+    return builder.build(payload, Schemas::Payload::GetControllerInfo);
   }
 
   vector<uint8_t> GetControllerInfo::serialize(MGMTFormatBuilder& builder) const {

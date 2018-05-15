@@ -54,15 +54,21 @@ AsciiFormatExtractor::AsciiFormatExtractor(const vector<uint8_t>& data) {
   parse_payload(data);
 
   try {
+    m_uuid_request = get();
+  } catch (const Exceptions::WrongFormatException& err) {
+    throw Exceptions::InvalidCommandException("Invalid command. Usage: <uuid>,<command_code>,<controller_id>,<params...>");
+  }
+
+  try {
     m_command_code = static_cast<uint16_t>(stoi(get()));
     m_controller_id = static_cast<uint16_t>(stoi(get()));
 
   } catch (const Exceptions::WrongFormatException& err) {
-    throw Exceptions::InvalidCommandException("Invalid command. Usage: <command_code>,<controller_id>,<params...>");
+    throw Exceptions::InvalidCommandException("Invalid command. Usage: <command_code>,<controller_id>,<params...>", m_uuid_request);
   } catch (const bad_cast& err) {
-    throw Exceptions::InvalidCommandException("<command_code> and <controller_id> must be 16bits numbers.");
+    throw Exceptions::InvalidCommandException("<command_code> and <controller_id> must be 16bits numbers.", m_uuid_request);
   } catch (const std::invalid_argument& err) {
-    throw Exceptions::InvalidCommandException("<command_code> and <controller_id> must be numbers.");
+    throw Exceptions::InvalidCommandException("<command_code> and <controller_id> must be numbers.", m_uuid_request);
   }
 }
 

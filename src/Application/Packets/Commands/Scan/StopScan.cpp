@@ -16,11 +16,12 @@ namespace Packet::Commands {
       m_address_type = static_cast<uint8_t>(stoi(extractor.get()));
 
     } catch (const Exceptions::WrongFormatException& err) {
-      throw Exceptions::InvalidCommandException("Missing arguments for 'StopScan' packet. Usage: <command_code>,<controller_id>,<address_type>");
+      throw Exceptions::InvalidCommandException("Missing arguments for 'StopScan' packet."
+                                                "Usage: <uuid>,<command_code>,<controller_id>,<address_type>", m_uuid_request);
     } catch (const std::bad_cast& err) {
-      throw Exceptions::InvalidCommandException("Invalid arguments for 'StopScan' packet. Can't cast.");
+      throw Exceptions::InvalidCommandException("Invalid arguments for 'StopScan' packet. Can't cast.", m_uuid_request);
     } catch (const std::invalid_argument& err) {
-      throw Exceptions::InvalidCommandException("Invalid arguments for 'StopScan' packet.");
+      throw Exceptions::InvalidCommandException("Invalid arguments for 'StopScan' packet.", m_uuid_request);
     }
   };
 
@@ -52,7 +53,7 @@ namespace Packet::Commands {
     CommandPacket::serialize(builder);
     auto payload = Schemas::CreateStopScan(builder, m_address_type);
 
-    return builder.build(m_controller_id, payload, Schemas::Payload::StopScan, m_native_class, m_status, m_native_status);
+    return builder.build(payload, Schemas::Payload::StopScan);
   }
 
   vector<uint8_t> StopScan::serialize(MGMTFormatBuilder& builder) const {

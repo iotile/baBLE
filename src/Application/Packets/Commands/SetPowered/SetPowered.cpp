@@ -16,11 +16,12 @@ namespace Packet::Commands {
       m_state = static_cast<bool>(stoi(extractor.get()));
 
     } catch (const Exceptions::WrongFormatException& err) {
-      throw Exceptions::InvalidCommandException("Missing arguments for 'SetPowered' packet. Usage: <command_code>,<controller_id>,<state>");
+      throw Exceptions::InvalidCommandException("Missing arguments for 'SetPowered' packet."
+                                                "Usage: <uuid>,<command_code>,<controller_id>,<state>", m_uuid_request);
     } catch (const std::bad_cast& err) {
-      throw Exceptions::InvalidCommandException("Invalid arguments for 'SetPowered' packet. Can't cast.");
+      throw Exceptions::InvalidCommandException("Invalid arguments for 'SetPowered' packet. Can't cast.", m_uuid_request);
     } catch (const std::invalid_argument& err) {
-      throw Exceptions::InvalidCommandException("Invalid arguments for 'SetPowered' packet.");
+      throw Exceptions::InvalidCommandException("Invalid arguments for 'SetPowered' packet.", m_uuid_request);
     }
   };
 
@@ -54,7 +55,7 @@ namespace Packet::Commands {
 
     auto payload = Schemas::CreateSetPowered(builder, m_state);
 
-    return builder.build(m_controller_id, payload, Schemas::Payload::SetPowered, m_native_class, m_status, m_native_status);
+    return builder.build(payload, Schemas::Payload::SetPowered);
   }
 
   vector<uint8_t> SetPowered::serialize(MGMTFormatBuilder& builder) const {

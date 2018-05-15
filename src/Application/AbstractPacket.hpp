@@ -41,6 +41,8 @@ namespace Packet {
         {
           AsciiFormatBuilder builder;
           builder
+              .add("UUID", m_uuid_request)
+              .add("Native class", m_native_class)
               .add("Event code", m_event_code)
               .add("Controller ID", m_controller_id);
           return serialize(builder);
@@ -48,7 +50,7 @@ namespace Packet {
 
         case Packet::Type::FLATBUFFERS:
         {
-          FlatbuffersFormatBuilder builder(0);
+          FlatbuffersFormatBuilder builder(m_controller_id, m_uuid_request, m_native_class);
           return serialize(builder);
         }
 
@@ -71,6 +73,7 @@ namespace Packet {
         {
           AsciiFormatExtractor extractor(raw_data);
           m_controller_id = extractor.get_controller_id();
+          m_uuid_request = extractor.get_uuid_request();
           return unserialize(extractor);
         }
 
@@ -78,6 +81,7 @@ namespace Packet {
         {
           FlatbuffersFormatExtractor extractor(raw_data);
           m_controller_id = extractor.get_controller_id();
+          m_uuid_request = extractor.get_uuid_request();
           return unserialize(extractor);
         }
 
@@ -106,8 +110,12 @@ namespace Packet {
       throw std::runtime_error("unserialize(FlatbuffersFormatExtractor&) not defined.");
     };
 
-    virtual const Packet::Type current_type() const {
+    const Packet::Type current_type() const {
       return m_current_type;
+    };
+
+    const std::string uuid_request() const {
+      return m_uuid_request;
     };
 
     virtual void translate() {
@@ -137,7 +145,7 @@ namespace Packet {
   protected:
     AbstractPacket(Packet::Type initial_type, Packet::Type translated_type)
         : m_initial_type(initial_type), m_translated_type(translated_type), m_current_type(m_initial_type),
-          m_event_code(0), m_controller_id(Format::MGMT::non_controller_id) {};
+          m_event_code(0), m_controller_id(Format::MGMT::non_controller_id), m_uuid_request(""), m_native_class("") {};
 
     Packet::Type m_initial_type;
     Packet::Type m_translated_type;
@@ -145,6 +153,9 @@ namespace Packet {
 
     uint16_t m_event_code;
     uint16_t m_controller_id;
+    std::string m_uuid_request;
+
+    std::string m_native_class;
 
   };
 

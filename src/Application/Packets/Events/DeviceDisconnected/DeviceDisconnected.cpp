@@ -44,7 +44,7 @@ namespace Packet::Events {
         reason
     );
 
-    return builder.build(m_controller_id, payload, Schemas::Payload::DeviceDisconnected, m_native_class);
+    return builder.build(payload, Schemas::Payload::DeviceDisconnected);
   }
 
 }

@@ -20,6 +20,7 @@ namespace Packet::Commands {
       m_controller_id = Format::MGMT::non_controller_id;
       m_status = Schemas::StatusCode::Success;
       m_native_status = 0;
+      m_response_received = false;
     }
 
     void after_translate() override {
@@ -45,6 +46,7 @@ namespace Packet::Commands {
     }
 
     std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override {
+      builder.set_status(m_status, m_native_status);
       return {};
     }
 
@@ -106,10 +108,31 @@ namespace Packet::Commands {
 
     void unserialize(FlatbuffersFormatExtractor& extractor) override {}
 
+    uint64_t expected_response_uuid() override {
+      if (!m_response_received) {
+        return Packet::AbstractPacket::compute_uuid(command_code(m_translated_type), m_controller_id);
+
+      } else {
+        return 0;
+      }
+    }
+
+    bool on_response_received(Packet::Type packet_type, const std::vector<uint8_t>& raw_data) override {
+      if (packet_type != m_translated_type) {
+        return false;
+      }
+
+      LOG.debug("Response received", "CommandPacket");
+      import(raw_data);
+      m_response_received = true;
+      return true;
+    }
+
     uint16_t m_command_code;
     uint8_t m_native_status;
-    std::string m_native_class;
     Schemas::StatusCode m_status;
+
+    bool m_response_received;
 
   };
 

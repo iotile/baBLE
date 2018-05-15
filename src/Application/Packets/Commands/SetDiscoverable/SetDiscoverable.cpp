@@ -18,18 +18,19 @@ namespace Packet::Commands {
       m_timeout = static_cast<uint16_t>(stoi(extractor.get()));
 
       if (m_state < 0 || m_state > 2) {
-        throw Exceptions::InvalidCommandException("Invalid value for state for 'SetDiscoverable' packet.");
+        throw Exceptions::InvalidCommandException("Invalid value for state for 'SetDiscoverable' packet.", m_uuid_request);
       }
       if (m_state == 2 && m_timeout == 0) {
-        throw Exceptions::InvalidCommandException("Timeout is required if state = 2 for 'SetDiscoverable' packet.");
+        throw Exceptions::InvalidCommandException("Timeout is required if state = 2 for 'SetDiscoverable' packet.", m_uuid_request);
       }
 
     } catch (const Exceptions::WrongFormatException& err) {
-      throw Exceptions::InvalidCommandException("Missing arguments for 'SetDiscoverable' packet. Usage: <command_code>,<controller_id>,<state>");
+      throw Exceptions::InvalidCommandException("Missing arguments for 'SetDiscoverable' packet."
+                                                "Usage: <uuid>,<command_code>,<controller_id>,<state>", m_uuid_request);
     } catch (const std::bad_cast& err) {
-      throw Exceptions::InvalidCommandException("Invalid arguments for 'SetDiscoverable' packet. Can't cast.");
+      throw Exceptions::InvalidCommandException("Invalid arguments for 'SetDiscoverable' packet. Can't cast.", m_uuid_request);
     } catch (const std::invalid_argument& err) {
-      throw Exceptions::InvalidCommandException("Invalid arguments for 'SetDiscoverable' packet.");
+      throw Exceptions::InvalidCommandException("Invalid arguments for 'SetDiscoverable' packet.", m_uuid_request);
     }
   }
 
@@ -65,7 +66,7 @@ namespace Packet::Commands {
 
     auto payload = Schemas::CreateSetDiscoverable(builder, m_state, m_timeout);
 
-    return builder.build(m_controller_id, payload, Schemas::Payload::SetDiscoverable, m_native_class, m_status, m_native_status);
+    return builder.build(payload, Schemas::Payload::SetDiscoverable);
   }
 
   vector<uint8_t> SetDiscoverable::serialize(MGMTFormatBuilder& builder) const {

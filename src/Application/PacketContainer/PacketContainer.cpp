@@ -4,22 +4,65 @@ using namespace std;
 
 // Statics
 map<std::tuple<Packet::Type, uint64_t>, shared_ptr<Packet::AbstractPacket>> PacketContainer::m_waiting_packets{};
+map<PacketContainer::TimePoint, std::tuple<Packet::Type, uint64_t>> PacketContainer::m_expiration_waiting_packets{};
 
 void PacketContainer::wait_response(shared_ptr<Packet::AbstractPacket> packet) {
-  m_waiting_packets.emplace(make_tuple(packet->current_type(), packet->expected_response_uuid()), move(packet));
-};
+  Packet::Type packet_type = packet->current_type();
+  uint64_t uuid = packet->expected_response_uuid();
+
+  auto key = make_tuple(packet_type, uuid);
+
+  auto waiting_it = m_waiting_packets.find(key);
+  if (waiting_it != m_waiting_packets.end()) {
+    throw Exceptions::InvalidCommandException("Command already in flight.", packet->uuid_request());
+  }
+
+  m_waiting_packets.emplace(make_tuple(packet_type, uuid), move(packet));
+
+  TimePoint inserted_time = chrono::steady_clock::now();
+  m_expiration_waiting_packets.emplace(inserted_time, key);
+}
+
+void PacketContainer::expire_waiting_packets(int64_t expiration_duration) {
+  if (m_expiration_waiting_packets.empty()) {
+    return;
+  }
+
+  TimePoint current_time = chrono::steady_clock::now();
+  auto expiration_start_time = current_time - chrono::seconds(expiration_duration);
+
+  auto it_last_expired = m_expiration_waiting_packets.upper_bound(expiration_start_time);
+  if (it_last_expired == m_expiration_waiting_packets.begin()) {
+    LOG.debug("No packet to expire.", "PacketContainer");
+    return;
+  }
+
+  if (it_last_expired == m_expiration_waiting_packets.end()) {
+    LOG.warning("Expiring all waiting packets", "PacketContainer");
+    m_waiting_packets.clear();
+    m_expiration_waiting_packets.clear();
+    return;
+  }
+
+  for (auto it = m_expiration_waiting_packets.begin(); it != it_last_expired; ++it) {
+    LOG.warning("Expiring packet", "PacketContainer");
+    m_waiting_packets.erase(it->second);
+  }
+
+  m_expiration_waiting_packets.erase(m_expiration_waiting_packets.begin(), it_last_expired);
+}
 
 // Constructors
 PacketContainer::PacketContainer(shared_ptr<AbstractFormat> building_format) {
   m_building_format = move(building_format);
   m_output_format = nullptr;
-};
+}
 
 // Setters
 PacketContainer& PacketContainer::set_output_format(shared_ptr<AbstractFormat> output_format) {
   m_output_format = move(output_format);
   return *this;
-};
+}
 
 // To build packets
 shared_ptr<Packet::AbstractPacket> PacketContainer::build(const vector<uint8_t>& raw_data) {
@@ -32,7 +75,7 @@ shared_ptr<Packet::AbstractPacket> PacketContainer::build(const vector<uint8_t>&
   } else {
     throw Exceptions::NotFoundException("Given data to build a packet has no known type: " + to_string(type_code));
   }
-};
+}
 
 shared_ptr<Packet::AbstractPacket> PacketContainer::build_command(const vector<uint8_t>& raw_data) {
   // Extract command_code from data
@@ -44,7 +87,7 @@ shared_ptr<Packet::AbstractPacket> PacketContainer::build_command(const vector<u
   if (waiting_it != m_waiting_packets.end()) {
     shared_ptr<Packet::AbstractPacket> packet = waiting_it->second;
     if (packet->on_response_received(packet_type, raw_data)) {
-      m_waiting_packets.erase(waiting_it);
+      //m_waiting_packets.erase(waiting_it);
       return packet;
     }
   }
@@ -59,7 +102,7 @@ shared_ptr<Packet::AbstractPacket> PacketContainer::build_command(const vector<u
   shared_ptr<Packet::AbstractPacket> packet = fn();
   packet->import(raw_data);
   return packet;
-};
+}
 
 shared_ptr<Packet::AbstractPacket> PacketContainer::build_event(uint16_t event_code, const vector<uint8_t>& raw_data) {
   // Get event from event_code
@@ -72,7 +115,7 @@ shared_ptr<Packet::AbstractPacket> PacketContainer::build_event(uint16_t event_c
   shared_ptr<Packet::AbstractPacket> packet = fn();
   packet->import(raw_data);
   return packet;
-};
+}
 
 const std::string PacketContainer::stringify() const {
   std::stringstream result;

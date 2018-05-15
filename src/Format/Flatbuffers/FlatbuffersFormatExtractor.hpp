@@ -20,6 +20,7 @@ public:
   template<typename T>
   T get_payload(Schemas::Payload payload_type) const;
   uint16_t get_controller_id() const;
+  std::string get_uuid_request() const;
 
 private:
   std::vector<uint8_t> m_data;
