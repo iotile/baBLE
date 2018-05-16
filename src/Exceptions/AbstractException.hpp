@@ -5,6 +5,7 @@
 #include <exception>
 #include "../Log/Loggable.hpp"
 #include "constants.hpp"
+#include "../Log/Log.hpp"
 
 namespace Exceptions {
 
@@ -15,7 +16,7 @@ namespace Exceptions {
     virtual const std::string exception_name() const = 0;
 
     const char* what() const noexcept override {
-      return stringify().c_str();
+      return m_message.c_str();
     };
 
     std::string uuid_request() const {

@@ -14,6 +14,9 @@ namespace Packet::Commands {
         case Packet::Type::MGMT:
           return Format::MGMT::CommandCode::Disconnect;
 
+        case Packet::Type::HCI:
+          throw std::invalid_argument("'Disconnect' packet not implemented with HCI protocol.");
+
         case Packet::Type::ASCII:
           return Format::Ascii::CommandCode::Disconnect;
 

@@ -33,8 +33,10 @@ set(SOURCES_FILES
         src/Application/Packets/Commands/SetDiscoverable/SetDiscoverable.hpp
         src/Application/Packets/Commands/SetConnectable/SetConnectable.cpp
         src/Application/Packets/Commands/SetConnectable/SetConnectable.hpp
-        src/Application/Packets/Commands/GetControllersList/GetControllersList.cpp
-        src/Application/Packets/Commands/GetControllersList/GetControllersList.hpp
+        src/Application/Packets/Meta/GetControllersList/GetControllersList.cpp
+        src/Application/Packets/Meta/GetControllersList/GetControllersList.hpp
+        src/Application/Packets/Commands/GetControllersIds/GetControllersIds.cpp
+        src/Application/Packets/Commands/GetControllersIds/GetControllersIds.hpp
         src/Application/Packets/Commands/GetControllerInfo/GetControllerInfo.cpp
         src/Application/Packets/Commands/GetControllerInfo/GetControllerInfo.hpp
         src/Application/Packets/Commands/GetConnectedDevices/GetConnectedDevices.cpp
@@ -91,7 +93,7 @@ set(SOURCES_FILES
         src/Exceptions/WrongFormat/WrongFormatException.hpp
         src/Exceptions/Socket/SocketException.hpp
         src/Exceptions/InvalidCommand/InvalidCommandException.hpp
-        src/bootstrap.hpp)
+        src/bootstrap.hpp src/Format/HCI/constants.hpp src/Format/HCI/HCIFormat.hpp src/Format/HCI/HCIFormatExtractor.cpp src/Format/HCI/HCIFormatExtractor.hpp src/Transport/Socket/HCI/HCISocket.cpp src/Transport/Socket/HCI/HCISocket.hpp src/Format/HCI/HCIFormatBuilder.cpp src/Format/HCI/HCIFormatBuilder.hpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies

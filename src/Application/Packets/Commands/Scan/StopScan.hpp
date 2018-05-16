@@ -14,6 +14,9 @@ namespace Packet::Commands {
         case Packet::Type::MGMT:
           return Format::MGMT::CommandCode::StopScan;
 
+        case Packet::Type::HCI:
+          throw std::invalid_argument("'StopScan' packet is not implemented with HCI protocol.");
+
         case Packet::Type::ASCII:
           return Format::Ascii::CommandCode::StopScan;
 

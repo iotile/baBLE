@@ -14,7 +14,7 @@ namespace Packet::Errors {
     std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
     std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
 
-    void import(const Exceptions::AbstractException& exception);
+    void from_exception(const Exceptions::AbstractException& exception);
 
   private:
     Exceptions::Type m_type;

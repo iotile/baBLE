@@ -6,7 +6,7 @@ import flatbuffers
 from Schemas import Packet, Payload, GetMGMTInfo, StartScan, StopScan, Discovering, DeviceFound, BaBLEError, StatusCode,\
                     AddDevice, DeviceConnected, RemoveDevice, Disconnect, DeviceDisconnected, SetPowered, SetDiscoverable,\
                     SetConnectable, GetControllersList, ControllerAdded, ControllerRemoved, GetControllerInfo, \
-                    GetConnectedDevices
+                    GetConnectedDevices, GetControllersIds
 
 def status_code_to_string(status_code):
     if status_code == StatusCode.StatusCode().Success:
@@ -114,8 +114,12 @@ builder = flatbuffers.Builder(0)
 # payload = SetConnectable.SetConnectableEnd(builder)
 
 ## GetControllersList
-GetControllersList.GetControllersListStart(builder)
-payload = GetControllersList.GetControllersListEnd(builder)
+# GetControllersList.GetControllersListStart(builder)
+# payload = GetControllersList.GetControllersListEnd(builder)
+
+## GetControllersIds
+GetControllersIds.GetControllersIdsStart(builder)
+payload = GetControllersIds.GetControllersIdsEnd(builder)
 
 ## GetControllerInfo
 # GetControllerInfo.GetControllerInfoStart(builder)
@@ -129,7 +133,7 @@ uuid_request = builder.CreateString("123456")
 Packet.PacketStart(builder)
 Packet.PacketAddUuid(builder, uuid_request)
 # Packet.PacketAddControllerId(builder, 0)
-Packet.PacketAddPayloadType(builder, Payload.Payload().GetControllersList)
+Packet.PacketAddPayloadType(builder, Payload.Payload().GetControllersIds)
 Packet.PacketAddPayload(builder, payload)
 packet = Packet.PacketEnd(builder)
 
@@ -356,6 +360,17 @@ try:
                       "Bluetooth version:", controller.BtVersion(), "Powered:", controller.Powered(),
                       "Connectable:", controller.Connectable(), "Discoverable:", controller.Discoverable(),
                       "LE supported:", controller.LowEnergy(), "Name:", controller.Name())
+
+        elif packet.PayloadType() == Payload.Payload().GetControllersIds:
+            controllers_ids = GetControllersIds.GetControllersIds()
+            controllers_ids.Init(packet.Payload().Bytes, packet.Payload().Pos)
+            num_controllers = controllers_ids.ControllersIdsLength()
+            ids = controllers_ids.ControllersIdsAsNumpy()
+
+            print("GetControllersIds",
+                  "UUID:", uuid,
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Controllers IDs:", ids, "Num controllers:", num_controllers)
 
         elif packet.PayloadType() == Payload.Payload().ControllerAdded:
             controller_added = ControllerAdded.ControllerAdded()

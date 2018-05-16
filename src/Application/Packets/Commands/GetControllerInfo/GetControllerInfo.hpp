@@ -14,6 +14,9 @@ namespace Packet::Commands {
         case Packet::Type::MGMT:
           return Format::MGMT::CommandCode::GetControllerInfo;
 
+        case Packet::Type::HCI:
+          throw std::invalid_argument("'GetControllerInfo' packet is not compatible with HCI protocol.");
+
         case Packet::Type::ASCII:
           return Format::Ascii::CommandCode::GetControllerInfo;
 
@@ -27,7 +30,7 @@ namespace Packet::Commands {
 
     GetControllerInfo(Packet::Type initial_type, Packet::Type translated_type);
 
-    Format::MGMT::Controller get_controller_info() {
+    Format::MGMT::Controller get_controller_info() const {
       return m_controller_info;
     }
 

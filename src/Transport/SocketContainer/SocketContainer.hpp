@@ -3,7 +3,7 @@
 
 #include <cstdint>
 #include <memory>
-#include <unordered_map>
+#include <map>
 #include "../AbstractSocket.hpp"
 #include "../../Application/AbstractPacket.hpp"
 #include "../../Exceptions/NotFound/NotFoundException.hpp"
@@ -18,7 +18,7 @@ public:
   bool send(const std::shared_ptr<Packet::AbstractPacket>& packet);
 
 private:
-  std::unordered_map<Packet::Type, std::shared_ptr<AbstractSocket>> m_sockets;
+  std::map<std::tuple<Packet::Type, uint16_t>, std::shared_ptr<AbstractSocket>> m_sockets;
 
 };
 

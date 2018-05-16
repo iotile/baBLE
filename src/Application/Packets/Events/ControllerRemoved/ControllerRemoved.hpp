@@ -13,6 +13,9 @@ namespace Packet::Events {
         case Packet::Type::MGMT:
           return Format::MGMT::EventCode::IndexRemoved;
 
+        case Packet::Type::HCI:
+          throw std::invalid_argument("'ControllerRemoved' packet is not compatible with HCI protocol.");
+
         case Packet::Type::ASCII:
           return Format::Ascii::EventCode::ControllerRemoved;
 

@@ -13,6 +13,9 @@ namespace Packet::Events {
         case Packet::Type::MGMT:
           return Format::MGMT::EventCode::DeviceFound;
 
+        case Packet::Type::HCI:
+          throw std::invalid_argument("'DeviceFound' packet is not compatible with HCI protocol.");
+
         case Packet::Type::ASCII:
           return Format::Ascii::EventCode::DeviceFound;
 

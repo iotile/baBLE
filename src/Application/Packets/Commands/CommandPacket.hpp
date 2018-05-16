@@ -110,7 +110,7 @@ namespace Packet::Commands {
 
     uint64_t expected_response_uuid() override {
       if (!m_response_received) {
-        return Packet::AbstractPacket::compute_uuid(command_code(m_translated_type), m_controller_id);
+        return Packet::AbstractPacket::compute_uuid(T::command_code(m_translated_type), m_controller_id);
 
       } else {
         return 0;
@@ -123,7 +123,7 @@ namespace Packet::Commands {
       }
 
       LOG.debug("Response received", "CommandPacket");
-      import(raw_data);
+      from_bytes(raw_data);
       m_response_received = true;
       return true;
     }

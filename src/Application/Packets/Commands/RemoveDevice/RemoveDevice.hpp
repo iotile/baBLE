@@ -14,6 +14,9 @@ namespace Packet::Commands {
         case Packet::Type::MGMT:
           return Format::MGMT::CommandCode::RemoveDevice;
 
+        case Packet::Type::HCI:
+          throw std::invalid_argument("'RemoveDevice' packet is not compatible with HCI protocol.");
+
         case Packet::Type::ASCII:
           return Format::Ascii::CommandCode::RemoveDevice;
 

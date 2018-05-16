@@ -14,6 +14,9 @@ namespace Packet::Events {
         case Packet::Type::MGMT:
           return Format::MGMT::EventCode::NewSettings;
 
+        case Packet::Type::HCI:
+          throw std::invalid_argument("'NewSettings' packet is not compatible with HCI protocol.");
+
         case Packet::Type::ASCII:
           return Format::Ascii::EventCode::NewSettings;
 

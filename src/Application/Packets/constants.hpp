@@ -5,6 +5,7 @@ namespace Packet {
 
   enum class Type {
     MGMT,
+    HCI,
     ASCII,
     FLATBUFFERS,
     NONE

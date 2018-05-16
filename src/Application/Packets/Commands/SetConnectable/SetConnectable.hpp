@@ -14,6 +14,9 @@ namespace Packet::Commands {
         case Packet::Type::MGMT:
           return Format::MGMT::CommandCode::SetConnectable;
 
+        case Packet::Type::HCI:
+          throw std::invalid_argument("'SetConnectable' packet is not compatible with HCI protocol.");
+
         case Packet::Type::ASCII:
           return Format::Ascii::CommandCode::SetConnectable;
 

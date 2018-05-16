@@ -19,7 +19,7 @@ class PacketContainer : public Loggable {
   using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono::nanoseconds>;
 
 public:
-  static void wait_response(std::shared_ptr<Packet::AbstractPacket> packet);
+  static void register_response(std::shared_ptr<Packet::AbstractPacket> packet);
   static void expire_waiting_packets(int64_t expiration_duration);
 
   // Constructors

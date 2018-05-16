@@ -1,18 +1,22 @@
 #ifndef BABLE_LINUX_GETCONTROLLERSLIST_HPP
 #define BABLE_LINUX_GETCONTROLLERSLIST_HPP
 
-#include "../CommandPacket.hpp"
-#include "../GetControllerInfo/GetControllerInfo.hpp"
+#include "../../../AbstractPacket.hpp"
+#include "../../Commands/GetControllersIds/GetControllersIds.hpp"
+#include "../../Commands/GetControllerInfo/GetControllerInfo.hpp"
 
-namespace Packet::Commands {
+namespace Packet::Meta {
 
-  class GetControllersList : public CommandPacket<GetControllersList> {
+  class GetControllersList : public AbstractPacket {
 
   public:
     static const uint16_t command_code(Packet::Type type) {
       switch(type) {
         case Packet::Type::MGMT:
-          return Format::MGMT::CommandCode::GetControllersList;
+          throw std::invalid_argument("'GetControllersList' packet is a meta packet, can't be a MGMT packet.");
+
+        case Packet::Type::HCI:
+          throw std::invalid_argument("'GetControllersList' packet is a meta packet, can't be a HCI packet.");
 
         case Packet::Type::ASCII:
           return Format::Ascii::CommandCode::GetControllersList;
@@ -29,7 +33,6 @@ namespace Packet::Commands {
 
     void unserialize(AsciiFormatExtractor& extractor) override;
     void unserialize(FlatbuffersFormatExtractor& extractor) override;
-    void unserialize(MGMTFormatExtractor& extractor) override;
 
     std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
     std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
@@ -41,12 +44,22 @@ namespace Packet::Commands {
     bool on_response_received(Packet::Type packet_type, const std::vector<uint8_t>& raw_data) override;
 
   private:
-    bool m_waiting_controllers_info;
+    enum SubPacket {
+      GetControllersIds,
+      GetControllerInfo,
+      None
+    };
+
+    SubPacket m_waiting_response;
     uint16_t m_current_index;
 
-    std::unique_ptr<GetControllerInfo> m_controller_info_packet;
-    std::vector<uint16_t> m_controllers_ids;
+    std::unique_ptr<Packet::Commands::GetControllerInfo> m_controller_info_packet;
+    std::unique_ptr<Packet::Commands::GetControllersIds> m_controllers_ids_packet;
     std::vector<Format::MGMT::Controller> m_controllers;
+    std::vector<uint16_t> m_controllers_ids;
+
+    uint8_t m_native_status;
+    Schemas::StatusCode m_status;
 
   };
 

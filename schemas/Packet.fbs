@@ -1,5 +1,6 @@
 include "./Commands/GetMGMTInfo.fbs";
 include "./Commands/GetControllersList.fbs";
+include "./Commands/GetControllersIds.fbs";
 include "./Commands/GetControllerInfo.fbs";
 include "./Commands/GetConnectedDevices.fbs";
 include "./Commands/StartScan.fbs";
@@ -24,6 +25,7 @@ union Payload {
   AddDevice,
   Disconnect,
   GetConnectedDevices,
+  GetControllersIds,
   GetControllerInfo,
   GetControllersList,
   GetMGMTInfo,

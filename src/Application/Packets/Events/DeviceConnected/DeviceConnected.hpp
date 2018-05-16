@@ -13,6 +13,9 @@ namespace Packet::Events {
         case Packet::Type::MGMT:
           return Format::MGMT::EventCode::DeviceConnected;
 
+        case Packet::Type::HCI:
+          throw std::invalid_argument("'DeviceConnected' packet is not compatible with HCI protocol.");
+
         case Packet::Type::ASCII:
           return Format::Ascii::EventCode::DeviceConnected;
 

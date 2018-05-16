@@ -1,34 +1,33 @@
-#ifndef BABLE_LINUX_COMMANDS_STARTSCAN_HPP
-#define BABLE_LINUX_COMMANDS_STARTSCAN_HPP
+#ifndef BABLE_LINUX_GETCONTROLLERSIDS_HPP
+#define BABLE_LINUX_GETCONTROLLERSIDS_HPP
 
 #include "../CommandPacket.hpp"
-#include "../../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 
 namespace Packet::Commands {
 
-  class StartScan : public CommandPacket<StartScan> {
+  class GetControllersIds : public CommandPacket<GetControllersIds> {
 
   public:
     static const uint16_t command_code(Packet::Type type) {
       switch(type) {
         case Packet::Type::MGMT:
-          return Format::MGMT::CommandCode::StartScan;
+          return Format::MGMT::CommandCode::GetControllersList;
 
         case Packet::Type::HCI:
-          throw std::invalid_argument("'StartScan' packet is not implemented with HCI protocol.");
+          throw std::invalid_argument("'GetControllersIds' packet is not compatible with HCI protocol.");
 
         case Packet::Type::ASCII:
-          return Format::Ascii::CommandCode::StartScan;
+          return Format::Ascii::CommandCode::GetControllersIds;
 
         case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(Schemas::Payload::StartScan);
+          return static_cast<uint16_t>(Schemas::Payload::GetControllersIds);
 
         case Packet::Type::NONE:
           return 0;
       }
     };
 
-    StartScan(Packet::Type initial_type, Packet::Type translated_type);
+    GetControllersIds(Packet::Type initial_type, Packet::Type translated_type);
 
     void unserialize(AsciiFormatExtractor& extractor) override;
     void unserialize(FlatbuffersFormatExtractor& extractor) override;
@@ -38,11 +37,15 @@ namespace Packet::Commands {
     std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
     std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override;
 
+    std::vector<uint16_t> get_controllers_ids() const {
+      return m_controllers_ids;
+    }
+
   private:
-    uint8_t m_address_type;
+    std::vector<uint16_t> m_controllers_ids;
 
   };
 
 }
 
-#endif //BABLE_LINUX_COMMANDS_STARTSCAN_HPP
+#endif //BABLE_LINUX_GETCONTROLLERSIDS_HPP

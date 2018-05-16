@@ -15,9 +15,10 @@ namespace Format::Ascii {
     SetPowered= 0x0007,
     SetDiscoverable= 0x0008,
     SetConnectable= 0x0009,
-    GetControllersList= 0x000A,
+    GetControllersIds= 0x000A,
     GetControllerInfo= 0x000B,
-    GetConnectedDevices= 0x000C
+    GetControllersList= 0x000C,
+    GetConnectedDevices= 0x000D
   };
 
   enum EventCode {

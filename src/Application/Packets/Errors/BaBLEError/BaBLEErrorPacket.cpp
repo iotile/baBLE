@@ -52,7 +52,7 @@ namespace Packet::Errors {
         .build(payload, Schemas::Payload::BaBLEError);
   };
 
-  void BaBLEErrorPacket::import(const Exceptions::AbstractException& exception) {
+  void BaBLEErrorPacket::from_exception(const Exceptions::AbstractException& exception) {
     m_type = exception.exception_type();
     m_name = exception.exception_name();
     m_message = exception.stringify();

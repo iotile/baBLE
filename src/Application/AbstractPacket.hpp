@@ -29,7 +29,7 @@ namespace Packet {
           | static_cast<uint64_t>(handle);
     };
 
-    virtual std::vector<uint8_t> serialize() const {
+    virtual std::vector<uint8_t> to_bytes() const {
       switch(current_type()) {
         case Packet::Type::MGMT:
         {
@@ -59,7 +59,7 @@ namespace Packet {
       }
     };
 
-    virtual void import(const std::vector<uint8_t>& raw_data) {
+    virtual void from_bytes(const std::vector<uint8_t>& raw_data) {
       switch(current_type()) {
         case Packet::Type::MGMT:
         {
@@ -118,6 +118,10 @@ namespace Packet {
       return m_uuid_request;
     };
 
+    const uint16_t controller_id() const {
+      return m_controller_id;
+    };
+
     virtual void translate() {
       m_current_type = m_current_type == m_initial_type ? m_translated_type : m_initial_type;
       after_translate();
@@ -143,6 +147,7 @@ namespace Packet {
     virtual ~AbstractPacket() = default;
 
   protected:
+    // TODO: fix controller_id
     AbstractPacket(Packet::Type initial_type, Packet::Type translated_type)
         : m_initial_type(initial_type), m_translated_type(translated_type), m_current_type(m_initial_type),
           m_event_code(0), m_controller_id(Format::MGMT::non_controller_id), m_uuid_request(""), m_native_class("") {};

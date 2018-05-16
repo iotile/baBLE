@@ -6,9 +6,14 @@ using namespace std;
 map<std::tuple<Packet::Type, uint64_t>, shared_ptr<Packet::AbstractPacket>> PacketContainer::m_waiting_packets{};
 map<PacketContainer::TimePoint, std::tuple<Packet::Type, uint64_t>> PacketContainer::m_expiration_waiting_packets{};
 
-void PacketContainer::wait_response(shared_ptr<Packet::AbstractPacket> packet) {
-  Packet::Type packet_type = packet->current_type();
+void PacketContainer::register_response(shared_ptr<Packet::AbstractPacket> packet) {
   uint64_t uuid = packet->expected_response_uuid();
+
+  if (uuid == 0) {
+    return;
+  }
+
+  Packet::Type packet_type = packet->current_type();
 
   auto key = make_tuple(packet_type, uuid);
 
@@ -87,7 +92,7 @@ shared_ptr<Packet::AbstractPacket> PacketContainer::build_command(const vector<u
   if (waiting_it != m_waiting_packets.end()) {
     shared_ptr<Packet::AbstractPacket> packet = waiting_it->second;
     if (packet->on_response_received(packet_type, raw_data)) {
-      //m_waiting_packets.erase(waiting_it);
+      m_waiting_packets.erase(waiting_it);
       return packet;
     }
   }
@@ -100,7 +105,7 @@ shared_ptr<Packet::AbstractPacket> PacketContainer::build_command(const vector<u
 
   PacketConstructor fn = command_it->second;
   shared_ptr<Packet::AbstractPacket> packet = fn();
-  packet->import(raw_data);
+  packet->from_bytes(raw_data);
   return packet;
 }
 
@@ -113,7 +118,7 @@ shared_ptr<Packet::AbstractPacket> PacketContainer::build_event(uint16_t event_c
 
   PacketConstructor fn = event_it->second;
   shared_ptr<Packet::AbstractPacket> packet = fn();
-  packet->import(raw_data);
+  packet->from_bytes(raw_data);
   return packet;
 }
 
@@ -136,6 +141,9 @@ const std::string PacketContainer::stringify() const {
     switch (std::get<0>(element.first)) {
       case Packet::Type::MGMT:
         result << "MGMT";
+        break;
+      case Packet::Type::HCI:
+        result << "HCI";
         break;
       case Packet::Type::ASCII:
         result << "ASCII";
