@@ -24,7 +24,7 @@ MGMTSocket::MGMTSocket(shared_ptr<MGMTFormat> format)
 bool MGMTSocket::bind_socket() {
   struct Format::HCI::sockaddr_hci addr {
       AF_BLUETOOTH,
-      Format::MGMT::non_controller_id,
+      NON_CONTROLLER_ID,
       HCI_CHANNEL_CONTROL
   };
 

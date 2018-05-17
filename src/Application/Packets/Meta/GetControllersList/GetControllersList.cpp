@@ -81,7 +81,7 @@ namespace Packet::Meta {
   vector<uint8_t> GetControllersList::serialize(MGMTFormatBuilder& builder) const {
     switch (m_waiting_response) {
       case SubPacket::GetControllersIds:
-        builder.set_controller_id(Format::MGMT::non_controller_id);
+        builder.set_controller_id(NON_CONTROLLER_ID);
         return m_controllers_ids_packet->serialize(builder);
 
       case SubPacket::GetControllerInfo:
@@ -111,7 +111,7 @@ namespace Packet::Meta {
       case SubPacket::GetControllersIds:
         return Packet::AbstractPacket::compute_uuid(
             m_controllers_ids_packet->command_code(current_type()),
-            Format::MGMT::non_controller_id
+            NON_CONTROLLER_ID
         );
 
       case SubPacket::GetControllerInfo:

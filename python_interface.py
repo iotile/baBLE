@@ -61,16 +61,16 @@ builder = flatbuffers.Builder(0)
 # payload = StopScan.StopScanEnd(builder)
 
 ## AddDevice
-# AddDevice.AddDeviceStartAddressVector(builder, 6)
-# address_list = [0xC4, 0xF0, 0xA5, 0xE6, 0x8A, 0x91]
-# for element in address_list:
-#     builder.PrependByte(element)
-# address = builder.EndVector(6)
-#
-# AddDevice.AddDeviceStart(builder)
-# AddDevice.AddDeviceAddAddress(builder, address)
-# AddDevice.AddDeviceAddAddressType(builder, 2)
-# payload = AddDevice.AddDeviceEnd(builder)
+AddDevice.AddDeviceStartAddressVector(builder, 6)
+address_list = [0xC4, 0xF0, 0xA5, 0xE6, 0x8A, 0x91]
+for element in address_list:
+    builder.PrependByte(element)
+address = builder.EndVector(6)
+
+AddDevice.AddDeviceStart(builder)
+AddDevice.AddDeviceAddAddress(builder, address)
+AddDevice.AddDeviceAddAddressType(builder, 2)
+payload = AddDevice.AddDeviceEnd(builder)
 
 ## RemoveDevice
 # RemoveDevice.RemoveDeviceStartAddressVector(builder, 6)
@@ -118,8 +118,8 @@ builder = flatbuffers.Builder(0)
 # payload = GetControllersList.GetControllersListEnd(builder)
 
 ## GetControllersIds
-GetControllersIds.GetControllersIdsStart(builder)
-payload = GetControllersIds.GetControllersIdsEnd(builder)
+# GetControllersIds.GetControllersIdsStart(builder)
+# payload = GetControllersIds.GetControllersIdsEnd(builder)
 
 ## GetControllerInfo
 # GetControllerInfo.GetControllerInfoStart(builder)
@@ -132,8 +132,8 @@ payload = GetControllersIds.GetControllersIdsEnd(builder)
 uuid_request = builder.CreateString("123456")
 Packet.PacketStart(builder)
 Packet.PacketAddUuid(builder, uuid_request)
-# Packet.PacketAddControllerId(builder, 0)
-Packet.PacketAddPayloadType(builder, Payload.Payload().GetControllersIds)
+Packet.PacketAddControllerId(builder, 0)
+Packet.PacketAddPayloadType(builder, Payload.Payload().AddDevice)
 Packet.PacketAddPayload(builder, payload)
 packet = Packet.PacketEnd(builder)
 
@@ -160,7 +160,8 @@ buf = b'\xCA\xFE' + len(buf).to_bytes(2, byteorder='little') + buf
 # buf2 = builder2.Output()
 # buf2 = b'\xCA\xFE' + len(buf2).to_bytes(2, byteorder='little') + buf2
 
-process.stdin.write(buf)
+# time.sleep(2)
+# process.stdin.write(buf)
 
 header_length = 4
 

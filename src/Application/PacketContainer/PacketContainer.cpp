@@ -100,6 +100,7 @@ shared_ptr<Packet::AbstractPacket> PacketContainer::build_command(const vector<u
   // Get command from command_code
   auto command_it = m_commands.find(command_code);
   if (command_it == m_commands.end()) {
+    LOG.debug(raw_data, "PacketContainer");
     throw Exceptions::NotFoundException("Command code not found in PacketContainer registry: " + to_string(command_code));
   }
 

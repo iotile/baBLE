@@ -6,6 +6,7 @@
 #include <vector>
 #include "Packets/constants.hpp"
 #include "../Format/Ascii/AsciiFormat.hpp"
+#include "../Format/HCI/HCIFormat.hpp"
 #include "../Format/MGMT/MGMTFormat.hpp"
 #include "../Format/Flatbuffers/FlatbuffersFormat.hpp"
 
@@ -147,10 +148,9 @@ namespace Packet {
     virtual ~AbstractPacket() = default;
 
   protected:
-    // TODO: fix controller_id
     AbstractPacket(Packet::Type initial_type, Packet::Type translated_type)
         : m_initial_type(initial_type), m_translated_type(translated_type), m_current_type(m_initial_type),
-          m_event_code(0), m_controller_id(Format::MGMT::non_controller_id), m_uuid_request(""), m_native_class("") {};
+          m_event_code(0), m_controller_id(NON_CONTROLLER_ID), m_uuid_request(""), m_native_class("") {};
 
     Packet::Type m_initial_type;
     Packet::Type m_translated_type;

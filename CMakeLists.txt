@@ -93,7 +93,18 @@ set(SOURCES_FILES
         src/Exceptions/WrongFormat/WrongFormatException.hpp
         src/Exceptions/Socket/SocketException.hpp
         src/Exceptions/InvalidCommand/InvalidCommandException.hpp
-        src/bootstrap.hpp src/Format/HCI/constants.hpp src/Format/HCI/HCIFormat.hpp src/Format/HCI/HCIFormatExtractor.cpp src/Format/HCI/HCIFormatExtractor.hpp src/Transport/Socket/HCI/HCISocket.cpp src/Transport/Socket/HCI/HCISocket.hpp src/Format/HCI/HCIFormatBuilder.cpp src/Format/HCI/HCIFormatBuilder.hpp)
+        src/bootstrap.hpp
+        src/Format/HCI/constants.hpp
+        src/Format/HCI/HCIFormat.hpp
+        src/Format/HCI/HCIFormatExtractor.cpp
+        src/Format/HCI/HCIFormatExtractor.hpp
+        src/Transport/Socket/HCI/HCISocket.cpp
+        src/Transport/Socket/HCI/HCISocket.hpp
+        src/Format/HCI/HCIFormatBuilder.cpp
+        src/Format/HCI/HCIFormatBuilder.hpp
+        src/Application/Packets/Commands/Read/Read.cpp
+        src/Application/Packets/Commands/Read/Read.hpp
+        )
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies

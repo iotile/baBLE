@@ -24,6 +24,7 @@ public:
   void poll(std::shared_ptr<uvw::Loop> loop, CallbackFunction on_received) override;
 
   void set_writable(bool is_writable);
+  std::vector<uint8_t> receive();
 
   ~HCISocket() override;
 
@@ -31,10 +32,12 @@ private:
   static uvw::Flags<uvw::PollHandle::Event> readable_flag;
   static uvw::Flags<uvw::PollHandle::Event> writable_flag;
 
-  bool bind_socket();
-  std::vector<uint8_t> receive();
+  bool bind_hci_socket();
+  bool bind_l2cap_socket();
 
-  uvw::OSSocketHandle::Type m_socket;
+  uvw::OSSocketHandle::Type m_hci_socket;
+  uvw::OSSocketHandle::Type m_l2cap_socket;
+
   std::shared_ptr<uvw::PollHandle> m_poller;
   std::queue<std::vector<uint8_t>> m_send_queue;
   bool m_writable;

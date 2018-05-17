@@ -17,7 +17,7 @@ namespace Packet::Commands {
     CommandPacket(Packet::Type initial_type, Packet::Type translated_type)
         : AbstractPacket(initial_type, translated_type) {
       m_command_code = T::command_code(current_type());
-      m_controller_id = Format::MGMT::non_controller_id;
+      m_controller_id = NON_CONTROLLER_ID;
       m_status = Schemas::StatusCode::Success;
       m_native_status = 0;
       m_response_received = false;

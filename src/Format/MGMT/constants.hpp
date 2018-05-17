@@ -8,7 +8,6 @@
 namespace Format::MGMT {
 
   const std::size_t header_length = 6;
-  const uint16_t non_controller_id = 0xFFFF;
 
   enum CommandCode {
     GetMGMTInfo= 0x0001,

@@ -62,11 +62,12 @@ public:
   };
 
   static uint16_t extract_controller_id(const std::vector<uint8_t>& data) {
+    // TODO: is handle really equivalent to controller id ???
     uint16_t controller_id;
     uint8_t type_code = extract_type_code(data);
 
     if (type_code != Format::HCI::Type::AsyncData) {
-      return Format::HCI::non_controller_id;
+      return NON_CONTROLLER_ID;
     }
 
     if (data.size() < 3) {
@@ -85,15 +86,14 @@ public:
 
     switch (type_code) {
       case Format::HCI::Type::Command:
-        if (data.size() < 4) {
+        if (data.size() < Format::HCI::command_header_length) {
           throw Exceptions::WrongFormatException("Given HCI data are too small (< 4 bytes). Can't extract payload length from command packet.");
         }
-        // Use little endian
         payload_length = static_cast<uint16_t>(data.at(3));
         break;
 
       case Format::HCI::Type::AsyncData:
-        if (data.size() < 5) {
+        if (data.size() < Format::HCI::async_data_header_length) {
           throw Exceptions::WrongFormatException("Given HCI data are too small (< 5 bytes). Can't extract payload length from async data packet.");
         }
         // Use little endian
@@ -101,11 +101,10 @@ public:
         break;
 
       case Format::HCI::Type::Event:
-        if (data.size() < 4) {
-          throw Exceptions::WrongFormatException("Given HCI data are too small (< 4 bytes). Can't extract payload length from event packet.");
+        if (data.size() < Format::HCI::event_header_length) {
+          throw Exceptions::WrongFormatException("Given HCI data are too small (< 3 bytes). Can't extract payload length from event packet.");
         }
-        // Use little endian
-        payload_length = (data.at(3) << 8) | data.at(2);
+        payload_length = static_cast<uint16_t>(data.at(2));
         break;
 
       default:

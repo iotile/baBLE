@@ -17,7 +17,13 @@ bool SocketContainer::send(const shared_ptr<Packet::AbstractPacket>& packet) {
     return true;
   }
 
-  auto key = make_tuple(packet_type, packet->controller_id());
+  std::tuple<Packet::Type, uint16_t> key;
+  if (packet_type == Packet::Type::HCI) {
+    key = make_tuple(packet_type, packet->controller_id());
+  } else {
+    key = make_tuple(packet_type, NON_CONTROLLER_ID);
+  }
+
   auto it = m_sockets.find(key);
   if (it == m_sockets.end()) {
     throw Exceptions::NotFoundException("Can't find socket in SocketContainer for given packet.");

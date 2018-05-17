@@ -5,8 +5,7 @@
 #include <uvw.hpp>
 #include <vector>
 #include "../Format/AbstractFormat.hpp"
-
-#define NON_CONTROLLER_ID 0xFFFF
+#include "../Format/HCI/constants.hpp"
 
 class AbstractSocket {
 
