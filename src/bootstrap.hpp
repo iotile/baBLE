@@ -28,6 +28,7 @@
 #include "Application/Packets/Commands/Read/Read.hpp"
 #include "Application/Packets/Commands/Write/Write.hpp"
 #include "Application/Packets/Commands/NotificationReceived/NotificationReceived.hpp"
+#include "Application/Packets/Commands/ProbeServices/ProbeServices.hpp"
 
 using namespace std;
 using Packet::Meta::GetControllersList;
@@ -93,7 +94,8 @@ namespace Bootstrap {
         .register_event<Packet::Events::DeviceDisconnected>()
         .register_command<Packet::Commands::Read>()
         .register_command<Packet::Commands::Write>()
-        .register_command<Packet::Commands::NotificationReceived>();
+        .register_command<Packet::Commands::NotificationReceived>()
+        .register_command<Packet::Commands::ProbeServices>();
   }
 
   // Stdio
@@ -115,7 +117,8 @@ namespace Bootstrap {
         .register_command<Packet::Meta::GetControllersList>()
       .set_output_format(std::move(hci_format))
         .register_command<Packet::Commands::Read>()
-        .register_command<Packet::Commands::Write>();
+        .register_command<Packet::Commands::Write>()
+        .register_command<Packet::Commands::ProbeServices>();
   }
 
 }

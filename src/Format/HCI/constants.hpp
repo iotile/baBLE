@@ -82,6 +82,8 @@ namespace Format::HCI {
   enum AttributeCode {
     ReadRequest= 0x0A,
     ReadResponse= 0x0B,
+    ReadByGroupTypeRequest= 0x10,
+    ReadByGroupTypeResponse= 0x11,
     WriteRequest= 0x12,
     WriteResponse= 0x13,
     HandleValueNotification= 0x1B
@@ -154,6 +156,17 @@ namespace Format::HCI {
     UnknownAdvertisingIdentifier= 0x42,
     LimitReached= 0x43,
     OperationCancelledHost= 0x44
+  };
+
+  // Structure representing a GATT service
+  struct Service {
+    uint16_t handle = 0;
+    uint16_t group_end_handle = 0;
+    std::vector<uint8_t> uuid{};
+  };
+
+  enum UUID {
+    GattPrimaryServiceDeclaration= 0x2800
   };
 
 }

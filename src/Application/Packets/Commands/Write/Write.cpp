@@ -79,7 +79,7 @@ namespace Packet::Commands {
 
     builder
         .set_connection_handle(m_connection_handle)
-        .set_attribute_handle(m_attribute_handle)
+        .add(m_attribute_handle)
         .add(m_data_to_write);
 
     return builder.build();

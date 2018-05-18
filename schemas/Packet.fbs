@@ -13,6 +13,7 @@ include "./Commands/SetDiscoverable.fbs";
 include "./Commands/SetConnectable.fbs";
 include "./Commands/Read.fbs";
 include "./Commands/Write.fbs";
+include "./Commands/ProbeServices.fbs";
 include "./Events/DeviceConnected.fbs";
 include "./Events/DeviceDisconnected.fbs";
 include "./Events/DeviceFound.fbs";
@@ -32,6 +33,7 @@ union Payload {
   GetControllerInfo,
   GetControllersList,
   GetMGMTInfo,
+  ProbeServices,
   Read,
   RemoveDevice,
   SetConnectable,

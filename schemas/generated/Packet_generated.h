@@ -40,6 +40,10 @@ struct Read;
 
 struct Write;
 
+struct Service;
+
+struct ProbeServices;
+
 struct DeviceConnected;
 
 struct DeviceDisconnected;
@@ -67,27 +71,28 @@ enum class Payload : uint8_t {
   GetControllerInfo = 5,
   GetControllersList = 6,
   GetMGMTInfo = 7,
-  Read = 8,
-  RemoveDevice = 9,
-  SetConnectable = 10,
-  SetDiscoverable = 11,
-  SetPowered = 12,
-  StartScan = 13,
-  StopScan = 14,
-  Write = 15,
-  ControllerAdded = 16,
-  ControllerRemoved = 17,
-  DeviceConnected = 18,
-  DeviceDisconnected = 19,
-  DeviceFound = 20,
-  Discovering = 21,
-  NotificationReceived = 22,
-  BaBLEError = 23,
+  ProbeServices = 8,
+  Read = 9,
+  RemoveDevice = 10,
+  SetConnectable = 11,
+  SetDiscoverable = 12,
+  SetPowered = 13,
+  StartScan = 14,
+  StopScan = 15,
+  Write = 16,
+  ControllerAdded = 17,
+  ControllerRemoved = 18,
+  DeviceConnected = 19,
+  DeviceDisconnected = 20,
+  DeviceFound = 21,
+  Discovering = 22,
+  NotificationReceived = 23,
+  BaBLEError = 24,
   MIN = NONE,
   MAX = BaBLEError
 };
 
-inline const Payload (&EnumValuesPayload())[24] {
+inline const Payload (&EnumValuesPayload())[25] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::AddDevice,
@@ -97,6 +102,7 @@ inline const Payload (&EnumValuesPayload())[24] {
     Payload::GetControllerInfo,
     Payload::GetControllersList,
     Payload::GetMGMTInfo,
+    Payload::ProbeServices,
     Payload::Read,
     Payload::RemoveDevice,
     Payload::SetConnectable,
@@ -127,6 +133,7 @@ inline const char * const *EnumNamesPayload() {
     "GetControllerInfo",
     "GetControllersList",
     "GetMGMTInfo",
+    "ProbeServices",
     "Read",
     "RemoveDevice",
     "SetConnectable",
@@ -183,6 +190,10 @@ template<> struct PayloadTraits<GetControllersList> {
 
 template<> struct PayloadTraits<GetMGMTInfo> {
   static const Payload enum_value = Payload::GetMGMTInfo;
+};
+
+template<> struct PayloadTraits<ProbeServices> {
+  static const Payload enum_value = Payload::ProbeServices;
 };
 
 template<> struct PayloadTraits<Read> {
@@ -1224,6 +1235,141 @@ inline flatbuffers::Offset<Write> CreateWriteDirect(
       value ? _fbb.CreateVector<uint8_t>(*value) : 0);
 }
 
+struct Service FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_HANDLE = 4,
+    VT_GROUP_END_HANDLE = 6,
+    VT_UUID = 8
+  };
+  uint16_t handle() const {
+    return GetField<uint16_t>(VT_HANDLE, 0);
+  }
+  uint16_t group_end_handle() const {
+    return GetField<uint16_t>(VT_GROUP_END_HANDLE, 0);
+  }
+  const flatbuffers::String *uuid() const {
+    return GetPointer<const flatbuffers::String *>(VT_UUID);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint16_t>(verifier, VT_HANDLE) &&
+           VerifyField<uint16_t>(verifier, VT_GROUP_END_HANDLE) &&
+           VerifyOffset(verifier, VT_UUID) &&
+           verifier.Verify(uuid()) &&
+           verifier.EndTable();
+  }
+};
+
+struct ServiceBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_handle(uint16_t handle) {
+    fbb_.AddElement<uint16_t>(Service::VT_HANDLE, handle, 0);
+  }
+  void add_group_end_handle(uint16_t group_end_handle) {
+    fbb_.AddElement<uint16_t>(Service::VT_GROUP_END_HANDLE, group_end_handle, 0);
+  }
+  void add_uuid(flatbuffers::Offset<flatbuffers::String> uuid) {
+    fbb_.AddOffset(Service::VT_UUID, uuid);
+  }
+  explicit ServiceBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ServiceBuilder &operator=(const ServiceBuilder &);
+  flatbuffers::Offset<Service> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<Service>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<Service> CreateService(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t handle = 0,
+    uint16_t group_end_handle = 0,
+    flatbuffers::Offset<flatbuffers::String> uuid = 0) {
+  ServiceBuilder builder_(_fbb);
+  builder_.add_uuid(uuid);
+  builder_.add_group_end_handle(group_end_handle);
+  builder_.add_handle(handle);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<Service> CreateServiceDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t handle = 0,
+    uint16_t group_end_handle = 0,
+    const char *uuid = nullptr) {
+  return Schemas::CreateService(
+      _fbb,
+      handle,
+      group_end_handle,
+      uuid ? _fbb.CreateString(uuid) : 0);
+}
+
+struct ProbeServices FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_CONNECTION_HANDLE = 4,
+    VT_SERVICES = 6
+  };
+  uint16_t connection_handle() const {
+    return GetField<uint16_t>(VT_CONNECTION_HANDLE, 0);
+  }
+  const flatbuffers::Vector<flatbuffers::Offset<Service>> *services() const {
+    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<Service>> *>(VT_SERVICES);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint16_t>(verifier, VT_CONNECTION_HANDLE) &&
+           VerifyOffset(verifier, VT_SERVICES) &&
+           verifier.Verify(services()) &&
+           verifier.VerifyVectorOfTables(services()) &&
+           verifier.EndTable();
+  }
+};
+
+struct ProbeServicesBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_connection_handle(uint16_t connection_handle) {
+    fbb_.AddElement<uint16_t>(ProbeServices::VT_CONNECTION_HANDLE, connection_handle, 0);
+  }
+  void add_services(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<Service>>> services) {
+    fbb_.AddOffset(ProbeServices::VT_SERVICES, services);
+  }
+  explicit ProbeServicesBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ProbeServicesBuilder &operator=(const ProbeServicesBuilder &);
+  flatbuffers::Offset<ProbeServices> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<ProbeServices>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<ProbeServices> CreateProbeServices(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t connection_handle = 0,
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<Service>>> services = 0) {
+  ProbeServicesBuilder builder_(_fbb);
+  builder_.add_services(services);
+  builder_.add_connection_handle(connection_handle);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<ProbeServices> CreateProbeServicesDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t connection_handle = 0,
+    const std::vector<flatbuffers::Offset<Service>> *services = nullptr) {
+  return Schemas::CreateProbeServices(
+      _fbb,
+      connection_handle,
+      services ? _fbb.CreateVector<flatbuffers::Offset<Service>>(*services) : 0);
+}
+
 struct DeviceConnected FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_CONNECTION_HANDLE = 4,
@@ -1828,6 +1974,9 @@ struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const GetMGMTInfo *payload_as_GetMGMTInfo() const {
     return payload_type() == Payload::GetMGMTInfo ? static_cast<const GetMGMTInfo *>(payload()) : nullptr;
   }
+  const ProbeServices *payload_as_ProbeServices() const {
+    return payload_type() == Payload::ProbeServices ? static_cast<const ProbeServices *>(payload()) : nullptr;
+  }
   const Read *payload_as_Read() const {
     return payload_type() == Payload::Read ? static_cast<const Read *>(payload()) : nullptr;
   }
@@ -1930,6 +2079,10 @@ template<> inline const GetControllersList *Packet::payload_as<GetControllersLis
 
 template<> inline const GetMGMTInfo *Packet::payload_as<GetMGMTInfo>() const {
   return payload_as_GetMGMTInfo();
+}
+
+template<> inline const ProbeServices *Packet::payload_as<ProbeServices>() const {
+  return payload_as_ProbeServices();
 }
 
 template<> inline const Read *Packet::payload_as<Read>() const {
@@ -2103,6 +2256,10 @@ inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *obj, Payl
     }
     case Payload::GetMGMTInfo: {
       auto ptr = reinterpret_cast<const GetMGMTInfo *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::ProbeServices: {
+      auto ptr = reinterpret_cast<const ProbeServices *>(obj);
       return verifier.VerifyTable(ptr);
     }
     case Payload::Read: {

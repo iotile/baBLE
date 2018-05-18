@@ -6,7 +6,7 @@ import flatbuffers
 from Schemas import Packet, Payload, GetMGMTInfo, StartScan, StopScan, Discovering, DeviceFound, BaBLEError, StatusCode,\
                     AddDevice, DeviceConnected, RemoveDevice, Disconnect, DeviceDisconnected, SetPowered, SetDiscoverable,\
                     SetConnectable, GetControllersList, ControllerAdded, ControllerRemoved, GetControllerInfo, \
-                    GetConnectedDevices, GetControllersIds, Read, Write, NotificationReceived
+                    GetConnectedDevices, GetControllersIds, Read, Write, NotificationReceived, ProbeServices
 
 def status_code_to_string(status_code):
     if status_code == StatusCode.StatusCode().Success:
@@ -146,25 +146,29 @@ builder.Finish(packet)
 buf = builder.Output()
 buf = b'\xCA\xFE' + len(buf).to_bytes(2, byteorder='little') + buf
 
+# builder2 = flatbuffers.Builder(0)
+# data = bytes('IOTile', 'utf-8')
+# Write.WriteStartValueVector(builder2, len(data))
+# for element in reversed(data):
+#     builder2.PrependByte(element)
+# data_to_write = builder2.EndVector(len(data))
+#
+# Write.WriteStart(builder2)
+# Write.WriteAddConnectionHandle(builder2, 64)
+# Write.WriteAddAttributeHandle(builder2, 0x0003)
+# Write.WriteAddValue(builder2, data_to_write)
+# payload2 = Write.WriteEnd(builder2)
 
 builder2 = flatbuffers.Builder(0)
-data = bytes('IOTile', 'utf-8')
-Write.WriteStartValueVector(builder2, len(data))
-for element in reversed(data):
-    builder2.PrependByte(element)
-data_to_write = builder2.EndVector(len(data))
-
-Write.WriteStart(builder2)
-Write.WriteAddConnectionHandle(builder2, 64)
-Write.WriteAddAttributeHandle(builder2, 0x0003)
-Write.WriteAddValue(builder2, data_to_write)
-payload2 = Write.WriteEnd(builder2)
+ProbeServices.ProbeServicesStart(builder2)
+ProbeServices.ProbeServicesAddConnectionHandle(builder2, 64)
+payload2 = ProbeServices.ProbeServicesEnd(builder2)
 
 uuid_request2 = builder2.CreateString("654321")
 Packet.PacketStart(builder2)
 Packet.PacketAddUuid(builder2, uuid_request2)
 Packet.PacketAddControllerId(builder2, 0)
-Packet.PacketAddPayloadType(builder2, Payload.Payload().Write)
+Packet.PacketAddPayloadType(builder2, Payload.Payload().ProbeServices)
 Packet.PacketAddPayload(builder2, payload2)
 packet2 = Packet.PacketEnd(builder2)
 
@@ -474,6 +478,23 @@ try:
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Connection handle:", connection_handle, "Attribute handle:", attribute_handle,
                   "Data:", data_received)
+
+        elif packet.PayloadType() == Payload.Payload().ProbeServices:
+            probe_services = ProbeServices.ProbeServices()
+            probe_services.Init(packet.Payload().Bytes, packet.Payload().Pos)
+            num_services = probe_services.ServicesLength()
+            services = []
+
+            for i in range(num_services):
+                services.append(probe_services.Services(i))
+
+            print("ProbeServices",
+                  "UUID:", uuid,
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id, "Num services:", num_services)
+
+            for service in services:
+                print("\tHandle:", service.Handle(), "Group end handle:", service.GroupEndHandle(), "UUID:", service.Uuid())
 
         elif packet.PayloadType() == Payload.Payload().BaBLEError:
             error = BaBLEError.BaBLEError()

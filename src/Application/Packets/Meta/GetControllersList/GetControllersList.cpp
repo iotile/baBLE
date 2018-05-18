@@ -74,7 +74,7 @@ namespace Packet::Meta {
     auto payload = Schemas::CreateGetControllersList(builder, controllers_vector);
 
     return builder
-        .set_status(m_status, m_native_status)
+        .set_status(m_status, m_native_status) // TODO: remove unused set_status ?
         .build(payload, Schemas::Payload::GetControllersList);
   }
 

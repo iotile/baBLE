@@ -21,7 +21,6 @@ public:
   HCIFormatBuilder& set_opcode(uint8_t code);
   HCIFormatBuilder& set_controller_id(uint16_t controller_id);
   HCIFormatBuilder& set_connection_handle(uint16_t connection_handle);
-  HCIFormatBuilder& set_attribute_handle(uint16_t attribute_handle);
 
   // To add data to current building object
   template<typename T>
@@ -43,7 +42,6 @@ private:
   uint8_t m_opcode;
   uint16_t m_controller_id;
   uint16_t m_connection_handle;
-  uint16_t m_attribute_handle;
   std::vector<uint8_t> m_formatted_data;
 
 };

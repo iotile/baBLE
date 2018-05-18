@@ -1,0 +1,7 @@
+namespace Schemas;
+
+table Service {
+  handle:uint16;
+  group_end_handle:uint16;
+  uuid:string;
+}
