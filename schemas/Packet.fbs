@@ -12,6 +12,7 @@ include "./Commands/SetPowered.fbs";
 include "./Commands/SetDiscoverable.fbs";
 include "./Commands/SetConnectable.fbs";
 include "./Commands/Read.fbs";
+include "./Commands/Write.fbs";
 include "./Events/DeviceConnected.fbs";
 include "./Events/DeviceDisconnected.fbs";
 include "./Events/DeviceFound.fbs";
@@ -37,6 +38,7 @@ union Payload {
   SetPowered,
   StartScan,
   StopScan,
+  Write,
 
   // Events
   ControllerAdded,

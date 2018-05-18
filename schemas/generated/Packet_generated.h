@@ -38,6 +38,8 @@ struct SetConnectable;
 
 struct Read;
 
+struct Write;
+
 struct DeviceConnected;
 
 struct DeviceDisconnected;
@@ -70,18 +72,19 @@ enum class Payload : uint8_t {
   SetPowered = 12,
   StartScan = 13,
   StopScan = 14,
-  ControllerAdded = 15,
-  ControllerRemoved = 16,
-  DeviceConnected = 17,
-  DeviceDisconnected = 18,
-  DeviceFound = 19,
-  Discovering = 20,
-  BaBLEError = 21,
+  Write = 15,
+  ControllerAdded = 16,
+  ControllerRemoved = 17,
+  DeviceConnected = 18,
+  DeviceDisconnected = 19,
+  DeviceFound = 20,
+  Discovering = 21,
+  BaBLEError = 22,
   MIN = NONE,
   MAX = BaBLEError
 };
 
-inline const Payload (&EnumValuesPayload())[22] {
+inline const Payload (&EnumValuesPayload())[23] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::AddDevice,
@@ -98,6 +101,7 @@ inline const Payload (&EnumValuesPayload())[22] {
     Payload::SetPowered,
     Payload::StartScan,
     Payload::StopScan,
+    Payload::Write,
     Payload::ControllerAdded,
     Payload::ControllerRemoved,
     Payload::DeviceConnected,
@@ -126,6 +130,7 @@ inline const char * const *EnumNamesPayload() {
     "SetPowered",
     "StartScan",
     "StopScan",
+    "Write",
     "ControllerAdded",
     "ControllerRemoved",
     "DeviceConnected",
@@ -201,6 +206,10 @@ template<> struct PayloadTraits<StartScan> {
 
 template<> struct PayloadTraits<StopScan> {
   static const Payload enum_value = Payload::StopScan;
+};
+
+template<> struct PayloadTraits<Write> {
+  static const Payload enum_value = Payload::Write;
 };
 
 template<> struct PayloadTraits<ControllerAdded> {
@@ -1133,6 +1142,79 @@ inline flatbuffers::Offset<Read> CreateReadDirect(
       value ? _fbb.CreateVector<uint8_t>(*value) : 0);
 }
 
+struct Write FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_CONNECTION_HANDLE = 4,
+    VT_ATTRIBUTE_HANDLE = 6,
+    VT_VALUE = 8
+  };
+  uint16_t connection_handle() const {
+    return GetField<uint16_t>(VT_CONNECTION_HANDLE, 0);
+  }
+  uint16_t attribute_handle() const {
+    return GetField<uint16_t>(VT_ATTRIBUTE_HANDLE, 0);
+  }
+  const flatbuffers::Vector<uint8_t> *value() const {
+    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_VALUE);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint16_t>(verifier, VT_CONNECTION_HANDLE) &&
+           VerifyField<uint16_t>(verifier, VT_ATTRIBUTE_HANDLE) &&
+           VerifyOffset(verifier, VT_VALUE) &&
+           verifier.Verify(value()) &&
+           verifier.EndTable();
+  }
+};
+
+struct WriteBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_connection_handle(uint16_t connection_handle) {
+    fbb_.AddElement<uint16_t>(Write::VT_CONNECTION_HANDLE, connection_handle, 0);
+  }
+  void add_attribute_handle(uint16_t attribute_handle) {
+    fbb_.AddElement<uint16_t>(Write::VT_ATTRIBUTE_HANDLE, attribute_handle, 0);
+  }
+  void add_value(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> value) {
+    fbb_.AddOffset(Write::VT_VALUE, value);
+  }
+  explicit WriteBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  WriteBuilder &operator=(const WriteBuilder &);
+  flatbuffers::Offset<Write> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<Write>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<Write> CreateWrite(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t connection_handle = 0,
+    uint16_t attribute_handle = 0,
+    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> value = 0) {
+  WriteBuilder builder_(_fbb);
+  builder_.add_value(value);
+  builder_.add_attribute_handle(attribute_handle);
+  builder_.add_connection_handle(connection_handle);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<Write> CreateWriteDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t connection_handle = 0,
+    uint16_t attribute_handle = 0,
+    const std::vector<uint8_t> *value = nullptr) {
+  return Schemas::CreateWrite(
+      _fbb,
+      connection_handle,
+      attribute_handle,
+      value ? _fbb.CreateVector<uint8_t>(*value) : 0);
+}
+
 struct DeviceConnected FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_CONNECTION_HANDLE = 4,
@@ -1684,6 +1766,9 @@ struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const StopScan *payload_as_StopScan() const {
     return payload_type() == Payload::StopScan ? static_cast<const StopScan *>(payload()) : nullptr;
   }
+  const Write *payload_as_Write() const {
+    return payload_type() == Payload::Write ? static_cast<const Write *>(payload()) : nullptr;
+  }
   const ControllerAdded *payload_as_ControllerAdded() const {
     return payload_type() == Payload::ControllerAdded ? static_cast<const ControllerAdded *>(payload()) : nullptr;
   }
@@ -1787,6 +1872,10 @@ template<> inline const StartScan *Packet::payload_as<StartScan>() const {
 
 template<> inline const StopScan *Packet::payload_as<StopScan>() const {
   return payload_as_StopScan();
+}
+
+template<> inline const Write *Packet::payload_as<Write>() const {
+  return payload_as_Write();
 }
 
 template<> inline const ControllerAdded *Packet::payload_as<ControllerAdded>() const {
@@ -1952,6 +2041,10 @@ inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *obj, Payl
     }
     case Payload::StopScan: {
       auto ptr = reinterpret_cast<const StopScan *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::Write: {
+      auto ptr = reinterpret_cast<const Write *>(obj);
       return verifier.VerifyTable(ptr);
     }
     case Payload::ControllerAdded: {

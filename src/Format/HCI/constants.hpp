@@ -81,7 +81,9 @@ namespace Format::HCI {
 
   enum AttributeCode {
     ReadRequest= 0x0A,
-    ReadResponse= 0x0B
+    ReadResponse= 0x0B,
+    WriteRequest= 0x12,
+    WriteResponse= 0x13
   };
 
   enum StatusCode {

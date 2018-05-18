@@ -26,6 +26,7 @@
 #include "Application/Packets/Events/ControllerAdded/ControllerAdded.hpp"
 #include "Application/Packets/Events/ControllerRemoved/ControllerRemoved.hpp"
 #include "Application/Packets/Commands/Read/Read.hpp"
+#include "Application/Packets/Commands/Write/Write.hpp"
 
 using namespace std;
 using Packet::Meta::GetControllersList;
@@ -34,6 +35,7 @@ namespace Bootstrap {
 
   // Create one HCI socket per controller
   vector<shared_ptr<HCISocket>> create_hci_sockets(const shared_ptr<MGMTSocket>& mgmt_socket, const shared_ptr<HCIFormat>& hci_format) {
+    // TODO: use ioctl instead ?
     vector<shared_ptr<HCISocket>> hci_sockets;
     Packet::Type packet_type = mgmt_socket->format()->packet_type();
     shared_ptr<GetControllersList> get_controllers_list_packet = make_shared<GetControllersList>(packet_type, packet_type);
@@ -88,7 +90,8 @@ namespace Bootstrap {
       .set_output_format(std::move(output_format))
         .register_event<Packet::Events::DeviceConnected>()
         .register_event<Packet::Events::DeviceDisconnected>()
-        .register_command<Packet::Commands::Read>();
+        .register_command<Packet::Commands::Read>()
+        .register_command<Packet::Commands::Write>();
   }
 
   // Stdio
@@ -109,7 +112,8 @@ namespace Bootstrap {
         .register_command<Packet::Commands::SetConnectable>()
         .register_command<Packet::Meta::GetControllersList>()
       .set_output_format(std::move(hci_format))
-        .register_command<Packet::Commands::Read>();
+        .register_command<Packet::Commands::Read>()
+        .register_command<Packet::Commands::Write>();
   }
 
 }

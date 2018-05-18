@@ -20,7 +20,8 @@ namespace Format::Ascii {
     GetControllersList= 0x000C,
     GetConnectedDevices= 0x000D,
 
-    Read= 0x000E
+    Read= 0x000E,
+    Write= 0x000F
   };
 
   enum EventCode {

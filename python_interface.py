@@ -6,7 +6,7 @@ import flatbuffers
 from Schemas import Packet, Payload, GetMGMTInfo, StartScan, StopScan, Discovering, DeviceFound, BaBLEError, StatusCode,\
                     AddDevice, DeviceConnected, RemoveDevice, Disconnect, DeviceDisconnected, SetPowered, SetDiscoverable,\
                     SetConnectable, GetControllersList, ControllerAdded, ControllerRemoved, GetControllerInfo, \
-                    GetConnectedDevices, GetControllersIds, Read
+                    GetConnectedDevices, GetControllersIds, Read, Write
 
 def status_code_to_string(status_code):
     if status_code == StatusCode.StatusCode().Success:
@@ -148,16 +148,23 @@ buf = b'\xCA\xFE' + len(buf).to_bytes(2, byteorder='little') + buf
 
 
 builder2 = flatbuffers.Builder(0)
-Read.ReadStart(builder2)
-Read.ReadAddConnectionHandle(builder2, 64)
-Read.ReadAddAttributeHandle(builder2, 0x0003)
-payload2 = Read.ReadEnd(builder2)
+data = bytes('IOTile', 'utf-8')
+Write.WriteStartValueVector(builder2, len(data))
+for element in reversed(data):
+    builder2.PrependByte(element)
+data_to_write = builder2.EndVector(len(data))
+
+Write.WriteStart(builder2)
+Write.WriteAddConnectionHandle(builder2, 64)
+Write.WriteAddAttributeHandle(builder2, 0x0003)
+Write.WriteAddValue(builder2, data_to_write)
+payload2 = Write.WriteEnd(builder2)
 
 uuid_request2 = builder2.CreateString("654321")
 Packet.PacketStart(builder2)
 Packet.PacketAddUuid(builder2, uuid_request2)
 Packet.PacketAddControllerId(builder2, 0)
-Packet.PacketAddPayloadType(builder2, Payload.Payload().Read)
+Packet.PacketAddPayloadType(builder2, Payload.Payload().Write)
 Packet.PacketAddPayload(builder2, payload2)
 packet2 = Packet.PacketEnd(builder2)
 
@@ -441,6 +448,19 @@ try:
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Connection handle:", connection_handle, "Attribute handle:", attribute_handle,
                   "Data:", data_read)
+
+        elif packet.PayloadType() == Payload.Payload().Write:
+            write = Write.Write()
+            write.Init(packet.Payload().Bytes, packet.Payload().Pos)
+            connection_handle = write.ConnectionHandle()
+            attribute_handle = write.AttributeHandle()
+            data_written = write.ValueAsNumpy()
+
+            print("Write",
+                  "UUID:", uuid,
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id, "Connection handle:", connection_handle, "Attribute handle:", attribute_handle,
+                  "Data:", data_written)
 
         elif packet.PayloadType() == Payload.Payload().BaBLEError:
             error = BaBLEError.BaBLEError()
