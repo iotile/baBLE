@@ -8,6 +8,7 @@ namespace Packet::Events {
       : EventPacket(initial_type, translated_type) {
     m_address_type = 0;
     m_eir_data_length = 0;
+    m_connection_handle = 0;
   }
 
   void DeviceConnected::unserialize(MGMTFormatExtractor& extractor) {
@@ -26,13 +27,24 @@ namespace Packet::Events {
         LOG.error("Can't parse EIR", "DeviceFound");
       }
     }
-  };
+  }
+
+  void DeviceConnected::unserialize(HCIFormatExtractor& extractor) {
+    EventPacket::unserialize(extractor);
+    m_native_status = extractor.get_value<uint8_t>();
+    compute_bable_status();
+    m_connection_handle = extractor.get_value<uint16_t>();
+    auto role = extractor.get_value<uint8_t>();
+    m_address_type = static_cast<uint8_t>(extractor.get_value<uint8_t>() + 1);
+    m_address = extractor.get_array<uint8_t, 6>();
+  }
 
   vector<uint8_t> DeviceConnected::serialize(AsciiFormatBuilder& builder) const {
     EventPacket::serialize(builder);
 
     builder
         .set_name("DeviceConnected")
+        .add("Connection handle", m_connection_handle)
         .add("Address", AsciiFormat::format_bd_address(m_address))
         .add("Address type", m_address_type)
         .add("Flags", m_flags)
@@ -57,6 +69,7 @@ namespace Packet::Events {
 
     auto payload = Schemas::CreateDeviceConnected(
         builder,
+        m_connection_handle,
         address,
         m_address_type,
         flags,

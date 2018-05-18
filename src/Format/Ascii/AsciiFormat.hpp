@@ -64,7 +64,7 @@ public:
     return false;
   };
 
-  uint16_t extract_command_code(const std::vector<uint8_t>& data) override {
+  uint16_t extract_packet_code(const std::vector<uint8_t>& data) override {
     return AsciiFormatExtractor::extract_command_code(data);
   };
 

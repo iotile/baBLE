@@ -22,7 +22,7 @@ void PacketContainer::register_response(shared_ptr<Packet::AbstractPacket> packe
     throw Exceptions::InvalidCommandException("Command already in flight.", packet->uuid_request());
   }
 
-  m_waiting_packets.emplace(make_tuple(packet_type, uuid), move(packet));
+  m_waiting_packets.emplace(key, move(packet));
 
   TimePoint inserted_time = chrono::steady_clock::now();
   m_expiration_waiting_packets.emplace(inserted_time, key);
@@ -44,13 +44,19 @@ void PacketContainer::expire_waiting_packets(int64_t expiration_duration) {
 
   if (it_last_expired == m_expiration_waiting_packets.end()) {
     LOG.warning("Expiring all waiting packets", "PacketContainer");
+
+    LOG.debug("Waiting packets UUID: ", "PacketContainer");
+    for (auto& kv : m_expiration_waiting_packets) {
+      LOG.debug("\t - " + to_string(std::get<1>(kv.second)), "PacketContainer");
+    }
+
     m_waiting_packets.clear();
     m_expiration_waiting_packets.clear();
     return;
   }
 
   for (auto it = m_expiration_waiting_packets.begin(); it != it_last_expired; ++it) {
-    LOG.warning("Expiring packet", "PacketContainer");
+    LOG.warning("Expiring packet (" + to_string(std::get<1>(it->second)) + ")", "PacketContainer");
     m_waiting_packets.erase(it->second);
   }
 
@@ -70,28 +76,38 @@ PacketContainer& PacketContainer::set_output_format(shared_ptr<AbstractFormat> o
 }
 
 // To build packets
-shared_ptr<Packet::AbstractPacket> PacketContainer::build(const vector<uint8_t>& raw_data) {
+shared_ptr<Packet::AbstractPacket> PacketContainer::build(const vector<uint8_t>& raw_data, uint16_t controller_id) {
+  // TODO: find a better way to extract information: currently type code extracted several times...
   uint16_t type_code = m_building_format->extract_type_code(raw_data);
 
   if (m_building_format->is_command(type_code)) {
-    return build_command(raw_data);
+    return build_command(raw_data, controller_id);
   } else if (m_building_format->is_event(type_code)) {
-    return build_event(type_code, raw_data);
+    return build_event(raw_data, controller_id);
   } else {
     throw Exceptions::NotFoundException("Given data to build a packet has no known type: " + to_string(type_code));
   }
 }
 
-shared_ptr<Packet::AbstractPacket> PacketContainer::build_command(const vector<uint8_t>& raw_data) {
+shared_ptr<Packet::AbstractPacket> PacketContainer::build_command(const vector<uint8_t>& raw_data, uint16_t controller_id) {
   // Extract command_code from data
-  uint16_t command_code = m_building_format->extract_command_code(raw_data);
-  uint16_t controller_id = m_building_format->extract_controller_id(raw_data);
+  uint16_t command_code = m_building_format->extract_packet_code(raw_data);
   Packet::Type packet_type = m_building_format->packet_type();
 
-  auto waiting_it = m_waiting_packets.find(make_tuple(packet_type, Packet::AbstractPacket::compute_uuid(command_code, controller_id)));
+  auto key = make_tuple(packet_type, Packet::AbstractPacket::compute_uuid(controller_id, command_code));
+  auto waiting_it = m_waiting_packets.find(key);
   if (waiting_it != m_waiting_packets.end()) {
     shared_ptr<Packet::AbstractPacket> packet = waiting_it->second;
+
     if (packet->on_response_received(packet_type, raw_data)) {
+      auto expiration_it = m_expiration_waiting_packets.begin();
+      while (expiration_it != m_expiration_waiting_packets.end()) {
+        if (expiration_it->second == key) {
+          expiration_it = m_expiration_waiting_packets.erase(expiration_it);
+        } else {
+          ++expiration_it;
+        }
+      }
       m_waiting_packets.erase(waiting_it);
       return packet;
     }
@@ -106,11 +122,13 @@ shared_ptr<Packet::AbstractPacket> PacketContainer::build_command(const vector<u
 
   PacketConstructor fn = command_it->second;
   shared_ptr<Packet::AbstractPacket> packet = fn();
-  packet->from_bytes(raw_data);
+  packet->from_bytes(raw_data, controller_id);
   return packet;
 }
 
-shared_ptr<Packet::AbstractPacket> PacketContainer::build_event(uint16_t event_code, const vector<uint8_t>& raw_data) {
+shared_ptr<Packet::AbstractPacket> PacketContainer::build_event(const vector<uint8_t>& raw_data, uint16_t controller_id) {
+  uint16_t event_code = m_building_format->extract_packet_code(raw_data);
+
   // Get event from event_code
   auto event_it = m_events.find(event_code);
   if (event_it == m_events.end()) {
@@ -119,7 +137,7 @@ shared_ptr<Packet::AbstractPacket> PacketContainer::build_event(uint16_t event_c
 
   PacketConstructor fn = event_it->second;
   shared_ptr<Packet::AbstractPacket> packet = fn();
-  packet->from_bytes(raw_data);
+  packet->from_bytes(raw_data, controller_id);
   return packet;
 }
 

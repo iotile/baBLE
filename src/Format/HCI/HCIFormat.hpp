@@ -3,7 +3,7 @@
 
 #include "./constants.hpp"
 #include "../AbstractFormat.hpp"
-// #include "HCIFormatBuilder.hpp"
+#include "HCIFormatBuilder.hpp"
 #include "HCIFormatExtractor.hpp"
 
 class HCIFormat : public AbstractFormat {
@@ -21,8 +21,8 @@ public:
     return type_code == Format::HCI::Type::Event;
   };
 
-  uint16_t extract_command_code(const std::vector<uint8_t>& data) override {
-    return static_cast<uint16_t>(HCIFormatExtractor::extract_command_code(data));
+  uint16_t extract_packet_code(const std::vector<uint8_t>& data) override {
+    return HCIFormatExtractor::extract_packet_code(data);
   }
 
   uint16_t extract_type_code(const std::vector<uint8_t>& data) override {

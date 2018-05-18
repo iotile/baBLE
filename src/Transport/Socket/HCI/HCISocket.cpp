@@ -6,9 +6,10 @@ using namespace uvw;
 Flags<PollHandle::Event> HCISocket::readable_flag = Flags<PollHandle::Event>(PollHandle::Event::READABLE);
 Flags<PollHandle::Event> HCISocket::writable_flag = Flags<PollHandle::Event>(PollHandle::Event::WRITABLE);
 
-HCISocket::HCISocket(shared_ptr<HCIFormat> format, uint16_t controller_id)
+HCISocket::HCISocket(shared_ptr<HCIFormat> format, uint16_t controller_id, const std::array<uint8_t, 6>& controller_address)
     : AbstractSocket(move(format)) {
   m_controller_id = controller_id;
+  m_controller_address = controller_address;
   m_writable = true;
 
   m_hci_socket = socket(AF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC | SOCK_NONBLOCK, BTPROTO_HCI);
@@ -16,22 +17,12 @@ HCISocket::HCISocket(shared_ptr<HCIFormat> format, uint16_t controller_id)
     throw Exceptions::SocketException("Error while creating the HCI socket: " + string(strerror(errno)));
   }
 
-  vector<uint8_t> filter = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-  if (setsockopt(m_hci_socket, SOL_HCI, HCI_FILTER, filter.data(), static_cast<socklen_t>(filter.size())) < 0) {
+  if (!set_filter()) {
     throw Exceptions::SocketException("Error while setting filters on the HCI socket: " + string(strerror(errno)));
   }
 
   if(!bind_hci_socket()) {
     throw Exceptions::SocketException("Error while binding the HCI socket: " + string(strerror(errno)));
-  }
-
-  m_l2cap_socket = socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP);
-  if (m_l2cap_socket < 0) {
-    throw Exceptions::SocketException("Error while creating the L2CAP socket: " + string(strerror(errno)));
-  }
-
-  if(!bind_l2cap_socket()) {
-    throw Exceptions::SocketException("Error while binding the L2CAP socket: " + string(strerror(errno)));
   }
 }
 
@@ -45,28 +36,54 @@ bool HCISocket::bind_hci_socket() {
   return bind(m_hci_socket, (struct sockaddr*) &addr, sizeof(addr)) == 0;
 }
 
-bool HCISocket::bind_l2cap_socket() {
-  // TODO: fix
-  uint8_t _address_host[6] = {0x30, 0xF3, 0xF6, 0x44, 0xE2, 0x48};
-  uint8_t _address_device[6] = {0x91, 0x8A, 0xE6, 0xA5, 0xF0, 0xC4};
+bool HCISocket::set_filter() {
+  struct Format::HCI::hci_filter filter {
+    (1 << Format::HCI::Type::Event) | (1 << Format::HCI::Type::AsyncData),
+    (1 << Format::HCI::EventCode::DisconnectComplete),
+    (1 << Format::HCI::EventCode::LEMeta - 32),
+    0
+  };
 
-  struct Format::HCI::sockaddr_l2 l2a{};
-  memset(&l2a, 0, sizeof(l2a));
-  l2a.l2_family = AF_BLUETOOTH;
-  l2a.l2_cid = ATT_CID;
-  memcpy(&l2a.l2_bdaddr, _address_host, sizeof(l2a.l2_bdaddr));
-  l2a.l2_bdaddr_type = 0x01;
-  if (bind(m_l2cap_socket, (struct sockaddr*)&l2a, sizeof(l2a)) != 0){
+  return setsockopt(m_hci_socket, SOL_HCI, HCI_FILTER, &filter, sizeof(filter)) == 0;
+}
+
+void HCISocket::connect_l2cap_socket(uint16_t connection_handle, const std::array<uint8_t, 6>& device_address, uint8_t device_address_type) {
+  OSSocketHandle::Type l2cap_socket = socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP);
+  if (l2cap_socket < 0) {
+    throw Exceptions::SocketException("Error while creating the L2CAP socket: " + string(strerror(errno)));
+  }
+
+  struct Format::HCI::sockaddr_l2 addr{};
+  addr.l2_family = AF_BLUETOOTH;
+  copy(m_controller_address.begin(), m_controller_address.end(), std::begin(addr.l2_bdaddr.b));
+  addr.l2_cid = ATT_CID;
+  addr.l2_bdaddr_type = 0x01;
+
+  if (bind(l2cap_socket, (struct sockaddr*)&addr, sizeof(addr)) != 0){
     throw std::runtime_error("Error while binding L2CAP socket.");
   }
 
-  memset(&l2a, 0, sizeof(l2a));
-  l2a.l2_family = AF_BLUETOOTH;
-  memcpy(&l2a.l2_bdaddr, _address_device, sizeof(l2a.l2_bdaddr));
-  l2a.l2_cid = 4;
-  l2a.l2_bdaddr_type = 0x02; // BDADDR_LE_PUBLIC (0x01), BDADDR_LE_RANDOM (0x02)
+  addr.l2_family = AF_BLUETOOTH;
+  copy(device_address.begin(), device_address.end(), std::begin(addr.l2_bdaddr.b));
+  addr.l2_cid = ATT_CID;
+  addr.l2_bdaddr_type = device_address_type;
 
-  return connect(m_l2cap_socket, (struct sockaddr *)&l2a, sizeof(l2a)) == 0;
+  if (connect(l2cap_socket, (struct sockaddr *)&addr, sizeof(addr)) != 0){
+    throw std::runtime_error("Error while connecting L2CAP socket.");
+  }
+
+  LOG.info("L2CAP socket connected.");
+  m_l2cap_sockets.emplace(connection_handle, l2cap_socket);
+}
+
+void HCISocket::disconnect_l2cap_socket(uint16_t connection_handle) {
+  auto it = m_l2cap_sockets.find(connection_handle);
+  if (it != m_l2cap_sockets.end()) {
+    OSSocketHandle::Type l2cap_socket = it->second;
+    close(l2cap_socket);
+    m_l2cap_sockets.erase(it);
+    LOG.debug("L2CAP socket manually disconnected.", "HCISocket");
+  }
 }
 
 bool HCISocket::send(const vector<uint8_t>& data) {
@@ -149,7 +166,29 @@ void HCISocket::poll(shared_ptr<uvw::Loop> loop, CallbackFunction on_received) {
     if (event.flags & uvw::PollHandle::Event::READABLE) {
       LOG.info("Reading data...", "HCISocket");
       vector<uint8_t> received_payload = receive();
-      on_received(received_payload);
+
+      if (m_format->is_event(m_format->extract_type_code(received_payload))) {
+
+        uint16_t packet_code = m_format->extract_packet_code(received_payload);
+        if (packet_code == Packet::Events::DeviceConnected::packet_code(m_format->packet_type())) {
+          Packet::Events::DeviceConnected device_connected_packet(m_format->packet_type(), m_format->packet_type());
+          device_connected_packet.from_bytes(received_payload, m_controller_id);
+
+          connect_l2cap_socket(
+              device_connected_packet.get_connection_handle(),
+              device_connected_packet.get_raw_device_address(),
+              device_connected_packet.get_device_address_type()
+          );
+        } else if (packet_code == Packet::Events::DeviceDisconnected::packet_code(m_format->packet_type())) {
+          Packet::Events::DeviceDisconnected device_disconnected_packet(m_format->packet_type(), m_format->packet_type());
+          device_disconnected_packet.from_bytes(received_payload, m_controller_id);
+
+          disconnect_l2cap_socket(device_disconnected_packet.get_connection_handle());
+        }
+      }
+
+      on_received(received_payload, *this);
+
     } else if (event.flags & uvw::PollHandle::Event::WRITABLE) {
       set_writable(true);
       m_poller->start(HCISocket::readable_flag);
@@ -177,6 +216,12 @@ void HCISocket::set_writable(bool is_writable) {
 }
 
 HCISocket::~HCISocket() {
+  for (auto& kv : m_l2cap_sockets) {
+    close(kv.second);
+  }
+  m_l2cap_sockets.clear();
+  LOG.debug("L2CAP sockets closed", "HCI socket");
+
   close(m_hci_socket);
   LOG.debug("HCI socket closed", "HCI socket");
 };

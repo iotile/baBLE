@@ -29,7 +29,7 @@ namespace Packet::Meta {
     for (auto& controller : m_controllers) {
       builder
           .add("Controller ID", controller.id)
-          .add("Address", controller.address)
+          .add("Address", AsciiFormat::format_bd_address(controller.address))
           .add("Bluetooth version", controller.bluetooth_version)
           .add("Manufacturer", controller.manufacturer)
           .add("Supported settings", controller.supported_settings)
@@ -48,7 +48,7 @@ namespace Packet::Meta {
     controllers.reserve(m_controllers.size());
 
     for (auto& controller : m_controllers) {
-      auto address = builder.CreateString(controller.address);
+      auto address = builder.CreateString(AsciiFormat::format_bd_address(controller.address));
       auto name = builder.CreateString(controller.name);
 
       bool powered = (controller.current_settings & 1) > 0;
@@ -110,14 +110,14 @@ namespace Packet::Meta {
     switch (m_waiting_response) {
       case SubPacket::GetControllersIds:
         return Packet::AbstractPacket::compute_uuid(
-            m_controllers_ids_packet->command_code(current_type()),
-            NON_CONTROLLER_ID
+            NON_CONTROLLER_ID,
+            m_controllers_ids_packet->packet_code(current_type())
         );
 
       case SubPacket::GetControllerInfo:
         return Packet::AbstractPacket::compute_uuid(
-            m_controller_info_packet->command_code(current_type()),
-            m_controllers_ids.at(m_current_index)
+            m_controllers_ids.at(m_current_index),
+            m_controller_info_packet->packet_code(current_type())
         );
 
       case SubPacket::None:
@@ -133,7 +133,7 @@ namespace Packet::Meta {
     LOG.debug("Response received", "GetControllersList");
 
     if (m_waiting_response == SubPacket::GetControllersIds) {
-      m_controllers_ids_packet->from_bytes(raw_data);
+      m_controllers_ids_packet->from_bytes(raw_data, m_controller_id);
 
       std::tie(m_status, m_native_status, m_native_class) = m_controllers_ids_packet->get_full_status();
 
@@ -154,7 +154,7 @@ namespace Packet::Meta {
       m_waiting_response = SubPacket::GetControllerInfo;
 
     } else if (m_waiting_response == SubPacket::GetControllerInfo) {
-      m_controller_info_packet->from_bytes(raw_data);
+      m_controller_info_packet->from_bytes(raw_data, m_controllers_ids.at(m_current_index));
 
       std::tie(m_status, m_native_status, m_native_class) = m_controller_info_packet->get_full_status();
 

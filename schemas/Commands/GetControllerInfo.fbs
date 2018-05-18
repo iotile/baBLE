@@ -1,4 +1,4 @@
-include "./Models/Controller.fbs";
+include "Models/Controller.fbs";
 
 namespace Schemas;
 

@@ -8,13 +8,13 @@ namespace Packet::Events {
   class DeviceConnected : public EventPacket<DeviceConnected> {
 
   public:
-    static const uint16_t event_code(Packet::Type type) {
+    static const uint16_t packet_code(Packet::Type type) {
       switch(type) {
         case Packet::Type::MGMT:
           return Format::MGMT::EventCode::DeviceConnected;
 
         case Packet::Type::HCI:
-          throw std::invalid_argument("'DeviceConnected' packet is not compatible with HCI protocol.");
+          return Format::HCI::SubEventCode::LEConnectionComplete;
 
         case Packet::Type::ASCII:
           return Format::Ascii::EventCode::DeviceConnected;
@@ -30,9 +30,22 @@ namespace Packet::Events {
     DeviceConnected(Packet::Type initial_type, Packet::Type translated_type);
 
     void unserialize(MGMTFormatExtractor& extractor) override;
+    void unserialize(HCIFormatExtractor& extractor) override;
 
     std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
     std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
+
+    inline const std::array<uint8_t, 6>& get_raw_device_address() const {
+      return m_address;
+    };
+
+    inline uint8_t get_device_address_type() const {
+      return m_address_type;
+    };
+
+    inline uint16_t get_connection_handle() const {
+      return m_connection_handle;
+    };
 
   private:
     std::array<uint8_t, 6> m_address{};
@@ -41,6 +54,8 @@ namespace Packet::Events {
     uint16_t m_eir_data_length;
     std::vector<uint8_t> m_eir_data;
     Format::MGMT::EIR m_eir{};
+
+    uint16_t m_connection_handle;
   };
 
 }

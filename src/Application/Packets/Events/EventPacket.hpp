@@ -9,9 +9,7 @@ namespace Packet::Events {
   class EventPacket : public AbstractPacket {
 
   protected:
-    EventPacket(Packet::Type initial_type, Packet::Type translated_type): AbstractPacket(initial_type, translated_type) {
-      m_controller_id = NON_CONTROLLER_ID;
-    };
+    EventPacket(Packet::Type initial_type, Packet::Type translated_type): AbstractPacket(initial_type, translated_type) {};
 
     std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override {
       builder
@@ -24,9 +22,9 @@ namespace Packet::Events {
       return {};
     };
 
-    void unserialize(MGMTFormatExtractor& extractor) override {
-      m_native_class = "MGMT";
-    };
+    void unserialize(MGMTFormatExtractor& extractor) override {};
+
+    void unserialize(HCIFormatExtractor& extractor) override {};
 
   };
 

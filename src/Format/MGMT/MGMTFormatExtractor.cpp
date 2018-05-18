@@ -70,7 +70,7 @@ uint16_t MGMTFormatExtractor::extract_payload_length(const vector<uint8_t>& data
 MGMTFormatExtractor::MGMTFormatExtractor(const vector<uint8_t>& data)
     : m_event_code(0), m_controller_id(0), m_params_length(0) {
   parse_header(data);
-  m_payload.assign(data.rbegin(), data.rend() - 6);
+  m_payload.assign(data.rbegin(), data.rend() - Format::MGMT::header_length);
 };
 
 // Parsers

@@ -160,8 +160,8 @@ buf = b'\xCA\xFE' + len(buf).to_bytes(2, byteorder='little') + buf
 # buf2 = builder2.Output()
 # buf2 = b'\xCA\xFE' + len(buf2).to_bytes(2, byteorder='little') + buf2
 
-# time.sleep(2)
-# process.stdin.write(buf)
+time.sleep(2)
+process.stdin.write(buf)
 
 header_length = 4
 
@@ -275,6 +275,7 @@ try:
             device_connected.Init(packet.Payload().Bytes, packet.Payload().Pos)
             address_type = device_connected.AddressType()
             address = device_connected.Address()
+            connection_handle = device_connected.ConnectionHandle()
             flags = device_connected.FlagsAsNumpy()
             device_uuid = device_connected.Uuid()
             company_id = device_connected.CompanyId()
@@ -283,12 +284,14 @@ try:
             print("DeviceConnected",
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Connection handle:", connection_handle,
                   "Controller ID:", controller_id, "Address type:", address_type, "Address:", address,
                   "Flags:", flags, "Device UUID:", device_uuid, "Company id:", company_id, "Device name:", device_name)
 
         elif packet.PayloadType() == Payload.Payload().DeviceDisconnected:
             device_disconnected = DeviceDisconnected.DeviceDisconnected()
             device_disconnected.Init(packet.Payload().Bytes, packet.Payload().Pos)
+            connection_handle = device_disconnected.ConnectionHandle()
             address_type = device_disconnected.AddressType()
             address = device_disconnected.Address()
             reason = device_disconnected.Reason()
@@ -296,6 +299,7 @@ try:
             print("DeviceDisconnected",
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Connection handle:", connection_handle,
                   "Controller ID:", controller_id, "Address type:", address_type, "Address:", address,
                   "Reason:", reason)
 

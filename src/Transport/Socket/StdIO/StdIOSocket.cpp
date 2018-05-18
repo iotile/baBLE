@@ -37,7 +37,7 @@ void StdIOSocket::poll(shared_ptr<uvw::Loop> loop, CallbackFunction on_received)
       remaining_data_length -= consumed_data_length;
       remaining_data += consumed_data_length;
 
-      on_received(m_payload);
+      on_received(m_payload, *this);
       clear();
     }
   });

@@ -120,7 +120,7 @@ void MGMTSocket::poll(shared_ptr<Loop> loop, CallbackFunction on_received) {
     if (event.flags & PollHandle::Event::READABLE) {
       LOG.info("Reading data...", "MGMTSocket");
       vector<uint8_t> received_payload = receive();
-      on_received(received_payload);
+      on_received(received_payload, *this);
     } else if (event.flags & PollHandle::Event::WRITABLE) {
       set_writable(true);
       m_poller->start(MGMTSocket::readable_flag);

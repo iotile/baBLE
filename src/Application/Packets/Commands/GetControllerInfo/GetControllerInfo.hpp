@@ -9,7 +9,7 @@ namespace Packet::Commands {
   class GetControllerInfo : public CommandPacket<GetControllerInfo> {
 
   public:
-    static const uint16_t command_code(Packet::Type type) {
+    static const uint16_t packet_code(Packet::Type type) {
       switch(type) {
         case Packet::Type::MGMT:
           return Format::MGMT::CommandCode::GetControllerInfo;

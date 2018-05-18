@@ -21,8 +21,13 @@ public:
     return 0x0002 < type_code && type_code <= 0x0025;
   };
 
-  uint16_t extract_command_code(const std::vector<uint8_t>& data) override {
-    return MGMTFormatExtractor::extract_command_code(data);
+  uint16_t extract_packet_code(const std::vector<uint8_t>& data) override {
+    uint16_t type_code = extract_type_code(data);
+    if (is_command(type_code)) {
+      return MGMTFormatExtractor::extract_command_code(data);
+    } else if (is_event(type_code)) {
+      return MGMTFormatExtractor::extract_event_code(data);
+    }
   }
 
   uint16_t extract_controller_id(const std::vector<uint8_t>& data) override {

@@ -8,7 +8,7 @@ namespace Packet::Commands {
   class GetMGMTInfo : public CommandPacket<GetMGMTInfo> {
 
   public:
-    static const uint16_t command_code(Packet::Type type) {
+    static const uint16_t packet_code(Packet::Type type) {
       switch(type) {
         case Packet::Type::MGMT:
           return Format::MGMT::CommandCode::GetMGMTInfo;

@@ -78,7 +78,7 @@ namespace Format::MGMT {
   // Structure representing a Bluetooth controller
   struct Controller {
     uint16_t id = 0;
-    std::string address;
+    std::array<uint8_t, 6> address;
     uint8_t bluetooth_version = 0;
     uint16_t manufacturer = 0;
     uint32_t supported_settings = 0;

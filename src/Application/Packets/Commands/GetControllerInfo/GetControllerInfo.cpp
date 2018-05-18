@@ -22,10 +22,7 @@ namespace Packet::Commands {
 
     if (m_native_status == 0) {
       m_controller_info.id = m_controller_id;
-
-      std::array<uint8_t, 6> address = extractor.get_array<uint8_t, 6>();
-      m_controller_info.address = AsciiFormat::format_bd_address(address);
-
+      m_controller_info.address = extractor.get_array<uint8_t, 6>();
       m_controller_info.bluetooth_version = extractor.get_value<uint8_t>();
       m_controller_info.manufacturer = extractor.get_value<uint16_t>();
       m_controller_info.supported_settings = extractor.get_value<uint32_t>();
@@ -47,7 +44,7 @@ namespace Packet::Commands {
     builder
         .set_name("GetControllerInfo")
         .add("Controller ID", m_controller_info.id)
-        .add("Address", m_controller_info.address)
+        .add("Address", AsciiFormat::format_bd_address(m_controller_info.address))
         .add("Bluetooth version", m_controller_info.bluetooth_version)
         .add("Manufacturer", m_controller_info.manufacturer)
         .add("Supported settings", m_controller_info.supported_settings)
@@ -62,7 +59,7 @@ namespace Packet::Commands {
   vector<uint8_t> GetControllerInfo::serialize(FlatbuffersFormatBuilder& builder) const {
     CommandPacket::serialize(builder);
 
-    auto address = builder.CreateString(m_controller_info.address);
+    auto address = builder.CreateString(AsciiFormat::format_bd_address(m_controller_info.address));
     auto name = builder.CreateString(m_controller_info.name);
 
     bool powered = (m_controller_info.current_settings & 1) > 0;

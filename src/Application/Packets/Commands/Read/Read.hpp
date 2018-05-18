@@ -5,17 +5,16 @@
 
 namespace Packet::Commands {
 
-  // TODO: need connection handle...
   class Read : public CommandPacket<Read> {
 
   public:
-    static const uint16_t command_code(Packet::Type type) {
+    static const uint16_t packet_code(Packet::Type type) {
       switch(type) {
         case Packet::Type::MGMT:
           throw std::invalid_argument("'Read' packet is not compatible with MGMT protocol.");
 
         case Packet::Type::HCI:
-          return Format::HCI::AttCode::ReadRequest;
+          return Format::HCI::AttributeCode::ReadRequest;
 
         case Packet::Type::ASCII:
           return Format::Ascii::CommandCode::Read;

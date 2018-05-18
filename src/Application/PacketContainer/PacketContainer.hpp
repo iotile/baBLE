@@ -35,9 +35,9 @@ public:
   PacketContainer& register_event();
 
   // To build packets
-  std::shared_ptr<Packet::AbstractPacket> build(const std::vector<uint8_t>& raw_data);
-  std::shared_ptr<Packet::AbstractPacket> build_command(const std::vector<uint8_t>& raw_data);
-  std::shared_ptr<Packet::AbstractPacket> build_event(uint16_t event_code, const std::vector<uint8_t>& raw_data);
+  std::shared_ptr<Packet::AbstractPacket> build(const std::vector<uint8_t>& raw_data, uint16_t controller_id);
+  std::shared_ptr<Packet::AbstractPacket> build_command(const std::vector<uint8_t>& raw_data, uint16_t controller_id);
+  std::shared_ptr<Packet::AbstractPacket> build_event(const std::vector<uint8_t>& raw_data, uint16_t controller_id);
 
   const std::string stringify() const override;
 
@@ -57,7 +57,7 @@ private:
 template<class T>
 PacketContainer& PacketContainer::register_command() {
   const Packet::Type initial_type = m_building_format->packet_type();
-  uint16_t command_code = T::command_code(initial_type);
+  uint16_t command_code = T::packet_code(initial_type);
 
   auto it = m_commands.find(command_code);
   if (it != m_commands.end()) {
@@ -82,7 +82,7 @@ PacketContainer& PacketContainer::register_command() {
 template<class T>
 PacketContainer& PacketContainer::register_event() {
   const Packet::Type initial_type = m_building_format->packet_type();
-  uint16_t event_code = T::event_code(initial_type);
+  uint16_t event_code = T::packet_code(initial_type);
 
   auto it = m_events.find(event_code);
   if (it != m_events.end()) {

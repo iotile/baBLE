@@ -1053,13 +1053,17 @@ inline flatbuffers::Offset<SetConnectable> CreateSetConnectable(
 
 struct DeviceConnected FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_ADDRESS = 4,
-    VT_ADDRESS_TYPE = 6,
-    VT_FLAGS = 8,
-    VT_UUID = 10,
-    VT_COMPANY_ID = 12,
-    VT_DEVICE_NAME = 14
+    VT_CONNECTION_HANDLE = 4,
+    VT_ADDRESS = 6,
+    VT_ADDRESS_TYPE = 8,
+    VT_FLAGS = 10,
+    VT_UUID = 12,
+    VT_COMPANY_ID = 14,
+    VT_DEVICE_NAME = 16
   };
+  uint16_t connection_handle() const {
+    return GetField<uint16_t>(VT_CONNECTION_HANDLE, 0);
+  }
   const flatbuffers::String *address() const {
     return GetPointer<const flatbuffers::String *>(VT_ADDRESS);
   }
@@ -1080,6 +1084,7 @@ struct DeviceConnected FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint16_t>(verifier, VT_CONNECTION_HANDLE) &&
            VerifyOffset(verifier, VT_ADDRESS) &&
            verifier.Verify(address()) &&
            VerifyField<uint8_t>(verifier, VT_ADDRESS_TYPE) &&
@@ -1097,6 +1102,9 @@ struct DeviceConnected FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct DeviceConnectedBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
+  void add_connection_handle(uint16_t connection_handle) {
+    fbb_.AddElement<uint16_t>(DeviceConnected::VT_CONNECTION_HANDLE, connection_handle, 0);
+  }
   void add_address(flatbuffers::Offset<flatbuffers::String> address) {
     fbb_.AddOffset(DeviceConnected::VT_ADDRESS, address);
   }
@@ -1129,6 +1137,7 @@ struct DeviceConnectedBuilder {
 
 inline flatbuffers::Offset<DeviceConnected> CreateDeviceConnected(
     flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t connection_handle = 0,
     flatbuffers::Offset<flatbuffers::String> address = 0,
     uint8_t address_type = 0,
     flatbuffers::Offset<flatbuffers::Vector<uint8_t>> flags = 0,
@@ -1141,12 +1150,14 @@ inline flatbuffers::Offset<DeviceConnected> CreateDeviceConnected(
   builder_.add_flags(flags);
   builder_.add_address(address);
   builder_.add_company_id(company_id);
+  builder_.add_connection_handle(connection_handle);
   builder_.add_address_type(address_type);
   return builder_.Finish();
 }
 
 inline flatbuffers::Offset<DeviceConnected> CreateDeviceConnectedDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t connection_handle = 0,
     const char *address = nullptr,
     uint8_t address_type = 0,
     const std::vector<uint8_t> *flags = nullptr,
@@ -1155,6 +1166,7 @@ inline flatbuffers::Offset<DeviceConnected> CreateDeviceConnectedDirect(
     const char *device_name = nullptr) {
   return Schemas::CreateDeviceConnected(
       _fbb,
+      connection_handle,
       address ? _fbb.CreateString(address) : 0,
       address_type,
       flags ? _fbb.CreateVector<uint8_t>(*flags) : 0,
@@ -1165,10 +1177,14 @@ inline flatbuffers::Offset<DeviceConnected> CreateDeviceConnectedDirect(
 
 struct DeviceDisconnected FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_ADDRESS = 4,
-    VT_ADDRESS_TYPE = 6,
-    VT_REASON = 8
+    VT_CONNECTION_HANDLE = 4,
+    VT_ADDRESS = 6,
+    VT_ADDRESS_TYPE = 8,
+    VT_REASON = 10
   };
+  uint16_t connection_handle() const {
+    return GetField<uint16_t>(VT_CONNECTION_HANDLE, 0);
+  }
   const flatbuffers::String *address() const {
     return GetPointer<const flatbuffers::String *>(VT_ADDRESS);
   }
@@ -1180,6 +1196,7 @@ struct DeviceDisconnected FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint16_t>(verifier, VT_CONNECTION_HANDLE) &&
            VerifyOffset(verifier, VT_ADDRESS) &&
            verifier.Verify(address()) &&
            VerifyField<uint8_t>(verifier, VT_ADDRESS_TYPE) &&
@@ -1192,6 +1209,9 @@ struct DeviceDisconnected FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct DeviceDisconnectedBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
+  void add_connection_handle(uint16_t connection_handle) {
+    fbb_.AddElement<uint16_t>(DeviceDisconnected::VT_CONNECTION_HANDLE, connection_handle, 0);
+  }
   void add_address(flatbuffers::Offset<flatbuffers::String> address) {
     fbb_.AddOffset(DeviceDisconnected::VT_ADDRESS, address);
   }
@@ -1215,23 +1235,27 @@ struct DeviceDisconnectedBuilder {
 
 inline flatbuffers::Offset<DeviceDisconnected> CreateDeviceDisconnected(
     flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t connection_handle = 0,
     flatbuffers::Offset<flatbuffers::String> address = 0,
     uint8_t address_type = 0,
     flatbuffers::Offset<flatbuffers::String> reason = 0) {
   DeviceDisconnectedBuilder builder_(_fbb);
   builder_.add_reason(reason);
   builder_.add_address(address);
+  builder_.add_connection_handle(connection_handle);
   builder_.add_address_type(address_type);
   return builder_.Finish();
 }
 
 inline flatbuffers::Offset<DeviceDisconnected> CreateDeviceDisconnectedDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t connection_handle = 0,
     const char *address = nullptr,
     uint8_t address_type = 0,
     const char *reason = nullptr) {
   return Schemas::CreateDeviceDisconnected(
       _fbb,
+      connection_handle,
       address ? _fbb.CreateString(address) : 0,
       address_type,
       reason ? _fbb.CreateString(reason) : 0);

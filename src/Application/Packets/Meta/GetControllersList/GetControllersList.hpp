@@ -10,7 +10,7 @@ namespace Packet::Meta {
   class GetControllersList : public AbstractPacket {
 
   public:
-    static const uint16_t command_code(Packet::Type type) {
+    static const uint16_t packet_code(Packet::Type type) {
       switch(type) {
         case Packet::Type::MGMT:
           throw std::invalid_argument("'GetControllersList' packet is a meta packet, can't be a MGMT packet.");
@@ -42,6 +42,10 @@ namespace Packet::Meta {
 
     uint64_t expected_response_uuid() override;
     bool on_response_received(Packet::Type packet_type, const std::vector<uint8_t>& raw_data) override;
+
+    inline const std::vector<Format::MGMT::Controller>& get_controllers() const {
+      return m_controllers;
+    }
 
   private:
     enum SubPacket {

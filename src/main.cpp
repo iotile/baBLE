@@ -13,7 +13,7 @@
 #include "Application/Packets/Errors/BaBLEError/BaBLEErrorPacket.hpp"
 #include "bootstrap.hpp"
 
-#define EXPIRATION_DURATION_SECONDS 300
+#define EXPIRATION_DURATION_SECONDS 15
 
 using namespace std;
 using namespace uvw;
@@ -83,73 +83,86 @@ int main() {
   // Poll sockets
   LOG.info("Creating socket pollers...");
 
-  mgmt_socket->poll(loop, [&mgmt_packet_container, &socket_container, &stdio_socket](const std::vector<uint8_t>& received_data) {
-    try {
-      std::shared_ptr<Packet::AbstractPacket> packet = mgmt_packet_container.build(received_data);
-      LOG.debug("Packet built", "MGMT poller");
-
-      packet->translate();
-      LOG.debug("Packet translated", "MGMT poller");
-
-      PacketContainer::register_response(packet);
-
-      socket_container.send(packet);
-
-    } catch (const Exceptions::AbstractException& err) {
-      LOG.error(err.stringify(), "MGMT poller");
-      std::shared_ptr<Packet::Errors::BaBLEErrorPacket> error_packet = make_shared<Packet::Errors::BaBLEErrorPacket>(
-          stdio_socket->format()->packet_type()
-      );
-      error_packet->from_exception(err);
-      socket_container.send(error_packet);
-    }
-  });
-
-  for (auto& hci_socket : hci_sockets) {
-    hci_socket->poll(loop, [&hci_packet_container, &socket_container, &stdio_socket](const std::vector<uint8_t>& received_data) {
+  mgmt_socket->poll(
+    loop,
+    [&mgmt_packet_container, &socket_container, &stdio_socket](const std::vector<uint8_t>& received_data, const AbstractSocket& socket) {
       try {
-        std::shared_ptr<Packet::AbstractPacket> packet = hci_packet_container.build(received_data);
-        LOG.debug("Packet built", "HCI poller");
+        uint16_t controller_id = socket.format()->extract_controller_id(received_data);
+
+        std::shared_ptr<Packet::AbstractPacket> packet = mgmt_packet_container.build(received_data, controller_id);
+        LOG.debug("Packet built", "MGMT poller");
 
         packet->translate();
-        LOG.debug("Packet translated", "HCI poller");
+        LOG.debug("Packet translated", "MGMT poller");
 
         PacketContainer::register_response(packet);
 
         socket_container.send(packet);
 
       } catch (const Exceptions::AbstractException& err) {
-        LOG.error(err.stringify(), "HCI poller");
+        LOG.error(err.stringify(), "MGMT poller");
         std::shared_ptr<Packet::Errors::BaBLEErrorPacket> error_packet = make_shared<Packet::Errors::BaBLEErrorPacket>(
             stdio_socket->format()->packet_type()
         );
         error_packet->from_exception(err);
         socket_container.send(error_packet);
       }
-    });
+    }
+  );
+
+  for (auto& hci_socket : hci_sockets) {
+    hci_socket->poll(
+      loop,
+      [&hci_packet_container, &socket_container, &stdio_socket](const std::vector<uint8_t>& received_data, const AbstractSocket& socket) {
+        try {
+          std::shared_ptr<Packet::AbstractPacket> packet = hci_packet_container.build(received_data, socket.controller_id());
+          LOG.debug("Packet built", "HCI poller");
+
+          packet->translate();
+          LOG.debug("Packet translated", "HCI poller");
+
+          PacketContainer::register_response(packet);
+
+          socket_container.send(packet);
+
+        } catch (const Exceptions::AbstractException& err) {
+          LOG.error(err.stringify(), "HCI poller");
+          std::shared_ptr<Packet::Errors::BaBLEErrorPacket> error_packet = make_shared<Packet::Errors::BaBLEErrorPacket>(
+              stdio_socket->format()->packet_type()
+          );
+          error_packet->from_exception(err);
+          socket_container.send(error_packet);
+        }
+      }
+    );
   }
 
-  stdio_socket->poll(loop, [&stdio_packet_container, &socket_container, &stdio_socket](const std::vector<uint8_t>& received_data) {
-    try {
-      std::shared_ptr<Packet::AbstractPacket> packet = stdio_packet_container.build(received_data);
-      LOG.debug("Packet built", "BABLE poller");
+  stdio_socket->poll(
+    loop,
+    [&stdio_packet_container, &socket_container, &stdio_socket](const std::vector<uint8_t>& received_data, const AbstractSocket& socket) {
+      try {
+        uint16_t controller_id = socket.format()->extract_controller_id(received_data);
 
-      packet->translate();
-      LOG.debug("Packet translated", "BABLE poller");
+        std::shared_ptr<Packet::AbstractPacket> packet = stdio_packet_container.build(received_data, controller_id);
+        LOG.debug("Packet built", "BABLE poller");
 
-      PacketContainer::register_response(packet);
+        packet->translate();
+        LOG.debug("Packet translated", "BABLE poller");
 
-      socket_container.send(packet);
+        PacketContainer::register_response(packet);
 
-    } catch (const Exceptions::AbstractException& err) {
-      LOG.error(err.stringify(), "BABLE poller");
-      std::shared_ptr<Packet::Errors::BaBLEErrorPacket> error_packet = make_shared<Packet::Errors::BaBLEErrorPacket>(
-          stdio_socket->format()->packet_type()
-      );
-      error_packet->from_exception(err);
-      socket_container.send(error_packet);
+        socket_container.send(packet);
+
+      } catch (const Exceptions::AbstractException& err) {
+        LOG.error(err.stringify(), "BABLE poller");
+        std::shared_ptr<Packet::Errors::BaBLEErrorPacket> error_packet = make_shared<Packet::Errors::BaBLEErrorPacket>(
+            stdio_socket->format()->packet_type()
+        );
+        error_packet->from_exception(err);
+        socket_container.send(error_packet);
+      }
     }
-  });
+  );
 
   LOG.info("Creating expiration timer...");
   shared_ptr<TimerHandle> expiration_timer = loop->resource<TimerHandle>();

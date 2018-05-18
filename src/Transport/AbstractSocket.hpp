@@ -10,7 +10,7 @@
 class AbstractSocket {
 
 public:
-  using CallbackFunction = std::function<void(const std::vector<uint8_t>&)>;
+  using CallbackFunction = std::function<void(const std::vector<uint8_t>&, const AbstractSocket& socket)>;
 
   explicit AbstractSocket(std::shared_ptr<AbstractFormat> format) {
     m_format = std::move(format);

@@ -9,7 +9,7 @@ namespace Packet::Events {
   class ClassOfDeviceChanged : public EventPacket<ClassOfDeviceChanged> {
 
   public:
-    static const uint16_t event_code(Packet::Type type) {
+    static const uint16_t packet_code(Packet::Type type) {
       switch(type) {
         case Packet::Type::MGMT:
           return Format::MGMT::EventCode::ClassOfDeviceChanged;

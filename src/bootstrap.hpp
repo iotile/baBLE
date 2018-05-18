@@ -27,7 +27,7 @@
 #include "Application/Packets/Events/ControllerRemoved/ControllerRemoved.hpp"
 
 using namespace std;
-using Packet::Commands::GetControllersIds;
+using Packet::Meta::GetControllersList;
 
 namespace Bootstrap {
 
@@ -35,20 +35,20 @@ namespace Bootstrap {
   vector<shared_ptr<HCISocket>> create_hci_sockets(const shared_ptr<MGMTSocket>& mgmt_socket, const shared_ptr<HCIFormat>& hci_format) {
     vector<shared_ptr<HCISocket>> hci_sockets;
     Packet::Type packet_type = mgmt_socket->format()->packet_type();
-    shared_ptr<GetControllersIds> get_controllers_ids_packet = make_shared<GetControllersIds>(packet_type, packet_type);
+    shared_ptr<GetControllersList> get_controllers_list_packet = make_shared<GetControllersList>(packet_type, packet_type);
 
-    // Send GetControllersIds packet through MGMT
-    mgmt_socket->sync_send(get_controllers_ids_packet->to_bytes());
+    // Send GetControllersList packet through MGMT
+    while (get_controllers_list_packet->expected_response_uuid() != 0){
+      mgmt_socket->sync_send(get_controllers_list_packet->to_bytes());
+      vector<uint8_t> raw_response = mgmt_socket->sync_receive();
+      get_controllers_list_packet->on_response_received(packet_type, raw_response);
+    }
 
-    // Get response containing the list of controllers ids
-    vector<uint8_t> raw_response = mgmt_socket->sync_receive();
-    get_controllers_ids_packet->from_bytes(raw_response);
+    vector<Format::MGMT::Controller> controllers = get_controllers_list_packet->get_controllers();
+    hci_sockets.reserve(controllers.size());
 
-    vector<uint16_t> controllers_ids = get_controllers_ids_packet->get_controllers_ids();
-    hci_sockets.reserve(controllers_ids.size());
-
-    for (auto& controller_id : controllers_ids) {
-      hci_sockets.push_back(make_shared<HCISocket>(hci_format, controller_id));
+    for (auto& controller : controllers) {
+      hci_sockets.push_back(make_shared<HCISocket>(hci_format, controller.id, controller.address));
     }
 
     return hci_sockets;
@@ -57,7 +57,7 @@ namespace Bootstrap {
   // MGMT
   void register_mgmt_packets(PacketContainer& mgmt_packet_container, shared_ptr<AbstractFormat> output_format) {
     mgmt_packet_container
-        .set_output_format(std::move(output_format))
+      .set_output_format(std::move(output_format))
         .register_command<Packet::Commands::GetMGMTInfo>()
         .register_command<Packet::Commands::GetControllersIds>()
         .register_command<Packet::Commands::GetControllerInfo>()
@@ -70,13 +70,13 @@ namespace Bootstrap {
         .register_command<Packet::Commands::SetPowered>()
         .register_command<Packet::Commands::SetDiscoverable>()
         .register_command<Packet::Commands::SetConnectable>()
-        .register_event<Packet::Events::DeviceConnected>()
-        .register_event<Packet::Events::DeviceDisconnected>()
         .register_event<Packet::Events::DeviceFound>()
         .register_event<Packet::Events::Discovering>()
         .register_event<Packet::Events::ControllerAdded>()
         .register_event<Packet::Events::ControllerRemoved>()
-        .set_output_format(nullptr)
+      .set_output_format(nullptr)
+        .register_event<Packet::Events::DeviceConnected>()
+        .register_event<Packet::Events::DeviceDisconnected>()
         .register_event<Packet::Events::ClassOfDeviceChanged>()
         .register_event<Packet::Events::NewSettings>();
   }
@@ -84,13 +84,15 @@ namespace Bootstrap {
   // HCI
   void register_hci_packets(PacketContainer& hci_packet_container, shared_ptr<AbstractFormat> output_format) {
     hci_packet_container
-        .set_output_format(std::move(output_format));
+      .set_output_format(std::move(output_format))
+        .register_event<Packet::Events::DeviceConnected>()
+        .register_event<Packet::Events::DeviceDisconnected>();
   }
 
   // Stdio
   void register_stdio_packets(PacketContainer& stdio_packet_container, shared_ptr<MGMTFormat> mgmt_format, shared_ptr<HCIFormat> hci_format) {
     stdio_packet_container
-        .set_output_format(std::move(mgmt_format))
+      .set_output_format(std::move(mgmt_format))
         .register_command<Packet::Commands::GetMGMTInfo>()
         .register_command<Packet::Commands::GetControllersIds>()
         .register_command<Packet::Commands::GetControllerInfo>()

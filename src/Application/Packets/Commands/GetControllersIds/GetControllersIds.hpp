@@ -8,7 +8,7 @@ namespace Packet::Commands {
   class GetControllersIds : public CommandPacket<GetControllersIds> {
 
   public:
-    static const uint16_t command_code(Packet::Type type) {
+    static const uint16_t packet_code(Packet::Type type) {
       switch(type) {
         case Packet::Type::MGMT:
           return Format::MGMT::CommandCode::GetControllersList;
@@ -37,7 +37,7 @@ namespace Packet::Commands {
     std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
     std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override;
 
-    std::vector<uint16_t> get_controllers_ids() const {
+    inline const std::vector<uint16_t>& get_controllers_ids() const {
       return m_controllers_ids;
     }
 
