@@ -25,6 +25,12 @@ namespace Packet::Commands {
       return {};
     }
 
+    std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override {
+      builder.set_opcode(static_cast<uint8_t>(m_command_code));
+
+      return {};
+    }
+
     std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override {
       builder
           .add("Type", "Command")
@@ -42,6 +48,8 @@ namespace Packet::Commands {
       m_native_status = extractor.get_value<uint8_t>();
       compute_bable_status();
     }
+
+    void unserialize(HCIFormatExtractor& extractor) override {}
 
     void unserialize(AsciiFormatExtractor& extractor) override {
       m_command_code = extractor.get_command_code();

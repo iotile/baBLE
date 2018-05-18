@@ -25,6 +25,7 @@
 #include "Application/Packets/Events/NewSettings/NewSettings.hpp"
 #include "Application/Packets/Events/ControllerAdded/ControllerAdded.hpp"
 #include "Application/Packets/Events/ControllerRemoved/ControllerRemoved.hpp"
+#include "Application/Packets/Commands/Read/Read.hpp"
 
 using namespace std;
 using Packet::Meta::GetControllersList;
@@ -86,7 +87,8 @@ namespace Bootstrap {
     hci_packet_container
       .set_output_format(std::move(output_format))
         .register_event<Packet::Events::DeviceConnected>()
-        .register_event<Packet::Events::DeviceDisconnected>();
+        .register_event<Packet::Events::DeviceDisconnected>()
+        .register_command<Packet::Commands::Read>();
   }
 
   // Stdio
@@ -105,8 +107,9 @@ namespace Bootstrap {
         .register_command<Packet::Commands::SetPowered>()
         .register_command<Packet::Commands::SetDiscoverable>()
         .register_command<Packet::Commands::SetConnectable>()
-
-        .register_command<Packet::Meta::GetControllersList>();
+        .register_command<Packet::Meta::GetControllersList>()
+      .set_output_format(std::move(hci_format))
+        .register_command<Packet::Commands::Read>();
   }
 
 }

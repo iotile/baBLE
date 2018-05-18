@@ -20,8 +20,7 @@ namespace Packet::Commands {
           return Format::Ascii::CommandCode::Read;
 
         case Packet::Type::FLATBUFFERS:
-          return 0; // TODO: fix
-          // return static_cast<uint16_t>(Schemas::Payload::Read);
+          return static_cast<uint16_t>(Schemas::Payload::Read);
 
         case Packet::Type::NONE:
           return 0;
@@ -32,13 +31,25 @@ namespace Packet::Commands {
 
     void unserialize(AsciiFormatExtractor& extractor) override;
     void unserialize(FlatbuffersFormatExtractor& extractor) override;
-    void unserialize(MGMTFormatExtractor& extractor) override;
+    void unserialize(HCIFormatExtractor& extractor) override;
 
     std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
     std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
-    std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override;
+    std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
+
+    uint64_t expected_response_uuid() override {
+      if (!m_response_received) {
+        return Packet::AbstractPacket::compute_uuid(m_controller_id, Format::HCI::AttributeCode::ReadResponse);
+
+      } else {
+        return 0;
+      }
+    };
 
   private:
+    uint16_t m_connection_handle;
+    uint16_t m_attribute_handle;
+
     std::vector<uint8_t> m_data_read;
 
   };

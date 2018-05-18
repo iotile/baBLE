@@ -104,6 +104,9 @@ public:
       case Format::HCI::Type::AsyncData:
         // Use little endian
         payload_length = (data.at(6) << 8) | data.at(5);
+        if (payload_length > 0) {
+          payload_length -= 1; // To consider attribute opcode as part of the header
+        }
         break;
 
       case Format::HCI::Type::Event:
@@ -143,7 +146,7 @@ public:
 
   // Constructors
   explicit HCIFormatExtractor(const std::vector<uint8_t>& data)
-    : m_type_code(0), m_params_length(0), m_command_code(0), m_connection_handle(0), m_attribute_code(0),
+    : m_type_code(0), m_data_length(0), m_command_code(0), m_connection_handle(0), m_attribute_code(0),
       m_full_event_code(0), m_header_length(0) {
     parse_header(data);
     m_payload.assign(data.rbegin(), data.rend() - m_header_length);
@@ -156,6 +159,10 @@ public:
   std::array<T, N> get_array();
   template<typename T>
   std::vector<T> get_vector(size_t length);
+
+  const uint16_t get_data_length() const {
+    return m_data_length;
+  };
 
 private:
   // Parsers
@@ -171,15 +178,15 @@ private:
       case Format::HCI::Type::Command:
         // Use little endian
         m_command_code = (data.at(2) << 8) | data.at(1);
-        m_params_length = static_cast<uint16_t>(data.at(3));
+        m_data_length = static_cast<uint16_t>(data.at(3));
         break;
 
       case Format::HCI::Type::AsyncData:
         // Use little endian
         m_connection_handle = (static_cast<uint16_t>(data.at(2) & 0x0F) << 8) | data.at(1);
-        m_params_length = ((data.at(6) << 8) | data.at(5));
-        if (m_params_length > 0) {
-          m_params_length -= 1;
+        m_data_length = ((data.at(6) << 8) | data.at(5));
+        if (m_data_length > 0) {
+          m_data_length -= 1; // To consider opcode as part of the header
         }
         m_attribute_code = data.at(9);
         break;
@@ -191,7 +198,7 @@ private:
             m_full_event_code = event_code << 8 | data.at(3);
             m_header_length += 1;
           }
-          m_params_length = data.at(2);
+          m_data_length = data.at(2);
 
         }
         break;
@@ -202,7 +209,7 @@ private:
   };
 
   uint8_t m_type_code;
-  uint16_t m_params_length;
+  uint16_t m_data_length;
 
   // Command
   uint16_t m_command_code;

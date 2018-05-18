@@ -36,6 +36,8 @@ struct SetDiscoverable;
 
 struct SetConnectable;
 
+struct Read;
+
 struct DeviceConnected;
 
 struct DeviceDisconnected;
@@ -61,24 +63,25 @@ enum class Payload : uint8_t {
   GetControllerInfo = 5,
   GetControllersList = 6,
   GetMGMTInfo = 7,
-  RemoveDevice = 8,
-  SetConnectable = 9,
-  SetDiscoverable = 10,
-  SetPowered = 11,
-  StartScan = 12,
-  StopScan = 13,
-  ControllerAdded = 14,
-  ControllerRemoved = 15,
-  DeviceConnected = 16,
-  DeviceDisconnected = 17,
-  DeviceFound = 18,
-  Discovering = 19,
-  BaBLEError = 20,
+  Read = 8,
+  RemoveDevice = 9,
+  SetConnectable = 10,
+  SetDiscoverable = 11,
+  SetPowered = 12,
+  StartScan = 13,
+  StopScan = 14,
+  ControllerAdded = 15,
+  ControllerRemoved = 16,
+  DeviceConnected = 17,
+  DeviceDisconnected = 18,
+  DeviceFound = 19,
+  Discovering = 20,
+  BaBLEError = 21,
   MIN = NONE,
   MAX = BaBLEError
 };
 
-inline const Payload (&EnumValuesPayload())[21] {
+inline const Payload (&EnumValuesPayload())[22] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::AddDevice,
@@ -88,6 +91,7 @@ inline const Payload (&EnumValuesPayload())[21] {
     Payload::GetControllerInfo,
     Payload::GetControllersList,
     Payload::GetMGMTInfo,
+    Payload::Read,
     Payload::RemoveDevice,
     Payload::SetConnectable,
     Payload::SetDiscoverable,
@@ -115,6 +119,7 @@ inline const char * const *EnumNamesPayload() {
     "GetControllerInfo",
     "GetControllersList",
     "GetMGMTInfo",
+    "Read",
     "RemoveDevice",
     "SetConnectable",
     "SetDiscoverable",
@@ -168,6 +173,10 @@ template<> struct PayloadTraits<GetControllersList> {
 
 template<> struct PayloadTraits<GetMGMTInfo> {
   static const Payload enum_value = Payload::GetMGMTInfo;
+};
+
+template<> struct PayloadTraits<Read> {
+  static const Payload enum_value = Payload::Read;
 };
 
 template<> struct PayloadTraits<RemoveDevice> {
@@ -1051,6 +1060,79 @@ inline flatbuffers::Offset<SetConnectable> CreateSetConnectable(
   return builder_.Finish();
 }
 
+struct Read FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_CONNECTION_HANDLE = 4,
+    VT_ATTRIBUTE_HANDLE = 6,
+    VT_VALUE = 8
+  };
+  uint16_t connection_handle() const {
+    return GetField<uint16_t>(VT_CONNECTION_HANDLE, 0);
+  }
+  uint16_t attribute_handle() const {
+    return GetField<uint16_t>(VT_ATTRIBUTE_HANDLE, 0);
+  }
+  const flatbuffers::Vector<uint8_t> *value() const {
+    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_VALUE);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint16_t>(verifier, VT_CONNECTION_HANDLE) &&
+           VerifyField<uint16_t>(verifier, VT_ATTRIBUTE_HANDLE) &&
+           VerifyOffset(verifier, VT_VALUE) &&
+           verifier.Verify(value()) &&
+           verifier.EndTable();
+  }
+};
+
+struct ReadBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_connection_handle(uint16_t connection_handle) {
+    fbb_.AddElement<uint16_t>(Read::VT_CONNECTION_HANDLE, connection_handle, 0);
+  }
+  void add_attribute_handle(uint16_t attribute_handle) {
+    fbb_.AddElement<uint16_t>(Read::VT_ATTRIBUTE_HANDLE, attribute_handle, 0);
+  }
+  void add_value(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> value) {
+    fbb_.AddOffset(Read::VT_VALUE, value);
+  }
+  explicit ReadBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ReadBuilder &operator=(const ReadBuilder &);
+  flatbuffers::Offset<Read> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<Read>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<Read> CreateRead(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t connection_handle = 0,
+    uint16_t attribute_handle = 0,
+    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> value = 0) {
+  ReadBuilder builder_(_fbb);
+  builder_.add_value(value);
+  builder_.add_attribute_handle(attribute_handle);
+  builder_.add_connection_handle(connection_handle);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<Read> CreateReadDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t connection_handle = 0,
+    uint16_t attribute_handle = 0,
+    const std::vector<uint8_t> *value = nullptr) {
+  return Schemas::CreateRead(
+      _fbb,
+      connection_handle,
+      attribute_handle,
+      value ? _fbb.CreateVector<uint8_t>(*value) : 0);
+}
+
 struct DeviceConnected FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_CONNECTION_HANDLE = 4,
@@ -1581,6 +1663,9 @@ struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const GetMGMTInfo *payload_as_GetMGMTInfo() const {
     return payload_type() == Payload::GetMGMTInfo ? static_cast<const GetMGMTInfo *>(payload()) : nullptr;
   }
+  const Read *payload_as_Read() const {
+    return payload_type() == Payload::Read ? static_cast<const Read *>(payload()) : nullptr;
+  }
   const RemoveDevice *payload_as_RemoveDevice() const {
     return payload_type() == Payload::RemoveDevice ? static_cast<const RemoveDevice *>(payload()) : nullptr;
   }
@@ -1674,6 +1759,10 @@ template<> inline const GetControllersList *Packet::payload_as<GetControllersLis
 
 template<> inline const GetMGMTInfo *Packet::payload_as<GetMGMTInfo>() const {
   return payload_as_GetMGMTInfo();
+}
+
+template<> inline const Read *Packet::payload_as<Read>() const {
+  return payload_as_Read();
 }
 
 template<> inline const RemoveDevice *Packet::payload_as<RemoveDevice>() const {
@@ -1835,6 +1924,10 @@ inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *obj, Payl
     }
     case Payload::GetMGMTInfo: {
       auto ptr = reinterpret_cast<const GetMGMTInfo *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::Read: {
+      auto ptr = reinterpret_cast<const Read *>(obj);
       return verifier.VerifyTable(ptr);
     }
     case Payload::RemoveDevice: {

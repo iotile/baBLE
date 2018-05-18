@@ -4,18 +4,30 @@ using namespace std;
 
 // Constructors
 HCIFormatBuilder::HCIFormatBuilder(uint16_t controller_id) {
-  m_code = 0;
+  m_opcode = 0;
   m_controller_id = controller_id;
+  m_connection_handle = 0;
+  m_attribute_handle = 0;
 };
 
 // Setters
-HCIFormatBuilder& HCIFormatBuilder::set_code(uint16_t code) {
-  m_code = code;
+HCIFormatBuilder& HCIFormatBuilder::set_opcode(uint8_t code) {
+  m_opcode = code;
   return *this;
 }
 
 HCIFormatBuilder& HCIFormatBuilder::set_controller_id(uint16_t controller_id) {
   m_controller_id = controller_id;
+  return *this;
+}
+
+HCIFormatBuilder& HCIFormatBuilder::set_connection_handle(uint16_t connection_handle) {
+  m_connection_handle = connection_handle;
+  return *this;
+}
+
+HCIFormatBuilder& HCIFormatBuilder::set_attribute_handle(uint16_t attribute_handle) {
+  m_attribute_handle = attribute_handle;
   return *this;
 }
 
@@ -40,20 +52,33 @@ vector<uint8_t> HCIFormatBuilder::build() {
 
 // Private
 vector<uint8_t> HCIFormatBuilder::generate_header() {
-  auto params_length = static_cast<uint16_t>(m_formatted_data.size());
+  auto data_length = static_cast<uint16_t>(m_formatted_data.size());
+  uint16_t l2cap_length = sizeof(m_opcode) + sizeof(m_attribute_handle) + data_length;
+  auto total_length = static_cast<uint16_t>(l2cap_length + 4);
 
   vector<uint8_t> header;
   header.reserve(Format::HCI::async_data_header_length); // TODO: fix
 
+  uint16_t connection_handle_with_flags = m_connection_handle | Format::HCI::HandleFlag::StartNonFlush << 12;
+
   // Use little-endian
-  header.push_back(static_cast<uint8_t>(m_code & 0x00FF));
-  header.push_back(static_cast<uint8_t>(m_code >> 8));
+  header.push_back(Format::HCI::AsyncData);
+  header.push_back(static_cast<uint8_t>(connection_handle_with_flags & 0x00FF));
+  header.push_back(static_cast<uint8_t>(connection_handle_with_flags >> 8));
 
-  header.push_back(static_cast<uint8_t>(m_controller_id & 0x00FF));
-  header.push_back(static_cast<uint8_t>(m_controller_id >> 8));
+  header.push_back(static_cast<uint8_t>(total_length & 0x00FF));
+  header.push_back(static_cast<uint8_t>(total_length >> 8));
 
-  header.push_back(static_cast<uint8_t>(params_length & 0x00FF));
-  header.push_back(static_cast<uint8_t>(params_length >> 8));
+  header.push_back(static_cast<uint8_t>(l2cap_length & 0x00FF));
+  header.push_back(static_cast<uint8_t>(l2cap_length >> 8));
+
+  header.push_back(static_cast<uint8_t>(ATT_CID & 0x00FF));
+  header.push_back(static_cast<uint8_t>(ATT_CID >> 8));
+
+  header.push_back(m_opcode);
+
+  header.push_back(static_cast<uint8_t>(m_attribute_handle & 0x00FF));
+  header.push_back(static_cast<uint8_t>(m_attribute_handle >> 8));
 
   return header;
 };

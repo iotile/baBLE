@@ -6,7 +6,7 @@ import flatbuffers
 from Schemas import Packet, Payload, GetMGMTInfo, StartScan, StopScan, Discovering, DeviceFound, BaBLEError, StatusCode,\
                     AddDevice, DeviceConnected, RemoveDevice, Disconnect, DeviceDisconnected, SetPowered, SetDiscoverable,\
                     SetConnectable, GetControllersList, ControllerAdded, ControllerRemoved, GetControllerInfo, \
-                    GetConnectedDevices, GetControllersIds
+                    GetConnectedDevices, GetControllersIds, Read
 
 def status_code_to_string(status_code):
     if status_code == StatusCode.StatusCode().Success:
@@ -101,12 +101,10 @@ payload = AddDevice.AddDeviceEnd(builder)
 # SetPowered.SetPoweredAddState(builder, False)
 # payload = SetPowered.SetPoweredEnd(builder)
 
-
 ## SetDiscoverable
 # SetDiscoverable.SetDiscoverableStart(builder)
 # SetDiscoverable.SetDiscoverableAddState(builder, False)
 # payload = SetDiscoverable.SetDiscoverableEnd(builder)
-
 
 ## SetConnectable
 # SetConnectable.SetConnectableStart(builder)
@@ -129,6 +127,12 @@ payload = AddDevice.AddDeviceEnd(builder)
 # GetConnectedDevices.GetConnectedDevicesStart(builder)
 # payload = GetConnectedDevices.GetConnectedDevicesEnd(builder)
 
+## Read
+# Read.ReadStart(builder)
+# Read.ReadAddConnectionHandle(builder, 64)
+# Read.ReadAddAttributeHandle(builder, 0x0003)
+# payload = Read.ReadEnd(builder)
+
 uuid_request = builder.CreateString("123456")
 Packet.PacketStart(builder)
 Packet.PacketAddUuid(builder, uuid_request)
@@ -143,25 +147,29 @@ buf = builder.Output()
 buf = b'\xCA\xFE' + len(buf).to_bytes(2, byteorder='little') + buf
 
 
-# builder2 = flatbuffers.Builder(0)
-# GetControllersList.GetControllersListStart(builder2)
-# payload2 = GetControllersList.GetControllersListEnd(builder2)
-#
-# uuid_request2 = builder2.CreateString("654321")
-# Packet.PacketStart(builder2)
-# Packet.PacketAddUuid(builder2, uuid_request2)
-# # Packet.PacketAddControllerId(builder, 0)
-# Packet.PacketAddPayloadType(builder2, Payload.Payload().GetControllersList)
-# Packet.PacketAddPayload(builder2, payload2)
-# packet2 = Packet.PacketEnd(builder2)
-#
-# builder2.Finish(packet2)
-#
-# buf2 = builder2.Output()
-# buf2 = b'\xCA\xFE' + len(buf2).to_bytes(2, byteorder='little') + buf2
+builder2 = flatbuffers.Builder(0)
+Read.ReadStart(builder2)
+Read.ReadAddConnectionHandle(builder2, 64)
+Read.ReadAddAttributeHandle(builder2, 0x0003)
+payload2 = Read.ReadEnd(builder2)
+
+uuid_request2 = builder2.CreateString("654321")
+Packet.PacketStart(builder2)
+Packet.PacketAddUuid(builder2, uuid_request2)
+Packet.PacketAddControllerId(builder2, 0)
+Packet.PacketAddPayloadType(builder2, Payload.Payload().Read)
+Packet.PacketAddPayload(builder2, payload2)
+packet2 = Packet.PacketEnd(builder2)
+
+builder2.Finish(packet2)
+
+buf2 = builder2.Output()
+buf2 = b'\xCA\xFE' + len(buf2).to_bytes(2, byteorder='little') + buf2
 
 time.sleep(2)
 process.stdin.write(buf)
+time.sleep(8)
+process.stdin.write(buf2)
 
 header_length = 4
 
@@ -420,6 +428,19 @@ try:
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Num connections:", num_connections, "Device addresses:", devices)
+
+        elif packet.PayloadType() == Payload.Payload().Read:
+            read = Read.Read()
+            read.Init(packet.Payload().Bytes, packet.Payload().Pos)
+            connection_handle = read.ConnectionHandle()
+            attribute_handle = read.AttributeHandle()
+            data_read = read.ValueAsNumpy()
+
+            print("Read",
+                  "UUID:", uuid,
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id, "Connection handle:", connection_handle, "Attribute handle:", attribute_handle,
+                  "Data:", data_read)
 
         elif packet.PayloadType() == Payload.Payload().BaBLEError:
             error = BaBLEError.BaBLEError()

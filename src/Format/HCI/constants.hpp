@@ -55,6 +55,14 @@ namespace Format::HCI {
     uint16_t opcode;
   };
 
+  // Contains PacketBoundary Flag concatenated with Broadcast Flag=0b00 (No broadcast)
+  enum HandleFlag {
+    StartNonFlush = 0x00,
+    Continuing = 0x01,
+    StartFlush = 0x02,
+    Complete= 0x03
+  };
+
   enum Type {
     Command= 0x01,
     AsyncData= 0x02,
