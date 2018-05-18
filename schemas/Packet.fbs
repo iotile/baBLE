@@ -18,6 +18,7 @@ include "./Events/DeviceDisconnected.fbs";
 include "./Events/DeviceFound.fbs";
 include "./Events/Discovering.fbs";
 include "./Events/ControllerChanged.fbs";
+include "./Events/NotificationReceived.fbs";
 include "./Errors/BaBLEError.fbs";
 
 namespace Schemas;
@@ -47,6 +48,7 @@ union Payload {
   DeviceDisconnected,
   DeviceFound,
   Discovering,
+  NotificationReceived,
 
   // Errors
   BaBLEError

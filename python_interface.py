@@ -6,7 +6,7 @@ import flatbuffers
 from Schemas import Packet, Payload, GetMGMTInfo, StartScan, StopScan, Discovering, DeviceFound, BaBLEError, StatusCode,\
                     AddDevice, DeviceConnected, RemoveDevice, Disconnect, DeviceDisconnected, SetPowered, SetDiscoverable,\
                     SetConnectable, GetControllersList, ControllerAdded, ControllerRemoved, GetControllerInfo, \
-                    GetConnectedDevices, GetControllersIds, Read, Write
+                    GetConnectedDevices, GetControllersIds, Read, Write, NotificationReceived
 
 def status_code_to_string(status_code):
     if status_code == StatusCode.StatusCode().Success:
@@ -461,6 +461,19 @@ try:
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Connection handle:", connection_handle, "Attribute handle:", attribute_handle,
                   "Data:", data_written)
+
+        elif packet.PayloadType() == Payload.Payload().NotificationReceived:
+            notification_received = NotificationReceived.NotificationReceived()
+            notification_received.Init(packet.Payload().Bytes, packet.Payload().Pos)
+            connection_handle = notification_received.ConnectionHandle()
+            attribute_handle = notification_received.AttributeHandle()
+            data_received = notification_received.ValueAsNumpy()
+
+            print("NotificationReceived",
+                  "UUID:", uuid,
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id, "Connection handle:", connection_handle, "Attribute handle:", attribute_handle,
+                  "Data:", data_received)
 
         elif packet.PayloadType() == Payload.Payload().BaBLEError:
             error = BaBLEError.BaBLEError()

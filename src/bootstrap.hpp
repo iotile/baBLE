@@ -27,6 +27,7 @@
 #include "Application/Packets/Events/ControllerRemoved/ControllerRemoved.hpp"
 #include "Application/Packets/Commands/Read/Read.hpp"
 #include "Application/Packets/Commands/Write/Write.hpp"
+#include "Application/Packets/Commands/NotificationReceived/NotificationReceived.hpp"
 
 using namespace std;
 using Packet::Meta::GetControllersList;
@@ -91,7 +92,8 @@ namespace Bootstrap {
         .register_event<Packet::Events::DeviceConnected>()
         .register_event<Packet::Events::DeviceDisconnected>()
         .register_command<Packet::Commands::Read>()
-        .register_command<Packet::Commands::Write>();
+        .register_command<Packet::Commands::Write>()
+        .register_command<Packet::Commands::NotificationReceived>();
   }
 
   // Stdio

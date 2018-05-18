@@ -52,6 +52,8 @@ struct ControllerAdded;
 
 struct ControllerRemoved;
 
+struct NotificationReceived;
+
 struct BaBLEError;
 
 struct Packet;
@@ -79,12 +81,13 @@ enum class Payload : uint8_t {
   DeviceDisconnected = 19,
   DeviceFound = 20,
   Discovering = 21,
-  BaBLEError = 22,
+  NotificationReceived = 22,
+  BaBLEError = 23,
   MIN = NONE,
   MAX = BaBLEError
 };
 
-inline const Payload (&EnumValuesPayload())[23] {
+inline const Payload (&EnumValuesPayload())[24] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::AddDevice,
@@ -108,6 +111,7 @@ inline const Payload (&EnumValuesPayload())[23] {
     Payload::DeviceDisconnected,
     Payload::DeviceFound,
     Payload::Discovering,
+    Payload::NotificationReceived,
     Payload::BaBLEError
   };
   return values;
@@ -137,6 +141,7 @@ inline const char * const *EnumNamesPayload() {
     "DeviceDisconnected",
     "DeviceFound",
     "Discovering",
+    "NotificationReceived",
     "BaBLEError",
     nullptr
   };
@@ -234,6 +239,10 @@ template<> struct PayloadTraits<DeviceFound> {
 
 template<> struct PayloadTraits<Discovering> {
   static const Payload enum_value = Payload::Discovering;
+};
+
+template<> struct PayloadTraits<NotificationReceived> {
+  static const Payload enum_value = Payload::NotificationReceived;
 };
 
 template<> struct PayloadTraits<BaBLEError> {
@@ -1655,6 +1664,80 @@ inline flatbuffers::Offset<ControllerRemoved> CreateControllerRemoved(
   return builder_.Finish();
 }
 
+struct NotificationReceived FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_CONNECTION_HANDLE = 4,
+    VT_ATTRIBUTE_HANDLE = 6,
+    VT_VALUE = 8
+  };
+  uint16_t connection_handle() const {
+    return GetField<uint16_t>(VT_CONNECTION_HANDLE, 0);
+  }
+  const flatbuffers::String *attribute_handle() const {
+    return GetPointer<const flatbuffers::String *>(VT_ATTRIBUTE_HANDLE);
+  }
+  const flatbuffers::Vector<uint8_t> *value() const {
+    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_VALUE);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint16_t>(verifier, VT_CONNECTION_HANDLE) &&
+           VerifyOffset(verifier, VT_ATTRIBUTE_HANDLE) &&
+           verifier.Verify(attribute_handle()) &&
+           VerifyOffset(verifier, VT_VALUE) &&
+           verifier.Verify(value()) &&
+           verifier.EndTable();
+  }
+};
+
+struct NotificationReceivedBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_connection_handle(uint16_t connection_handle) {
+    fbb_.AddElement<uint16_t>(NotificationReceived::VT_CONNECTION_HANDLE, connection_handle, 0);
+  }
+  void add_attribute_handle(flatbuffers::Offset<flatbuffers::String> attribute_handle) {
+    fbb_.AddOffset(NotificationReceived::VT_ATTRIBUTE_HANDLE, attribute_handle);
+  }
+  void add_value(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> value) {
+    fbb_.AddOffset(NotificationReceived::VT_VALUE, value);
+  }
+  explicit NotificationReceivedBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  NotificationReceivedBuilder &operator=(const NotificationReceivedBuilder &);
+  flatbuffers::Offset<NotificationReceived> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<NotificationReceived>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<NotificationReceived> CreateNotificationReceived(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t connection_handle = 0,
+    flatbuffers::Offset<flatbuffers::String> attribute_handle = 0,
+    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> value = 0) {
+  NotificationReceivedBuilder builder_(_fbb);
+  builder_.add_value(value);
+  builder_.add_attribute_handle(attribute_handle);
+  builder_.add_connection_handle(connection_handle);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<NotificationReceived> CreateNotificationReceivedDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t connection_handle = 0,
+    const char *attribute_handle = nullptr,
+    const std::vector<uint8_t> *value = nullptr) {
+  return Schemas::CreateNotificationReceived(
+      _fbb,
+      connection_handle,
+      attribute_handle ? _fbb.CreateString(attribute_handle) : 0,
+      value ? _fbb.CreateVector<uint8_t>(*value) : 0);
+}
+
 struct BaBLEError FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_MESSAGE = 4
@@ -1787,6 +1870,9 @@ struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const Discovering *payload_as_Discovering() const {
     return payload_type() == Payload::Discovering ? static_cast<const Discovering *>(payload()) : nullptr;
   }
+  const NotificationReceived *payload_as_NotificationReceived() const {
+    return payload_type() == Payload::NotificationReceived ? static_cast<const NotificationReceived *>(payload()) : nullptr;
+  }
   const BaBLEError *payload_as_BaBLEError() const {
     return payload_type() == Payload::BaBLEError ? static_cast<const BaBLEError *>(payload()) : nullptr;
   }
@@ -1900,6 +1986,10 @@ template<> inline const DeviceFound *Packet::payload_as<DeviceFound>() const {
 
 template<> inline const Discovering *Packet::payload_as<Discovering>() const {
   return payload_as_Discovering();
+}
+
+template<> inline const NotificationReceived *Packet::payload_as<NotificationReceived>() const {
+  return payload_as_NotificationReceived();
 }
 
 template<> inline const BaBLEError *Packet::payload_as<BaBLEError>() const {
@@ -2069,6 +2159,10 @@ inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *obj, Payl
     }
     case Payload::Discovering: {
       auto ptr = reinterpret_cast<const Discovering *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::NotificationReceived: {
+      auto ptr = reinterpret_cast<const NotificationReceived *>(obj);
       return verifier.VerifyTable(ptr);
     }
     case Payload::BaBLEError: {

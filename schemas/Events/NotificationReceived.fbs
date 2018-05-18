@@ -1,0 +1,7 @@
+namespace Schemas;
+
+table NotificationReceived {
+  connection_handle:uint16;
+  attribute_handle:string;
+  value:[uint8];
+}

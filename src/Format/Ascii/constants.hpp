@@ -21,7 +21,8 @@ namespace Format::Ascii {
     GetConnectedDevices= 0x000D,
 
     Read= 0x000E,
-    Write= 0x000F
+    Write= 0x000F,
+    NotificationReceived= 0x0010
   };
 
   enum EventCode {

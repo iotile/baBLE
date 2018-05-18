@@ -164,6 +164,10 @@ public:
     return m_data_length;
   };
 
+  const uint16_t get_connection_handle() const {
+    return m_connection_handle;
+  };
+
 private:
   // Parsers
   void parse_header(const std::vector<uint8_t>& data) {

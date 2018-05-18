@@ -104,7 +104,7 @@ set(SOURCES_FILES
         src/Format/HCI/HCIFormatBuilder.hpp
         src/Application/Packets/Commands/Read/Read.cpp
         src/Application/Packets/Commands/Read/Read.hpp
-        src/Application/Packets/Commands/Write/Write.cpp src/Application/Packets/Commands/Write/Write.hpp)
+        src/Application/Packets/Commands/Write/Write.cpp src/Application/Packets/Commands/Write/Write.hpp src/Application/Packets/Commands/NotificationReceived/NotificationReceived.cpp src/Application/Packets/Commands/NotificationReceived/NotificationReceived.hpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies
