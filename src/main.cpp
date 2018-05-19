@@ -12,6 +12,7 @@
 #include "Exceptions/AbstractException.hpp"
 #include "Application/Packets/Errors/BaBLEError/BaBLEErrorPacket.hpp"
 #include "bootstrap.hpp"
+#include "Application/Packets/Control/Ready/Ready.hpp"
 
 #define EXPIRATION_DURATION_SECONDS 15
 
@@ -170,6 +171,13 @@ int main() {
     PacketContainer::expire_waiting_packets(EXPIRATION_DURATION_SECONDS);
   });
   expiration_timer->start(chrono::seconds(EXPIRATION_DURATION_SECONDS), chrono::seconds(EXPIRATION_DURATION_SECONDS));
+
+  // Send Ready packet to indicate that BaBLE has started and is ready to receive commands
+  LOG.info("Sending Ready packet...");
+  std::shared_ptr<Packet::Control::Ready> ready_packet = make_shared<Packet::Control::Ready>(
+      stdio_socket->format()->packet_type()
+  );
+  socket_container.send(ready_packet);
 
   // Start the loop
   LOG.info("Starting loop...");

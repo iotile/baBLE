@@ -23,6 +23,7 @@ include "./Events/Discovering.fbs";
 include "./Events/ControllerChanged.fbs";
 include "./Events/NotificationReceived.fbs";
 include "./Errors/BaBLEError.fbs";
+include "./Control/Ready.fbs";
 
 namespace Schemas;
 
@@ -57,7 +58,10 @@ union Payload {
   NotificationReceived,
 
   // Errors
-  BaBLEError
+  BaBLEError,
+
+  // Control
+  Ready
 }
 
 enum StatusCode:uint8 {

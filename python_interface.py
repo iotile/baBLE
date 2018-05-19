@@ -7,7 +7,7 @@ from Schemas import Packet, Payload, GetMGMTInfo, StartScan, StopScan, Discoveri
                     AddDevice, DeviceConnected, RemoveDevice, Disconnect, DeviceDisconnected, SetPowered, SetDiscoverable,\
                     SetConnectable, GetControllersList, ControllerAdded, ControllerRemoved, GetControllerInfo, \
                     GetConnectedDevices, GetControllersIds, Read, Write, NotificationReceived, ProbeServices, ProbeCharacteristics, \
-                    WriteWithoutResponse
+                    WriteWithoutResponse, Ready
 
 def status_code_to_string(status_code):
     if status_code == StatusCode.StatusCode().Success:
@@ -256,15 +256,6 @@ def build_packet(builder, uuid, payload, payload_type, controller_id = None):
 
 address_device = [0xC4, 0xF0, 0xA5, 0xE6, 0x8A, 0x91]
 
-time.sleep(2)
-process.stdin.write(fb_add_device("0001", 0, address_device))
-time.sleep(8)
-process.stdin.write(fb_write_without_response("0002", 0, 0x0040, 0x0003, "Alex"))
-time.sleep(8)
-process.stdin.write(fb_remove_device("0003", 0, address_device))
-time.sleep(2)
-process.stdin.write(fb_disconnect("0004", 0, address_device))
-
 header_length = 4
 
 try:
@@ -332,7 +323,6 @@ try:
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Address type:", address_type, "Address:", address)
-
         elif packet.PayloadType() == Payload.Payload().RemoveDevice:
             remove_device = RemoveDevice.RemoveDevice()
             remove_device.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -353,7 +343,6 @@ try:
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Address type:", address_type, "State:", state)
-
         elif packet.PayloadType() == Payload.Payload().DeviceFound:
             devicefound = DeviceFound.DeviceFound()
             devicefound.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -371,7 +360,6 @@ try:
                   "Controller ID:", controller_id, "Address type:", address_type, "Address:", address,
                   "RSSI:", rssi, "Flags:", flags, "Device UUID:", device_uuid, "Company id:", company_id,
                   "Device name:", device_name)
-
         elif packet.PayloadType() == Payload.Payload().DeviceConnected:
             device_connected = DeviceConnected.DeviceConnected()
             device_connected.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -389,7 +377,6 @@ try:
                   "Connection handle:", connection_handle,
                   "Controller ID:", controller_id, "Address type:", address_type, "Address:", address,
                   "Flags:", flags, "Device UUID:", device_uuid, "Company id:", company_id, "Device name:", device_name)
-
         elif packet.PayloadType() == Payload.Payload().DeviceDisconnected:
             device_disconnected = DeviceDisconnected.DeviceDisconnected()
             device_disconnected.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -404,7 +391,6 @@ try:
                   "Connection handle:", connection_handle,
                   "Controller ID:", controller_id, "Address type:", address_type, "Address:", address,
                   "Reason:", reason)
-
         elif packet.PayloadType() == Payload.Payload().Disconnect:
             disconnect = Disconnect.Disconnect()
             disconnect.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -415,7 +401,6 @@ try:
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Address type:", address_type, "Address:", address)
-
         elif packet.PayloadType() == Payload.Payload().SetPowered:
             set_powered = SetPowered.SetPowered()
             set_powered.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -425,7 +410,6 @@ try:
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "State:", state)
-
         elif packet.PayloadType() == Payload.Payload().SetDiscoverable:
             set_discoverable = SetDiscoverable.SetDiscoverable()
             set_discoverable.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -436,7 +420,6 @@ try:
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "State:", state, "Timeout:", timeout)
-
         elif packet.PayloadType() == Payload.Payload().SetConnectable:
             set_connectable = SetConnectable.SetConnectable()
             set_connectable.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -447,7 +430,6 @@ try:
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "State:", state)
-
         elif packet.PayloadType() == Payload.Payload().GetControllersList:
             controllers_list = GetControllersList.GetControllersList()
             controllers_list.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -467,7 +449,6 @@ try:
                       "Bluetooth version:", controller.BtVersion(), "Powered:", controller.Powered(),
                       "Connectable:", controller.Connectable(), "Discoverable:", controller.Discoverable(),
                       "LE supported:", controller.LowEnergy(), "Name:", controller.Name())
-
         elif packet.PayloadType() == Payload.Payload().GetControllersIds:
             controllers_ids = GetControllersIds.GetControllersIds()
             controllers_ids.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -478,7 +459,6 @@ try:
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controllers IDs:", ids, "Num controllers:", num_controllers)
-
         elif packet.PayloadType() == Payload.Payload().ControllerAdded:
             controller_added = ControllerAdded.ControllerAdded()
             controller_added.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -487,7 +467,6 @@ try:
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id)
-
         elif packet.PayloadType() == Payload.Payload().ControllerRemoved:
             controller_removed = ControllerRemoved.ControllerRemoved()
             controller_removed.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -496,7 +475,6 @@ try:
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id)
-
         elif packet.PayloadType() == Payload.Payload().GetControllerInfo:
             controller_info = GetControllerInfo.GetControllerInfo()
             controller_info.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -509,7 +487,6 @@ try:
                   "Bluetooth version:", controller.BtVersion(), "Powered:", controller.Powered(),
                   "Connectable:", controller.Connectable(), "Discoverable:", controller.Discoverable(),
                   "LE supported:", controller.LowEnergy(), "Name:", controller.Name())
-
         elif packet.PayloadType() == Payload.Payload().GetConnectedDevices:
             connected_devices = GetConnectedDevices.GetConnectedDevices()
             connected_devices.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -522,7 +499,6 @@ try:
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Num connections:", num_connections, "Device addresses:", devices)
-
         elif packet.PayloadType() == Payload.Payload().Read:
             read = Read.Read()
             read.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -535,7 +511,6 @@ try:
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Connection handle:", connection_handle, "Attribute handle:", attribute_handle,
                   "Data:", data_read)
-
         elif packet.PayloadType() == Payload.Payload().Write:
             write = Write.Write()
             write.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -548,7 +523,6 @@ try:
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Connection handle:", connection_handle, "Attribute handle:", attribute_handle,
                   "Data:", data_written)
-
         elif packet.PayloadType() == Payload.Payload().WriteWithoutResponse:
             write_without_response = WriteWithoutResponse.WriteWithoutResponse()
             write_without_response.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -561,7 +535,6 @@ try:
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Connection handle:", connection_handle, "Attribute handle:", attribute_handle,
                   "Data:", data_written)
-
         elif packet.PayloadType() == Payload.Payload().NotificationReceived:
             notification_received = NotificationReceived.NotificationReceived()
             notification_received.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -574,7 +547,6 @@ try:
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Connection handle:", connection_handle, "Attribute handle:", attribute_handle,
                   "Data:", data_received)
-
         elif packet.PayloadType() == Payload.Payload().ProbeServices:
             probe_services = ProbeServices.ProbeServices()
             probe_services.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -591,7 +563,6 @@ try:
 
             for service in services:
                 print("\tHandle:", service.Handle(), "Group end handle:", service.GroupEndHandle(), "UUID:", service.Uuid())
-
         elif packet.PayloadType() == Payload.Payload().ProbeCharacteristics:
             probe_characteristics = ProbeCharacteristics.ProbeCharacteristics()
             probe_characteristics.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -610,7 +581,19 @@ try:
                 print("\tHandle:", characteristic.Handle(), "Value handle:", characteristic.ValueHandle(), "UUID:", characteristic.Uuid(),
                       "Indicate:", characteristic.Indicate(), "Notify:", characteristic.Notify(), "Read:", characteristic.Read(),
                       "Write:", characteristic.Write(), "Broadcast:", characteristic.Broadcast())
+        elif packet.PayloadType() == Payload.Payload().Ready:
+            ready = Ready.Ready()
+            ready.Init(packet.Payload().Bytes, packet.Payload().Pos)
 
+            print("ReadyPacket")
+
+            process.stdin.write(fb_add_device("0001", 0, address_device))
+            time.sleep(8)
+            process.stdin.write(fb_write_without_response("0002", 0, 0x0040, 0x0003, "Alex"))
+            time.sleep(8)
+            process.stdin.write(fb_remove_device("0003", 0, address_device))
+            time.sleep(2)
+            process.stdin.write(fb_disconnect("0004", 0, address_device))
         elif packet.PayloadType() == Payload.Payload().BaBLEError:
             error = BaBLEError.BaBLEError()
             error.Init(packet.Payload().Bytes, packet.Payload().Pos)

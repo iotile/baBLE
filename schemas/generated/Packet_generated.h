@@ -66,6 +66,8 @@ struct NotificationReceived;
 
 struct BaBLEError;
 
+struct Ready;
+
 struct Packet;
 
 enum class Payload : uint8_t {
@@ -96,11 +98,12 @@ enum class Payload : uint8_t {
   Discovering = 24,
   NotificationReceived = 25,
   BaBLEError = 26,
+  Ready = 27,
   MIN = NONE,
-  MAX = BaBLEError
+  MAX = Ready
 };
 
-inline const Payload (&EnumValuesPayload())[27] {
+inline const Payload (&EnumValuesPayload())[28] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::AddDevice,
@@ -128,7 +131,8 @@ inline const Payload (&EnumValuesPayload())[27] {
     Payload::DeviceFound,
     Payload::Discovering,
     Payload::NotificationReceived,
-    Payload::BaBLEError
+    Payload::BaBLEError,
+    Payload::Ready
   };
   return values;
 }
@@ -162,6 +166,7 @@ inline const char * const *EnumNamesPayload() {
     "Discovering",
     "NotificationReceived",
     "BaBLEError",
+    "Ready",
     nullptr
   };
   return names;
@@ -278,6 +283,10 @@ template<> struct PayloadTraits<NotificationReceived> {
 
 template<> struct PayloadTraits<BaBLEError> {
   static const Payload enum_value = Payload::BaBLEError;
+};
+
+template<> struct PayloadTraits<Ready> {
+  static const Payload enum_value = Payload::Ready;
 };
 
 bool VerifyPayload(flatbuffers::Verifier &verifier, const void *obj, Payload type);
@@ -2221,6 +2230,34 @@ inline flatbuffers::Offset<BaBLEError> CreateBaBLEErrorDirect(
       message ? _fbb.CreateString(message) : 0);
 }
 
+struct Ready FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           verifier.EndTable();
+  }
+};
+
+struct ReadyBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  explicit ReadyBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ReadyBuilder &operator=(const ReadyBuilder &);
+  flatbuffers::Offset<Ready> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<Ready>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<Ready> CreateReady(
+    flatbuffers::FlatBufferBuilder &_fbb) {
+  ReadyBuilder builder_(_fbb);
+  return builder_.Finish();
+}
+
 struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_UUID = 4,
@@ -2318,6 +2355,9 @@ struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   const BaBLEError *payload_as_BaBLEError() const {
     return payload_type() == Payload::BaBLEError ? static_cast<const BaBLEError *>(payload()) : nullptr;
+  }
+  const Ready *payload_as_Ready() const {
+    return payload_type() == Payload::Ready ? static_cast<const Ready *>(payload()) : nullptr;
   }
   uint16_t controller_id() const {
     return GetField<uint16_t>(VT_CONTROLLER_ID, 65535);
@@ -2449,6 +2489,10 @@ template<> inline const NotificationReceived *Packet::payload_as<NotificationRec
 
 template<> inline const BaBLEError *Packet::payload_as<BaBLEError>() const {
   return payload_as_BaBLEError();
+}
+
+template<> inline const Ready *Packet::payload_as<Ready>() const {
+  return payload_as_Ready();
 }
 
 struct PacketBuilder {
@@ -2634,6 +2678,10 @@ inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *obj, Payl
     }
     case Payload::BaBLEError: {
       auto ptr = reinterpret_cast<const BaBLEError *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::Ready: {
+      auto ptr = reinterpret_cast<const Ready *>(obj);
       return verifier.VerifyTable(ptr);
     }
     default: return false;
