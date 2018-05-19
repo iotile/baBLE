@@ -6,7 +6,8 @@ import flatbuffers
 from Schemas import Packet, Payload, GetMGMTInfo, StartScan, StopScan, Discovering, DeviceFound, BaBLEError, StatusCode,\
                     AddDevice, DeviceConnected, RemoveDevice, Disconnect, DeviceDisconnected, SetPowered, SetDiscoverable,\
                     SetConnectable, GetControllersList, ControllerAdded, ControllerRemoved, GetControllerInfo, \
-                    GetConnectedDevices, GetControllersIds, Read, Write, NotificationReceived, ProbeServices, ProbeCharacteristics
+                    GetConnectedDevices, GetControllersIds, Read, Write, NotificationReceived, ProbeServices, ProbeCharacteristics, \
+                    WriteWithoutResponse
 
 def status_code_to_string(status_code):
     if status_code == StatusCode.StatusCode().Success:
@@ -48,195 +49,221 @@ process = subprocess.Popen(["./build/debug/baBLE_linux"],
 # process.stdin.write("5,0")
 
 #### Flatbuffers
-builder = flatbuffers.Builder(0)
 
 ## StartScan
-# StartScan.StartScanStart(builder)
-# StartScan.StartScanAddAddressType(builder, 0x07)
-# payload = StartScan.StartScanEnd(builder)
+def fb_start_scan(uuid, controller_id):
+    builder = flatbuffers.Builder(0)
+
+    StartScan.StartScanStart(builder)
+    StartScan.StartScanAddAddressType(builder, 0x07)
+    payload = StartScan.StartScanEnd(builder)
+
+    return build_packet(builder, uuid, payload, Payload.Payload.StartScan, controller_id)
 
 ## Stop scan
-# StopScan.StopScanStart(builder)
-# StopScan.StopScanAddAddressType(builder, 0x07)
-# payload = StopScan.StopScanEnd(builder)
+def fb_stop_scan(uuid, controller_id):
+    builder = flatbuffers.Builder(0)
+    StopScan.StopScanStart(builder)
+    StopScan.StopScanAddAddressType(builder, 0x07)
+    payload = StopScan.StopScanEnd(builder)
+
+    return build_packet(builder, uuid, payload, Payload.Payload.StopScan, controller_id)
 
 ## AddDevice
-AddDevice.AddDeviceStartAddressVector(builder, 6)
-address_list = [0xC4, 0xF0, 0xA5, 0xE6, 0x8A, 0x91]
-for element in address_list:
-    builder.PrependByte(element)
-address = builder.EndVector(6)
+def fb_add_device(uuid, controller_id, address_device):
+    builder = flatbuffers.Builder(0)
+    AddDevice.AddDeviceStartAddressVector(builder, len(address_device))
+    for element in address_device:
+        builder.PrependByte(element)
+    address = builder.EndVector(len(address_device))
 
-AddDevice.AddDeviceStart(builder)
-AddDevice.AddDeviceAddAddress(builder, address)
-AddDevice.AddDeviceAddAddressType(builder, 2)
-payload = AddDevice.AddDeviceEnd(builder)
+    AddDevice.AddDeviceStart(builder)
+    AddDevice.AddDeviceAddAddress(builder, address)
+    AddDevice.AddDeviceAddAddressType(builder, 2)
+    payload = AddDevice.AddDeviceEnd(builder)
+
+    return build_packet(builder, uuid, payload, Payload.Payload.AddDevice, controller_id)
 
 ## RemoveDevice
-# RemoveDevice.RemoveDeviceStartAddressVector(builder, 6)
-# address_list = [0xC4, 0xF0, 0xA5, 0xE6, 0x8A, 0x91]
-# for element in address_list:
-#     builder.PrependByte(element)
-# address = builder.EndVector(6)
-#
-# RemoveDevice.RemoveDeviceStart(builder)
-# RemoveDevice.RemoveDeviceAddAddress(builder, address)
-# RemoveDevice.RemoveDeviceAddAddressType(builder, 2)
-# payload = RemoveDevice.RemoveDeviceEnd(builder)
+def fb_remove_device(uuid, controller_id, address_device):
+    builder = flatbuffers.Builder(0)
+    RemoveDevice.RemoveDeviceStartAddressVector(builder, len(address_device))
+    for element in address_device:
+        builder.PrependByte(element)
+    address = builder.EndVector(len(address_device))
+
+    RemoveDevice.RemoveDeviceStart(builder)
+    RemoveDevice.RemoveDeviceAddAddress(builder, address)
+    RemoveDevice.RemoveDeviceAddAddressType(builder, 2)
+    payload = RemoveDevice.RemoveDeviceEnd(builder)
+
+    return build_packet(builder, uuid, payload, Payload.Payload.RemoveDevice, controller_id)
 
 ## Disconnect
-# Disconnect.DisconnectStartAddressVector(builder, 6)
-# address_list = [0xC4, 0xF0, 0xA5, 0xE6, 0x8A, 0x91]
-# for element in address_list:
-#     builder.PrependByte(element)
-# address = builder.EndVector(6)
-#
-# Disconnect.DisconnectStart(builder)
-# Disconnect.DisconnectAddAddress(builder, address)
-# Disconnect.DisconnectAddAddressType(builder, 2)
-# payload = Disconnect.DisconnectEnd(builder)
+def fb_disconnect(uuid, controller_id, address_device):
+    builder = flatbuffers.Builder(0)
+    Disconnect.DisconnectStartAddressVector(builder, len(address_device))
+    for element in address_device:
+        builder.PrependByte(element)
+    address = builder.EndVector(len(address_device))
+
+    Disconnect.DisconnectStart(builder)
+    Disconnect.DisconnectAddAddress(builder, address)
+    Disconnect.DisconnectAddAddressType(builder, 2)
+    payload = Disconnect.DisconnectEnd(builder)
+
+    return build_packet(builder, uuid, payload, Payload.Payload.Disconnect, controller_id)
 
 ## SetPowered
-# SetPowered.SetPoweredStart(builder)
-# SetPowered.SetPoweredAddState(builder, False)
-# payload = SetPowered.SetPoweredEnd(builder)
+def fb_set_powered(uuid, controller_id, state):
+    builder = flatbuffers.Builder(0)
+    SetPowered.SetPoweredStart(builder)
+    SetPowered.SetPoweredAddState(builder, state)
+    payload = SetPowered.SetPoweredEnd(builder)
+
+    return build_packet(builder, uuid, payload, Payload.Payload.SetPowered, controller_id)
 
 ## SetDiscoverable
-# SetDiscoverable.SetDiscoverableStart(builder)
-# SetDiscoverable.SetDiscoverableAddState(builder, False)
-# payload = SetDiscoverable.SetDiscoverableEnd(builder)
+def fb_set_discoverable(uuid, controller_id, state):
+    builder = flatbuffers.Builder(0)
+    SetDiscoverable.SetDiscoverableStart(builder)
+    SetDiscoverable.SetDiscoverableAddState(builder, state)
+    payload = SetDiscoverable.SetDiscoverableEnd(builder)
+
+    return build_packet(builder, uuid, payload, Payload.Payload.SetDiscoverable, controller_id)
 
 ## SetConnectable
-# SetConnectable.SetConnectableStart(builder)
-# SetConnectable.SetConnectableAddState(builder, False)
-# payload = SetConnectable.SetConnectableEnd(builder)
+def fb_set_connectable(uuid, controller_id, state):
+    builder = flatbuffers.Builder(0)
+    SetConnectable.SetConnectableStart(builder)
+    SetConnectable.SetConnectableAddState(builder, state)
+    payload = SetConnectable.SetConnectableEnd(builder)
+
+    return build_packet(builder, uuid, payload, Payload.Payload.SetConnectable, controller_id)
 
 ## GetControllersList
-# GetControllersList.GetControllersListStart(builder)
-# payload = GetControllersList.GetControllersListEnd(builder)
+def fb_get_controllers_list(uuid):
+    builder = flatbuffers.Builder(0)
+    GetControllersList.GetControllersListStart(builder)
+    payload = GetControllersList.GetControllersListEnd(builder)
+
+    return build_packet(builder, uuid, payload, Payload.Payload.GetControllersList)
 
 ## GetControllersIds
-# GetControllersIds.GetControllersIdsStart(builder)
-# payload = GetControllersIds.GetControllersIdsEnd(builder)
+def fb_get_controllers_ids(uuid):
+    builder = flatbuffers.Builder(0)
+    GetControllersIds.GetControllersIdsStart(builder)
+    payload = GetControllersIds.GetControllersIdsEnd(builder)
+
+    return build_packet(builder, uuid, payload, Payload.Payload.GetControllersIds)
 
 ## GetControllerInfo
-# GetControllerInfo.GetControllerInfoStart(builder)
-# payload = GetControllerInfo.GetControllerInfoEnd(builder)
+def fb_get_controller_info(uuid, controller_id):
+    builder = flatbuffers.Builder(0)
+    GetControllerInfo.GetControllerInfoStart(builder)
+    payload = GetControllerInfo.GetControllerInfoEnd(builder)
+
+    return build_packet(builder, uuid, payload, Payload.Payload.GetControllerInfo, controller_id)
 
 ## GetConnectedDevices
-# GetConnectedDevices.GetConnectedDevicesStart(builder)
-# payload = GetConnectedDevices.GetConnectedDevicesEnd(builder)
+def fb_get_connected_devices(uuid, controller_id):
+    builder = flatbuffers.Builder(0)
+    GetConnectedDevices.GetConnectedDevicesStart(builder)
+    payload = GetConnectedDevices.GetConnectedDevicesEnd(builder)
+
+    return build_packet(builder, uuid, payload, Payload.Payload.GetConnectedDevices, controller_id)
 
 ## Read
-# Read.ReadStart(builder)
-# Read.ReadAddConnectionHandle(builder, 64)
-# Read.ReadAddAttributeHandle(builder, 0x0003)
-# payload = Read.ReadEnd(builder)
+def fb_read(uuid, controller_id, connection_handle, attribute_handle):
+    builder = flatbuffers.Builder(0)
+    Read.ReadStart(builder)
+    Read.ReadAddConnectionHandle(builder, connection_handle)
+    Read.ReadAddAttributeHandle(builder, attribute_handle)
+    payload = Read.ReadEnd(builder)
 
-uuid_request = builder.CreateString("123456")
-Packet.PacketStart(builder)
-Packet.PacketAddUuid(builder, uuid_request)
-Packet.PacketAddControllerId(builder, 0)
-Packet.PacketAddPayloadType(builder, Payload.Payload().AddDevice)
-Packet.PacketAddPayload(builder, payload)
-packet = Packet.PacketEnd(builder)
+    return build_packet(builder, uuid, payload, Payload.Payload.Read, controller_id)
 
-builder.Finish(packet)
+## Write
+def fb_write(uuid, controller_id, connection_handle, attribute_handle, value):
+    builder = flatbuffers.Builder(0)
 
-buf = builder.Output()
-buf = b'\xCA\xFE' + len(buf).to_bytes(2, byteorder='little') + buf
+    data = bytes(value, 'utf-8')
+    Write.WriteStartValueVector(builder, len(data))
+    for element in reversed(data):
+        builder.PrependByte(element)
+    data_to_write = builder.EndVector(len(data))
 
-builder2 = flatbuffers.Builder(0)
-# data = bytes('IOTile', 'utf-8')
-# Write.WriteStartValueVector(builder2, len(data))
-# for element in reversed(data):
-#     builder2.PrependByte(element)
-# data_to_write = builder2.EndVector(len(data))
-#
-# Write.WriteStart(builder2)
-# Write.WriteAddConnectionHandle(builder2, 64)
-# Write.WriteAddAttributeHandle(builder2, 0x0003)
-# Write.WriteAddValue(builder2, data_to_write)
-# payload2 = Write.WriteEnd(builder2)
+    Write.WriteStart(builder)
+    Write.WriteAddConnectionHandle(builder, connection_handle)
+    Write.WriteAddAttributeHandle(builder, attribute_handle)
+    Write.WriteAddValue(builder, data_to_write)
+    payload = Write.WriteEnd(builder)
 
-# ProbeServices.ProbeServicesStart(builder2)
-# ProbeServices.ProbeServicesAddConnectionHandle(builder2, 64)
-# payload2 = ProbeServices.ProbeServicesEnd(builder2)
+    return build_packet(builder, uuid, payload, Payload.Payload.Write, controller_id)
 
-ProbeCharacteristics.ProbeCharacteristicsStart(builder2)
-ProbeCharacteristics.ProbeCharacteristicsAddConnectionHandle(builder2, 64)
-payload2 = ProbeCharacteristics.ProbeCharacteristicsEnd(builder2)
+## WriteWithoutResponse
+def fb_write_without_response(uuid, controller_id, connection_handle, attribute_handle, value):
+    builder = flatbuffers.Builder(0)
 
-uuid_request2 = builder2.CreateString("654321")
-Packet.PacketStart(builder2)
-Packet.PacketAddUuid(builder2, uuid_request2)
-Packet.PacketAddControllerId(builder2, 0)
-Packet.PacketAddPayloadType(builder2, Payload.Payload().ProbeCharacteristics)
-Packet.PacketAddPayload(builder2, payload2)
-packet2 = Packet.PacketEnd(builder2)
-builder2.Finish(packet2)
+    data = bytes(value, 'utf-8')
+    Write.WriteStartValueVector(builder, len(data))
+    for element in reversed(data):
+        builder.PrependByte(element)
+    data_to_write = builder.EndVector(len(data))
 
-buf2 = builder2.Output()
-buf2 = b'\xCA\xFE' + len(buf2).to_bytes(2, byteorder='little') + buf2
+    Write.WriteStart(builder)
+    Write.WriteAddConnectionHandle(builder, connection_handle)
+    Write.WriteAddAttributeHandle(builder, attribute_handle)
+    Write.WriteAddValue(builder, data_to_write)
+    payload = Write.WriteEnd(builder)
 
-## RemoveDevice
-builder3 = flatbuffers.Builder(0)
-RemoveDevice.RemoveDeviceStartAddressVector(builder3, 6)
-address_list = [0xC4, 0xF0, 0xA5, 0xE6, 0x8A, 0x91]
-for element in address_list:
-    builder3.PrependByte(element)
-address = builder3.EndVector(6)
+    return build_packet(builder, uuid, payload, Payload.Payload.WriteWithoutResponse, controller_id)
 
-RemoveDevice.RemoveDeviceStart(builder3)
-RemoveDevice.RemoveDeviceAddAddress(builder3, address)
-RemoveDevice.RemoveDeviceAddAddressType(builder3, 2)
-payload3 = RemoveDevice.RemoveDeviceEnd(builder3)
+## ProbeServices
+def fb_probe_services(uuid, controller_id, connection_handle):
+    builder = flatbuffers.Builder(0)
+    ProbeServices.ProbeServicesStart(builder)
+    ProbeServices.ProbeServicesAddConnectionHandle(builder, connection_handle)
+    payload = ProbeServices.ProbeServicesEnd(builder)
 
-uuid_request3 = builder3.CreateString("000000")
-Packet.PacketStart(builder3)
-Packet.PacketAddUuid(builder3, uuid_request3)
-Packet.PacketAddControllerId(builder3, 0)
-Packet.PacketAddPayloadType(builder3, Payload.Payload().RemoveDevice)
-Packet.PacketAddPayload(builder3, payload3)
-packet3 = Packet.PacketEnd(builder3)
-builder3.Finish(packet3)
+    return build_packet(builder, uuid, payload, Payload.Payload.ProbeServices, controller_id)
 
-buf3 = builder3.Output()
-buf3 = b'\xCA\xFE' + len(buf3).to_bytes(2, byteorder='little') + buf3
+## ProbeCharacteristics
+def fb_probe_characteristics(uuid, controller_id, connection_handle):
+    builder = flatbuffers.Builder(0)
+    ProbeCharacteristics.ProbeCharacteristicsStart(builder)
+    ProbeCharacteristics.ProbeCharacteristicsAddConnectionHandle(builder, connection_handle)
+    payload = ProbeCharacteristics.ProbeCharacteristicsEnd(builder)
 
-## Disconnect
-builder4 = flatbuffers.Builder(0)
-Disconnect.DisconnectStartAddressVector(builder4, 6)
-address_list = [0xC4, 0xF0, 0xA5, 0xE6, 0x8A, 0x91]
-for element in address_list:
-    builder4.PrependByte(element)
-address = builder4.EndVector(6)
+    return build_packet(builder, uuid, payload, Payload.Payload.ProbeCharacteristics, controller_id)
 
-Disconnect.DisconnectStart(builder4)
-Disconnect.DisconnectAddAddress(builder4, address)
-Disconnect.DisconnectAddAddressType(builder4, 2)
-payload4 = Disconnect.DisconnectEnd(builder4)
+def build_packet(builder, uuid, payload, payload_type, controller_id = None):
+    uuid_request = builder.CreateString(uuid)
 
-uuid_request4 = builder4.CreateString("000001")
-Packet.PacketStart(builder4)
-Packet.PacketAddUuid(builder4, uuid_request4)
-Packet.PacketAddControllerId(builder4, 0)
-Packet.PacketAddPayloadType(builder4, Payload.Payload().Disconnect)
-Packet.PacketAddPayload(builder4, payload4)
-packet4 = Packet.PacketEnd(builder4)
-builder4.Finish(packet4)
+    Packet.PacketStart(builder)
+    Packet.PacketAddUuid(builder, uuid_request)
+    if controller_id is not None:
+        Packet.PacketAddControllerId(builder, controller_id)
+    Packet.PacketAddPayloadType(builder, payload_type)
+    Packet.PacketAddPayload(builder, payload)
+    packet = Packet.PacketEnd(builder)
 
-buf4 = builder4.Output()
-buf4 = b'\xCA\xFE' + len(buf4).to_bytes(2, byteorder='little') + buf4
+    builder.Finish(packet)
+
+    buf = builder.Output()
+    buf = b'\xCA\xFE' + len(buf).to_bytes(2, byteorder='little') + buf
+    return buf
+
+address_device = [0xC4, 0xF0, 0xA5, 0xE6, 0x8A, 0x91]
 
 time.sleep(2)
-process.stdin.write(buf)
+process.stdin.write(fb_add_device("0001", 0, address_device))
 time.sleep(8)
-process.stdin.write(buf2)
+process.stdin.write(fb_write_without_response("0002", 0, 0x0040, 0x0003, "Alex"))
 time.sleep(8)
-process.stdin.write(buf3)
+process.stdin.write(fb_remove_device("0003", 0, address_device))
 time.sleep(2)
-process.stdin.write(buf4)
+process.stdin.write(fb_disconnect("0004", 0, address_device))
 
 header_length = 4
 
@@ -517,6 +544,19 @@ try:
             data_written = write.ValueAsNumpy()
 
             print("Write",
+                  "UUID:", uuid,
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id, "Connection handle:", connection_handle, "Attribute handle:", attribute_handle,
+                  "Data:", data_written)
+
+        elif packet.PayloadType() == Payload.Payload().WriteWithoutResponse:
+            write_without_response = WriteWithoutResponse.WriteWithoutResponse()
+            write_without_response.Init(packet.Payload().Bytes, packet.Payload().Pos)
+            connection_handle = write_without_response.ConnectionHandle()
+            attribute_handle = write_without_response.AttributeHandle()
+            data_written = write_without_response.ValueAsNumpy()
+
+            print("WriteWithoutResponse",
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Connection handle:", connection_handle, "Attribute handle:", attribute_handle,

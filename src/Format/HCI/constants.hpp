@@ -89,7 +89,8 @@ namespace Format::HCI {
     ReadByGroupTypeResponse= 0x11,
     WriteRequest= 0x12,
     WriteResponse= 0x13,
-    HandleValueNotification= 0x1B
+    HandleValueNotification= 0x1B,
+    WriteCommand= 0x52
   };
 
   enum StatusCode {

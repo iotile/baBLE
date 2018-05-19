@@ -40,6 +40,8 @@ struct Read;
 
 struct Write;
 
+struct WriteWithoutResponse;
+
 struct Service;
 
 struct ProbeServices;
@@ -85,19 +87,20 @@ enum class Payload : uint8_t {
   StartScan = 15,
   StopScan = 16,
   Write = 17,
-  ControllerAdded = 18,
-  ControllerRemoved = 19,
-  DeviceConnected = 20,
-  DeviceDisconnected = 21,
-  DeviceFound = 22,
-  Discovering = 23,
-  NotificationReceived = 24,
-  BaBLEError = 25,
+  WriteWithoutResponse = 18,
+  ControllerAdded = 19,
+  ControllerRemoved = 20,
+  DeviceConnected = 21,
+  DeviceDisconnected = 22,
+  DeviceFound = 23,
+  Discovering = 24,
+  NotificationReceived = 25,
+  BaBLEError = 26,
   MIN = NONE,
   MAX = BaBLEError
 };
 
-inline const Payload (&EnumValuesPayload())[26] {
+inline const Payload (&EnumValuesPayload())[27] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::AddDevice,
@@ -117,6 +120,7 @@ inline const Payload (&EnumValuesPayload())[26] {
     Payload::StartScan,
     Payload::StopScan,
     Payload::Write,
+    Payload::WriteWithoutResponse,
     Payload::ControllerAdded,
     Payload::ControllerRemoved,
     Payload::DeviceConnected,
@@ -149,6 +153,7 @@ inline const char * const *EnumNamesPayload() {
     "StartScan",
     "StopScan",
     "Write",
+    "WriteWithoutResponse",
     "ControllerAdded",
     "ControllerRemoved",
     "DeviceConnected",
@@ -237,6 +242,10 @@ template<> struct PayloadTraits<StopScan> {
 
 template<> struct PayloadTraits<Write> {
   static const Payload enum_value = Payload::Write;
+};
+
+template<> struct PayloadTraits<WriteWithoutResponse> {
+  static const Payload enum_value = Payload::WriteWithoutResponse;
 };
 
 template<> struct PayloadTraits<ControllerAdded> {
@@ -1246,6 +1255,79 @@ inline flatbuffers::Offset<Write> CreateWriteDirect(
       value ? _fbb.CreateVector<uint8_t>(*value) : 0);
 }
 
+struct WriteWithoutResponse FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_CONNECTION_HANDLE = 4,
+    VT_ATTRIBUTE_HANDLE = 6,
+    VT_VALUE = 8
+  };
+  uint16_t connection_handle() const {
+    return GetField<uint16_t>(VT_CONNECTION_HANDLE, 0);
+  }
+  uint16_t attribute_handle() const {
+    return GetField<uint16_t>(VT_ATTRIBUTE_HANDLE, 0);
+  }
+  const flatbuffers::Vector<uint8_t> *value() const {
+    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_VALUE);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint16_t>(verifier, VT_CONNECTION_HANDLE) &&
+           VerifyField<uint16_t>(verifier, VT_ATTRIBUTE_HANDLE) &&
+           VerifyOffset(verifier, VT_VALUE) &&
+           verifier.Verify(value()) &&
+           verifier.EndTable();
+  }
+};
+
+struct WriteWithoutResponseBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_connection_handle(uint16_t connection_handle) {
+    fbb_.AddElement<uint16_t>(WriteWithoutResponse::VT_CONNECTION_HANDLE, connection_handle, 0);
+  }
+  void add_attribute_handle(uint16_t attribute_handle) {
+    fbb_.AddElement<uint16_t>(WriteWithoutResponse::VT_ATTRIBUTE_HANDLE, attribute_handle, 0);
+  }
+  void add_value(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> value) {
+    fbb_.AddOffset(WriteWithoutResponse::VT_VALUE, value);
+  }
+  explicit WriteWithoutResponseBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  WriteWithoutResponseBuilder &operator=(const WriteWithoutResponseBuilder &);
+  flatbuffers::Offset<WriteWithoutResponse> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<WriteWithoutResponse>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<WriteWithoutResponse> CreateWriteWithoutResponse(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t connection_handle = 0,
+    uint16_t attribute_handle = 0,
+    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> value = 0) {
+  WriteWithoutResponseBuilder builder_(_fbb);
+  builder_.add_value(value);
+  builder_.add_attribute_handle(attribute_handle);
+  builder_.add_connection_handle(connection_handle);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<WriteWithoutResponse> CreateWriteWithoutResponseDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t connection_handle = 0,
+    uint16_t attribute_handle = 0,
+    const std::vector<uint8_t> *value = nullptr) {
+  return Schemas::CreateWriteWithoutResponse(
+      _fbb,
+      connection_handle,
+      attribute_handle,
+      value ? _fbb.CreateVector<uint8_t>(*value) : 0);
+}
+
 struct Service FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_HANDLE = 4,
@@ -2210,6 +2292,9 @@ struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const Write *payload_as_Write() const {
     return payload_type() == Payload::Write ? static_cast<const Write *>(payload()) : nullptr;
   }
+  const WriteWithoutResponse *payload_as_WriteWithoutResponse() const {
+    return payload_type() == Payload::WriteWithoutResponse ? static_cast<const WriteWithoutResponse *>(payload()) : nullptr;
+  }
   const ControllerAdded *payload_as_ControllerAdded() const {
     return payload_type() == Payload::ControllerAdded ? static_cast<const ControllerAdded *>(payload()) : nullptr;
   }
@@ -2328,6 +2413,10 @@ template<> inline const StopScan *Packet::payload_as<StopScan>() const {
 
 template<> inline const Write *Packet::payload_as<Write>() const {
   return payload_as_Write();
+}
+
+template<> inline const WriteWithoutResponse *Packet::payload_as<WriteWithoutResponse>() const {
+  return payload_as_WriteWithoutResponse();
 }
 
 template<> inline const ControllerAdded *Packet::payload_as<ControllerAdded>() const {
@@ -2509,6 +2598,10 @@ inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *obj, Payl
     }
     case Payload::Write: {
       auto ptr = reinterpret_cast<const Write *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::WriteWithoutResponse: {
+      auto ptr = reinterpret_cast<const WriteWithoutResponse *>(obj);
       return verifier.VerifyTable(ptr);
     }
     case Payload::ControllerAdded: {

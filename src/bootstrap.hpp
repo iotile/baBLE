@@ -30,6 +30,7 @@
 #include "Application/Packets/Commands/NotificationReceived/NotificationReceived.hpp"
 #include "Application/Packets/Commands/ProbeServices/ProbeServices.hpp"
 #include "Application/Packets/Commands/ProbeCharacteristics/ProbeCharacteristics.hpp"
+#include "Application/Packets/Commands/WriteWithoutResponse/WriteWithoutResponse.hpp"
 
 using namespace std;
 using Packet::Meta::GetControllersList;
@@ -120,6 +121,7 @@ namespace Bootstrap {
       .set_output_format(std::move(hci_format))
         .register_command<Packet::Commands::Read>()
         .register_command<Packet::Commands::Write>()
+        .register_command<Packet::Commands::WriteWithoutResponse>()
         .register_command<Packet::Commands::ProbeServices>()
         .register_command<Packet::Commands::ProbeCharacteristics>();
   }

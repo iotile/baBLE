@@ -22,9 +22,10 @@ namespace Format::Ascii {
 
     Read= 0x000E,
     Write= 0x000F,
-    NotificationReceived= 0x0010,
-    ProbeServices= 0x0011,
-    ProbeCharacteristics= 0x0012
+    WriteWithoutResponse= 0x00010,
+    NotificationReceived= 0x0011,
+    ProbeServices= 0x0012,
+    ProbeCharacteristics= 0x0013
   };
 
   enum EventCode {

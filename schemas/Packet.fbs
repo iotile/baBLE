@@ -13,6 +13,7 @@ include "./Commands/SetDiscoverable.fbs";
 include "./Commands/SetConnectable.fbs";
 include "./Commands/Read.fbs";
 include "./Commands/Write.fbs";
+include "./Commands/WriteWithoutResponse.fbs";
 include "./Commands/ProbeServices.fbs";
 include "./Commands/ProbeCharacteristics.fbs";
 include "./Events/DeviceConnected.fbs";
@@ -44,6 +45,7 @@ union Payload {
   StartScan,
   StopScan,
   Write,
+  WriteWithoutResponse,
 
   // Events
   ControllerAdded,
