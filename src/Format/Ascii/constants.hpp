@@ -24,6 +24,7 @@ namespace Format::Ascii {
     Write= 0x000F,
     NotificationReceived= 0x0010,
     ProbeServices= 0x0011,
+    ProbeCharacteristics= 0x0012
   };
 
   enum EventCode {

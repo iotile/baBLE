@@ -6,7 +6,7 @@ import flatbuffers
 from Schemas import Packet, Payload, GetMGMTInfo, StartScan, StopScan, Discovering, DeviceFound, BaBLEError, StatusCode,\
                     AddDevice, DeviceConnected, RemoveDevice, Disconnect, DeviceDisconnected, SetPowered, SetDiscoverable,\
                     SetConnectable, GetControllersList, ControllerAdded, ControllerRemoved, GetControllerInfo, \
-                    GetConnectedDevices, GetControllersIds, Read, Write, NotificationReceived, ProbeServices
+                    GetConnectedDevices, GetControllersIds, Read, Write, NotificationReceived, ProbeServices, ProbeCharacteristics
 
 def status_code_to_string(status_code):
     if status_code == StatusCode.StatusCode().Success:
@@ -146,7 +146,7 @@ builder.Finish(packet)
 buf = builder.Output()
 buf = b'\xCA\xFE' + len(buf).to_bytes(2, byteorder='little') + buf
 
-# builder2 = flatbuffers.Builder(0)
+builder2 = flatbuffers.Builder(0)
 # data = bytes('IOTile', 'utf-8')
 # Write.WriteStartValueVector(builder2, len(data))
 # for element in reversed(data):
@@ -159,28 +159,84 @@ buf = b'\xCA\xFE' + len(buf).to_bytes(2, byteorder='little') + buf
 # Write.WriteAddValue(builder2, data_to_write)
 # payload2 = Write.WriteEnd(builder2)
 
-builder2 = flatbuffers.Builder(0)
-ProbeServices.ProbeServicesStart(builder2)
-ProbeServices.ProbeServicesAddConnectionHandle(builder2, 64)
-payload2 = ProbeServices.ProbeServicesEnd(builder2)
+# ProbeServices.ProbeServicesStart(builder2)
+# ProbeServices.ProbeServicesAddConnectionHandle(builder2, 64)
+# payload2 = ProbeServices.ProbeServicesEnd(builder2)
+
+ProbeCharacteristics.ProbeCharacteristicsStart(builder2)
+ProbeCharacteristics.ProbeCharacteristicsAddConnectionHandle(builder2, 64)
+payload2 = ProbeCharacteristics.ProbeCharacteristicsEnd(builder2)
 
 uuid_request2 = builder2.CreateString("654321")
 Packet.PacketStart(builder2)
 Packet.PacketAddUuid(builder2, uuid_request2)
 Packet.PacketAddControllerId(builder2, 0)
-Packet.PacketAddPayloadType(builder2, Payload.Payload().ProbeServices)
+Packet.PacketAddPayloadType(builder2, Payload.Payload().ProbeCharacteristics)
 Packet.PacketAddPayload(builder2, payload2)
 packet2 = Packet.PacketEnd(builder2)
-
 builder2.Finish(packet2)
 
 buf2 = builder2.Output()
 buf2 = b'\xCA\xFE' + len(buf2).to_bytes(2, byteorder='little') + buf2
 
+## RemoveDevice
+builder3 = flatbuffers.Builder(0)
+RemoveDevice.RemoveDeviceStartAddressVector(builder3, 6)
+address_list = [0xC4, 0xF0, 0xA5, 0xE6, 0x8A, 0x91]
+for element in address_list:
+    builder3.PrependByte(element)
+address = builder3.EndVector(6)
+
+RemoveDevice.RemoveDeviceStart(builder3)
+RemoveDevice.RemoveDeviceAddAddress(builder3, address)
+RemoveDevice.RemoveDeviceAddAddressType(builder3, 2)
+payload3 = RemoveDevice.RemoveDeviceEnd(builder3)
+
+uuid_request3 = builder3.CreateString("000000")
+Packet.PacketStart(builder3)
+Packet.PacketAddUuid(builder3, uuid_request3)
+Packet.PacketAddControllerId(builder3, 0)
+Packet.PacketAddPayloadType(builder3, Payload.Payload().RemoveDevice)
+Packet.PacketAddPayload(builder3, payload3)
+packet3 = Packet.PacketEnd(builder3)
+builder3.Finish(packet3)
+
+buf3 = builder3.Output()
+buf3 = b'\xCA\xFE' + len(buf3).to_bytes(2, byteorder='little') + buf3
+
+## Disconnect
+builder4 = flatbuffers.Builder(0)
+Disconnect.DisconnectStartAddressVector(builder4, 6)
+address_list = [0xC4, 0xF0, 0xA5, 0xE6, 0x8A, 0x91]
+for element in address_list:
+    builder4.PrependByte(element)
+address = builder4.EndVector(6)
+
+Disconnect.DisconnectStart(builder4)
+Disconnect.DisconnectAddAddress(builder4, address)
+Disconnect.DisconnectAddAddressType(builder4, 2)
+payload4 = Disconnect.DisconnectEnd(builder4)
+
+uuid_request4 = builder4.CreateString("000001")
+Packet.PacketStart(builder4)
+Packet.PacketAddUuid(builder4, uuid_request4)
+Packet.PacketAddControllerId(builder4, 0)
+Packet.PacketAddPayloadType(builder4, Payload.Payload().Disconnect)
+Packet.PacketAddPayload(builder4, payload4)
+packet4 = Packet.PacketEnd(builder4)
+builder4.Finish(packet4)
+
+buf4 = builder4.Output()
+buf4 = b'\xCA\xFE' + len(buf4).to_bytes(2, byteorder='little') + buf4
+
 time.sleep(2)
 process.stdin.write(buf)
 time.sleep(8)
 process.stdin.write(buf2)
+time.sleep(8)
+process.stdin.write(buf3)
+time.sleep(2)
+process.stdin.write(buf4)
 
 header_length = 4
 
@@ -495,6 +551,25 @@ try:
 
             for service in services:
                 print("\tHandle:", service.Handle(), "Group end handle:", service.GroupEndHandle(), "UUID:", service.Uuid())
+
+        elif packet.PayloadType() == Payload.Payload().ProbeCharacteristics:
+            probe_characteristics = ProbeCharacteristics.ProbeCharacteristics()
+            probe_characteristics.Init(packet.Payload().Bytes, packet.Payload().Pos)
+            num_characteristics = probe_characteristics.CharacteristicsLength()
+            characteristics = []
+
+            for i in range(num_characteristics):
+                characteristics.append(probe_characteristics.Characteristics(i))
+
+            print("ProbeCharacteristics",
+                  "UUID:", uuid,
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id, "Num characteristics:", num_characteristics)
+
+            for characteristic in characteristics:
+                print("\tHandle:", characteristic.Handle(), "Value handle:", characteristic.ValueHandle(), "UUID:", characteristic.Uuid(),
+                      "Indicate:", characteristic.Indicate(), "Notify:", characteristic.Notify(), "Read:", characteristic.Read(),
+                      "Write:", characteristic.Write(), "Broadcast:", characteristic.Broadcast())
 
         elif packet.PayloadType() == Payload.Payload().BaBLEError:
             error = BaBLEError.BaBLEError()

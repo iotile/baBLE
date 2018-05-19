@@ -114,7 +114,7 @@ namespace Packet::Commands {
   vector<uint8_t> ProbeServices::serialize(HCIFormatBuilder& builder) const {
     CommandPacket::serialize(builder);
 
-    uint16_t uuid = static_cast<uint16_t>(Format::HCI::UUID::GattPrimaryServiceDeclaration);
+    auto uuid = static_cast<uint16_t>(Format::HCI::UUID::GattPrimaryServiceDeclaration);
     builder
         .set_connection_handle(m_connection_handle)
         .add(m_starting_handle)

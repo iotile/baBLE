@@ -90,11 +90,18 @@ shared_ptr<Packet::AbstractPacket> PacketContainer::build(const vector<uint8_t>&
 }
 
 shared_ptr<Packet::AbstractPacket> PacketContainer::build_command(const vector<uint8_t>& raw_data, uint16_t controller_id) {
-  // Extract command_code from data
-  uint16_t command_code = m_building_format->extract_packet_code(raw_data);
+  // Extract packet_code from data
+  uint16_t packet_code = m_building_format->extract_packet_code(raw_data);
   Packet::Type packet_type = m_building_format->packet_type();
 
-  auto key = make_tuple(packet_type, Packet::AbstractPacket::compute_uuid(controller_id, command_code));
+  // TODO: make it cleaner... :o
+  if (packet_type == Packet::Type::HCI && packet_code == Format::HCI::AttributeCode::ErrorResponse) {
+    if (raw_data.at(10) == Format::HCI::AttributeCode::ReadByTypeRequest) {
+      packet_code = Format::HCI::AttributeCode::ReadByTypeResponse;
+    }
+  }
+
+  auto key = make_tuple(packet_type, Packet::AbstractPacket::compute_uuid(controller_id, packet_code));
   auto waiting_it = m_waiting_packets.find(key);
   if (waiting_it != m_waiting_packets.end()) {
     shared_ptr<Packet::AbstractPacket> packet = waiting_it->second;
@@ -113,11 +120,11 @@ shared_ptr<Packet::AbstractPacket> PacketContainer::build_command(const vector<u
     }
   }
 
-  // Get command from command_code
-  auto command_it = m_commands.find(command_code);
+  // Get command from packet_code
+  auto command_it = m_commands.find(packet_code);
   if (command_it == m_commands.end()) {
     LOG.debug(raw_data, "PacketContainer");
-    throw Exceptions::NotFoundException("Command code not found in PacketContainer registry: " + to_string(command_code));
+    throw Exceptions::NotFoundException("Packet code not found in PacketContainer registry: " + to_string(packet_code));
   }
 
   PacketConstructor fn = command_it->second;

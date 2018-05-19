@@ -80,6 +80,9 @@ namespace Format::HCI {
   };
 
   enum AttributeCode {
+    ErrorResponse= 0x01,
+    ReadByTypeRequest= 0x08,
+    ReadByTypeResponse= 0x09,
     ReadRequest= 0x0A,
     ReadResponse= 0x0B,
     ReadByGroupTypeRequest= 0x10,
@@ -165,8 +168,17 @@ namespace Format::HCI {
     std::vector<uint8_t> uuid{};
   };
 
+  // Structure representing a GATT characteristic
+  struct Characteristic {
+    uint16_t handle = 0;
+    uint8_t properties = 0;
+    uint16_t value_handle = 0;
+    std::vector<uint8_t> uuid{};
+  };
+
   enum UUID {
-    GattPrimaryServiceDeclaration= 0x2800
+    GattPrimaryServiceDeclaration= 0x2800,
+    GattCharacteristicDeclaration= 0x2803
   };
 
 }

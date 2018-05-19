@@ -1,0 +1,8 @@
+include "Models/Characteristic.fbs";
+
+namespace Schemas;
+
+table ProbeCharacteristics {
+  connection_handle:uint16;
+  characteristics:[Characteristic];
+}
