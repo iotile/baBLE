@@ -25,7 +25,9 @@ namespace Format::Ascii {
     WriteWithoutResponse= 0x00010,
     NotificationReceived= 0x0011,
     ProbeServices= 0x0012,
-    ProbeCharacteristics= 0x0013
+    ProbeCharacteristics= 0x0013,
+
+    Exit= 0xFFFF
   };
 
   enum EventCode {

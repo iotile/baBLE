@@ -68,6 +68,8 @@ struct BaBLEError;
 
 struct Ready;
 
+struct Exit;
+
 struct Packet;
 
 enum class Payload : uint8_t {
@@ -98,12 +100,13 @@ enum class Payload : uint8_t {
   Discovering = 24,
   NotificationReceived = 25,
   BaBLEError = 26,
-  Ready = 27,
+  Exit = 27,
+  Ready = 28,
   MIN = NONE,
   MAX = Ready
 };
 
-inline const Payload (&EnumValuesPayload())[28] {
+inline const Payload (&EnumValuesPayload())[29] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::AddDevice,
@@ -132,6 +135,7 @@ inline const Payload (&EnumValuesPayload())[28] {
     Payload::Discovering,
     Payload::NotificationReceived,
     Payload::BaBLEError,
+    Payload::Exit,
     Payload::Ready
   };
   return values;
@@ -166,6 +170,7 @@ inline const char * const *EnumNamesPayload() {
     "Discovering",
     "NotificationReceived",
     "BaBLEError",
+    "Exit",
     "Ready",
     nullptr
   };
@@ -283,6 +288,10 @@ template<> struct PayloadTraits<NotificationReceived> {
 
 template<> struct PayloadTraits<BaBLEError> {
   static const Payload enum_value = Payload::BaBLEError;
+};
+
+template<> struct PayloadTraits<Exit> {
+  static const Payload enum_value = Payload::Exit;
 };
 
 template<> struct PayloadTraits<Ready> {
@@ -2258,6 +2267,34 @@ inline flatbuffers::Offset<Ready> CreateReady(
   return builder_.Finish();
 }
 
+struct Exit FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           verifier.EndTable();
+  }
+};
+
+struct ExitBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  explicit ExitBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ExitBuilder &operator=(const ExitBuilder &);
+  flatbuffers::Offset<Exit> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<Exit>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<Exit> CreateExit(
+    flatbuffers::FlatBufferBuilder &_fbb) {
+  ExitBuilder builder_(_fbb);
+  return builder_.Finish();
+}
+
 struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_UUID = 4,
@@ -2355,6 +2392,9 @@ struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   const BaBLEError *payload_as_BaBLEError() const {
     return payload_type() == Payload::BaBLEError ? static_cast<const BaBLEError *>(payload()) : nullptr;
+  }
+  const Exit *payload_as_Exit() const {
+    return payload_type() == Payload::Exit ? static_cast<const Exit *>(payload()) : nullptr;
   }
   const Ready *payload_as_Ready() const {
     return payload_type() == Payload::Ready ? static_cast<const Ready *>(payload()) : nullptr;
@@ -2489,6 +2529,10 @@ template<> inline const NotificationReceived *Packet::payload_as<NotificationRec
 
 template<> inline const BaBLEError *Packet::payload_as<BaBLEError>() const {
   return payload_as_BaBLEError();
+}
+
+template<> inline const Exit *Packet::payload_as<Exit>() const {
+  return payload_as_Exit();
 }
 
 template<> inline const Ready *Packet::payload_as<Ready>() const {
@@ -2678,6 +2722,10 @@ inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *obj, Payl
     }
     case Payload::BaBLEError: {
       auto ptr = reinterpret_cast<const BaBLEError *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::Exit: {
+      auto ptr = reinterpret_cast<const Exit *>(obj);
       return verifier.VerifyTable(ptr);
     }
     case Payload::Ready: {

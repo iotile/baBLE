@@ -140,11 +140,20 @@ int main() {
 
   stdio_socket->poll(
     loop,
-    [&stdio_packet_container, &socket_container, &stdio_socket](const std::vector<uint8_t>& received_data, const AbstractSocket& socket) {
+    [&stdio_packet_container, &socket_container, &stdio_socket, &loop](const std::vector<uint8_t>& received_data, const AbstractSocket& socket) {
       try {
+        Packet::Type packet_type = socket.format()->packet_type();
+        uint16_t packet_code = socket.format()->extract_packet_code(received_data);
+        if ((packet_type == Packet::Type::ASCII && packet_code == Format::Ascii::CommandCode::Exit)
+            || (packet_type == Packet::Type::FLATBUFFERS && packet_code == static_cast<uint16_t>(Schemas::Payload::Exit))) {
+          cleanly_stop_loop(*loop);
+          return;
+        }
+
         uint16_t controller_id = socket.format()->extract_controller_id(received_data);
 
         std::shared_ptr<Packet::AbstractPacket> packet = stdio_packet_container.build(received_data, controller_id);
+
         LOG.debug("Packet built", "BABLE poller");
 
         packet->translate();

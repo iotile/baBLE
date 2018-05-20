@@ -113,7 +113,7 @@ set(SOURCES_FILES
         src/Application/Packets/Commands/ProbeServices/ProbeServices.cpp
         src/Application/Packets/Commands/ProbeServices/ProbeServices.hpp
         src/Application/Packets/Commands/ProbeCharacteristics/ProbeCharacteristics.cpp
-        src/Application/Packets/Commands/ProbeCharacteristics/ProbeCharacteristics.hpp src/Application/Packets/Control/Ready/Ready.cpp src/Application/Packets/Control/Ready/Ready.hpp)
+        src/Application/Packets/Commands/ProbeCharacteristics/ProbeCharacteristics.hpp src/Application/Packets/Control/Ready/Ready.cpp src/Application/Packets/Control/Ready/Ready.hpp src/Application/Packets/Control/Exit/Exit.cpp src/Application/Packets/Control/Exit/Exit.hpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies

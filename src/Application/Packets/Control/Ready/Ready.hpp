@@ -16,4 +16,5 @@ namespace Packet::Control {
   };
 
 }
+
 #endif //BABLE_LINUX_READY_HPP

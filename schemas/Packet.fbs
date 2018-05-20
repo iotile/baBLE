@@ -24,6 +24,7 @@ include "./Events/ControllerChanged.fbs";
 include "./Events/NotificationReceived.fbs";
 include "./Errors/BaBLEError.fbs";
 include "./Control/Ready.fbs";
+include "./Control/Exit.fbs";
 
 namespace Schemas;
 
@@ -61,6 +62,7 @@ union Payload {
   BaBLEError,
 
   // Control
+  Exit,
   Ready
 }
 
