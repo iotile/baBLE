@@ -88,9 +88,8 @@ int main() {
     loop,
     [&mgmt_packet_container, &socket_container, &stdio_socket](const std::vector<uint8_t>& received_data, const AbstractSocket& socket) {
       try {
-        uint16_t controller_id = socket.format()->extract_controller_id(received_data);
-
-        std::shared_ptr<Packet::AbstractPacket> packet = mgmt_packet_container.build(received_data, controller_id);
+        shared_ptr<AbstractExtractor> extractor = socket.format()->create_extractor(received_data);
+        std::shared_ptr<Packet::AbstractPacket> packet = mgmt_packet_container.build(extractor);
         LOG.debug("Packet built", "MGMT poller");
 
         packet->translate();
@@ -116,7 +115,9 @@ int main() {
       loop,
       [&hci_packet_container, &socket_container, &stdio_socket](const std::vector<uint8_t>& received_data, const AbstractSocket& socket) {
         try {
-          std::shared_ptr<Packet::AbstractPacket> packet = hci_packet_container.build(received_data, socket.controller_id());
+          shared_ptr<AbstractExtractor> extractor = socket.format()->create_extractor(received_data);
+          extractor->set_controller_id(socket.controller_id());
+          std::shared_ptr<Packet::AbstractPacket> packet = hci_packet_container.build(extractor);
           LOG.debug("Packet built", "HCI poller");
 
           packet->translate();
@@ -138,23 +139,29 @@ int main() {
     );
   }
 
+  // TODO: verify schemas to make them as generic/cross-platform as possible
+  // TODO: move error handing in function with stdio_socket as param + move response handling into a function with packet_container as param
   stdio_socket->poll(
     loop,
     [&stdio_packet_container, &socket_container, &stdio_socket, &loop](const std::vector<uint8_t>& received_data, const AbstractSocket& socket) {
       try {
+        shared_ptr<AbstractExtractor> extractor = socket.format()->create_extractor(received_data);
+        std::shared_ptr<Packet::AbstractPacket> packet = stdio_packet_container.build(extractor);
+
+        LOG.debug("Packet built", "BABLE poller");
+
         Packet::Type packet_type = socket.format()->packet_type();
-        uint16_t packet_code = socket.format()->extract_packet_code(received_data);
+        uint16_t packet_code = extractor->get_packet_code();
         if ((packet_type == Packet::Type::ASCII && packet_code == Format::Ascii::CommandCode::Exit)
             || (packet_type == Packet::Type::FLATBUFFERS && packet_code == static_cast<uint16_t>(Schemas::Payload::Exit))) {
           cleanly_stop_loop(*loop);
           return;
         }
-
-        uint16_t controller_id = socket.format()->extract_controller_id(received_data);
-
-        std::shared_ptr<Packet::AbstractPacket> packet = stdio_packet_container.build(received_data, controller_id);
-
-        LOG.debug("Packet built", "BABLE poller");
+        // TODO: need to identify each packet by id
+//        if (packet->id() == Packet::Exit) {
+//          cleanly_stop_loop(*loop);
+//          return;
+//        }
 
         packet->translate();
         LOG.debug("Packet translated", "BABLE poller");

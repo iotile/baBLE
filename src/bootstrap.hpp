@@ -39,16 +39,17 @@ namespace Bootstrap {
 
   // Create one HCI socket per controller
   vector<shared_ptr<HCISocket>> create_hci_sockets(const shared_ptr<MGMTSocket>& mgmt_socket, const shared_ptr<HCIFormat>& hci_format) {
-    // TODO: use ioctl instead ?
+    // TODO: use ioctl instead
     vector<shared_ptr<HCISocket>> hci_sockets;
     Packet::Type packet_type = mgmt_socket->format()->packet_type();
     shared_ptr<GetControllersList> get_controllers_list_packet = make_shared<GetControllersList>(packet_type, packet_type);
 
     // Send GetControllersList packet through MGMT
-    while (get_controllers_list_packet->expected_response_uuid() != 0){
+    while (!get_controllers_list_packet->expected_response_uuids().empty()){
       mgmt_socket->sync_send(get_controllers_list_packet->to_bytes());
       vector<uint8_t> raw_response = mgmt_socket->sync_receive();
-      get_controllers_list_packet->on_response_received(packet_type, raw_response);
+      shared_ptr<AbstractExtractor> extractor = mgmt_socket->format()->create_extractor(raw_response);
+      get_controllers_list_packet->on_response_received(packet_type, extractor);
     }
 
     vector<Format::MGMT::Controller> controllers = get_controllers_list_packet->get_controllers();

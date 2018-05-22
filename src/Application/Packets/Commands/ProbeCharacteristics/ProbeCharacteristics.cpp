@@ -15,21 +15,17 @@ namespace Packet::Commands {
     CommandPacket::unserialize(extractor);
 
     try {
-      m_connection_handle = static_cast<uint16_t>(stoi(extractor.get()));
+      m_connection_handle = AsciiFormat::string_to_number<uint16_t>(extractor.get_string());
 
     } catch (const Exceptions::WrongFormatException& err) {
-      throw Exceptions::InvalidCommandException("Missing arguments for 'ProbeCharacteristics' packet."
+      throw Exceptions::InvalidCommandException("Invalid arguments for 'ProbeCharacteristics' packet."
                                                 "Usage: <uuid>,<command_code>,<controller_id>,<connection_handle>", m_uuid_request);
-    } catch (const bad_cast& err) {
-      throw Exceptions::InvalidCommandException("Invalid arguments for 'ProbeCharacteristics' packet. Can't cast.", m_uuid_request);
-    } catch (const std::invalid_argument& err) {
-      throw Exceptions::InvalidCommandException("Invalid arguments for 'ProbeCharacteristics' packet.", m_uuid_request);
     }
   }
 
   void ProbeCharacteristics::unserialize(FlatbuffersFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
-    auto payload = extractor.get_payload<const Schemas::ProbeCharacteristics*>(Schemas::Payload::ProbeCharacteristics);
+    auto payload = extractor.get_payload<const Schemas::ProbeCharacteristics*>();
 
     m_connection_handle = payload->connection_handle();
   }
@@ -146,14 +142,47 @@ namespace Packet::Commands {
     }
   }
 
-  uint64_t ProbeCharacteristics::expected_response_uuid() {
+  vector<uint64_t> ProbeCharacteristics::expected_response_uuids() {
     if (!m_response_received | m_waiting_characteristics) {
-      return Packet::AbstractPacket::compute_uuid(
-          m_controller_id,
-          Format::HCI::AttributeCode::ReadByTypeResponse
-      );
+      return {
+        Packet::AbstractPacket::compute_uuid(m_controller_id, Format::HCI::AttributeCode::ReadByTypeResponse),
+        Packet::AbstractPacket::compute_uuid(m_controller_id, Format::HCI::AttributeCode::ErrorResponse)
+      };
     } else {
-      return 0;
+      return {};
     }
   }
+
+  bool ProbeCharacteristics::on_response_received(Packet::Type packet_type, const std::shared_ptr<AbstractExtractor>& extractor) {
+    if (packet_type != m_translated_type) {
+      return false;
+    }
+
+    LOG.debug("Response received", "ProbeCharacteristics");
+
+    uint16_t packet_code = extractor->get_packet_code();
+    switch (packet_code) {
+
+      case Format::HCI::AttributeCode::ErrorResponse:
+      {
+        auto request_opcode_in_error = extractor->get_value<uint8_t>();
+        if (request_opcode_in_error != Format::HCI::AttributeCode::ReadByTypeRequest) {
+          return false;
+        }
+        m_waiting_characteristics = false;
+        break;
+      }
+
+      case Format::HCI::AttributeCode::ReadByTypeResponse:
+        from_bytes(extractor);
+        break;
+
+      default:
+        return false;
+    }
+
+    m_response_received = true;
+    return true;
+  }
+
 }

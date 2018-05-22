@@ -5,7 +5,7 @@
 
 namespace Packet::Commands {
 
-  // TODO: do better -> is a command because type = Data but acts like an event...
+  // Is a command because type_code == Format::HCI::AsyncData...
   class NotificationReceived : public CommandPacket<NotificationReceived> {
 
   public:

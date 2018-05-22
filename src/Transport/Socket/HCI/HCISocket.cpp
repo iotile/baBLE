@@ -167,12 +167,14 @@ void HCISocket::poll(shared_ptr<uvw::Loop> loop, CallbackFunction on_received) {
       LOG.info("Reading data...", "HCISocket");
       vector<uint8_t> received_payload = receive();
 
+      // TODO: find a cleaner way to check if Connected / Disconnected event
       if (m_format->is_event(m_format->extract_type_code(received_payload))) {
 
         uint16_t packet_code = m_format->extract_packet_code(received_payload);
         if (packet_code == Packet::Events::DeviceConnected::packet_code(m_format->packet_type())) {
           Packet::Events::DeviceConnected device_connected_packet(m_format->packet_type(), m_format->packet_type());
-          device_connected_packet.from_bytes(received_payload, m_controller_id);
+          shared_ptr<AbstractExtractor> extractor = m_format->create_extractor(received_payload);
+          device_connected_packet.from_bytes(extractor);
 
           connect_l2cap_socket(
               device_connected_packet.get_connection_handle(),
@@ -181,7 +183,8 @@ void HCISocket::poll(shared_ptr<uvw::Loop> loop, CallbackFunction on_received) {
           );
         } else if (packet_code == Packet::Events::DeviceDisconnected::packet_code(m_format->packet_type())) {
           Packet::Events::DeviceDisconnected device_disconnected_packet(m_format->packet_type(), m_format->packet_type());
-          device_disconnected_packet.from_bytes(received_payload, m_controller_id);
+          shared_ptr<AbstractExtractor> extractor = m_format->create_extractor(received_payload);
+          device_disconnected_packet.from_bytes(extractor);
 
           disconnect_l2cap_socket(device_disconnected_packet.get_connection_handle());
         }

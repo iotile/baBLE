@@ -6,6 +6,7 @@
 #include <vector>
 #include "../Application/Packets/constants.hpp"
 #include "../Exceptions/AbstractException.hpp"
+#include "AbstractExtractor.hpp"
 
 class AbstractFormat {
 
@@ -19,6 +20,8 @@ public:
 
   virtual bool is_command(uint16_t type_code) = 0;
   virtual bool is_event(uint16_t type_code) = 0;
+
+  virtual std::shared_ptr<AbstractExtractor> create_extractor(const std::vector<uint8_t>& data) = 0;
 
 };
 

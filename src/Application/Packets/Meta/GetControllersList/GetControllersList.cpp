@@ -73,9 +73,7 @@ namespace Packet::Meta {
     auto controllers_vector = builder.CreateVector(controllers);
     auto payload = Schemas::CreateGetControllersList(builder, controllers_vector);
 
-    return builder
-        .set_status(m_status, m_native_status) // TODO: remove unused set_status ?
-        .build(payload, Schemas::Payload::GetControllersList);
+    return builder.build(payload, Schemas::Payload::GetControllersList);
   }
 
   vector<uint8_t> GetControllersList::serialize(MGMTFormatBuilder& builder) const {
@@ -106,26 +104,25 @@ namespace Packet::Meta {
     }
   }
 
-  uint64_t GetControllersList::expected_response_uuid() {
+  // TODO: find a way to have access to current packet_code easily
+  vector<uint64_t> GetControllersList::expected_response_uuids() {
     switch (m_waiting_response) {
       case SubPacket::GetControllersIds:
-        return Packet::AbstractPacket::compute_uuid(
-            NON_CONTROLLER_ID,
-            m_controllers_ids_packet->packet_code(current_type())
-        );
+        return {
+          Packet::AbstractPacket::compute_uuid(NON_CONTROLLER_ID,  m_controllers_ids_packet->packet_code(current_type()))
+        };
 
       case SubPacket::GetControllerInfo:
-        return Packet::AbstractPacket::compute_uuid(
-            m_controllers_ids.at(m_current_index),
-            m_controller_info_packet->packet_code(current_type())
-        );
+        return {
+          Packet::AbstractPacket::compute_uuid(m_controllers_ids.at(m_current_index), m_controller_info_packet->packet_code(current_type()))
+        };
 
       case SubPacket::None:
-        return 0;
+        return {};
     }
   }
 
-  bool GetControllersList::on_response_received(Packet::Type packet_type, const std::vector<uint8_t>& raw_data) {
+  bool GetControllersList::on_response_received(Packet::Type packet_type, const std::shared_ptr<AbstractExtractor>& extractor) {
     if (packet_type != m_translated_type) {
       return false;
     }
@@ -133,7 +130,7 @@ namespace Packet::Meta {
     LOG.debug("Response received", "GetControllersList");
 
     if (m_waiting_response == SubPacket::GetControllersIds) {
-      m_controllers_ids_packet->from_bytes(raw_data, m_controller_id);
+      m_controllers_ids_packet->from_bytes(extractor);
 
       std::tie(m_status, m_native_status, m_native_class) = m_controllers_ids_packet->get_full_status();
 
@@ -154,7 +151,7 @@ namespace Packet::Meta {
       m_waiting_response = SubPacket::GetControllerInfo;
 
     } else if (m_waiting_response == SubPacket::GetControllerInfo) {
-      m_controller_info_packet->from_bytes(raw_data, m_controllers_ids.at(m_current_index));
+      m_controller_info_packet->from_bytes(extractor);
 
       std::tie(m_status, m_native_status, m_native_class) = m_controller_info_packet->get_full_status();
 

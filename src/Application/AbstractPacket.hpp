@@ -50,7 +50,6 @@ namespace Packet {
               .add("Native class", m_native_class)
               .add("Status", status_name)
               .add("Native status", m_native_status)
-              .add("Event code", m_event_code)
               .add("Controller ID", m_controller_id);
           return serialize(builder);
         }
@@ -67,39 +66,50 @@ namespace Packet {
       }
     };
 
-    virtual void from_bytes(const std::vector<uint8_t>& raw_data, uint16_t controller_id) {
-      m_controller_id = controller_id;
+    virtual void from_bytes(const std::shared_ptr<AbstractExtractor>& extractor) {
+      m_controller_id = extractor->get_controller_id();
 
       switch(current_type()) {
         case Packet::Type::MGMT:
         {
-          MGMTFormatExtractor extractor(raw_data);
-          m_event_code = extractor.get_event_code();
+          auto mgmt_extractor = std::dynamic_pointer_cast<MGMTFormatExtractor>(extractor);
+          if(mgmt_extractor == nullptr) {
+            throw std::runtime_error("Can't import data into packet: wrong extractor provided.");
+          }
           m_native_class = "MGMT";
-          return unserialize(extractor);
+          return unserialize(*mgmt_extractor);
         }
 
         case Packet::Type::HCI:
         {
-          HCIFormatExtractor extractor(raw_data);
+          auto hci_extractor = std::dynamic_pointer_cast<HCIFormatExtractor>(extractor);
+          if(hci_extractor == nullptr) {
+            throw std::runtime_error("Can't import data into packet: wrong extractor provided.");
+          }
           m_native_class = "HCI";
-          return unserialize(extractor);
+          return unserialize(*hci_extractor);
         }
 
         case Packet::Type::ASCII:
         {
-          AsciiFormatExtractor extractor(raw_data);
-          m_uuid_request = extractor.get_uuid_request();
+          auto ascii_extractor = std::dynamic_pointer_cast<AsciiFormatExtractor>(extractor);
+          if(ascii_extractor == nullptr) {
+            throw std::runtime_error("Can't import data into packet: wrong extractor provided.");
+          }
+          m_uuid_request = ascii_extractor->get_uuid_request();
           m_native_class = "ASCII";
-          return unserialize(extractor);
+          return unserialize(*ascii_extractor);
         }
 
         case Packet::Type::FLATBUFFERS:
         {
-          FlatbuffersFormatExtractor extractor(raw_data);
-          m_uuid_request = extractor.get_uuid_request();
+          auto fb_extractor = std::dynamic_pointer_cast<FlatbuffersFormatExtractor>(extractor);
+          if(fb_extractor == nullptr) {
+            throw std::runtime_error("Can't import data into packet: wrong extractor provided.");
+          }
+          m_uuid_request = fb_extractor->get_uuid_request();
           m_native_class = "FLATBUFFERS";
-          return unserialize(extractor);
+          return unserialize(*fb_extractor);
         }
 
         case Packet::Type::NONE:
@@ -121,16 +131,16 @@ namespace Packet {
     };
 
     virtual void unserialize(MGMTFormatExtractor& extractor) {
-      throw std::runtime_error("unserialize(MGMTFormatExtractor&) not defined.");
+      throw std::runtime_error("unserialize() not defined for MGMTFormatExtractor.");
     };
     virtual void unserialize(HCIFormatExtractor& extractor) {
-      throw std::runtime_error("unserialize(HCIFormatExtractor&) not defined.");
+      throw std::runtime_error("unserialize() not defined for HCIFormatExtractor.");
     };
     virtual void unserialize(AsciiFormatExtractor& extractor) {
-      throw std::runtime_error("unserialize(AsciiFormatExtractor&) not defined.");
+      throw std::runtime_error("unserialize() not defined for AsciiFormatExtractor.");
     };
     virtual void unserialize(FlatbuffersFormatExtractor& extractor) {
-      throw std::runtime_error("unserialize(FlatbuffersFormatExtractor&) not defined.");
+      throw std::runtime_error("unserialize() not defined for FlatbuffersFormatExtractor.");
     };
 
     const Packet::Type current_type() const {
@@ -151,17 +161,17 @@ namespace Packet {
     };
     virtual void after_translate() {};
 
-    virtual uint64_t expected_response_uuid() {
-      return 0;
+    virtual std::vector<uint64_t> expected_response_uuids() {
+      return {};
     };
-    virtual bool on_response_received(Packet::Type packet_type, const std::vector<uint8_t>& raw_data) {
+    virtual bool on_response_received(Packet::Type packet_type, const std::shared_ptr<AbstractExtractor>& extractor) {
       throw std::runtime_error("on_response_received(Packet::Type, vector<uint8_t>&) callback not defined.");
     };
 
+    // TODO: add values ? (status, ...)
     const std::string stringify() const override {
       AsciiFormatBuilder builder;
       builder
-          .add("Event code", m_event_code)
           .add("Controller ID", m_controller_id);
       std::vector<uint8_t> data = serialize(builder);
       return AsciiFormat::bytes_to_string(data);
@@ -171,6 +181,7 @@ namespace Packet {
       return std::make_tuple(m_status, m_native_status, m_native_class);
     };
 
+    // TODO: move this outside packet
     void compute_bable_status() {
       switch(current_type()) {
 
@@ -276,7 +287,7 @@ namespace Packet {
   protected:
     AbstractPacket(Packet::Type initial_type, Packet::Type translated_type)
         : m_initial_type(initial_type), m_translated_type(translated_type), m_current_type(m_initial_type),
-          m_event_code(0), m_controller_id(NON_CONTROLLER_ID), m_uuid_request(""), m_native_class(""),
+          m_controller_id(NON_CONTROLLER_ID), m_uuid_request(""), m_native_class(""),
           m_status(Schemas::StatusCode::Success), m_native_status(0x00)
     {};
 
@@ -284,7 +295,6 @@ namespace Packet {
     Packet::Type m_translated_type;
     Packet::Type m_current_type;
 
-    uint16_t m_event_code;
     uint16_t m_controller_id;
     std::string m_uuid_request;
 

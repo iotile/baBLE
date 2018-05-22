@@ -25,7 +25,7 @@ public:
   };
 
   uint16_t extract_packet_code(const std::vector<uint8_t>& data) override {
-    return FlatbuffersFormatExtractor::extract_payload_type(data);
+    return FlatbuffersFormatExtractor::extract_packet_code(data);
   }
 
   uint16_t extract_controller_id(const std::vector<uint8_t>& data) override {
@@ -33,11 +33,15 @@ public:
   }
 
   uint16_t extract_type_code(const std::vector<uint8_t>& data) override {
-    return 0;
+    return FlatbuffersFormatExtractor::extract_type_code(data);
   }
 
   uint16_t extract_payload_length(const std::vector<uint8_t>& data) override {
-    throw std::runtime_error("Flatbuffers format can't extract payload length: this information is not included in the format.");
+    return FlatbuffersFormatExtractor::extract_payload_length(data);
+  };
+
+  std::shared_ptr<AbstractExtractor> create_extractor(const std::vector<uint8_t>& data) override {
+    return std::make_shared<FlatbuffersFormatExtractor>(data);
   };
 
 private:

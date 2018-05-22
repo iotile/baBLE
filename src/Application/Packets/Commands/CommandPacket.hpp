@@ -44,7 +44,7 @@ namespace Packet::Commands {
     }
 
     void unserialize(MGMTFormatExtractor& extractor) override {
-      m_command_code = extractor.get_value<uint16_t>();
+      m_command_code = extractor.get_packet_code();
       m_native_status = extractor.get_value<uint8_t>();
       compute_bable_status();
     }
@@ -52,27 +52,29 @@ namespace Packet::Commands {
     void unserialize(HCIFormatExtractor& extractor) override {}
 
     void unserialize(AsciiFormatExtractor& extractor) override {
-      m_command_code = extractor.get_command_code();
+      m_command_code = extractor.get_packet_code();
     }
 
     void unserialize(FlatbuffersFormatExtractor& extractor) override {}
 
-    uint64_t expected_response_uuid() override {
+    std::vector<uint64_t> expected_response_uuids() override {
       if (!m_response_received) {
-        return Packet::AbstractPacket::compute_uuid(m_controller_id, T::packet_code(m_translated_type));
+        return {
+          Packet::AbstractPacket::compute_uuid(m_controller_id, T::packet_code(m_translated_type))
+        };
 
       } else {
-        return 0;
+        return {};
       }
     }
 
-    bool on_response_received(Packet::Type packet_type, const std::vector<uint8_t>& raw_data) override {
+    bool on_response_received(Packet::Type packet_type, const std::shared_ptr<AbstractExtractor>& extractor) override {
       if (packet_type != m_translated_type) {
         return false;
       }
 
       LOG.debug("Response received", "CommandPacket");
-      from_bytes(raw_data, m_controller_id);
+      from_bytes(extractor);
       m_response_received = true;
       return true;
     }

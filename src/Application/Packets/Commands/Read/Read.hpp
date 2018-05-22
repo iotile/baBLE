@@ -37,12 +37,14 @@ namespace Packet::Commands {
     std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
     std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
 
-    uint64_t expected_response_uuid() override {
+    std::vector<uint64_t> expected_response_uuids() override {
       if (!m_response_received) {
-        return Packet::AbstractPacket::compute_uuid(m_controller_id, Format::HCI::AttributeCode::ReadResponse);
+        return {
+          Packet::AbstractPacket::compute_uuid(m_controller_id, Format::HCI::AttributeCode::ReadResponse)
+        };
 
       } else {
-        return 0;
+        return {};
       }
     };
 

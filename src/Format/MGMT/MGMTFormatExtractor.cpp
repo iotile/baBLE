@@ -3,9 +3,9 @@
 using namespace std;
 
 // Static
-uint16_t MGMTFormatExtractor::extract_event_code(const vector<uint8_t>& data) {
+uint16_t MGMTFormatExtractor::extract_type_code(const vector<uint8_t>& data) {
   if (data.size() < 2) {
-    throw Exceptions::WrongFormatException("Given MGMT data are too small (< 2 bytes). Can't extract event code.");
+    throw Exceptions::WrongFormatException("Given MGMT data are too small (< 2 bytes). Can't extract type code.");
   }
 
   // Use little endian
@@ -14,7 +14,7 @@ uint16_t MGMTFormatExtractor::extract_event_code(const vector<uint8_t>& data) {
   return event_code;
 };
 
-uint16_t MGMTFormatExtractor::extract_command_code(const vector<uint8_t>& data, bool isRequest) {
+uint16_t MGMTFormatExtractor::extract_packet_code(const vector<uint8_t>& data, bool isRequest) {
   uint16_t command_code;
 
   if (isRequest) {
@@ -30,9 +30,9 @@ uint16_t MGMTFormatExtractor::extract_command_code(const vector<uint8_t>& data, 
       throw Exceptions::WrongFormatException("Given MGMT data are too small (< 8 bytes). Can't extract command code.");
     }
 
-    uint16_t event_code = extract_event_code(data);
+    uint16_t event_code = extract_type_code(data);
 
-    if (event_code != 0x0001 && event_code != 0x0002) {
+    if (event_code != Format::MGMT::EventCode::CommandComplete && event_code != Format::MGMT::EventCode::CommandStatus) {
       throw Exceptions::WrongFormatException("Can't extract command code from given MGMT data: no command code inside");
     }
 
@@ -68,9 +68,17 @@ uint16_t MGMTFormatExtractor::extract_payload_length(const vector<uint8_t>& data
 
 // Constructors
 MGMTFormatExtractor::MGMTFormatExtractor(const vector<uint8_t>& data)
-    : m_event_code(0), m_controller_id(0), m_params_length(0) {
+    : AbstractExtractor(data) {
+  m_header_length = Format::MGMT::header_length;
   parse_header(data);
-  m_payload.assign(data.rbegin(), data.rend() - Format::MGMT::header_length);
+  set_data_pointer(m_header_length);
+
+  if (m_type_code == Format::MGMT::EventCode::CommandComplete || m_type_code == Format::MGMT::EventCode::CommandStatus) {
+    // Use little endian
+    m_packet_code = get_value<uint16_t>();
+  } else {
+    m_packet_code = m_type_code;
+  }
 };
 
 // Parsers
@@ -79,9 +87,9 @@ void MGMTFormatExtractor::parse_header(const vector<uint8_t>& data) {
     throw Exceptions::WrongFormatException("Given MGMT data are too small (< 6 bytes). Can't parse header.");
   }
 
-  m_event_code = (static_cast<uint16_t>(data.at(1)) << 8) | data.at(0);
+  m_type_code = (static_cast<uint16_t>(data.at(1)) << 8) | data.at(0);
   m_controller_id = (static_cast<uint16_t>(data.at(3)) << 8) | data.at(2);
-  m_params_length = (static_cast<uint16_t>(data.at(5)) << 8) | data.at(4);
+  m_data_length = (static_cast<uint16_t>(data.at(5)) << 8) | data.at(4);
 };
 
 Format::MGMT::EIR MGMTFormatExtractor::parse_eir(const vector<uint8_t>& data) {

@@ -13,21 +13,17 @@ namespace Packet::Commands {
     CommandPacket::unserialize(extractor);
 
     try {
-      m_state = static_cast<bool>(stoi(extractor.get()));
+      m_state = AsciiFormat::string_to_number<bool>(extractor.get_string());
 
     } catch (const Exceptions::WrongFormatException& err) {
-      throw Exceptions::InvalidCommandException("Missing arguments for 'SetPowered' packet."
+      throw Exceptions::InvalidCommandException("Invalid arguments for 'SetPowered' packet."
                                                 "Usage: <uuid>,<command_code>,<controller_id>,<state>", m_uuid_request);
-    } catch (const std::bad_cast& err) {
-      throw Exceptions::InvalidCommandException("Invalid arguments for 'SetPowered' packet. Can't cast.", m_uuid_request);
-    } catch (const std::invalid_argument& err) {
-      throw Exceptions::InvalidCommandException("Invalid arguments for 'SetPowered' packet.", m_uuid_request);
     }
   };
 
   void SetPowered::unserialize(FlatbuffersFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
-    auto payload = extractor.get_payload<const Schemas::SetPowered*>(Schemas::Payload::SetPowered);
+    auto payload = extractor.get_payload<const Schemas::SetPowered*>();
 
     m_state = payload->state();
   };

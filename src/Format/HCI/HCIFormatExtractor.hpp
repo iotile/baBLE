@@ -7,14 +7,11 @@
 #include <stdexcept>
 #include <vector>
 #include "./constants.hpp"
+#include "../AbstractExtractor.hpp"
 #include "../../Log/Log.hpp"
 #include "../../Exceptions/WrongFormat/WrongFormatException.hpp"
 
-#if __BYTE_ORDER__ == __ORDER_PDP_ENDIAN__
-#error "Byte order not suported (PDP endian)"
-#endif
-
-class HCIFormatExtractor {
+class HCIFormatExtractor : public AbstractExtractor {
 
 public:
   static uint8_t extract_type_code(const std::vector<uint8_t>& data) {
@@ -66,24 +63,7 @@ public:
   };
 
   static uint16_t extract_controller_id(const std::vector<uint8_t>& data) {
-    // TODO: is connection handle really equivalent to controller id ??? -> no
-    uint16_t controller_id;
-    uint8_t type_code = extract_type_code(data);
-
-    if (type_code != Format::HCI::Type::AsyncData) {
-      return NON_CONTROLLER_ID;
-    }
-
-    if (data.size() < Format::HCI::async_data_header_length) {
-      throw Exceptions::WrongFormatException("Given HCI data are too small (< "
-                                                 + std::to_string(Format::HCI::async_data_header_length)
-                                                 + " bytes). Can't extract controller id.");
-    }
-
-    // Use little endian
-    controller_id = (static_cast<uint16_t>(data.at(2) & 0x0F) << 8) | data.at(1);
-
-    return controller_id;
+    throw std::runtime_error("HCI format can't extract controller id: this information is not included in the format.");
   };
 
   static uint16_t extract_payload_length(const std::vector<uint8_t>& data) {
@@ -120,7 +100,7 @@ public:
     return payload_length;
   };
 
-  static const size_t get_header_length(uint8_t type_code) {
+  static const size_t get_header_length(uint16_t type_code) {
     size_t header_length;
 
     switch (type_code) {
@@ -146,31 +126,20 @@ public:
 
   // Constructors
   explicit HCIFormatExtractor(const std::vector<uint8_t>& data)
-    : m_type_code(0), m_data_length(0), m_command_code(0), m_connection_handle(0), m_attribute_code(0),
-      m_full_event_code(0), m_header_length(0) {
+    : AbstractExtractor(data) {
+    m_connection_handle = 0;
     parse_header(data);
-    m_payload.assign(data.rbegin(), data.rend() - m_header_length);
+    set_data_pointer(m_header_length);
   };
 
   // Getters
-  template<typename T>
-  T get_value();
-  template<typename T, size_t N>
-  std::array<T, N> get_array();
-  template<typename T>
-  std::vector<T> get_vector(size_t length);
-
-  const uint16_t get_data_length() const {
-    return m_data_length;
-  };
-
   const uint16_t get_connection_handle() const {
     return m_connection_handle;
   };
 
 private:
   // Parsers
-  void parse_header(const std::vector<uint8_t>& data) {
+  void parse_header(const std::vector<uint8_t>& data) override {
     m_type_code = extract_type_code(data);
     m_header_length = get_header_length(m_type_code);
     if (data.size() < m_header_length) {
@@ -181,7 +150,7 @@ private:
     switch (m_type_code) {
       case Format::HCI::Type::Command:
         // Use little endian
-        m_command_code = (data.at(2) << 8) | data.at(1);
+        m_packet_code = (data.at(2) << 8) | data.at(1);
         m_data_length = static_cast<uint16_t>(data.at(3));
         break;
 
@@ -192,14 +161,14 @@ private:
         if (m_data_length > 0) {
           m_data_length -= 1; // To consider opcode as part of the header
         }
-        m_attribute_code = data.at(9);
+        m_packet_code = static_cast<uint16_t>(data.at(9));
         break;
 
       case Format::HCI::Type::Event:
         {
           uint8_t event_code = data.at(1);
           if (event_code == Format::HCI::EventCode::LEMeta && data.size() >= m_header_length + 1) {
-            m_full_event_code = event_code << 8 | data.at(3);
+            m_packet_code = event_code << 8 | data.at(3);
             m_header_length += 1;
           }
           m_data_length = data.at(2);
@@ -212,74 +181,9 @@ private:
     }
   };
 
-  uint8_t m_type_code;
-  uint16_t m_data_length;
-
-  // Command
-  uint16_t m_command_code;
   // Data
   uint16_t m_connection_handle;
-  uint8_t m_attribute_code;
-  // Event
-  uint16_t m_full_event_code;
-  size_t m_header_length;
 
-  std::vector<uint8_t> m_payload;
-
-};
-
-template<typename T>
-T HCIFormatExtractor::get_value() {
-  const size_t nb_bytes = sizeof(T);
-
-  if (nb_bytes > m_payload.size()) {
-    throw Exceptions::WrongFormatException("Can't deserialize given type: not enough bytes in payload.");
-  }
-
-  T result;
-  if (nb_bytes == 1) {
-    result = m_payload.back();
-    m_payload.pop_back();
-
-  } else {
-    auto byte_ptr = (uint8_t*)&result;
-    if (__BYTE_ORDER == __LITTLE_ENDIAN) {
-      for(size_t i = 0; i < nb_bytes; i++) {
-        byte_ptr[i] = m_payload.back();
-        m_payload.pop_back();
-      }
-
-    } else {
-      for(size_t i = nb_bytes - 1; i >= 0; i--) {
-        byte_ptr[i] = m_payload.back();
-        m_payload.pop_back();
-      }
-    }
-  }
-
-  return result;
-};
-
-template<typename T, size_t N>
-std::array<T, N> HCIFormatExtractor::get_array() {
-  std::array<T, N> result;
-
-  for (auto& value : result) {
-    value = get_value<T>();
-  }
-
-  return result;
-};
-
-template<typename T>
-std::vector<T> HCIFormatExtractor::get_vector(size_t length) {
-  std::vector<T> result(length);
-
-  for (auto& value : result) {
-    value = get_value<T>();
-  }
-
-  return result;
 };
 
 #endif //BABLE_LINUX_HCIFORMATEXTRACTOR_HPP

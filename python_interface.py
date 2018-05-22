@@ -260,6 +260,7 @@ def build_packet(builder, uuid, payload, payload_type, controller_id = None):
 
     buf = builder.Output()
     buf = b'\xCA\xFE' + len(buf).to_bytes(2, byteorder='little') + buf
+    print(buf)
     return buf
 
 address_device = [0xC4, 0xF0, 0xA5, 0xE6, 0x8A, 0x91]
@@ -390,8 +391,8 @@ try:
                   "Controller ID:", controller_id, "Address type:", address_type, "Address:", address,
                   "Flags:", flags, "Device UUID:", device_uuid, "Company id:", company_id, "Device name:", device_name)
 
-            process.stdin.write(fb_write("0002", 0, 0x0040, 0x0003, "Alexis"))
-
+            # process.stdin.write(fb_write("0002", 0, 0x0040, 0x0003, "Alexis"))
+            process.stdin.write(fb_probe_characteristics("12356789", 0, 0x0040))
         elif packet.PayloadType() == Payload.Payload().DeviceDisconnected:
             device_disconnected = DeviceDisconnected.DeviceDisconnected()
             device_disconnected.Init(packet.Payload().Bytes, packet.Payload().Pos)

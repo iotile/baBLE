@@ -13,31 +13,27 @@ namespace Packet::Commands {
     CommandPacket::unserialize(extractor);
 
     try {
-      m_address_type = static_cast<uint8_t>(stoi(extractor.get()));
+      m_address_type = AsciiFormat::string_to_number<uint8_t>(extractor.get_string());
 
-      string address_str = extractor.get();
+      string address_str = extractor.get_string();
       string item;
       istringstream address_stream(address_str);
       for (uint8_t& item_address : m_address) {
         if (!getline(address_stream, item, ':')) {
           throw Exceptions::InvalidCommandException("Can't parse <address> argument for 'Disconnect' packet.", m_uuid_request);
         }
-        item_address = static_cast<uint8_t>(stoi(item));
+        item_address = AsciiFormat::string_to_number<uint8_t>(item);
       }
 
     } catch (const Exceptions::WrongFormatException& err) {
-      throw Exceptions::InvalidCommandException("Missing arguments for 'Disconnect' packet."
+      throw Exceptions::InvalidCommandException("Invalid arguments for 'Disconnect' packet."
                                                 "Usage: <uuid>,<command_code>,<controller_id>,<address_type>,<address>", m_uuid_request);
-    } catch (const bad_cast& err) {
-      throw Exceptions::InvalidCommandException("Invalid arguments for 'Disconnect' packet. Can't cast", m_uuid_request);
-    } catch (const std::invalid_argument& err) {
-      throw Exceptions::InvalidCommandException("Invalid arguments for 'Disconnect' packet.", m_uuid_request);
     }
   };
 
   void Disconnect::unserialize(FlatbuffersFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
-    auto payload = extractor.get_payload<const Schemas::Disconnect*>(Schemas::Payload::Disconnect);
+    auto payload = extractor.get_payload<const Schemas::Disconnect*>();
 
     m_address_type = payload->address_type();
 

@@ -13,21 +13,17 @@ namespace Packet::Commands {
     CommandPacket::unserialize(extractor);
 
     try {
-      m_address_type = static_cast<uint8_t>(stoi(extractor.get()));
+      m_address_type = AsciiFormat::string_to_number<uint8_t>(extractor.get_string());
 
     } catch (const Exceptions::WrongFormatException& err) {
-      throw Exceptions::InvalidCommandException("Missing arguments for 'StartScan' packet."
+      throw Exceptions::InvalidCommandException("Invalid arguments for 'StartScan' packet."
                                                 "Usage: <uuid>,<command_code>,<controller_id>,<address_type>", m_uuid_request);
-    } catch (const std::bad_cast& err) {
-      throw Exceptions::InvalidCommandException("Invalid arguments for 'StartScan' packet. Can't cast.", m_uuid_request);
-    } catch (const std::invalid_argument& err) {
-      throw Exceptions::InvalidCommandException("Invalid arguments for 'StartScan' packet.", m_uuid_request);
     }
   };
 
   void StartScan::unserialize(FlatbuffersFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
-    auto payload = extractor.get_payload<const Schemas::StartScan*>(Schemas::Payload::StartScan);
+    auto payload = extractor.get_payload<const Schemas::StartScan*>();
 
     m_address_type = payload->address_type();
   };

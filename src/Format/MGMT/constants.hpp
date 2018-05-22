@@ -25,6 +25,8 @@ namespace Format::MGMT {
   };
 
   enum EventCode {
+    CommandComplete= 0x0001,
+    CommandStatus= 0x0002,
     IndexAdded= 0x0004,
     IndexRemoved= 0x0005,
     NewSettings= 0x0006,

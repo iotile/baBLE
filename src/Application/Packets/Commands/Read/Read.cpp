@@ -11,22 +11,18 @@ namespace Packet::Commands {
     CommandPacket::unserialize(extractor);
 
     try {
-      m_connection_handle = static_cast<uint16_t>(stoi(extractor.get()));
-      m_attribute_handle = static_cast<uint16_t>(stoi(extractor.get()));
+      m_connection_handle = AsciiFormat::string_to_number<uint16_t>(extractor.get_string());
+      m_attribute_handle = AsciiFormat::string_to_number<uint16_t>(extractor.get_string());
 
     } catch (const Exceptions::WrongFormatException& err) {
-      throw Exceptions::InvalidCommandException("Missing arguments for 'Read' packet."
+      throw Exceptions::InvalidCommandException("Invalid arguments for 'Read' packet."
                                                 "Usage: <uuid>,<command_code>,<controller_id>,<connection_handle>,<attribute_handle>", m_uuid_request);
-    } catch (const bad_cast& err) {
-      throw Exceptions::InvalidCommandException("Invalid arguments for 'Read' packet. Can't cast.", m_uuid_request);
-    } catch (const std::invalid_argument& err) {
-      throw Exceptions::InvalidCommandException("Invalid arguments for 'Read' packet.", m_uuid_request);
     }
   };
 
   void Read::unserialize(FlatbuffersFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
-    auto payload = extractor.get_payload<const Schemas::Read*>(Schemas::Payload::Read);
+    auto payload = extractor.get_payload<const Schemas::Read*>();
 
     m_connection_handle = payload->connection_handle();
     m_attribute_handle = payload->attribute_handle();

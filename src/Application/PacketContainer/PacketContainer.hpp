@@ -17,6 +17,7 @@ class PacketContainer : public Loggable {
   // Define packet constructor function prototype
   using PacketConstructor = std::function<std::shared_ptr<Packet::AbstractPacket>()>;
   using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono::nanoseconds>;
+  using RequestId = std::tuple<Packet::Type, uint64_t>;
 
 public:
   static void register_response(std::shared_ptr<Packet::AbstractPacket> packet);
@@ -35,9 +36,9 @@ public:
   PacketContainer& register_event();
 
   // To build packets
-  std::shared_ptr<Packet::AbstractPacket> build(const std::vector<uint8_t>& raw_data, uint16_t controller_id);
-  std::shared_ptr<Packet::AbstractPacket> build_command(const std::vector<uint8_t>& raw_data, uint16_t controller_id);
-  std::shared_ptr<Packet::AbstractPacket> build_event(const std::vector<uint8_t>& raw_data, uint16_t controller_id);
+  std::shared_ptr<Packet::AbstractPacket> build(std::shared_ptr<AbstractExtractor>);
+  std::shared_ptr<Packet::AbstractPacket> build_command(std::shared_ptr<AbstractExtractor>);
+  std::shared_ptr<Packet::AbstractPacket> build_event(std::shared_ptr<AbstractExtractor>);
 
   const std::string stringify() const override;
 
@@ -49,8 +50,8 @@ private:
   std::unordered_map<uint16_t, PacketConstructor> m_commands{};
   std::unordered_map<uint16_t, PacketConstructor> m_events{};
 
-  static std::map<std::tuple<Packet::Type, uint64_t>, std::shared_ptr<Packet::AbstractPacket>> m_waiting_packets;
-  static std::map<TimePoint, std::tuple<Packet::Type, uint64_t>> m_expiration_waiting_packets;
+  static std::map<RequestId, std::shared_ptr<Packet::AbstractPacket>> m_waiting_packets;
+  static std::multimap<TimePoint, RequestId> m_expiration_waiting_packets;
 
 };
 

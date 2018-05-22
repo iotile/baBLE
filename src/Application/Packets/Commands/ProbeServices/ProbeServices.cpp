@@ -15,21 +15,17 @@ namespace Packet::Commands {
     CommandPacket::unserialize(extractor);
 
     try {
-      m_connection_handle = static_cast<uint16_t>(stoi(extractor.get()));
+      m_connection_handle = AsciiFormat::string_to_number<uint16_t>(extractor.get_string());
 
     } catch (const Exceptions::WrongFormatException& err) {
-      throw Exceptions::InvalidCommandException("Missing arguments for 'ProbeServices' packet."
+      throw Exceptions::InvalidCommandException("Invalid arguments for 'ProbeServices' packet."
                                                 "Usage: <uuid>,<command_code>,<controller_id>,<connection_handle>", m_uuid_request);
-    } catch (const bad_cast& err) {
-      throw Exceptions::InvalidCommandException("Invalid arguments for 'ProbeServices' packet. Can't cast.", m_uuid_request);
-    } catch (const std::invalid_argument& err) {
-      throw Exceptions::InvalidCommandException("Invalid arguments for 'ProbeServices' packet.", m_uuid_request);
     }
   }
 
   void ProbeServices::unserialize(FlatbuffersFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
-    auto payload = extractor.get_payload<const Schemas::ProbeServices*>(Schemas::Payload::ProbeServices);
+    auto payload = extractor.get_payload<const Schemas::ProbeServices*>();
 
     m_connection_handle = payload->connection_handle();
   }
@@ -130,14 +126,13 @@ namespace Packet::Commands {
     }
   }
 
-  uint64_t ProbeServices::expected_response_uuid() {
+  vector<uint64_t> ProbeServices::expected_response_uuids() {
     if (!m_response_received | m_waiting_services) {
-      return Packet::AbstractPacket::compute_uuid(
-          m_controller_id,
-          Format::HCI::AttributeCode::ReadByGroupTypeResponse
-      );
+      return {
+        Packet::AbstractPacket::compute_uuid(m_controller_id, Format::HCI::AttributeCode::ReadByGroupTypeResponse)
+      };
     } else {
-      return 0;
+      return {};
     }
   }
 }

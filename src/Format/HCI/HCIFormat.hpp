@@ -23,20 +23,23 @@ public:
 
   uint16_t extract_packet_code(const std::vector<uint8_t>& data) override {
     return HCIFormatExtractor::extract_packet_code(data);
-  }
+  };
 
   uint16_t extract_type_code(const std::vector<uint8_t>& data) override {
     return HCIFormatExtractor::extract_type_code(data);
-  }
+  };
 
   uint16_t extract_controller_id(const std::vector<uint8_t>& data) override {
     return HCIFormatExtractor::extract_controller_id(data);
-  }
+  };
 
   uint16_t extract_payload_length(const std::vector<uint8_t>& data) override {
     return HCIFormatExtractor::extract_payload_length(data);
-  }
+  };
 
+  std::shared_ptr<AbstractExtractor> create_extractor(const std::vector<uint8_t>& data) override {
+    return std::make_shared<HCIFormatExtractor>(data);
+  };
 
 };
 

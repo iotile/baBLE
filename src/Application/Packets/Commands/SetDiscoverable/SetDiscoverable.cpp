@@ -14,8 +14,8 @@ namespace Packet::Commands {
     CommandPacket::unserialize(extractor);
 
     try {
-      m_state = static_cast<uint8_t>(stoi(extractor.get()));
-      m_timeout = static_cast<uint16_t>(stoi(extractor.get()));
+      m_state = AsciiFormat::string_to_number<uint8_t>(extractor.get_string());
+      m_timeout = AsciiFormat::string_to_number<uint16_t>(extractor.get_string());
 
       if (m_state < 0 || m_state > 2) {
         throw Exceptions::InvalidCommandException("Invalid value for state for 'SetDiscoverable' packet.", m_uuid_request);
@@ -25,18 +25,14 @@ namespace Packet::Commands {
       }
 
     } catch (const Exceptions::WrongFormatException& err) {
-      throw Exceptions::InvalidCommandException("Missing arguments for 'SetDiscoverable' packet."
+      throw Exceptions::InvalidCommandException("Invalid arguments for 'SetDiscoverable' packet."
                                                 "Usage: <uuid>,<command_code>,<controller_id>,<state>", m_uuid_request);
-    } catch (const std::bad_cast& err) {
-      throw Exceptions::InvalidCommandException("Invalid arguments for 'SetDiscoverable' packet. Can't cast.", m_uuid_request);
-    } catch (const std::invalid_argument& err) {
-      throw Exceptions::InvalidCommandException("Invalid arguments for 'SetDiscoverable' packet.", m_uuid_request);
     }
   }
 
   void SetDiscoverable::unserialize(FlatbuffersFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
-    auto payload = extractor.get_payload<const Schemas::SetDiscoverable*>(Schemas::Payload::SetDiscoverable);
+    auto payload = extractor.get_payload<const Schemas::SetDiscoverable*>();
 
     m_state = static_cast<uint8_t>(payload->state());
     m_timeout = payload->timeout();
