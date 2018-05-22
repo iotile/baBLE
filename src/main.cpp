@@ -116,7 +116,7 @@ int main() {
       [&hci_packet_container, &socket_container, &stdio_socket](const std::vector<uint8_t>& received_data, const AbstractSocket& socket) {
         try {
           shared_ptr<AbstractExtractor> extractor = socket.format()->create_extractor(received_data);
-          extractor->set_controller_id(socket.controller_id());
+          extractor->set_controller_id(socket.get_controller_id());
           std::shared_ptr<Packet::AbstractPacket> packet = hci_packet_container.build(extractor);
           LOG.debug("Packet built", "HCI poller");
 

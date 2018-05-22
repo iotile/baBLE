@@ -11,9 +11,6 @@ namespace Packet::Meta {
 
     m_waiting_response = SubPacket::GetControllersIds;
     m_current_index = 0;
-
-    m_status = Schemas::StatusCode::Success;
-    m_native_status = 0;
   }
 
   void GetControllersList::unserialize(AsciiFormatExtractor& extractor) {}
@@ -109,12 +106,12 @@ namespace Packet::Meta {
     switch (m_waiting_response) {
       case SubPacket::GetControllersIds:
         return {
-          ResponseId{current_type(), NON_CONTROLLER_ID, m_controllers_ids_packet->packet_code(current_type())}
+          ResponseId{m_current_type, NON_CONTROLLER_ID, m_controllers_ids_packet->packet_code(m_current_type)}
         };
 
       case SubPacket::GetControllerInfo:
         return {
-          ResponseId{current_type(), m_controllers_ids.at(m_current_index), m_controller_info_packet->packet_code(current_type())}
+          ResponseId{m_current_type, m_controllers_ids.at(m_current_index), m_controller_info_packet->packet_code(m_current_type)}
         };
 
       case SubPacket::None:
@@ -132,7 +129,7 @@ namespace Packet::Meta {
     if (m_waiting_response == SubPacket::GetControllersIds) {
       m_controllers_ids_packet->from_bytes(extractor);
 
-      std::tie(m_status, m_native_status, m_native_class) = m_controllers_ids_packet->get_full_status();
+      import_status(*m_controllers_ids_packet);
 
       if (m_status != Schemas::StatusCode::Success) {
         m_waiting_response = SubPacket::None;
@@ -153,7 +150,7 @@ namespace Packet::Meta {
     } else if (m_waiting_response == SubPacket::GetControllerInfo) {
       m_controller_info_packet->from_bytes(extractor);
 
-      std::tie(m_status, m_native_status, m_native_class) = m_controller_info_packet->get_full_status();
+      import_status(*m_controller_info_packet);
 
       if (m_status != Schemas::StatusCode::Success) {
         m_waiting_response = SubPacket::None;

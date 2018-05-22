@@ -21,7 +21,7 @@ namespace Packet::Commands {
   void GetMGMTInfo::unserialize(MGMTFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
 
-    if (m_native_status == 0) {
+    if (m_status == Schemas::StatusCode::Success) {
       m_version = extractor.get_value<uint8_t>();
       m_revision = extractor.get_value<uint16_t>();
     }

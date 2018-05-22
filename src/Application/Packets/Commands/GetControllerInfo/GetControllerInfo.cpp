@@ -20,7 +20,7 @@ namespace Packet::Commands {
   void GetControllerInfo::unserialize(MGMTFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
 
-    if (m_native_status == 0) {
+    if (m_status == Schemas::StatusCode::Success) {
       m_controller_info.id = m_controller_id;
       m_controller_info.address = extractor.get_array<uint8_t, 6>();
       m_controller_info.bluetooth_version = extractor.get_value<uint8_t>();

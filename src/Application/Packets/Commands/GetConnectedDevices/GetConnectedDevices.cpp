@@ -18,7 +18,7 @@ namespace Packet::Commands {
   void GetConnectedDevices::unserialize(MGMTFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
 
-    if (m_native_status == 0) {
+    if (m_status == Schemas::StatusCode::Success) {
       auto m_num_connections = extractor.get_value<uint16_t>();
       m_devices.reserve(m_num_connections);
 

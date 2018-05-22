@@ -53,10 +53,10 @@ namespace Packet::Errors {
   };
 
   void BaBLEErrorPacket::from_exception(const Exceptions::AbstractException& exception) {
-    m_type = exception.exception_type();
-    m_name = exception.exception_name();
+    m_type = exception.get_type();
+    m_name = exception.get_name();
     m_message = exception.stringify();
-    m_uuid_request = exception.uuid_request();
+    m_uuid_request = exception.get_uuid_request();
   };
 
 }

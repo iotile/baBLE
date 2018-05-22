@@ -41,7 +41,7 @@ namespace Packet::Commands {
   void SetDiscoverable::unserialize(MGMTFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
 
-    if (m_native_status == 0){
+    if (m_status == Schemas::StatusCode::Success){
       auto m_current_settings = extractor.get_value<uint32_t>();
       m_state = static_cast<uint8_t>((m_current_settings & 1 << 3) > 0);
     }

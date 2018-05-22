@@ -31,7 +31,7 @@ namespace Packet::Commands {
   void SetPowered::unserialize(MGMTFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
 
-    if (m_native_status == 0){
+    if (m_status == Schemas::StatusCode::Success){
       auto m_current_settings = extractor.get_value<uint32_t>();
       m_state = (m_current_settings & 1) > 0;
     }

@@ -10,11 +10,11 @@ namespace Exceptions {
   public:
     explicit SocketException(const std::string& message): AbstractException(message) {};
 
-    const Exceptions::Type exception_type() const override {
+    const Exceptions::Type get_type() const override {
       return Exceptions::Type::SocketError;
     };
 
-    const std::string exception_name() const override {
+    const std::string get_name() const override {
       return "SocketError";
     };
 

@@ -18,7 +18,7 @@ void PacketContainer::register_response(shared_ptr<Packet::AbstractPacket> packe
   for (auto& expected_uuid : expected_uuids) {
     auto waiting_it = m_waiting_packets.find(expected_uuid);
     if (waiting_it != m_waiting_packets.end()) {
-      throw Exceptions::InvalidCommandException("Command already in flight.", packet->uuid_request());
+      throw Exceptions::InvalidCommandException("Command already in flight.", packet->get_uuid_request());
     }
 
     m_waiting_packets.emplace(expected_uuid, packet);
@@ -136,6 +136,7 @@ shared_ptr<Packet::AbstractPacket> PacketContainer::build_event(std::shared_ptr<
   // Get event from event_code
   auto event_it = m_events.find(event_code);
   if (event_it == m_events.end()) {
+    LOG.debug(extractor->get_raw_data(), "PacketContainer");
     throw Exceptions::NotFoundException("Event code not found in PacketContainer registry: " + to_string(event_code));
   }
 

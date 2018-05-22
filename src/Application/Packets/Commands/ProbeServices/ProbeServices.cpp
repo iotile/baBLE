@@ -129,7 +129,7 @@ namespace Packet::Commands {
   vector<ResponseId> ProbeServices::expected_response_ids() {
     if (!m_response_received | m_waiting_services) {
       return {
-        ResponseId{current_type(), m_controller_id, m_connection_handle, Format::HCI::AttributeCode::ReadByGroupTypeResponse}
+        ResponseId{m_current_type, m_controller_id, m_connection_handle, Format::HCI::AttributeCode::ReadByGroupTypeResponse}
       };
 
     } else {

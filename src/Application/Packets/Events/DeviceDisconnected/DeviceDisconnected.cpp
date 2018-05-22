@@ -22,7 +22,7 @@ namespace Packet::Events {
 
   void DeviceDisconnected::unserialize(HCIFormatExtractor& extractor) {
     EventPacket::unserialize(extractor);
-    m_native_status = extractor.get_value<uint8_t>();
+    set_status(extractor.get_value<uint8_t>());
     m_connection_handle = extractor.get_value<uint16_t>();
     m_raw_reason = extractor.get_value<uint8_t>();
 

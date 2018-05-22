@@ -47,7 +47,7 @@ namespace Packet::Commands {
   void RemoveDevice::unserialize(MGMTFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
 
-    if (m_native_status == 0){
+    if (m_status == Schemas::StatusCode::Success){
       m_address = extractor.get_array<uint8_t, 6>();
       m_address_type = extractor.get_value<uint8_t>();
     }

@@ -160,13 +160,15 @@ private:
 
       case Format::HCI::Type::Event:
         {
+          m_data_length = data.at(2);
           uint8_t event_code = data.at(1);
           if (event_code == Format::HCI::EventCode::LEMeta && data.size() >= m_header_length + 1) {
             m_packet_code = event_code << 8 | data.at(3);
             m_header_length += 1;
+            m_data_length -= 1;
+          } else {
+            m_packet_code = event_code;
           }
-          m_data_length = data.at(2);
-
         }
         break;
 

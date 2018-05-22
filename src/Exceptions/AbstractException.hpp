@@ -12,14 +12,14 @@ namespace Exceptions {
   class AbstractException : public std::exception, public Loggable {
 
   public:
-    virtual const Exceptions::Type exception_type() const = 0;
-    virtual const std::string exception_name() const = 0;
+    virtual const Exceptions::Type get_type() const = 0;
+    virtual const std::string get_name() const = 0;
 
     const char* what() const noexcept override {
       return m_message.c_str();
     };
 
-    std::string uuid_request() const {
+    std::string get_uuid_request() const {
       return m_uuid_request;
     };
 

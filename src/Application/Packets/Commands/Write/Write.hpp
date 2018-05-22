@@ -40,7 +40,7 @@ namespace Packet::Commands {
     std::vector<ResponseId> expected_response_ids() override {
       if (!m_response_received) {
         return {
-          ResponseId{current_type(), m_controller_id, m_connection_handle, Format::HCI::AttributeCode::WriteResponse}
+          ResponseId{m_current_type, m_controller_id, m_connection_handle, Format::HCI::AttributeCode::WriteResponse}
         };
 
       } else {

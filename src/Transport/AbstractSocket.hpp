@@ -21,7 +21,7 @@ public:
     return m_format;
   };
 
-  const uint16_t controller_id() const {
+  const uint16_t get_controller_id() const {
     return m_controller_id;
   };
 

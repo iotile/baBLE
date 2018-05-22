@@ -31,7 +31,7 @@ namespace Packet::Commands {
   void StopScan::unserialize(MGMTFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
 
-    if (m_native_status == 0) {
+    if (m_status == Schemas::StatusCode::Success) {
     m_address_type = extractor.get_value<uint8_t>();
     }
   };

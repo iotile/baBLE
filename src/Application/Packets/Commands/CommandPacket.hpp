@@ -11,12 +11,12 @@ namespace Packet::Commands {
   protected:
     CommandPacket(Packet::Type initial_type, Packet::Type translated_type)
         : AbstractPacket(initial_type, translated_type) {
-      m_command_code = T::packet_code(current_type());
+      m_command_code = T::packet_code(m_current_type);
       m_response_received = false;
     }
 
     void after_translate() override {
-      m_command_code = T::packet_code(current_type());
+      m_command_code = T::packet_code(m_current_type);
     }
 
     std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override {
@@ -45,8 +45,7 @@ namespace Packet::Commands {
 
     void unserialize(MGMTFormatExtractor& extractor) override {
       m_command_code = extractor.get_packet_code();
-      m_native_status = extractor.get_value<uint8_t>();
-      compute_bable_status();
+      set_status(extractor.get_value<uint8_t>());
     }
 
     void unserialize(HCIFormatExtractor& extractor) override {}
@@ -60,7 +59,7 @@ namespace Packet::Commands {
     std::vector<ResponseId> expected_response_ids() override {
       if (!m_response_received) {
         return {
-          ResponseId{current_type(), m_controller_id, m_command_code}
+          ResponseId{m_current_type, m_controller_id, m_command_code}
         };
 
       } else {

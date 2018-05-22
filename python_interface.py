@@ -260,7 +260,6 @@ def build_packet(builder, uuid, payload, payload_type, controller_id = None):
 
     buf = builder.Output()
     buf = b'\xCA\xFE' + len(buf).to_bytes(2, byteorder='little') + buf
-    print(buf)
     return buf
 
 address_device = [0xC4, 0xF0, 0xA5, 0xE6, 0x8A, 0x91]
@@ -604,6 +603,9 @@ try:
                 print("\tHandle:", characteristic.Handle(), "Value handle:", characteristic.ValueHandle(), "UUID:", characteristic.Uuid(),
                       "Indicate:", characteristic.Indicate(), "Notify:", characteristic.Notify(), "Read:", characteristic.Read(),
                       "Write:", characteristic.Write(), "Broadcast:", characteristic.Broadcast())
+
+            process.stdin.write(fb_remove_device("0003", 0, address_device))
+            process.stdin.write(fb_disconnect("0004", 0, address_device))
         elif packet.PayloadType() == Payload.Payload().Ready:
             ready = Ready.Ready()
             ready.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -611,6 +613,7 @@ try:
             print("ReadyPacket")
 
             process.stdin.write(fb_add_device("0001", 0, address_device))
+            # process.stdin.write(fb_probe_characteristics("0001", 0, 0x0040))
 
         elif packet.PayloadType() == Payload.Payload().BaBLEError:
             error = BaBLEError.BaBLEError()

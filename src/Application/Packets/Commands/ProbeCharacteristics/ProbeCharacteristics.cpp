@@ -145,8 +145,8 @@ namespace Packet::Commands {
   vector<ResponseId> ProbeCharacteristics::expected_response_ids() {
     if (!m_response_received | m_waiting_characteristics) {
       return {
-        ResponseId{current_type(), m_controller_id, m_connection_handle, Format::HCI::AttributeCode::ReadByTypeResponse},
-        ResponseId{current_type(), m_controller_id, m_connection_handle, Format::HCI::AttributeCode::ErrorResponse}
+        ResponseId{m_current_type, m_controller_id, m_connection_handle, Format::HCI::AttributeCode::ReadByTypeResponse},
+        ResponseId{m_current_type, m_controller_id, m_connection_handle, Format::HCI::AttributeCode::ErrorResponse}
       };
     } else {
       return {};

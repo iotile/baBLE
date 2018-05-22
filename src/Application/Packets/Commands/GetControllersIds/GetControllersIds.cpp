@@ -18,7 +18,7 @@ namespace Packet::Commands {
   void GetControllersIds::unserialize(MGMTFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
 
-    if (m_native_status == 0) {
+    if (m_status == Schemas::StatusCode::Success) {
       auto m_num_controllers = extractor.get_value<uint16_t>();
       m_controllers_ids = extractor.get_vector<uint16_t>(m_num_controllers);
     }

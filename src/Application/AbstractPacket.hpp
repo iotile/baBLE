@@ -21,7 +21,7 @@ namespace Packet {
     };
 
     virtual std::vector<uint8_t> to_bytes() const {
-      switch(current_type()) {
+      switch(m_current_type) {
         case Packet::Type::MGMT:
         {
           MGMTFormatBuilder builder(m_controller_id);
@@ -40,11 +40,11 @@ namespace Packet {
 
           AsciiFormatBuilder builder;
           builder
-              .add("UUID", m_uuid_request)
-              .add("Native class", m_native_class)
+              .add("Controller ID", m_controller_id)
+              .add("UUID request", m_uuid_request)
               .add("Status", status_name)
-              .add("Native status", m_native_status)
-              .add("Controller ID", m_controller_id);
+              .add("Native class", m_native_class)
+              .add("Native status", m_native_status);
           return serialize(builder);
         }
 
@@ -63,7 +63,7 @@ namespace Packet {
     virtual void from_bytes(const std::shared_ptr<AbstractExtractor>& extractor) {
       m_controller_id = extractor->get_controller_id();
 
-      switch(current_type()) {
+      switch(m_current_type) {
         case Packet::Type::MGMT:
         {
           auto mgmt_extractor = std::dynamic_pointer_cast<MGMTFormatExtractor>(extractor);
@@ -137,23 +137,26 @@ namespace Packet {
       throw std::runtime_error("unserialize() not defined for FlatbuffersFormatExtractor.");
     };
 
-    const Packet::Type current_type() const {
+    const Packet::Type get_current_type() const {
       return m_current_type;
     };
 
-    const std::string uuid_request() const {
+    const std::string get_uuid_request() const {
       return m_uuid_request;
     };
 
-    const uint16_t controller_id() const {
+    const uint16_t get_controller_id() const {
       return m_controller_id;
+    };
+
+    const Schemas::StatusCode get_status() const {
+      return m_status;
     };
 
     virtual void translate() {
       m_current_type = m_current_type == m_initial_type ? m_translated_type : m_initial_type;
       after_translate();
     };
-    virtual void after_translate() {};
 
     virtual std::vector<ResponseId> expected_response_ids() {
       return {};
@@ -162,22 +165,56 @@ namespace Packet {
       throw std::runtime_error("on_response_received(Packet::Type, vector<uint8_t>&) callback not defined.");
     };
 
-    // TODO: add values ? (status, ...)
     const std::string stringify() const override {
+      std::string status_name = Schemas::EnumNameStatusCode(m_status);
+
       AsciiFormatBuilder builder;
       builder
-          .add("Controller ID", m_controller_id);
+          .add("Controller ID", m_controller_id)
+          .add("UUID request", m_uuid_request)
+          .add("Status", status_name)
+          .add("Native class", m_native_class)
+          .add("Native status", m_native_status);
+
       std::vector<uint8_t> data = serialize(builder);
       return AsciiFormat::bytes_to_string(data);
     };
 
-    std::tuple<Schemas::StatusCode, uint8_t, std::string> get_full_status() {
-      return std::make_tuple(m_status, m_native_status, m_native_class);
+    virtual ~AbstractPacket() = default;
+
+  protected:
+    AbstractPacket(Packet::Type initial_type, Packet::Type translated_type)
+        : m_initial_type(initial_type), m_translated_type(translated_type), m_current_type(m_initial_type),
+          m_controller_id(NON_CONTROLLER_ID), m_uuid_request(""), m_native_class(""),
+          m_status(Schemas::StatusCode::Success), m_native_status(0x00)
+    {};
+
+    virtual void after_translate() {};
+
+    void set_status(uint8_t native_status) {
+      m_native_status = native_status;
+      compute_bable_status();
     };
 
-    // TODO: move this outside packet -> where ?
+    void import_status(AbstractPacket& packet) {
+      m_status = packet.m_status;
+      m_native_class = packet.m_native_class;
+      m_native_status = packet.m_native_status;
+    }
+
+    Packet::Type m_initial_type;
+    Packet::Type m_translated_type;
+    Packet::Type m_current_type;
+
+    uint16_t m_controller_id;
+    std::string m_uuid_request;
+
+    std::string m_native_class;
+    Schemas::StatusCode m_status;
+
+  private:
     void compute_bable_status() {
-      switch(current_type()) {
+      switch(m_current_type) {
 
         case Type::MGMT:
           switch (m_native_status) {
@@ -276,25 +313,7 @@ namespace Packet {
       }
     };
 
-    virtual ~AbstractPacket() = default;
-
-  protected:
-    AbstractPacket(Packet::Type initial_type, Packet::Type translated_type)
-        : m_initial_type(initial_type), m_translated_type(translated_type), m_current_type(m_initial_type),
-          m_controller_id(NON_CONTROLLER_ID), m_uuid_request(""), m_native_class(""),
-          m_status(Schemas::StatusCode::Success), m_native_status(0x00)
-    {};
-
-    Packet::Type m_initial_type;
-    Packet::Type m_translated_type;
-    Packet::Type m_current_type;
-
-    uint16_t m_controller_id;
-    std::string m_uuid_request;
-
     uint8_t m_native_status;
-    Schemas::StatusCode m_status;
-    std::string m_native_class;
 
   };
 

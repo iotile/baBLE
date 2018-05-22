@@ -31,8 +31,7 @@ namespace Packet::Events {
 
   void DeviceConnected::unserialize(HCIFormatExtractor& extractor) {
     EventPacket::unserialize(extractor);
-    m_native_status = extractor.get_value<uint8_t>();
-    compute_bable_status(); // TODO: use set_status() command
+    set_status(extractor.get_value<uint8_t>());
     m_connection_handle = extractor.get_value<uint16_t>();
     auto role = extractor.get_value<uint8_t>();
     m_address_type = static_cast<uint8_t>(extractor.get_value<uint8_t>() + 1);
