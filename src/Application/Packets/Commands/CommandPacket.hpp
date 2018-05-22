@@ -57,10 +57,10 @@ namespace Packet::Commands {
 
     void unserialize(FlatbuffersFormatExtractor& extractor) override {}
 
-    std::vector<uint64_t> expected_response_uuids() override {
+    std::vector<ResponseId> expected_response_ids() override {
       if (!m_response_received) {
         return {
-          Packet::AbstractPacket::compute_uuid(m_controller_id, T::packet_code(m_translated_type))
+          ResponseId{current_type(), m_controller_id, m_command_code}
         };
 
       } else {

@@ -142,11 +142,11 @@ namespace Packet::Commands {
     }
   }
 
-  vector<uint64_t> ProbeCharacteristics::expected_response_uuids() {
+  vector<ResponseId> ProbeCharacteristics::expected_response_ids() {
     if (!m_response_received | m_waiting_characteristics) {
       return {
-        Packet::AbstractPacket::compute_uuid(m_controller_id, Format::HCI::AttributeCode::ReadByTypeResponse),
-        Packet::AbstractPacket::compute_uuid(m_controller_id, Format::HCI::AttributeCode::ErrorResponse)
+        ResponseId{current_type(), m_controller_id, m_connection_handle, Format::HCI::AttributeCode::ReadByTypeResponse},
+        ResponseId{current_type(), m_controller_id, m_connection_handle, Format::HCI::AttributeCode::ErrorResponse}
       };
     } else {
       return {};

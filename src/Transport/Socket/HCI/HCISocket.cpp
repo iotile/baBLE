@@ -167,7 +167,7 @@ void HCISocket::poll(shared_ptr<uvw::Loop> loop, CallbackFunction on_received) {
       LOG.info("Reading data...", "HCISocket");
       vector<uint8_t> received_payload = receive();
 
-      // TODO: find a cleaner way to check if Connected / Disconnected event
+      // TODO: find a cleaner way to check if Connected / Disconnected event: either create extractor here ( x( ) or do this in main.cpp
       if (m_format->is_event(m_format->extract_type_code(received_payload))) {
 
         uint16_t packet_code = m_format->extract_packet_code(received_payload);

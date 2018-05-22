@@ -17,7 +17,6 @@ class PacketContainer : public Loggable {
   // Define packet constructor function prototype
   using PacketConstructor = std::function<std::shared_ptr<Packet::AbstractPacket>()>;
   using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono::nanoseconds>;
-  using RequestId = std::tuple<Packet::Type, uint64_t>;
 
 public:
   static void register_response(std::shared_ptr<Packet::AbstractPacket> packet);
@@ -50,8 +49,8 @@ private:
   std::unordered_map<uint16_t, PacketConstructor> m_commands{};
   std::unordered_map<uint16_t, PacketConstructor> m_events{};
 
-  static std::map<RequestId, std::shared_ptr<Packet::AbstractPacket>> m_waiting_packets;
-  static std::multimap<TimePoint, RequestId> m_expiration_waiting_packets;
+  static std::unordered_map<Packet::ResponseId, std::shared_ptr<Packet::AbstractPacket>> m_waiting_packets;
+  static std::multimap<TimePoint, Packet::ResponseId> m_expiration_waiting_packets;
 
 };
 

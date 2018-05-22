@@ -140,7 +140,7 @@ int main() {
   }
 
   // TODO: verify schemas to make them as generic/cross-platform as possible
-  // TODO: move error handing in function with stdio_socket as param + move response handling into a function with packet_container as param
+  // TODO: move error handing in function with stdio_socket as param
   stdio_socket->poll(
     loop,
     [&stdio_packet_container, &socket_container, &stdio_socket, &loop](const std::vector<uint8_t>& received_data, const AbstractSocket& socket) {
@@ -157,7 +157,7 @@ int main() {
           cleanly_stop_loop(*loop);
           return;
         }
-        // TODO: need to identify each packet by id
+        // TODO: need to identify each packet by id common to all type
 //        if (packet->id() == Packet::Exit) {
 //          cleanly_stop_loop(*loop);
 //          return;

@@ -45,7 +45,7 @@ namespace Bootstrap {
     shared_ptr<GetControllersList> get_controllers_list_packet = make_shared<GetControllersList>(packet_type, packet_type);
 
     // Send GetControllersList packet through MGMT
-    while (!get_controllers_list_packet->expected_response_uuids().empty()){
+    while (!get_controllers_list_packet->expected_response_ids().empty()){
       mgmt_socket->sync_send(get_controllers_list_packet->to_bytes());
       vector<uint8_t> raw_response = mgmt_socket->sync_receive();
       shared_ptr<AbstractExtractor> extractor = mgmt_socket->format()->create_extractor(raw_response);

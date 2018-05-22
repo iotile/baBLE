@@ -38,7 +38,7 @@ namespace Packet::Commands {
     std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
 
     void translate() override;
-    std::vector<uint64_t> expected_response_uuids() override;
+    std::vector<ResponseId> expected_response_ids() override;
 
   private:
     uint16_t m_connection_handle;

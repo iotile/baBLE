@@ -51,7 +51,7 @@ vector<uint8_t> HCIFormatBuilder::generate_header() {
   auto total_length = static_cast<uint16_t>(l2cap_length + 4);
 
   vector<uint8_t> header;
-  header.reserve(Format::HCI::async_data_header_length); // TODO: fix
+  header.reserve(Format::HCI::async_data_header_length); // TODO: fix -> need arg to build() to adapt header
 
   uint16_t connection_handle_with_flags = m_connection_handle | Format::HCI::HandleFlag::StartNonFlush << 12;
 

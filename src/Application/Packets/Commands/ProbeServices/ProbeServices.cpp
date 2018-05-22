@@ -126,11 +126,12 @@ namespace Packet::Commands {
     }
   }
 
-  vector<uint64_t> ProbeServices::expected_response_uuids() {
+  vector<ResponseId> ProbeServices::expected_response_ids() {
     if (!m_response_received | m_waiting_services) {
       return {
-        Packet::AbstractPacket::compute_uuid(m_controller_id, Format::HCI::AttributeCode::ReadByGroupTypeResponse)
+        ResponseId{current_type(), m_controller_id, m_connection_handle, Format::HCI::AttributeCode::ReadByGroupTypeResponse}
       };
+
     } else {
       return {};
     }

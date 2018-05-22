@@ -5,6 +5,7 @@
 #include <utility>
 #include <vector>
 #include "Packets/constants.hpp"
+#include "ResponseId.hpp"
 #include "../Format/Ascii/AsciiFormat.hpp"
 #include "../Format/HCI/HCIFormat.hpp"
 #include "../Format/MGMT/MGMTFormat.hpp"
@@ -17,13 +18,6 @@ namespace Packet {
   public:
     static const uint16_t packet_code(Packet::Type type) {
       throw std::runtime_error("packet_code(Packet::Type) not defined.");
-    };
-
-    template<typename T_CONTROLLER, typename T_COMMAND, typename T_HANDLE = uint64_t>
-    static uint64_t compute_uuid(T_CONTROLLER controller_id, T_COMMAND command_code, T_HANDLE handle = 0) {
-      return static_cast<uint64_t>(controller_id) << 48
-          | static_cast<uint64_t>(command_code) << 32
-          | static_cast<uint64_t>(handle);
     };
 
     virtual std::vector<uint8_t> to_bytes() const {
@@ -161,7 +155,7 @@ namespace Packet {
     };
     virtual void after_translate() {};
 
-    virtual std::vector<uint64_t> expected_response_uuids() {
+    virtual std::vector<ResponseId> expected_response_ids() {
       return {};
     };
     virtual bool on_response_received(Packet::Type packet_type, const std::shared_ptr<AbstractExtractor>& extractor) {
@@ -181,7 +175,7 @@ namespace Packet {
       return std::make_tuple(m_status, m_native_status, m_native_class);
     };
 
-    // TODO: move this outside packet
+    // TODO: move this outside packet -> where ?
     void compute_bable_status() {
       switch(current_type()) {
 

@@ -35,7 +35,7 @@ namespace Packet::Commands {
     std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
     std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
 
-    std::vector<uint64_t> expected_response_uuids() override {
+    std::vector<ResponseId> expected_response_ids() override {
       return {};
     };
 

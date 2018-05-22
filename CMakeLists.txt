@@ -118,7 +118,8 @@ set(SOURCES_FILES
         src/Application/Packets/Control/Ready/Ready.hpp
         src/Application/Packets/Control/Exit/Exit.cpp
         src/Application/Packets/Control/Exit/Exit.hpp
-        src/Format/AbstractExtractor.hpp)
+        src/Format/AbstractExtractor.hpp
+        src/Application/ResponseId.hpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies

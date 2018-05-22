@@ -40,7 +40,7 @@ namespace Packet::Meta {
 
     void translate() override;
 
-    std::vector<uint64_t> expected_response_uuids() override;
+    std::vector<ResponseId> expected_response_ids() override;
     bool on_response_received(Packet::Type packet_type, const std::shared_ptr<AbstractExtractor>& extractor) override;
 
     inline const std::vector<Format::MGMT::Controller>& get_controllers() const {

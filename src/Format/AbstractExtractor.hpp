@@ -35,6 +35,7 @@ public:
     m_type_code = 0;
     m_packet_code = 0;
     m_controller_id = NON_CONTROLLER_ID;
+    m_connection_id = 0;
     m_header_length = 0;
     m_data.assign(data.begin(), data.end());
     m_data_length = static_cast<uint16_t>(m_data.size());
@@ -53,19 +54,23 @@ public:
 
   inline virtual std::vector<uint8_t> get_raw_data() const {
     return m_data;
-  }
+  };
 
   inline virtual uint16_t get_type_code() const {
     return m_type_code;
-  }
+  };
 
   inline virtual uint16_t get_packet_code() const {
     return m_packet_code;
-  }
+  };
 
   inline virtual uint16_t get_controller_id() const {
     return m_controller_id;
-  }
+  };
+
+  inline virtual uint16_t get_connection_id() const {
+    return m_connection_id;
+  };
 
   const virtual uint16_t get_data_length() const {
     return m_data_length;
@@ -93,6 +98,7 @@ protected:
   uint16_t m_type_code;
   uint16_t m_packet_code;
   uint16_t m_controller_id;
+  uint16_t m_connection_id;
   uint16_t m_data_length;
   size_t m_header_length;
 

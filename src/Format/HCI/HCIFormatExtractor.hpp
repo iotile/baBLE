@@ -127,14 +127,8 @@ public:
   // Constructors
   explicit HCIFormatExtractor(const std::vector<uint8_t>& data)
     : AbstractExtractor(data) {
-    m_connection_handle = 0;
     parse_header(data);
     set_data_pointer(m_header_length);
-  };
-
-  // Getters
-  const uint16_t get_connection_handle() const {
-    return m_connection_handle;
   };
 
 private:
@@ -156,7 +150,7 @@ private:
 
       case Format::HCI::Type::AsyncData:
         // Use little endian
-        m_connection_handle = (static_cast<uint16_t>(data.at(2) & 0x0F) << 8) | data.at(1);
+        m_connection_id = (static_cast<uint16_t>(data.at(2) & 0x0F) << 8) | data.at(1);
         m_data_length = ((data.at(6) << 8) | data.at(5));
         if (m_data_length > 0) {
           m_data_length -= 1; // To consider opcode as part of the header
@@ -180,9 +174,6 @@ private:
         throw Exceptions::WrongFormatException("Can't extract data length from given HCI data: unknown type code.");
     }
   };
-
-  // Data
-  uint16_t m_connection_handle;
 
 };
 

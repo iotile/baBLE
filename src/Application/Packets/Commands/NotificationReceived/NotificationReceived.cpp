@@ -13,7 +13,7 @@ namespace Packet::Commands {
   void NotificationReceived::unserialize(HCIFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
 
-    m_connection_handle = extractor.get_connection_handle();
+    m_connection_handle = extractor.get_connection_id();
     m_attribute_handle = extractor.get_value<uint16_t>();
 
     auto value_length = extractor.get_data_length() - sizeof(m_attribute_handle);

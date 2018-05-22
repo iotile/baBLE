@@ -105,16 +105,16 @@ namespace Packet::Meta {
   }
 
   // TODO: find a way to have access to current packet_code easily
-  vector<uint64_t> GetControllersList::expected_response_uuids() {
+  vector<ResponseId> GetControllersList::expected_response_ids() {
     switch (m_waiting_response) {
       case SubPacket::GetControllersIds:
         return {
-          Packet::AbstractPacket::compute_uuid(NON_CONTROLLER_ID,  m_controllers_ids_packet->packet_code(current_type()))
+          ResponseId{current_type(), NON_CONTROLLER_ID, m_controllers_ids_packet->packet_code(current_type())}
         };
 
       case SubPacket::GetControllerInfo:
         return {
-          Packet::AbstractPacket::compute_uuid(m_controllers_ids.at(m_current_index), m_controller_info_packet->packet_code(current_type()))
+          ResponseId{current_type(), m_controllers_ids.at(m_current_index), m_controller_info_packet->packet_code(current_type())}
         };
 
       case SubPacket::None:
