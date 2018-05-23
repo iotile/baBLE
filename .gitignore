@@ -1,9 +1,11 @@
 # Compiled files
-build/*
-bin/*
+platforms/linux/build/*
+platforms/linux/bin/*
+
+*.pyc
 
 # IDE
-.idea/
+**/.idea/
 
 # Mac
 .DS_Store

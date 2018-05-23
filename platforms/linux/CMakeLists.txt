@@ -142,8 +142,8 @@ target_link_libraries(baBLE_linux uvw)
 add_subdirectory(deps/flatbuffers)
 target_link_libraries(baBLE_linux flatbuffers)
 
-## Include generated flatbuffers schemas
-include_directories(schemas/generated)
+## Include generated flatbuffers protocole
+include_directories(deps/protocole)
 
 ## Install
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR})

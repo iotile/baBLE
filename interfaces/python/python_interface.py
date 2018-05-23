@@ -37,7 +37,7 @@ def status_code_to_string(status_code):
     else:
         return "-"
 
-process = subprocess.Popen(["./build/debug/baBLE_linux"],
+process = subprocess.Popen(["../../platforms/linux/bin/baBLE_linux"],
                            stdout=subprocess.PIPE, stdin=subprocess.PIPE,
                            bufsize=0,
                            universal_newlines=False)
