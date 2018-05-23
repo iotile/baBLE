@@ -34,6 +34,7 @@
 #include "Application/Packets/Control/Exit/Exit.hpp"
 #include "Application/Packets/Control/Ready/Ready.hpp"
 #include "Application/Packets/Events/LEAdvertisingReport/LEAdvertisingReport.hpp"
+#include "Application/Packets/Events/LEReadRemoteUsedFeaturesComplete/LEReadRemoteUsedFeaturesComplete.hpp"
 
 using namespace std;
 using Packet::Meta::GetControllersList;
@@ -105,7 +106,8 @@ namespace Bootstrap {
         .register_command<Packet::Commands::ProbeServices>()
         .register_command<Packet::Commands::ProbeCharacteristics>()
       .set_output_format(nullptr)
-        .register_event<Packet::Events::LEAdvertisingReport>();
+        .register_event<Packet::Events::LEAdvertisingReport>()
+        .register_event<Packet::Events::LEReadRemoteUsedFeaturesComplete>();
   }
 
   // Stdio

@@ -39,7 +39,8 @@ namespace Format::Ascii {
     NewSettings= 0x0600,
     ControllerAdded= 0x0700,
     ControllerRemoved= 0x0800,
-    LEAdvertisingReport= 0x0900
+    LEAdvertisingReport= 0x0900,
+    LEReadRemoteUsedFeaturesComplete= 0x0A00
   };
 
 }

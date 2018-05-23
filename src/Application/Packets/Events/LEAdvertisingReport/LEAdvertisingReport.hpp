@@ -48,5 +48,4 @@ namespace Packet::Events {
 
 }
 
-
 #endif //BABLE_LINUX_LEADVERSTISINGREPORT_HPP

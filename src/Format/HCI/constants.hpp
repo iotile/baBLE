@@ -84,7 +84,8 @@ namespace Format::HCI {
 
   enum SubEventCode {
     LEConnectionComplete= (EventCode::LEMeta << 8) | 0x01,
-    LEAdvertisingReport= (EventCode::LEMeta << 8) | 0x02
+    LEAdvertisingReport= (EventCode::LEMeta << 8) | 0x02,
+    LEReadRemoteUsedFeaturesComplete= (EventCode::LEMeta << 8) | 0x04
   };
 
   enum AttributeCode {
