@@ -1,10 +1,10 @@
-# baBLE - Linux
+# baBLE
 
 baBLE is a universal translator from native Bluetooth subsystem to a high-level interface,
 which can be used by any language, on any platform.
 
-This project is the Linux part, making a proxy between Bluez and the generic 
-baBLE commands.
+Currently, this project contains:
+ - the Linux bridge, making a proxy between Bluez and the generic baBLE commands.
 
 
 ## Schema
