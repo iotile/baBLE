@@ -62,6 +62,10 @@ struct ControllerAdded;
 
 struct ControllerRemoved;
 
+struct DeviceAdded;
+
+struct DeviceRemoved;
+
 struct NotificationReceived;
 
 struct BaBLEError;
@@ -94,19 +98,21 @@ enum class Payload : uint8_t {
   WriteWithoutResponse = 18,
   ControllerAdded = 19,
   ControllerRemoved = 20,
-  DeviceConnected = 21,
-  DeviceDisconnected = 22,
-  DeviceFound = 23,
-  Discovering = 24,
-  NotificationReceived = 25,
-  BaBLEError = 26,
-  Exit = 27,
-  Ready = 28,
+  DeviceAdded = 21,
+  DeviceRemoved = 22,
+  DeviceConnected = 23,
+  DeviceDisconnected = 24,
+  DeviceFound = 25,
+  Discovering = 26,
+  NotificationReceived = 27,
+  BaBLEError = 28,
+  Exit = 29,
+  Ready = 30,
   MIN = NONE,
   MAX = Ready
 };
 
-inline const Payload (&EnumValuesPayload())[29] {
+inline const Payload (&EnumValuesPayload())[31] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::AddDevice,
@@ -129,6 +135,8 @@ inline const Payload (&EnumValuesPayload())[29] {
     Payload::WriteWithoutResponse,
     Payload::ControllerAdded,
     Payload::ControllerRemoved,
+    Payload::DeviceAdded,
+    Payload::DeviceRemoved,
     Payload::DeviceConnected,
     Payload::DeviceDisconnected,
     Payload::DeviceFound,
@@ -164,6 +172,8 @@ inline const char * const *EnumNamesPayload() {
     "WriteWithoutResponse",
     "ControllerAdded",
     "ControllerRemoved",
+    "DeviceAdded",
+    "DeviceRemoved",
     "DeviceConnected",
     "DeviceDisconnected",
     "DeviceFound",
@@ -264,6 +274,14 @@ template<> struct PayloadTraits<ControllerAdded> {
 
 template<> struct PayloadTraits<ControllerRemoved> {
   static const Payload enum_value = Payload::ControllerRemoved;
+};
+
+template<> struct PayloadTraits<DeviceAdded> {
+  static const Payload enum_value = Payload::DeviceAdded;
+};
+
+template<> struct PayloadTraits<DeviceRemoved> {
+  static const Payload enum_value = Payload::DeviceRemoved;
 };
 
 template<> struct PayloadTraits<DeviceConnected> {
@@ -2116,6 +2134,128 @@ inline flatbuffers::Offset<ControllerRemoved> CreateControllerRemoved(
   return builder_.Finish();
 }
 
+struct DeviceAdded FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_ADDRESS = 4,
+    VT_ADDRESS_TYPE = 6
+  };
+  const flatbuffers::String *address() const {
+    return GetPointer<const flatbuffers::String *>(VT_ADDRESS);
+  }
+  uint8_t address_type() const {
+    return GetField<uint8_t>(VT_ADDRESS_TYPE, 0);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_ADDRESS) &&
+           verifier.Verify(address()) &&
+           VerifyField<uint8_t>(verifier, VT_ADDRESS_TYPE) &&
+           verifier.EndTable();
+  }
+};
+
+struct DeviceAddedBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_address(flatbuffers::Offset<flatbuffers::String> address) {
+    fbb_.AddOffset(DeviceAdded::VT_ADDRESS, address);
+  }
+  void add_address_type(uint8_t address_type) {
+    fbb_.AddElement<uint8_t>(DeviceAdded::VT_ADDRESS_TYPE, address_type, 0);
+  }
+  explicit DeviceAddedBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  DeviceAddedBuilder &operator=(const DeviceAddedBuilder &);
+  flatbuffers::Offset<DeviceAdded> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<DeviceAdded>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<DeviceAdded> CreateDeviceAdded(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<flatbuffers::String> address = 0,
+    uint8_t address_type = 0) {
+  DeviceAddedBuilder builder_(_fbb);
+  builder_.add_address(address);
+  builder_.add_address_type(address_type);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<DeviceAdded> CreateDeviceAddedDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    const char *address = nullptr,
+    uint8_t address_type = 0) {
+  return BaBLE::CreateDeviceAdded(
+      _fbb,
+      address ? _fbb.CreateString(address) : 0,
+      address_type);
+}
+
+struct DeviceRemoved FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_ADDRESS = 4,
+    VT_ADDRESS_TYPE = 6
+  };
+  const flatbuffers::String *address() const {
+    return GetPointer<const flatbuffers::String *>(VT_ADDRESS);
+  }
+  uint8_t address_type() const {
+    return GetField<uint8_t>(VT_ADDRESS_TYPE, 0);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_ADDRESS) &&
+           verifier.Verify(address()) &&
+           VerifyField<uint8_t>(verifier, VT_ADDRESS_TYPE) &&
+           verifier.EndTable();
+  }
+};
+
+struct DeviceRemovedBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_address(flatbuffers::Offset<flatbuffers::String> address) {
+    fbb_.AddOffset(DeviceRemoved::VT_ADDRESS, address);
+  }
+  void add_address_type(uint8_t address_type) {
+    fbb_.AddElement<uint8_t>(DeviceRemoved::VT_ADDRESS_TYPE, address_type, 0);
+  }
+  explicit DeviceRemovedBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  DeviceRemovedBuilder &operator=(const DeviceRemovedBuilder &);
+  flatbuffers::Offset<DeviceRemoved> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<DeviceRemoved>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<DeviceRemoved> CreateDeviceRemoved(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<flatbuffers::String> address = 0,
+    uint8_t address_type = 0) {
+  DeviceRemovedBuilder builder_(_fbb);
+  builder_.add_address(address);
+  builder_.add_address_type(address_type);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<DeviceRemoved> CreateDeviceRemovedDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    const char *address = nullptr,
+    uint8_t address_type = 0) {
+  return BaBLE::CreateDeviceRemoved(
+      _fbb,
+      address ? _fbb.CreateString(address) : 0,
+      address_type);
+}
+
 struct NotificationReceived FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_CONNECTION_HANDLE = 4,
@@ -2388,6 +2528,12 @@ struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const ControllerRemoved *payload_as_ControllerRemoved() const {
     return payload_type() == Payload::ControllerRemoved ? static_cast<const ControllerRemoved *>(payload()) : nullptr;
   }
+  const DeviceAdded *payload_as_DeviceAdded() const {
+    return payload_type() == Payload::DeviceAdded ? static_cast<const DeviceAdded *>(payload()) : nullptr;
+  }
+  const DeviceRemoved *payload_as_DeviceRemoved() const {
+    return payload_type() == Payload::DeviceRemoved ? static_cast<const DeviceRemoved *>(payload()) : nullptr;
+  }
   const DeviceConnected *payload_as_DeviceConnected() const {
     return payload_type() == Payload::DeviceConnected ? static_cast<const DeviceConnected *>(payload()) : nullptr;
   }
@@ -2518,6 +2664,14 @@ template<> inline const ControllerAdded *Packet::payload_as<ControllerAdded>() c
 
 template<> inline const ControllerRemoved *Packet::payload_as<ControllerRemoved>() const {
   return payload_as_ControllerRemoved();
+}
+
+template<> inline const DeviceAdded *Packet::payload_as<DeviceAdded>() const {
+  return payload_as_DeviceAdded();
+}
+
+template<> inline const DeviceRemoved *Packet::payload_as<DeviceRemoved>() const {
+  return payload_as_DeviceRemoved();
 }
 
 template<> inline const DeviceConnected *Packet::payload_as<DeviceConnected>() const {
@@ -2711,6 +2865,14 @@ inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *obj, Payl
     }
     case Payload::ControllerRemoved: {
       auto ptr = reinterpret_cast<const ControllerRemoved *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::DeviceAdded: {
+      auto ptr = reinterpret_cast<const DeviceAdded *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::DeviceRemoved: {
+      auto ptr = reinterpret_cast<const DeviceRemoved *>(obj);
       return verifier.VerifyTable(ptr);
     }
     case Payload::DeviceConnected: {

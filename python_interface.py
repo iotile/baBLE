@@ -7,7 +7,7 @@ from BaBLE import Packet, Payload, GetMGMTInfo, StartScan, StopScan, Discovering
                     AddDevice, DeviceConnected, RemoveDevice, Disconnect, DeviceDisconnected, SetPowered, SetDiscoverable,\
                     SetConnectable, GetControllersList, ControllerAdded, ControllerRemoved, GetControllerInfo, \
                     GetConnectedDevices, GetControllersIds, Read, Write, NotificationReceived, ProbeServices, ProbeCharacteristics, \
-                    WriteWithoutResponse, Ready, Exit
+                    WriteWithoutResponse, Ready, Exit, DeviceAdded, DeviceRemoved
 
 def status_code_to_string(status_code):
     if status_code == StatusCode.StatusCode().Success:
@@ -493,6 +493,26 @@ try:
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id)
+        elif packet.PayloadType() == Payload.Payload().DeviceAdded:
+            device_added = DeviceAdded.DeviceAdded()
+            device_added.Init(packet.Payload().Bytes, packet.Payload().Pos)
+            address = device_added.Address()
+            address_type = device_added.AddressType()
+
+            print("DeviceAdded",
+                  "UUID:", uuid,
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id, "Address:", address, "Address type:", address_type)
+        elif packet.PayloadType() == Payload.Payload().DeviceRemoved:
+            device_removed = DeviceRemoved.DeviceRemoved()
+            device_removed.Init(packet.Payload().Bytes, packet.Payload().Pos)
+            address = device_removed.Address()
+            address_type = device_removed.AddressType()
+
+            print("DeviceRemoved",
+                  "UUID:", uuid,
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id, "Address:", address, "Address type:", address_type)
         elif packet.PayloadType() == Payload.Payload().GetControllerInfo:
             controller_info = GetControllerInfo.GetControllerInfo()
             controller_info.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -543,7 +563,7 @@ try:
                   "Data:", data_written)
 
             process.stdin.write(fb_remove_device("0003", 0, address_device))
-            process.stdin.write(fb_disconnect("0004", 0, address_device))
+            # process.stdin.write(fb_disconnect("0004", 0, address_device))
 
         elif packet.PayloadType() == Payload.Payload().WriteWithoutResponse:
             write_without_response = WriteWithoutResponse.WriteWithoutResponse()
@@ -605,7 +625,7 @@ try:
                       "Write:", characteristic.Write(), "Broadcast:", characteristic.Broadcast())
 
             process.stdin.write(fb_remove_device("0003", 0, address_device))
-            process.stdin.write(fb_disconnect("0004", 0, address_device))
+            # process.stdin.write(fb_disconnect("0004", 0, address_device))
         elif packet.PayloadType() == Payload.Payload().Ready:
             ready = Ready.Ready()
             ready.Init(packet.Payload().Bytes, packet.Payload().Pos)

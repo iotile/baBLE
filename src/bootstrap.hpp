@@ -35,6 +35,8 @@
 #include "Application/Packets/Control/Ready/Ready.hpp"
 #include "Application/Packets/Events/LEAdvertisingReport/LEAdvertisingReport.hpp"
 #include "Application/Packets/Events/LEReadRemoteUsedFeaturesComplete/LEReadRemoteUsedFeaturesComplete.hpp"
+#include "Application/Packets/Events/DeviceAdded/DeviceAdded.hpp"
+#include "Application/Packets/Events/DeviceRemoved/DeviceRemoved.hpp"
 
 using namespace std;
 using Packet::Meta::GetControllersList;
@@ -87,6 +89,8 @@ namespace Bootstrap {
         .register_event<Packet::Events::Discovering>()
         .register_event<Packet::Events::ControllerAdded>()
         .register_event<Packet::Events::ControllerRemoved>()
+        .register_event<Packet::Events::DeviceAdded>()
+        .register_event<Packet::Events::DeviceRemoved>()
       .set_output_format(nullptr)
         .register_event<Packet::Events::DeviceConnected>()
         .register_event<Packet::Events::DeviceDisconnected>()

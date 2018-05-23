@@ -34,7 +34,9 @@ namespace Format::MGMT {
     DeviceConnected= 0x000B,
     DeviceDisconnected= 0x000C,
     DeviceFound= 0x0012,
-    Discovering= 0x0013
+    Discovering= 0x0013,
+    DeviceAdded= 0x001A,
+    DeviceRemoved= 0x001B
   };
 
   enum StatusCode {

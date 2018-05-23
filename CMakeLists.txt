@@ -119,7 +119,7 @@ set(SOURCES_FILES
         src/Application/Packets/Control/Exit/Exit.cpp
         src/Application/Packets/Control/Exit/Exit.hpp
         src/Format/AbstractExtractor.hpp
-        src/Application/ResponseId.hpp src/Exceptions/RuntimeError/RuntimeErrorException.hpp src/Application/Packets/Events/LEAdvertisingReport/LEAdvertisingReport.cpp src/Application/Packets/Events/LEAdvertisingReport/LEAdvertisingReport.hpp src/Application/Packets/Events/LEReadRemoteUsedFeaturesComplete/LEReadRemoteUsedFeaturesComplete.cpp src/Application/Packets/Events/LEReadRemoteUsedFeaturesComplete/LEReadRemoteUsedFeaturesComplete.hpp)
+        src/Application/ResponseId.hpp src/Exceptions/RuntimeError/RuntimeErrorException.hpp src/Application/Packets/Events/LEAdvertisingReport/LEAdvertisingReport.cpp src/Application/Packets/Events/LEAdvertisingReport/LEAdvertisingReport.hpp src/Application/Packets/Events/LEReadRemoteUsedFeaturesComplete/LEReadRemoteUsedFeaturesComplete.cpp src/Application/Packets/Events/LEReadRemoteUsedFeaturesComplete/LEReadRemoteUsedFeaturesComplete.hpp src/Application/Packets/Events/DeviceAdded/DeviceAdded.cpp src/Application/Packets/Events/DeviceAdded/DeviceAdded.hpp src/Application/Packets/Events/DeviceRemoved/DeviceRemoved.cpp src/Application/Packets/Events/DeviceRemoved/DeviceRemoved.hpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies

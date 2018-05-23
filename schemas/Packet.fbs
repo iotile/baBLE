@@ -21,6 +21,7 @@ include "./Events/DeviceDisconnected.fbs";
 include "./Events/DeviceFound.fbs";
 include "./Events/Discovering.fbs";
 include "./Events/ControllerChanged.fbs";
+include "./Events/DeviceChanged.fbs";
 include "./Events/NotificationReceived.fbs";
 include "./Errors/BaBLEError.fbs";
 include "./Control/Ready.fbs";
@@ -52,6 +53,8 @@ union Payload {
   // Events
   ControllerAdded,
   ControllerRemoved,
+  DeviceAdded,
+  DeviceRemoved,
   DeviceConnected,
   DeviceDisconnected,
   DeviceFound,

@@ -152,7 +152,6 @@ int main() {
     );
   }
 
-  // TODO: clean logs (create DeviceAdded/DeviceRemoved + events HCI not to have the NotFound errors)
   // TODO: comment and clean includes
   stdio_socket->poll(
     loop,
