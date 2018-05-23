@@ -6,6 +6,7 @@ namespace Packet::Commands {
 
   StopScan::StopScan(Packet::Type initial_type, Packet::Type translated_type)
   : CommandPacket(initial_type, translated_type) {
+    m_id = BaBLE::Payload::StopScan;
     m_address_type = 0;
   }
 
@@ -23,7 +24,7 @@ namespace Packet::Commands {
 
   void StopScan::unserialize(FlatbuffersFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
-    auto payload = extractor.get_payload<const Schemas::StartScan*>();
+    auto payload = extractor.get_payload<const BaBLE::StartScan*>();
 
     m_address_type = payload->address_type();
   };
@@ -31,7 +32,7 @@ namespace Packet::Commands {
   void StopScan::unserialize(MGMTFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
 
-    if (m_status == Schemas::StatusCode::Success) {
+    if (m_status == BaBLE::StatusCode::Success) {
     m_address_type = extractor.get_value<uint8_t>();
     }
   };
@@ -47,9 +48,9 @@ namespace Packet::Commands {
 
   vector<uint8_t> StopScan::serialize(FlatbuffersFormatBuilder& builder) const {
     CommandPacket::serialize(builder);
-    auto payload = Schemas::CreateStopScan(builder, m_address_type);
+    auto payload = BaBLE::CreateStopScan(builder, m_address_type);
 
-    return builder.build(payload, Schemas::Payload::StopScan);
+    return builder.build(payload, BaBLE::Payload::StopScan);
   }
 
   vector<uint8_t> StopScan::serialize(MGMTFormatBuilder& builder) const {

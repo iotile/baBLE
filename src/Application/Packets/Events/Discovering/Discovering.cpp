@@ -6,6 +6,7 @@ namespace Packet::Events {
 
   Discovering::Discovering(Packet::Type initial_type, Packet::Type translated_type)
   : EventPacket(initial_type, translated_type) {
+    m_id = BaBLE::Payload::Discovering;
     m_address_type = 0;
     m_discovering = 0;
   };
@@ -28,9 +29,9 @@ namespace Packet::Events {
 
   vector<uint8_t> Discovering::serialize(FlatbuffersFormatBuilder& builder) const {
     EventPacket::serialize(builder);
-    auto payload = Schemas::CreateDiscovering(builder, m_address_type, m_discovering);
+    auto payload = BaBLE::CreateDiscovering(builder, m_address_type, m_discovering);
 
-    return builder.build(payload, Schemas::Payload::Discovering);
+    return builder.build(payload, BaBLE::Payload::Discovering);
   }
 
 }

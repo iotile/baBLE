@@ -1,6 +1,6 @@
 include "Models/Service.fbs";
 
-namespace Schemas;
+namespace BaBLE;
 
 table ProbeServices {
   connection_handle:uint16;

@@ -84,41 +84,62 @@ int main() {
   // Poll sockets
   LOG.info("Creating socket pollers...");
 
+  auto on_error = [&stdio_socket, &socket_container](const Exceptions::AbstractException& err) {
+    LOG.error(err.stringify(), "Error");
+    std::shared_ptr<Packet::Errors::BaBLEErrorPacket> error_packet = make_shared<Packet::Errors::BaBLEErrorPacket>(
+        stdio_socket->format()->packet_type()
+    );
+    error_packet->from_exception(err);
+    socket_container.send(error_packet);
+  };
+
   mgmt_socket->poll(
     loop,
-    [&mgmt_packet_container, &socket_container, &stdio_socket](const std::vector<uint8_t>& received_data, const AbstractSocket& socket) {
-      try {
-        shared_ptr<AbstractExtractor> extractor = socket.format()->create_extractor(received_data);
-        std::shared_ptr<Packet::AbstractPacket> packet = mgmt_packet_container.build(extractor);
-        LOG.debug("Packet built", "MGMT poller");
+    [&mgmt_packet_container, &socket_container](const std::vector<uint8_t>& received_data, const std::shared_ptr<AbstractFormat>& format) {
+      shared_ptr<AbstractExtractor> extractor = format->create_extractor(received_data);
+      std::shared_ptr<Packet::AbstractPacket> packet = mgmt_packet_container.build(extractor);
+      LOG.debug("Packet built", "MGMT poller");
 
-        packet->translate();
-        LOG.debug("Packet translated", "MGMT poller");
+      packet->translate();
+      LOG.debug("Packet translated", "MGMT poller");
 
-        PacketContainer::register_response(packet);
+      PacketContainer::register_response(packet);
 
-        socket_container.send(packet);
-
-      } catch (const Exceptions::AbstractException& err) {
-        LOG.error(err.stringify(), "MGMT poller");
-        std::shared_ptr<Packet::Errors::BaBLEErrorPacket> error_packet = make_shared<Packet::Errors::BaBLEErrorPacket>(
-            stdio_socket->format()->packet_type()
-        );
-        error_packet->from_exception(err);
-        socket_container.send(error_packet);
-      }
-    }
+      socket_container.send(packet);
+    },
+    on_error
   );
 
+  // TODO: verify exceptions thrown to be AbstractException (add if needed)
   for (auto& hci_socket : hci_sockets) {
     hci_socket->poll(
       loop,
-      [&hci_packet_container, &socket_container, &stdio_socket](const std::vector<uint8_t>& received_data, const AbstractSocket& socket) {
-        try {
-          shared_ptr<AbstractExtractor> extractor = socket.format()->create_extractor(received_data);
-          extractor->set_controller_id(socket.get_controller_id());
+      [&hci_packet_container, &socket_container, &hci_socket](const std::vector<uint8_t>& received_data, const std::shared_ptr<AbstractFormat>& format) {
+          shared_ptr<AbstractExtractor> extractor = format->create_extractor(received_data);
+          extractor->set_controller_id(hci_socket->get_controller_id());
           std::shared_ptr<Packet::AbstractPacket> packet = hci_packet_container.build(extractor);
           LOG.debug("Packet built", "HCI poller");
+
+          // This part is needed due to a bug since Linux Kernel v4 : we have to create manually the L2CAP socket, else
+          // we'll be disconnected after sending one packet.
+          if (packet->get_id() == BaBLE::Payload::DeviceConnected) {
+            auto device_connected_packet = std::dynamic_pointer_cast<Packet::Events::DeviceConnected>(packet);
+            if (device_connected_packet == nullptr) {
+              throw std::runtime_error("Can't downcast packet to DeviceConnected packet");
+            }
+
+            hci_socket->connect_l2cap_socket(
+                device_connected_packet->get_connection_handle(),
+                device_connected_packet->get_raw_device_address(),
+                device_connected_packet->get_device_address_type()
+            );
+          } else if (packet->get_id() == BaBLE::Payload::DeviceDisconnected) {
+            auto device_disconnected_packet = std::dynamic_pointer_cast<Packet::Events::DeviceDisconnected>(packet);
+            if (device_disconnected_packet == nullptr) {
+              throw std::runtime_error("Can't downcast packet to DeviceDisconnected packet");
+            }
+            hci_socket->disconnect_l2cap_socket(device_disconnected_packet->get_connection_handle());
+          }
 
           packet->translate();
           LOG.debug("Packet translated", "HCI poller");
@@ -126,59 +147,34 @@ int main() {
           PacketContainer::register_response(packet);
 
           socket_container.send(packet);
-
-        } catch (const Exceptions::AbstractException& err) {
-          LOG.error(err.stringify(), "HCI poller");
-          std::shared_ptr<Packet::Errors::BaBLEErrorPacket> error_packet = make_shared<Packet::Errors::BaBLEErrorPacket>(
-              stdio_socket->format()->packet_type()
-          );
-          error_packet->from_exception(err);
-          socket_container.send(error_packet);
-        }
-      }
+      },
+      on_error
     );
   }
 
   // TODO: verify schemas to make them as generic/cross-platform as possible
-  // TODO: move error handing in function with stdio_socket as param
   stdio_socket->poll(
     loop,
-    [&stdio_packet_container, &socket_container, &stdio_socket, &loop](const std::vector<uint8_t>& received_data, const AbstractSocket& socket) {
-      try {
-        shared_ptr<AbstractExtractor> extractor = socket.format()->create_extractor(received_data);
-        std::shared_ptr<Packet::AbstractPacket> packet = stdio_packet_container.build(extractor);
+    [&stdio_packet_container, &socket_container, &loop](const std::vector<uint8_t>& received_data, const std::shared_ptr<AbstractFormat>& format) {
+      shared_ptr<AbstractExtractor> extractor = format->create_extractor(received_data);
+      std::shared_ptr<Packet::AbstractPacket> packet = stdio_packet_container.build(extractor);
 
-        LOG.debug("Packet built", "BABLE poller");
+      LOG.debug("Packet built", "BABLE poller");
 
-        Packet::Type packet_type = socket.format()->packet_type();
-        uint16_t packet_code = extractor->get_packet_code();
-        if ((packet_type == Packet::Type::ASCII && packet_code == Format::Ascii::CommandCode::Exit)
-            || (packet_type == Packet::Type::FLATBUFFERS && packet_code == static_cast<uint16_t>(Schemas::Payload::Exit))) {
-          cleanly_stop_loop(*loop);
-          return;
-        }
-        // TODO: need to identify each packet by id common to all type
-//        if (packet->id() == Packet::Exit) {
-//          cleanly_stop_loop(*loop);
-//          return;
-//        }
-
-        packet->translate();
-        LOG.debug("Packet translated", "BABLE poller");
-
-        PacketContainer::register_response(packet);
-
-        socket_container.send(packet);
-
-      } catch (const Exceptions::AbstractException& err) {
-        LOG.error(err.stringify(), "BABLE poller");
-        std::shared_ptr<Packet::Errors::BaBLEErrorPacket> error_packet = make_shared<Packet::Errors::BaBLEErrorPacket>(
-            stdio_socket->format()->packet_type()
-        );
-        error_packet->from_exception(err);
-        socket_container.send(error_packet);
+      if (packet->get_id() == BaBLE::Payload::Exit) {
+        LOG.debug("Received Exit packet. Cleanly stopping loop...");
+        cleanly_stop_loop(*loop);
+        return;
       }
-    }
+
+      packet->translate();
+      LOG.debug("Packet translated", "BABLE poller");
+
+      PacketContainer::register_response(packet);
+
+      socket_container.send(packet);
+    },
+    on_error
   );
 
   LOG.info("Creating expiration timer...");

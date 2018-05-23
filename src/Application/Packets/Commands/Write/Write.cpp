@@ -5,7 +5,9 @@ using namespace std;
 namespace Packet::Commands {
 
   Write::Write(Packet::Type initial_type, Packet::Type translated_type)
-      : CommandPacket(initial_type, translated_type) {};
+      : CommandPacket(initial_type, translated_type) {
+    m_id = BaBLE::Payload::Write;
+  }
 
   void Write::unserialize(AsciiFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
@@ -23,7 +25,7 @@ namespace Packet::Commands {
 
   void Write::unserialize(FlatbuffersFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
-    auto payload = extractor.get_payload<const Schemas::Write*>();
+    auto payload = extractor.get_payload<const BaBLE::Write*>();
 
     m_connection_handle = payload->connection_handle();
     m_attribute_handle = payload->attribute_handle();
@@ -50,14 +52,14 @@ namespace Packet::Commands {
     CommandPacket::serialize(builder);
 
     auto data_written = builder.CreateVector(m_data_to_write);
-    auto payload = Schemas::CreateWrite(
+    auto payload = BaBLE::CreateWrite(
         builder,
         m_connection_handle,
         m_attribute_handle,
         data_written
     );
 
-    return builder.build(payload, Schemas::Payload::Write);
+    return builder.build(payload, BaBLE::Payload::Write);
   }
 
   vector<uint8_t> Write::serialize(HCIFormatBuilder& builder) const {

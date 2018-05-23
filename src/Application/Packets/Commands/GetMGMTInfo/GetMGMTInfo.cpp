@@ -6,6 +6,7 @@ namespace Packet::Commands {
 
   GetMGMTInfo::GetMGMTInfo(Packet::Type initial_type, Packet::Type translated_type)
   : CommandPacket(initial_type, translated_type) {
+    m_id = BaBLE::Payload::GetMGMTInfo;
     m_version = 0;
     m_revision = 0;
   };
@@ -21,7 +22,7 @@ namespace Packet::Commands {
   void GetMGMTInfo::unserialize(MGMTFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
 
-    if (m_status == Schemas::StatusCode::Success) {
+    if (m_status == BaBLE::StatusCode::Success) {
       m_version = extractor.get_value<uint8_t>();
       m_revision = extractor.get_value<uint16_t>();
     }
@@ -39,9 +40,9 @@ namespace Packet::Commands {
 
   vector<uint8_t> GetMGMTInfo::serialize(FlatbuffersFormatBuilder& builder) const {
     CommandPacket::serialize(builder);
-    auto payload = Schemas::CreateGetMGMTInfo(builder, m_version, m_revision);
+    auto payload = BaBLE::CreateGetMGMTInfo(builder, m_version, m_revision);
 
-    return builder.build(payload, Schemas::Payload::GetMGMTInfo);
+    return builder.build(payload, BaBLE::Payload::GetMGMTInfo);
   }
 
   vector<uint8_t> GetMGMTInfo::serialize(MGMTFormatBuilder& builder) const {

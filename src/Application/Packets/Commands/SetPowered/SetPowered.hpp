@@ -21,7 +21,7 @@ namespace Packet::Commands {
           return Format::Ascii::CommandCode::SetPowered;
 
         case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(Schemas::Payload::SetPowered);
+          return static_cast<uint16_t>(BaBLE::Payload::SetPowered);
 
         case Packet::Type::NONE:
           return 0;

@@ -21,7 +21,7 @@ namespace Packet::Commands {
           return Format::Ascii::CommandCode::AddDevice;
 
         case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(Schemas::Payload::AddDevice);
+          return static_cast<uint16_t>(BaBLE::Payload::AddDevice);
 
         case Packet::Type::NONE:
           return 0;

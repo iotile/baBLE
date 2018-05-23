@@ -21,7 +21,7 @@ namespace Packet::Commands {
           return Format::Ascii::CommandCode::GetConnectedDevices;
 
         case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(Schemas::Payload::GetConnectedDevices);
+          return static_cast<uint16_t>(BaBLE::Payload::GetConnectedDevices);
 
         case Packet::Type::NONE:
           return 0;

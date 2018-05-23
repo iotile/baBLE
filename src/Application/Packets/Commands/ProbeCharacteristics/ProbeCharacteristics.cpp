@@ -6,6 +6,7 @@ namespace Packet::Commands {
 
   ProbeCharacteristics::ProbeCharacteristics(Packet::Type initial_type, Packet::Type translated_type)
       : CommandPacket(initial_type, translated_type) {
+    m_id = BaBLE::Payload::ProbeCharacteristics;
     m_starting_handle = 0x0001;
     m_ending_handle = 0xFFFF;
     m_waiting_characteristics = true;
@@ -25,7 +26,7 @@ namespace Packet::Commands {
 
   void ProbeCharacteristics::unserialize(FlatbuffersFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
-    auto payload = extractor.get_payload<const Schemas::ProbeCharacteristics*>();
+    auto payload = extractor.get_payload<const BaBLE::ProbeCharacteristics*>();
 
     m_connection_handle = payload->connection_handle();
   }
@@ -91,7 +92,7 @@ namespace Packet::Commands {
   vector<uint8_t> ProbeCharacteristics::serialize(FlatbuffersFormatBuilder& builder) const {
     CommandPacket::serialize(builder);
 
-    std::vector<flatbuffers::Offset<Schemas::Characteristic>> characteristics;
+    std::vector<flatbuffers::Offset<BaBLE::Characteristic>> characteristics;
     characteristics.reserve(m_characteristics.size());
 
     for (auto& characteristic : m_characteristics) {
@@ -103,7 +104,7 @@ namespace Packet::Commands {
       bool read = (characteristic.properties & 1 << 1) > 0;
       bool broadcast = (characteristic.properties & 1) > 0;
 
-      auto characteristic_offset = Schemas::CreateCharacteristic(
+      auto characteristic_offset = BaBLE::CreateCharacteristic(
           builder,
           characteristic.handle,
           characteristic.value_handle,
@@ -118,9 +119,9 @@ namespace Packet::Commands {
     }
 
     auto characteristics_vector = builder.CreateVector(characteristics);
-    auto payload = Schemas::CreateProbeCharacteristics(builder, m_connection_handle, characteristics_vector);
+    auto payload = BaBLE::CreateProbeCharacteristics(builder, m_connection_handle, characteristics_vector);
 
-    return builder.build(payload, Schemas::Payload::ProbeCharacteristics);
+    return builder.build(payload, BaBLE::Payload::ProbeCharacteristics);
   }
 
   vector<uint8_t> ProbeCharacteristics::serialize(HCIFormatBuilder& builder) const {

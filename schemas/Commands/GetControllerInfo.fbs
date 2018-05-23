@@ -1,6 +1,6 @@
 include "Models/Controller.fbs";
 
-namespace Schemas;
+namespace BaBLE;
 
 table GetControllerInfo {
   controller_info: Controller;

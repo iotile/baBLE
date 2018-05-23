@@ -21,7 +21,7 @@ namespace Packet::Commands {
           return Format::Ascii::CommandCode::GetControllerInfo;
 
         case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(Schemas::Payload::GetControllerInfo);
+          return static_cast<uint16_t>(BaBLE::Payload::GetControllerInfo);
 
         case Packet::Type::NONE:
           return 0;

@@ -20,7 +20,7 @@ namespace Packet::Commands {
           return Format::Ascii::CommandCode::ProbeCharacteristics;
 
         case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(Schemas::Payload::ProbeCharacteristics);
+          return static_cast<uint16_t>(BaBLE::Payload::ProbeCharacteristics);
 
         case Packet::Type::NONE:
           return 0;

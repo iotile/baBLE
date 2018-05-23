@@ -1,6 +1,6 @@
 include "Models/Characteristic.fbs";
 
-namespace Schemas;
+namespace BaBLE;
 
 table ProbeCharacteristics {
   connection_handle:uint16;

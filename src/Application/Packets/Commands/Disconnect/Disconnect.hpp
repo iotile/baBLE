@@ -21,7 +21,7 @@ namespace Packet::Commands {
           return Format::Ascii::CommandCode::Disconnect;
 
         case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(Schemas::Payload::Disconnect);
+          return static_cast<uint16_t>(BaBLE::Payload::Disconnect);
 
         case Packet::Type::NONE:
           return 0;

@@ -6,6 +6,7 @@ namespace Packet::Events {
 
   DeviceConnected::DeviceConnected(Packet::Type initial_type, Packet::Type translated_type)
       : EventPacket(initial_type, translated_type) {
+    m_id = BaBLE::Payload::DeviceConnected;
     m_address_type = 0;
     m_eir_data_length = 0;
     m_connection_handle = 0;
@@ -66,7 +67,7 @@ namespace Packet::Events {
     auto uuid = builder.CreateString(AsciiFormat::format_uuid(m_eir.uuid));
     auto device_name = builder.CreateString(AsciiFormat::bytes_to_string(m_eir.device_name));
 
-    auto payload = Schemas::CreateDeviceConnected(
+    auto payload = BaBLE::CreateDeviceConnected(
         builder,
         m_connection_handle,
         address,
@@ -77,7 +78,7 @@ namespace Packet::Events {
         device_name
     );
 
-    return builder.build(payload, Schemas::Payload::DeviceConnected);
+    return builder.build(payload, BaBLE::Payload::DeviceConnected);
   }
 
 }

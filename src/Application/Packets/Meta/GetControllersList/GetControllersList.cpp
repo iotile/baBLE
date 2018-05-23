@@ -6,6 +6,8 @@ namespace Packet::Meta {
 
   GetControllersList::GetControllersList(Packet::Type initial_type, Packet::Type translated_type)
       : AbstractPacket(initial_type, translated_type) {
+    m_id = BaBLE::Payload::GetControllersList;
+
     m_controller_info_packet = std::make_unique<Packet::Commands::GetControllerInfo>(translated_type, translated_type);
     m_controllers_ids_packet = std::make_unique<Packet::Commands::GetControllersIds>(translated_type, translated_type);
 
@@ -41,7 +43,7 @@ namespace Packet::Meta {
   }
 
   vector<uint8_t> GetControllersList::serialize(FlatbuffersFormatBuilder& builder) const {
-    std::vector<flatbuffers::Offset<Schemas::Controller>> controllers;
+    std::vector<flatbuffers::Offset<BaBLE::Controller>> controllers;
     controllers.reserve(m_controllers.size());
 
     for (auto& controller : m_controllers) {
@@ -53,7 +55,7 @@ namespace Packet::Meta {
       bool discoverable = (controller.current_settings & 1 << 3) > 0;
       bool low_energy = (controller.current_settings & 9) > 0;
 
-      auto controller_offset = Schemas::CreateController(
+      auto controller_offset = BaBLE::CreateController(
           builder,
           controller.id,
           address,
@@ -68,9 +70,9 @@ namespace Packet::Meta {
     }
 
     auto controllers_vector = builder.CreateVector(controllers);
-    auto payload = Schemas::CreateGetControllersList(builder, controllers_vector);
+    auto payload = BaBLE::CreateGetControllersList(builder, controllers_vector);
 
-    return builder.build(payload, Schemas::Payload::GetControllersList);
+    return builder.build(payload, BaBLE::Payload::GetControllersList);
   }
 
   vector<uint8_t> GetControllersList::serialize(MGMTFormatBuilder& builder) const {
@@ -131,7 +133,7 @@ namespace Packet::Meta {
 
       import_status(*m_controllers_ids_packet);
 
-      if (m_status != Schemas::StatusCode::Success) {
+      if (m_status != BaBLE::StatusCode::Success) {
         m_waiting_response = SubPacket::None;
         return true;
       }
@@ -152,7 +154,7 @@ namespace Packet::Meta {
 
       import_status(*m_controller_info_packet);
 
-      if (m_status != Schemas::StatusCode::Success) {
+      if (m_status != BaBLE::StatusCode::Success) {
         m_waiting_response = SubPacket::None;
         return true;
       }

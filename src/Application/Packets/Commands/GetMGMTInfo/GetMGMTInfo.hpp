@@ -20,7 +20,7 @@ namespace Packet::Commands {
           return Format::Ascii::CommandCode::GetMGMTInfo;
 
         case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(Schemas::Payload::GetMGMTInfo);
+          return static_cast<uint16_t>(BaBLE::Payload::GetMGMTInfo);
 
         case Packet::Type::NONE:
           return 0;

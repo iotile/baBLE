@@ -20,7 +20,7 @@ namespace Packet::Commands {
           return Format::Ascii::CommandCode::WriteWithoutResponse;
 
         case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(Schemas::Payload::WriteWithoutResponse);
+          return static_cast<uint16_t>(BaBLE::Payload::WriteWithoutResponse);
 
         case Packet::Type::NONE:
           return 0;

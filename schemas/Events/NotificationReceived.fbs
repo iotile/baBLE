@@ -1,4 +1,4 @@
-namespace Schemas;
+namespace BaBLE;
 
 table NotificationReceived {
   connection_handle:uint16;

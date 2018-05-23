@@ -6,6 +6,7 @@ namespace Packet::Commands {
 
   SetConnectable::SetConnectable(Packet::Type initial_type, Packet::Type translated_type)
       : CommandPacket(initial_type, translated_type) {
+    m_id = BaBLE::Payload::SetConnectable;
     m_state = false;
   }
 
@@ -23,7 +24,7 @@ namespace Packet::Commands {
 
   void SetConnectable::unserialize(FlatbuffersFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
-    auto payload = extractor.get_payload<const Schemas::SetConnectable*>();
+    auto payload = extractor.get_payload<const BaBLE::SetConnectable*>();
 
     m_state = payload->state();
   }
@@ -31,7 +32,7 @@ namespace Packet::Commands {
   void SetConnectable::unserialize(MGMTFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
 
-    if (m_status == Schemas::StatusCode::Success){
+    if (m_status == BaBLE::StatusCode::Success){
       auto m_current_settings = extractor.get_value<uint32_t>();
       m_state = (m_current_settings & 1 << 1) > 0;
     }
@@ -49,9 +50,9 @@ namespace Packet::Commands {
   vector<uint8_t> SetConnectable::serialize(FlatbuffersFormatBuilder& builder) const {
     CommandPacket::serialize(builder);
 
-    auto payload = Schemas::CreateSetConnectable(builder, m_state);
+    auto payload = BaBLE::CreateSetConnectable(builder, m_state);
 
-    return builder.build(payload, Schemas::Payload::SetConnectable);
+    return builder.build(payload, BaBLE::Payload::SetConnectable);
   }
 
   vector<uint8_t> SetConnectable::serialize(MGMTFormatBuilder& builder) const {

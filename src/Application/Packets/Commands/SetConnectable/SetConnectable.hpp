@@ -21,7 +21,7 @@ namespace Packet::Commands {
           return Format::Ascii::CommandCode::SetConnectable;
 
         case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(Schemas::Payload::SetConnectable);
+          return static_cast<uint16_t>(BaBLE::Payload::SetConnectable);
 
         case Packet::Type::NONE:
           return 0;

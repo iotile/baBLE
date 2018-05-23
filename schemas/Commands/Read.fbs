@@ -1,4 +1,4 @@
-namespace Schemas;
+namespace BaBLE;
 
 table Read {
   connection_handle:uint16;

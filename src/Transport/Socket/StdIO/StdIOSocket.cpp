@@ -19,26 +19,32 @@ bool StdIOSocket::send(const vector<uint8_t>& data) {
   return true;
 }
 
-void StdIOSocket::poll(shared_ptr<uvw::Loop> loop, CallbackFunction on_received) {
+void StdIOSocket::poll(shared_ptr<uvw::Loop> loop, OnReceivedCallback on_received, OnErrorCallback on_error) {
   auto poller = loop->resource<uvw::PipeHandle>(false);
   poller->open(STDIO_ID::in);
-  poller->on<uvw::DataEvent>([this, on_received](const uvw::DataEvent& event, const uvw::PipeHandle& handle){
-    LOG.debug("Readable data...", "StdIOSocket");
-    size_t remaining_data_length = event.length;
-    auto remaining_data = reinterpret_cast<uint8_t*>(event.data.get());
 
-    while (remaining_data_length > 0) {
-      LOG.debug("Remaining data: " + to_string(remaining_data_length), "StdIOSocket");
-      if (!receive(remaining_data, remaining_data_length)) {
-        return;
+  poller->on<uvw::DataEvent>([this, on_received, on_error](const uvw::DataEvent& event, const uvw::PipeHandle& handle){
+    try {
+      LOG.debug("Readable data...", "StdIOSocket");
+      size_t remaining_data_length = event.length;
+      auto remaining_data = reinterpret_cast<uint8_t*>(event.data.get());
+
+      while (remaining_data_length > 0) {
+        LOG.debug("Remaining data: " + to_string(remaining_data_length), "StdIOSocket");
+        if (!receive(remaining_data, remaining_data_length)) {
+          return;
+        }
+
+        size_t consumed_data_length = m_header.size() + m_payload.size();
+        remaining_data_length -= consumed_data_length;
+        remaining_data += consumed_data_length;
+
+        on_received(m_payload, m_format);
+        clear();
       }
 
-      size_t consumed_data_length = m_header.size() + m_payload.size();
-      remaining_data_length -= consumed_data_length;
-      remaining_data += consumed_data_length;
-
-      on_received(m_payload, *this);
-      clear();
+    } catch (const Exceptions::AbstractException& err) {
+      on_error(err);
     }
   });
 

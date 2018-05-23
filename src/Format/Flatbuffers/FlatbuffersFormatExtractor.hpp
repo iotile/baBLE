@@ -33,7 +33,7 @@ public:
   };
 
 private:
-  const Schemas::Packet* m_packet;
+  const BaBLE::Packet* m_packet;
 
 };
 

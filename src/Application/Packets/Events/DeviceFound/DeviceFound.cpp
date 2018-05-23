@@ -6,6 +6,7 @@ namespace Packet::Events {
 
   DeviceFound::DeviceFound(Packet::Type initial_type, Packet::Type translated_type)
       : EventPacket(initial_type, translated_type) {
+    m_id = BaBLE::Payload::DeviceFound;
     m_address_type = 0;
     m_rssi = 0;
     m_eir_data_length = 0;
@@ -58,7 +59,7 @@ namespace Packet::Events {
     auto uuid = builder.CreateString(AsciiFormat::format_uuid(m_eir.uuid));
     auto device_name = builder.CreateString(AsciiFormat::bytes_to_string(m_eir.device_name));
 
-    auto payload = Schemas::CreateDeviceFound(
+    auto payload = BaBLE::CreateDeviceFound(
         builder,
         address,
         m_address_type,
@@ -69,7 +70,7 @@ namespace Packet::Events {
         device_name
     );
 
-    return builder.build(payload, Schemas::Payload::DeviceFound);
+    return builder.build(payload, BaBLE::Payload::DeviceFound);
   }
 
 }

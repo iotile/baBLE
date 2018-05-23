@@ -5,7 +5,9 @@ using namespace std;
 namespace Packet::Commands {
 
   WriteWithoutResponse::WriteWithoutResponse(Packet::Type initial_type, Packet::Type translated_type)
-      : CommandPacket(initial_type, translated_type) {};
+      : CommandPacket(initial_type, translated_type) {
+    m_id = BaBLE::Payload::WriteWithoutResponse;
+  };
 
   void WriteWithoutResponse::unserialize(AsciiFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
@@ -23,7 +25,7 @@ namespace Packet::Commands {
 
   void WriteWithoutResponse::unserialize(FlatbuffersFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
-    auto payload = extractor.get_payload<const Schemas::WriteWithoutResponse*>();
+    auto payload = extractor.get_payload<const BaBLE::WriteWithoutResponse*>();
 
     m_connection_handle = payload->connection_handle();
     m_attribute_handle = payload->attribute_handle();

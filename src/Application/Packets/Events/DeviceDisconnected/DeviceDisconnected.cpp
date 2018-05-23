@@ -6,6 +6,7 @@ namespace Packet::Events {
 
   DeviceDisconnected::DeviceDisconnected(Packet::Type initial_type, Packet::Type translated_type)
       : EventPacket(initial_type, translated_type) {
+    m_id = BaBLE::Payload::DeviceDisconnected;
     m_address_type = 0;
     m_raw_reason = 0;
     m_connection_handle = 0;
@@ -71,7 +72,7 @@ namespace Packet::Events {
     auto address = builder.CreateString(AsciiFormat::format_bd_address(m_address));
     auto reason = builder.CreateString(m_reason);
 
-    auto payload = Schemas::CreateDeviceDisconnected(
+    auto payload = BaBLE::CreateDeviceDisconnected(
         builder,
         m_connection_handle,
         address,
@@ -79,7 +80,7 @@ namespace Packet::Events {
         reason
     );
 
-    return builder.build(payload, Schemas::Payload::DeviceDisconnected);
+    return builder.build(payload, BaBLE::Payload::DeviceDisconnected);
   }
 
 }

@@ -21,7 +21,7 @@ namespace Packet::Commands {
           return Format::Ascii::CommandCode::SetDiscoverable;
 
         case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(Schemas::Payload::SetDiscoverable);
+          return static_cast<uint16_t>(BaBLE::Payload::SetDiscoverable);
 
         case Packet::Type::NONE:
           return 0;

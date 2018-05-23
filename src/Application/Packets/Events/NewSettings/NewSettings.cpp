@@ -6,6 +6,7 @@ namespace Packet::Events {
 
   NewSettings::NewSettings(Packet::Type initial_type, Packet::Type translated_type)
       : EventPacket(initial_type, translated_type) {
+    m_id = BaBLE::Payload::NONE;
     m_current_settings = 0;
   }
 

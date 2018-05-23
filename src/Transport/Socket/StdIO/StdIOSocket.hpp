@@ -18,14 +18,11 @@ public:
   explicit StdIOSocket(std::shared_ptr<AbstractFormat> format);
 
   bool send(const std::vector<uint8_t>& data) override;
-
-  void poll(std::shared_ptr<uvw::Loop> loop, CallbackFunction on_received) override;
+  void poll(std::shared_ptr<uvw::Loop> loop, OnReceivedCallback on_received, OnErrorCallback on_error) override;
 
 private:
   std::vector<uint8_t> generate_header(const std::vector<uint8_t>& data);
-
   bool receive(const uint8_t* data, size_t length);
-
   void clear();
 
   std::vector<uint8_t> m_header;

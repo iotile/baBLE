@@ -21,7 +21,7 @@ namespace Packet::Commands {
           return Format::Ascii::CommandCode::StartScan;
 
         case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(Schemas::Payload::StartScan);
+          return static_cast<uint16_t>(BaBLE::Payload::StartScan);
 
         case Packet::Type::NONE:
           return 0;

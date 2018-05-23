@@ -26,7 +26,7 @@ include "./Errors/BaBLEError.fbs";
 include "./Control/Ready.fbs";
 include "./Control/Exit.fbs";
 
-namespace Schemas;
+namespace BaBLE;
 
 union Payload {
   // Commands

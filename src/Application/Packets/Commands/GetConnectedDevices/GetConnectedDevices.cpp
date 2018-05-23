@@ -5,7 +5,9 @@ using namespace std;
 namespace Packet::Commands {
 
   GetConnectedDevices::GetConnectedDevices(Packet::Type initial_type, Packet::Type translated_type)
-      : CommandPacket(initial_type, translated_type) {}
+      : CommandPacket(initial_type, translated_type) {
+    m_id = BaBLE::Payload::GetConnectedDevices;
+  }
 
   void GetConnectedDevices::unserialize(AsciiFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
@@ -18,7 +20,7 @@ namespace Packet::Commands {
   void GetConnectedDevices::unserialize(MGMTFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
 
-    if (m_status == Schemas::StatusCode::Success) {
+    if (m_status == BaBLE::StatusCode::Success) {
       auto m_num_connections = extractor.get_value<uint16_t>();
       m_devices.reserve(m_num_connections);
 
@@ -54,9 +56,9 @@ namespace Packet::Commands {
     }
 
     auto devices = builder.CreateVector(devices_fb_string);
-    auto payload = Schemas::CreateGetConnectedDevices(builder, devices);
+    auto payload = BaBLE::CreateGetConnectedDevices(builder, devices);
 
-    return builder.build(payload, Schemas::Payload::GetConnectedDevices);
+    return builder.build(payload, BaBLE::Payload::GetConnectedDevices);
   }
 
   vector<uint8_t> GetConnectedDevices::serialize(MGMTFormatBuilder& builder) const {

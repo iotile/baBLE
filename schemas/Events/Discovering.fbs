@@ -1,4 +1,4 @@
-namespace Schemas;
+namespace BaBLE;
 
 table Discovering {
   address_type:uint8;

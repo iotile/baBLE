@@ -20,7 +20,7 @@ namespace Packet::Events {
           return Format::Ascii::EventCode::ControllerAdded;
 
         case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(Schemas::Payload::ControllerAdded);
+          return static_cast<uint16_t>(BaBLE::Payload::ControllerAdded);
 
         case Packet::Type::NONE:
           return 0;

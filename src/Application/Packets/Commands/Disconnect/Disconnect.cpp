@@ -6,6 +6,7 @@ namespace Packet::Commands {
 
   Disconnect::Disconnect(Packet::Type initial_type, Packet::Type translated_type)
       : CommandPacket(initial_type, translated_type) {
+    m_id = BaBLE::Payload::Disconnect;
     m_address_type = 0;
   };
 
@@ -33,7 +34,7 @@ namespace Packet::Commands {
 
   void Disconnect::unserialize(FlatbuffersFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
-    auto payload = extractor.get_payload<const Schemas::Disconnect*>();
+    auto payload = extractor.get_payload<const BaBLE::Disconnect*>();
 
     m_address_type = payload->address_type();
 
@@ -47,7 +48,7 @@ namespace Packet::Commands {
   void Disconnect::unserialize(MGMTFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
 
-    if (m_status == Schemas::StatusCode::Success){
+    if (m_status == BaBLE::StatusCode::Success){
       m_address = extractor.get_array<uint8_t, 6>();
       m_address_type = extractor.get_value<uint8_t>();
     }
@@ -68,9 +69,9 @@ namespace Packet::Commands {
 
     auto address = builder.CreateVector(m_address.data(), m_address.size());
 
-    auto payload = Schemas::CreateDisconnect(builder, address, m_address_type);
+    auto payload = BaBLE::CreateDisconnect(builder, address, m_address_type);
 
-    return builder.build(payload, Schemas::Payload::Disconnect);
+    return builder.build(payload, BaBLE::Payload::Disconnect);
   }
 
   vector<uint8_t> Disconnect::serialize(MGMTFormatBuilder& builder) const {

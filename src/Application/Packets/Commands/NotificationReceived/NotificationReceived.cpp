@@ -6,6 +6,7 @@ namespace Packet::Commands {
 
   NotificationReceived::NotificationReceived(Packet::Type initial_type, Packet::Type translated_type)
       : CommandPacket(initial_type, translated_type) {
+    m_id = BaBLE::Payload::NotificationReceived;
     m_connection_handle = 0;
     m_attribute_handle = 0;
   }
@@ -37,14 +38,14 @@ namespace Packet::Commands {
 
     auto value = builder.CreateVector(m_value);
 
-    auto payload = Schemas::CreateNotificationReceived(
+    auto payload = BaBLE::CreateNotificationReceived(
         builder,
         m_connection_handle,
         m_attribute_handle,
         value
     );
 
-    return builder.build(payload, Schemas::Payload::NotificationReceived);
+    return builder.build(payload, BaBLE::Payload::NotificationReceived);
   }
 
 }

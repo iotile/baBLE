@@ -1,4 +1,4 @@
-namespace Schemas;
+namespace BaBLE;
 
 table StopScan {
   address_type:uint8 = 0x06; // LE (public & random)

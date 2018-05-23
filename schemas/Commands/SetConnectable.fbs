@@ -1,6 +1,6 @@
 // Only on Linux
 
-namespace Schemas;
+namespace BaBLE;
 
 table SetConnectable {
   state:bool;

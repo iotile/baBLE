@@ -6,6 +6,7 @@ namespace Packet::Commands {
 
   StartScan::StartScan(Packet::Type initial_type, Packet::Type translated_type)
   : CommandPacket(initial_type, translated_type) {
+    m_id = BaBLE::Payload::StartScan;
     m_address_type = 0;
   };
 
@@ -23,7 +24,7 @@ namespace Packet::Commands {
 
   void StartScan::unserialize(FlatbuffersFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
-    auto payload = extractor.get_payload<const Schemas::StartScan*>();
+    auto payload = extractor.get_payload<const BaBLE::StartScan*>();
 
     m_address_type = payload->address_type();
   };
@@ -31,7 +32,7 @@ namespace Packet::Commands {
   void StartScan::unserialize(MGMTFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
 
-    if (m_status == Schemas::StatusCode::Success){
+    if (m_status == BaBLE::StatusCode::Success){
       m_address_type = extractor.get_value<uint8_t>();
     }
   };
@@ -47,9 +48,9 @@ namespace Packet::Commands {
 
   vector<uint8_t> StartScan::serialize(FlatbuffersFormatBuilder& builder) const {
     CommandPacket::serialize(builder);
-    auto payload = Schemas::CreateStartScan(builder, m_address_type);
+    auto payload = BaBLE::CreateStartScan(builder, m_address_type);
 
-    return builder.build(payload, Schemas::Payload::StartScan);
+    return builder.build(payload, BaBLE::Payload::StartScan);
   }
 
   vector<uint8_t> StartScan::serialize(MGMTFormatBuilder& builder) const {

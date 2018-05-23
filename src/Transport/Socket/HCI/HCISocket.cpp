@@ -158,44 +158,24 @@ vector<uint8_t> HCISocket::receive() {
   return result;
 }
 
-// TODO: add errorcallbackfunction and try catch in poll() instead of main
-void HCISocket::poll(shared_ptr<uvw::Loop> loop, CallbackFunction on_received) {
+void HCISocket::poll(shared_ptr<uvw::Loop> loop, OnReceivedCallback on_received, OnErrorCallback on_error) {
   m_poller = loop->resource<uvw::PollHandle>(m_hci_socket);
 
-  m_poller->on<uvw::PollEvent>([this, on_received](const uvw::PollEvent& event, const uvw::PollHandle& handle){
-    if (event.flags & uvw::PollHandle::Event::READABLE) {
-      LOG.info("Reading data...", "HCISocket");
-      vector<uint8_t> received_payload = receive();
+  m_poller->on<uvw::PollEvent>([this, on_received, on_error](const uvw::PollEvent& event, const uvw::PollHandle& handle){
+    try {
+      if (event.flags & uvw::PollHandle::Event::READABLE) {
+        LOG.info("Reading data...", "HCISocket");
+        vector<uint8_t> received_payload = receive();
 
-      // TODO: find a cleaner way to check if Connected / Disconnected event: either create extractor here ( x( ) or do this in main.cpp
-      // TODO: keep bindings connection_handle <=> device_address (in main.cpp) ?
-      if (m_format->is_event(m_format->extract_type_code(received_payload))) {
+        on_received(received_payload, m_format);
 
-        uint16_t packet_code = m_format->extract_packet_code(received_payload);
-        if (packet_code == Packet::Events::DeviceConnected::packet_code(m_format->packet_type())) {
-          Packet::Events::DeviceConnected device_connected_packet(m_format->packet_type(), m_format->packet_type());
-          shared_ptr<AbstractExtractor> extractor = m_format->create_extractor(received_payload);
-          device_connected_packet.from_bytes(extractor);
-
-          connect_l2cap_socket(
-              device_connected_packet.get_connection_handle(),
-              device_connected_packet.get_raw_device_address(),
-              device_connected_packet.get_device_address_type()
-          );
-        } else if (packet_code == Packet::Events::DeviceDisconnected::packet_code(m_format->packet_type())) {
-          Packet::Events::DeviceDisconnected device_disconnected_packet(m_format->packet_type(), m_format->packet_type());
-          shared_ptr<AbstractExtractor> extractor = m_format->create_extractor(received_payload);
-          device_disconnected_packet.from_bytes(extractor);
-
-          disconnect_l2cap_socket(device_disconnected_packet.get_connection_handle());
-        }
+      } else if (event.flags & uvw::PollHandle::Event::WRITABLE) {
+        set_writable(true);
+        m_poller->start(HCISocket::readable_flag);
       }
 
-      on_received(received_payload, *this);
-
-    } else if (event.flags & uvw::PollHandle::Event::WRITABLE) {
-      set_writable(true);
-      m_poller->start(HCISocket::readable_flag);
+    } catch (const Exceptions::AbstractException& err) {
+      on_error(err);
     }
   });
 

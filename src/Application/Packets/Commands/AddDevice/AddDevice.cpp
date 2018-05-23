@@ -6,6 +6,7 @@ namespace Packet::Commands {
 
   AddDevice::AddDevice(Packet::Type initial_type, Packet::Type translated_type)
       : CommandPacket(initial_type, translated_type) {
+    m_id = BaBLE::Payload::AddDevice;
     m_address_type = 0;
   }
 
@@ -33,7 +34,7 @@ namespace Packet::Commands {
 
   void AddDevice::unserialize(FlatbuffersFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
-    auto payload = extractor.get_payload<const Schemas::AddDevice*>();
+    auto payload = extractor.get_payload<const BaBLE::AddDevice*>();
 
     m_address_type = payload->address_type();
 
@@ -47,7 +48,7 @@ namespace Packet::Commands {
   void AddDevice::unserialize(MGMTFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
 
-    if (m_status == Schemas::StatusCode::Success){
+    if (m_status == BaBLE::StatusCode::Success){
       m_address = extractor.get_array<uint8_t, 6>();
       m_address_type = extractor.get_value<uint8_t>();
     }
@@ -68,9 +69,9 @@ namespace Packet::Commands {
 
     auto address = builder.CreateVector(m_address.data(), m_address.size());
 
-    auto payload = Schemas::CreateAddDevice(builder, address, m_address_type);
+    auto payload = BaBLE::CreateAddDevice(builder, address, m_address_type);
 
-    return builder.build(payload, Schemas::Payload::AddDevice);
+    return builder.build(payload, BaBLE::Payload::AddDevice);
   }
 
   vector<uint8_t> AddDevice::serialize(MGMTFormatBuilder& builder) const {

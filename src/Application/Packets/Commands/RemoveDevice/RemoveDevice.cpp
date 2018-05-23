@@ -6,6 +6,7 @@ namespace Packet::Commands {
 
   RemoveDevice::RemoveDevice(Packet::Type initial_type, Packet::Type translated_type)
       : CommandPacket(initial_type, translated_type) {
+    m_id = BaBLE::Payload::RemoveDevice;
     m_address_type = 0;
   };
 
@@ -33,7 +34,7 @@ namespace Packet::Commands {
 
   void RemoveDevice::unserialize(FlatbuffersFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
-    auto payload = extractor.get_payload<const Schemas::RemoveDevice*>();
+    auto payload = extractor.get_payload<const BaBLE::RemoveDevice*>();
 
     m_address_type = payload->address_type();
 
@@ -47,7 +48,7 @@ namespace Packet::Commands {
   void RemoveDevice::unserialize(MGMTFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
 
-    if (m_status == Schemas::StatusCode::Success){
+    if (m_status == BaBLE::StatusCode::Success){
       m_address = extractor.get_array<uint8_t, 6>();
       m_address_type = extractor.get_value<uint8_t>();
     }
@@ -68,9 +69,9 @@ namespace Packet::Commands {
 
     auto address = builder.CreateVector(m_address.data(), m_address.size());
 
-    auto payload = Schemas::CreateRemoveDevice(builder, address, m_address_type);
+    auto payload = BaBLE::CreateRemoveDevice(builder, address, m_address_type);
 
-    return builder.build(payload, Schemas::Payload::RemoveDevice);
+    return builder.build(payload, BaBLE::Payload::RemoveDevice);
   }
 
   vector<uint8_t> RemoveDevice::serialize(MGMTFormatBuilder& builder) const {

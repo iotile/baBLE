@@ -36,7 +36,7 @@ namespace Packet {
 
         case Packet::Type::ASCII:
         {
-          std::string status_name = Schemas::EnumNameStatusCode(m_status);
+          std::string status_name = BaBLE::EnumNameStatusCode(m_status);
 
           AsciiFormatBuilder builder;
           builder
@@ -149,8 +149,12 @@ namespace Packet {
       return m_controller_id;
     };
 
-    const Schemas::StatusCode get_status() const {
+    const BaBLE::StatusCode get_status() const {
       return m_status;
+    };
+
+    const BaBLE::Payload get_id() const {
+      return m_id;
     };
 
     virtual void translate() {
@@ -166,7 +170,7 @@ namespace Packet {
     };
 
     const std::string stringify() const override {
-      std::string status_name = Schemas::EnumNameStatusCode(m_status);
+      std::string status_name = BaBLE::EnumNameStatusCode(m_status);
 
       AsciiFormatBuilder builder;
       builder
@@ -183,11 +187,15 @@ namespace Packet {
     virtual ~AbstractPacket() = default;
 
   protected:
-    AbstractPacket(Packet::Type initial_type, Packet::Type translated_type)
-        : m_initial_type(initial_type), m_translated_type(translated_type), m_current_type(m_initial_type),
-          m_controller_id(NON_CONTROLLER_ID), m_uuid_request(""), m_native_class(""),
-          m_status(Schemas::StatusCode::Success), m_native_status(0x00)
-    {};
+    AbstractPacket(Packet::Type initial_type, Packet::Type translated_type) {
+      m_id = BaBLE::Payload::NONE;
+      m_initial_type = initial_type;
+      m_translated_type = translated_type;
+      m_current_type = m_initial_type;
+      m_controller_id = NON_CONTROLLER_ID;
+      m_status = BaBLE::StatusCode::Success;
+      m_native_status = 0x00;
+    };
 
     virtual void after_translate() {};
 
@@ -202,6 +210,8 @@ namespace Packet {
       m_native_status = packet.m_native_status;
     }
 
+    BaBLE::Payload m_id;
+
     Packet::Type m_initial_type;
     Packet::Type m_translated_type;
     Packet::Type m_current_type;
@@ -210,7 +220,7 @@ namespace Packet {
     std::string m_uuid_request;
 
     std::string m_native_class;
-    Schemas::StatusCode m_status;
+    BaBLE::StatusCode m_status;
 
   private:
     void compute_bable_status() {
@@ -219,47 +229,47 @@ namespace Packet {
         case Type::MGMT:
           switch (m_native_status) {
             case Format::MGMT::Success:
-              m_status = Schemas::StatusCode::Success;
+              m_status = BaBLE::StatusCode::Success;
               break;
 
             case Format::MGMT::Busy:
             case Format::MGMT::Rejected:
             case Format::MGMT::NotSupported:
             case Format::MGMT::AlreadyPaired:
-              m_status = Schemas::StatusCode::Rejected;
+              m_status = BaBLE::StatusCode::Rejected;
               break;
 
             case Format::MGMT::PermissionDenied:
-              m_status = Schemas::StatusCode::Denied;
+              m_status = BaBLE::StatusCode::Denied;
               break;
 
             case Format::MGMT::Cancelled:
-              m_status = Schemas::StatusCode::Cancelled;
+              m_status = BaBLE::StatusCode::Cancelled;
               break;
 
             case Format::MGMT::NotPowered:
-              m_status = Schemas::StatusCode::NotPowered;
+              m_status = BaBLE::StatusCode::NotPowered;
               break;
 
             case Format::MGMT::Failed:
             case Format::MGMT::ConnectFailed:
             case Format::MGMT::AuthenticationFailed:
             case Format::MGMT::RFKilled:
-              m_status = Schemas::StatusCode::Failed;
+              m_status = BaBLE::StatusCode::Failed;
               break;
 
             case Format::MGMT::UnknownCommand:
             case Format::MGMT::InvalidParameters:
             case Format::MGMT::InvalidIndex:
-              m_status = Schemas::StatusCode::InvalidCommand;
+              m_status = BaBLE::StatusCode::InvalidCommand;
               break;
 
             case Format::MGMT::NotConnected:
-              m_status = Schemas::StatusCode::NotConnected;
+              m_status = BaBLE::StatusCode::NotConnected;
               break;
 
             default:
-              m_status = Schemas::StatusCode::Unknown;
+              m_status = BaBLE::StatusCode::Unknown;
               break;
           }
           break;
@@ -267,7 +277,7 @@ namespace Packet {
         case Type::HCI:
           switch (m_native_status) {
             case Format::HCI::Success:
-              m_status = Schemas::StatusCode::Success;
+              m_status = BaBLE::StatusCode::Success;
               break;
 
             case Format::HCI::ConnectionRejectedLimitedResources:
@@ -275,16 +285,16 @@ namespace Packet {
             case Format::HCI::ConnectionRejectedUnacceptableBDADDR:
             case Format::HCI::HostBusyPairing:
             case Format::HCI::ControllerBusy:
-              m_status = Schemas::StatusCode::Rejected;
+              m_status = BaBLE::StatusCode::Rejected;
               break;
 
             case Format::HCI::CommandDisallowed:
             case Format::HCI::PairingNotAllowed:
-              m_status = Schemas::StatusCode::Denied;
+              m_status = BaBLE::StatusCode::Denied;
               break;
 
             case Format::HCI::OperationCancelledHost:
-              m_status = Schemas::StatusCode::Cancelled;
+              m_status = BaBLE::StatusCode::Cancelled;
               break;
 
             case Format::HCI::HardwareFailure:
@@ -292,18 +302,18 @@ namespace Packet {
             case Format::HCI::ConnectionAlreadyExists:
             case Format::HCI::ConnectionFailedEstablished:
             case Format::HCI::MACConnectionFailed:
-              m_status = Schemas::StatusCode::Failed;
+              m_status = BaBLE::StatusCode::Failed;
               break;
 
             case Format::HCI::UnknownHCICommand:
             case Format::HCI::UnknownConnectionIdentifier:
             case Format::HCI::InvalidHCICommandParameters:
             case Format::HCI::UnacceptableConnectionParameters:
-              m_status = Schemas::StatusCode::InvalidCommand;
+              m_status = BaBLE::StatusCode::InvalidCommand;
               break;
 
             default:
-              m_status = Schemas::StatusCode::Unknown;
+              m_status = BaBLE::StatusCode::Unknown;
               break;
           }
           break;

@@ -11,11 +11,11 @@ public:
     m_controller_id = controller_id;
     m_native_class = native_class;
     m_uuid_request = uuid_request;
-    m_status = Schemas::StatusCode::Success;
+    m_status = BaBLE::StatusCode::Success;
     m_native_status = 0x00;
   };
 
-  FlatbuffersFormatBuilder& set_status(Schemas::StatusCode status, uint8_t native_status = 0x00) {
+  FlatbuffersFormatBuilder& set_status(BaBLE::StatusCode status, uint8_t native_status = 0x00) {
     m_status = status;
     m_native_status = native_status;
 
@@ -23,24 +23,24 @@ public:
   };
 
   template<class T>
-  std::vector<uint8_t> build(const flatbuffers::Offset<T>& payload, Schemas::Payload payload_type);
+  std::vector<uint8_t> build(const flatbuffers::Offset<T>& payload, BaBLE::Payload payload_type);
 
 private:
   uint16_t m_controller_id;
   std::string m_native_class;
   std::string m_uuid_request;
-  Schemas::StatusCode m_status;
+  BaBLE::StatusCode m_status;
   uint8_t m_native_status;
 
 };
 
 template<class T>
-std::vector<uint8_t> FlatbuffersFormatBuilder::build(const flatbuffers::Offset<T>& payload, Schemas::Payload payload_type) {
+std::vector<uint8_t> FlatbuffersFormatBuilder::build(const flatbuffers::Offset<T>& payload, BaBLE::Payload payload_type) {
 
   auto native_class_offset = CreateString(m_native_class);
   auto uuid_request_offset = CreateString(m_uuid_request);
 
-  Schemas::PacketBuilder packet_builder(*this);
+  BaBLE::PacketBuilder packet_builder(*this);
   packet_builder.add_controller_id(m_controller_id);
   packet_builder.add_payload_type(payload_type);
   packet_builder.add_payload(payload.Union());

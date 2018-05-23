@@ -113,17 +113,22 @@ vector<uint8_t> MGMTSocket::receive() {
   return result;
 }
 
-void MGMTSocket::poll(shared_ptr<Loop> loop, CallbackFunction on_received) {
+void MGMTSocket::poll(shared_ptr<Loop> loop, OnReceivedCallback on_received, OnErrorCallback on_error) {
   m_poller = loop->resource<PollHandle>(m_socket);
 
-  m_poller->on<PollEvent>([this, on_received](const PollEvent& event, const PollHandle& handle){
-    if (event.flags & PollHandle::Event::READABLE) {
-      LOG.info("Reading data...", "MGMTSocket");
-      vector<uint8_t> received_payload = receive();
-      on_received(received_payload, *this);
-    } else if (event.flags & PollHandle::Event::WRITABLE) {
-      set_writable(true);
-      m_poller->start(MGMTSocket::readable_flag);
+  m_poller->on<PollEvent>([this, on_received, on_error](const PollEvent& event, const PollHandle& handle){
+    try {
+      if (event.flags & PollHandle::Event::READABLE) {
+        LOG.info("Reading data...", "MGMTSocket");
+        vector<uint8_t> received_payload = receive();
+        on_received(received_payload, m_format);
+      } else if (event.flags & PollHandle::Event::WRITABLE) {
+        set_writable(true);
+        m_poller->start(MGMTSocket::readable_flag);
+      }
+
+    } catch (const Exceptions::AbstractException& err) {
+      on_error(err);
     }
   });
 

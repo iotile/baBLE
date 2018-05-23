@@ -6,6 +6,7 @@ namespace Packet::Commands {
 
   ProbeServices::ProbeServices(Packet::Type initial_type, Packet::Type translated_type)
       : CommandPacket(initial_type, translated_type) {
+    m_id = BaBLE::Payload::ProbeServices;
     m_starting_handle = 0x0001;
     m_ending_handle = 0xFFFF;
     m_waiting_services = true;
@@ -25,7 +26,7 @@ namespace Packet::Commands {
 
   void ProbeServices::unserialize(FlatbuffersFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
-    auto payload = extractor.get_payload<const Schemas::ProbeServices*>();
+    auto payload = extractor.get_payload<const BaBLE::ProbeServices*>();
 
     m_connection_handle = payload->connection_handle();
   }
@@ -86,13 +87,13 @@ namespace Packet::Commands {
   vector<uint8_t> ProbeServices::serialize(FlatbuffersFormatBuilder& builder) const {
     CommandPacket::serialize(builder);
 
-    std::vector<flatbuffers::Offset<Schemas::Service>> services;
+    std::vector<flatbuffers::Offset<BaBLE::Service>> services;
     services.reserve(m_services.size());
 
     for (auto& service : m_services) {
       auto uuid = builder.CreateString(AsciiFormat::format_uuid(service.uuid));
 
-      auto service_offset = Schemas::CreateService(
+      auto service_offset = BaBLE::CreateService(
           builder,
           service.handle,
           service.group_end_handle,
@@ -102,9 +103,9 @@ namespace Packet::Commands {
     }
 
     auto services_vector = builder.CreateVector(services);
-    auto payload = Schemas::CreateProbeServices(builder, m_connection_handle, services_vector);
+    auto payload = BaBLE::CreateProbeServices(builder, m_connection_handle, services_vector);
 
-    return builder.build(payload, Schemas::Payload::ProbeServices);
+    return builder.build(payload, BaBLE::Payload::ProbeServices);
   }
 
   vector<uint8_t> ProbeServices::serialize(HCIFormatBuilder& builder) const {

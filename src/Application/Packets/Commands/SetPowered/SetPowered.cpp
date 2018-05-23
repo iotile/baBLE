@@ -6,6 +6,7 @@ namespace Packet::Commands {
 
   SetPowered::SetPowered(Packet::Type initial_type, Packet::Type translated_type)
       : CommandPacket(initial_type, translated_type) {
+    m_id = BaBLE::Payload::SetPowered;
     m_state = false;
   };
 
@@ -23,7 +24,7 @@ namespace Packet::Commands {
 
   void SetPowered::unserialize(FlatbuffersFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
-    auto payload = extractor.get_payload<const Schemas::SetPowered*>();
+    auto payload = extractor.get_payload<const BaBLE::SetPowered*>();
 
     m_state = payload->state();
   };
@@ -31,7 +32,7 @@ namespace Packet::Commands {
   void SetPowered::unserialize(MGMTFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
 
-    if (m_status == Schemas::StatusCode::Success){
+    if (m_status == BaBLE::StatusCode::Success){
       auto m_current_settings = extractor.get_value<uint32_t>();
       m_state = (m_current_settings & 1) > 0;
     }
@@ -49,9 +50,9 @@ namespace Packet::Commands {
   vector<uint8_t> SetPowered::serialize(FlatbuffersFormatBuilder& builder) const {
     CommandPacket::serialize(builder);
 
-    auto payload = Schemas::CreateSetPowered(builder, m_state);
+    auto payload = BaBLE::CreateSetPowered(builder, m_state);
 
-    return builder.build(payload, Schemas::Payload::SetPowered);
+    return builder.build(payload, BaBLE::Payload::SetPowered);
   }
 
   vector<uint8_t> SetPowered::serialize(MGMTFormatBuilder& builder) const {

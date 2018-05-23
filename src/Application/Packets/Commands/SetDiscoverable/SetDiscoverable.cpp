@@ -6,6 +6,7 @@ namespace Packet::Commands {
 
   SetDiscoverable::SetDiscoverable(Packet::Type initial_type, Packet::Type translated_type)
       : CommandPacket(initial_type, translated_type) {
+    m_id = BaBLE::Payload::SetDiscoverable;
     m_state = 0;
     m_timeout = 0;
   }
@@ -32,7 +33,7 @@ namespace Packet::Commands {
 
   void SetDiscoverable::unserialize(FlatbuffersFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
-    auto payload = extractor.get_payload<const Schemas::SetDiscoverable*>();
+    auto payload = extractor.get_payload<const BaBLE::SetDiscoverable*>();
 
     m_state = static_cast<uint8_t>(payload->state());
     m_timeout = payload->timeout();
@@ -41,7 +42,7 @@ namespace Packet::Commands {
   void SetDiscoverable::unserialize(MGMTFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
 
-    if (m_status == Schemas::StatusCode::Success){
+    if (m_status == BaBLE::StatusCode::Success){
       auto m_current_settings = extractor.get_value<uint32_t>();
       m_state = static_cast<uint8_t>((m_current_settings & 1 << 3) > 0);
     }
@@ -60,9 +61,9 @@ namespace Packet::Commands {
   vector<uint8_t> SetDiscoverable::serialize(FlatbuffersFormatBuilder& builder) const {
     CommandPacket::serialize(builder);
 
-    auto payload = Schemas::CreateSetDiscoverable(builder, m_state, m_timeout);
+    auto payload = BaBLE::CreateSetDiscoverable(builder, m_state, m_timeout);
 
-    return builder.build(payload, Schemas::Payload::SetDiscoverable);
+    return builder.build(payload, BaBLE::Payload::SetDiscoverable);
   }
 
   vector<uint8_t> SetDiscoverable::serialize(MGMTFormatBuilder& builder) const {

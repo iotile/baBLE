@@ -22,7 +22,7 @@ namespace Packet::Meta {
           return Format::Ascii::CommandCode::GetControllersList;
 
         case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(Schemas::Payload::GetControllersList);
+          return static_cast<uint16_t>(BaBLE::Payload::GetControllersList);
 
         case Packet::Type::NONE:
           return 0;
@@ -63,7 +63,7 @@ namespace Packet::Meta {
     std::vector<uint16_t> m_controllers_ids;
 
     uint8_t m_native_status;
-    Schemas::StatusCode m_status;
+    BaBLE::StatusCode m_status;
 
   };
 

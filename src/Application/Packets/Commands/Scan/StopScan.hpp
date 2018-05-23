@@ -21,7 +21,7 @@ namespace Packet::Commands {
           return Format::Ascii::CommandCode::StopScan;
 
         case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(Schemas::Payload::StopScan);
+          return static_cast<uint16_t>(BaBLE::Payload::StopScan);
 
         case Packet::Type::NONE:
           return 0;

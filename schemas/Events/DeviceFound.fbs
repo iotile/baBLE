@@ -1,4 +1,4 @@
-namespace Schemas;
+namespace BaBLE;
 
 table DeviceFound {
   address:string;

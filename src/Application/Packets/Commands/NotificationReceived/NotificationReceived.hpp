@@ -21,7 +21,7 @@ namespace Packet::Commands {
           return Format::Ascii::CommandCode::NotificationReceived;
 
         case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(Schemas::Payload::NotificationReceived);
+          return static_cast<uint16_t>(BaBLE::Payload::NotificationReceived);
 
         case Packet::Type::NONE:
           return 0;

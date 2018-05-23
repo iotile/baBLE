@@ -10,7 +10,8 @@
 class AbstractSocket {
 
 public:
-  using CallbackFunction = std::function<void(const std::vector<uint8_t>&, const AbstractSocket& socket)>;
+  using OnReceivedCallback = std::function<void(const std::vector<uint8_t>&, const std::shared_ptr<AbstractFormat>& format)>;
+  using OnErrorCallback = std::function<void(const Exceptions::AbstractException&)>;
 
   explicit AbstractSocket(std::shared_ptr<AbstractFormat> format) {
     m_format = std::move(format);
@@ -26,7 +27,7 @@ public:
   };
 
   virtual bool send(const std::vector<uint8_t>& data) = 0;
-  virtual void poll(std::shared_ptr<uvw::Loop> loop, CallbackFunction on_received) = 0;
+  virtual void poll(std::shared_ptr<uvw::Loop> loop, OnReceivedCallback on_received, OnErrorCallback on_error) = 0;
 
   virtual ~AbstractSocket() = default;
 

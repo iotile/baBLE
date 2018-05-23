@@ -6,6 +6,7 @@ namespace Packet::Control {
 
   Ready::Ready(Packet::Type output_type)
       : AbstractPacket(output_type, output_type) {
+    m_id = BaBLE::Payload::Ready;
     m_native_class = "BaBLE";
   }
 
@@ -15,9 +16,9 @@ namespace Packet::Control {
   };
 
   vector<uint8_t> Ready::serialize(FlatbuffersFormatBuilder& builder) const {
-    auto payload = Schemas::CreateReady(builder);
+    auto payload = BaBLE::CreateReady(builder);
 
-    return builder.build(payload, Schemas::Payload::Ready);
+    return builder.build(payload, BaBLE::Payload::Ready);
   };
 
 }

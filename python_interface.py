@@ -3,7 +3,7 @@ import sys
 import time
 import flatbuffers
 
-from Schemas import Packet, Payload, GetMGMTInfo, StartScan, StopScan, Discovering, DeviceFound, BaBLEError, StatusCode,\
+from BaBLE import Packet, Payload, GetMGMTInfo, StartScan, StopScan, Discovering, DeviceFound, BaBLEError, StatusCode,\
                     AddDevice, DeviceConnected, RemoveDevice, Disconnect, DeviceDisconnected, SetPowered, SetDiscoverable,\
                     SetConnectable, GetControllersList, ControllerAdded, ControllerRemoved, GetControllerInfo, \
                     GetConnectedDevices, GetControllersIds, Read, Write, NotificationReceived, ProbeServices, ProbeCharacteristics, \

@@ -20,7 +20,7 @@ namespace Packet::Control {
           return Format::Ascii::CommandCode::Exit;
 
         case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(Schemas::Payload::Exit);
+          return static_cast<uint16_t>(BaBLE::Payload::Exit);
 
         case Packet::Type::NONE:
           return 0;

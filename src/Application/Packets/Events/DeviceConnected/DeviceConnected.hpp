@@ -20,7 +20,7 @@ namespace Packet::Events {
           return Format::Ascii::EventCode::DeviceConnected;
 
         case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(Schemas::Payload::DeviceConnected);
+          return static_cast<uint16_t>(BaBLE::Payload::DeviceConnected);
 
         case Packet::Type::NONE:
           return 0;

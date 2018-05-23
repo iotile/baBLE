@@ -6,6 +6,7 @@ namespace Packet::Commands {
 
   GetControllerInfo::GetControllerInfo(Packet::Type initial_type, Packet::Type translated_type)
       : CommandPacket(initial_type, translated_type) {
+    m_id = BaBLE::Payload::GetControllerInfo;
     m_controller_info = {};
   };
 
@@ -20,7 +21,7 @@ namespace Packet::Commands {
   void GetControllerInfo::unserialize(MGMTFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
 
-    if (m_status == Schemas::StatusCode::Success) {
+    if (m_status == BaBLE::StatusCode::Success) {
       m_controller_info.id = m_controller_id;
       m_controller_info.address = extractor.get_array<uint8_t, 6>();
       m_controller_info.bluetooth_version = extractor.get_value<uint8_t>();
@@ -67,7 +68,7 @@ namespace Packet::Commands {
     bool discoverable = (m_controller_info.current_settings & 1 << 3) > 0;
     bool low_energy = (m_controller_info.current_settings & 9) > 0;
 
-    auto controller = Schemas::CreateController(
+    auto controller = BaBLE::CreateController(
         builder,
         m_controller_id,
         address,
@@ -78,9 +79,9 @@ namespace Packet::Commands {
         low_energy,
         name
     );
-    auto payload = Schemas::CreateGetControllerInfo(builder, controller);
+    auto payload = BaBLE::CreateGetControllerInfo(builder, controller);
 
-    return builder.build(payload, Schemas::Payload::GetControllerInfo);
+    return builder.build(payload, BaBLE::Payload::GetControllerInfo);
   }
 
   vector<uint8_t> GetControllerInfo::serialize(MGMTFormatBuilder& builder) const {

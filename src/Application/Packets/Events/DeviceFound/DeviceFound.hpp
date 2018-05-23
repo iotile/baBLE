@@ -20,7 +20,7 @@ namespace Packet::Events {
           return Format::Ascii::EventCode::DeviceFound;
 
         case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(Schemas::Payload::DeviceFound);
+          return static_cast<uint16_t>(BaBLE::Payload::DeviceFound);
 
         case Packet::Type::NONE:
           return 0;

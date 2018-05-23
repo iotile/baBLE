@@ -21,7 +21,7 @@ namespace Packet::Commands {
           return Format::Ascii::CommandCode::RemoveDevice;
 
         case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(Schemas::Payload::RemoveDevice);
+          return static_cast<uint16_t>(BaBLE::Payload::RemoveDevice);
 
         case Packet::Type::NONE:
           return 0;

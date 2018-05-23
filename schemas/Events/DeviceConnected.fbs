@@ -1,4 +1,4 @@
-namespace Schemas;
+namespace BaBLE;
 
 table DeviceConnected {
   connection_handle:uint16;

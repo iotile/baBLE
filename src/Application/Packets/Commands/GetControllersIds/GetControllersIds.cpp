@@ -5,7 +5,9 @@ using namespace std;
 namespace Packet::Commands {
 
   GetControllersIds::GetControllersIds(Packet::Type initial_type, Packet::Type translated_type)
-      : CommandPacket(initial_type, translated_type) {}
+      : CommandPacket(initial_type, translated_type) {
+    m_id = BaBLE::Payload::GetControllersIds;
+  }
 
   void GetControllersIds::unserialize(AsciiFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
@@ -18,7 +20,7 @@ namespace Packet::Commands {
   void GetControllersIds::unserialize(MGMTFormatExtractor& extractor) {
     CommandPacket::unserialize(extractor);
 
-    if (m_status == Schemas::StatusCode::Success) {
+    if (m_status == BaBLE::StatusCode::Success) {
       auto m_num_controllers = extractor.get_value<uint16_t>();
       m_controllers_ids = extractor.get_vector<uint16_t>(m_num_controllers);
     }
@@ -38,9 +40,9 @@ namespace Packet::Commands {
     CommandPacket::serialize(builder);
 
     auto controllers_ids = builder.CreateVector(m_controllers_ids);
-    auto payload = Schemas::CreateGetControllersIds(builder, controllers_ids);
+    auto payload = BaBLE::CreateGetControllersIds(builder, controllers_ids);
 
-    return builder.build(payload, Schemas::Payload::GetControllersIds);
+    return builder.build(payload, BaBLE::Payload::GetControllersIds);
   }
 
   vector<uint8_t> GetControllersIds::serialize(MGMTFormatBuilder& builder) const {
