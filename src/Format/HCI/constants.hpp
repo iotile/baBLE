@@ -70,13 +70,21 @@ namespace Format::HCI {
     Event= 0x04
   };
 
+  enum ReportType {
+    Flags= 0x01,
+    UUID128= 0x06,
+    DeviceName= 0x09,
+    ManufacturerSpecific= 0xFF
+  };
+
   enum EventCode {
     DisconnectComplete= 0x05,
     LEMeta= 0x3e
   };
 
   enum SubEventCode {
-    LEConnectionComplete= (EventCode::LEMeta << 8) | 0x01
+    LEConnectionComplete= (EventCode::LEMeta << 8) | 0x01,
+    LEAdvertisingReport= (EventCode::LEMeta << 8) | 0x02
   };
 
   enum AttributeCode {

@@ -38,7 +38,8 @@ namespace Format::Ascii {
     ClassOfDeviceChanged= 0x0500,
     NewSettings= 0x0600,
     ControllerAdded= 0x0700,
-    ControllerRemoved= 0x0800
+    ControllerRemoved= 0x0800,
+    LEAdvertisingReport= 0x0900
   };
 
 }

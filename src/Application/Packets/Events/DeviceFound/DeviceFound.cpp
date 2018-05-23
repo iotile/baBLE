@@ -38,7 +38,7 @@ namespace Packet::Events {
         .set_name("DeviceFound")
         .add("Address", AsciiFormat::format_bd_address(m_address))
         .add("Address type", m_address_type)
-        .add("RSSI", m_rssi)
+        .add("RSSI (dB)", m_rssi)
         .add("Flags", m_flags)
         .add("EIR data length: ", m_eir_data_length)
         .add("EIR flags: ", m_eir.flags)

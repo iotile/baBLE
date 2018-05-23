@@ -152,7 +152,6 @@ int main() {
     );
   }
 
-  // TODO: verify schemas to make them as generic/cross-platform as possible
   // TODO: clean logs (create DeviceAdded/DeviceRemoved + events HCI not to have the NotFound errors)
   // TODO: comment and clean includes
   stdio_socket->poll(

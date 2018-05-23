@@ -39,6 +39,10 @@ public:
 
   template<typename T>
   static std::string bytes_to_string(const T& bytes) {
+    if (bytes.empty()) {
+      return "";
+    }
+
     std::stringstream result;
 
     typename T::const_iterator it;

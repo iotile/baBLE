@@ -33,6 +33,7 @@
 #include "Application/Packets/Commands/WriteWithoutResponse/WriteWithoutResponse.hpp"
 #include "Application/Packets/Control/Exit/Exit.hpp"
 #include "Application/Packets/Control/Ready/Ready.hpp"
+#include "Application/Packets/Events/LEAdvertisingReport/LEAdvertisingReport.hpp"
 
 using namespace std;
 using Packet::Meta::GetControllersList;
@@ -68,7 +69,7 @@ namespace Bootstrap {
   // MGMT
   void register_mgmt_packets(PacketContainer& mgmt_packet_container, shared_ptr<AbstractFormat> output_format) {
     mgmt_packet_container
-        .set_output_format(std::move(output_format))
+      .set_output_format(std::move(output_format))
         .register_command<Packet::Commands::GetMGMTInfo>()
         .register_command<Packet::Commands::GetControllersIds>()
         .register_command<Packet::Commands::GetControllerInfo>()
@@ -85,7 +86,7 @@ namespace Bootstrap {
         .register_event<Packet::Events::Discovering>()
         .register_event<Packet::Events::ControllerAdded>()
         .register_event<Packet::Events::ControllerRemoved>()
-        .set_output_format(nullptr)
+      .set_output_format(nullptr)
         .register_event<Packet::Events::DeviceConnected>()
         .register_event<Packet::Events::DeviceDisconnected>()
         .register_event<Packet::Events::ClassOfDeviceChanged>()
@@ -95,20 +96,22 @@ namespace Bootstrap {
   // HCI
   void register_hci_packets(PacketContainer& hci_packet_container, shared_ptr<AbstractFormat> output_format) {
     hci_packet_container
-        .set_output_format(std::move(output_format))
+      .set_output_format(std::move(output_format))
         .register_event<Packet::Events::DeviceConnected>()
         .register_event<Packet::Events::DeviceDisconnected>()
         .register_command<Packet::Commands::Read>()
         .register_command<Packet::Commands::Write>()
         .register_command<Packet::Commands::NotificationReceived>()
         .register_command<Packet::Commands::ProbeServices>()
-        .register_command<Packet::Commands::ProbeCharacteristics>();
+        .register_command<Packet::Commands::ProbeCharacteristics>()
+      .set_output_format(nullptr)
+        .register_event<Packet::Events::LEAdvertisingReport>();
   }
 
   // Stdio
   void register_stdio_packets(PacketContainer& stdio_packet_container, shared_ptr<MGMTFormat> mgmt_format, shared_ptr<HCIFormat> hci_format) {
     stdio_packet_container
-        .set_output_format(std::move(mgmt_format))
+      .set_output_format(std::move(mgmt_format))
         .register_command<Packet::Commands::GetMGMTInfo>()
         .register_command<Packet::Commands::GetControllersIds>()
         .register_command<Packet::Commands::GetControllerInfo>()
@@ -122,13 +125,13 @@ namespace Bootstrap {
         .register_command<Packet::Commands::SetDiscoverable>()
         .register_command<Packet::Commands::SetConnectable>()
         .register_command<Packet::Meta::GetControllersList>()
-        .set_output_format(std::move(hci_format))
+      .set_output_format(std::move(hci_format))
         .register_command<Packet::Commands::Read>()
         .register_command<Packet::Commands::Write>()
         .register_command<Packet::Commands::WriteWithoutResponse>()
         .register_command<Packet::Commands::ProbeServices>()
         .register_command<Packet::Commands::ProbeCharacteristics>()
-        .set_output_format(nullptr)
+      .set_output_format(nullptr)
         .register_command<Packet::Control::Exit>();
   }
 
