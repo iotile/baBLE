@@ -1,0 +1,5 @@
+namespace BaBLE;
+
+table GetControllersIds {
+  controllers_ids:[uint16];
+}

@@ -8,13 +8,14 @@ namespace Exceptions {
   class WrongFormatException : public AbstractException {
 
   public:
-    explicit WrongFormatException(const std::string& message): AbstractException(message) {};
+    explicit WrongFormatException(const std::string& message, const std::string& uuid_request = "")
+        : AbstractException(message, uuid_request) {};
 
-    const Exceptions::Type exception_type() const override {
+    const Exceptions::Type get_type() const override {
       return Exceptions::Type::WrongFormat;
     };
 
-    const std::string exception_name() const override {
+    const std::string get_name() const override {
       return "WrongFormat";
     };
 

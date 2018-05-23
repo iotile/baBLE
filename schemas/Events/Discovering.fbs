@@ -1,7 +1,6 @@
-namespace Schemas;
+namespace BaBLE;
 
 table Discovering {
-  controller_id:uint16;
   address_type:uint8;
   state:bool;
 }

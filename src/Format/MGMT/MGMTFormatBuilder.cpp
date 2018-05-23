@@ -14,6 +14,11 @@ MGMTFormatBuilder& MGMTFormatBuilder::set_code(uint16_t code) {
   return *this;
 }
 
+MGMTFormatBuilder& MGMTFormatBuilder::set_controller_id(uint16_t controller_id) {
+  m_controller_id = controller_id;
+  return *this;
+}
+
 // To add data to current building object
 MGMTFormatBuilder& MGMTFormatBuilder::add(const string& value) {
   for (const char& c : value) {

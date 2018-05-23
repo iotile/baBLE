@@ -1,8 +1,7 @@
 // Only on Linux
 
-namespace Schemas;
+namespace BaBLE;
 
 table SetConnectable {
-  controller_id:uint16;
   state:bool;
 }

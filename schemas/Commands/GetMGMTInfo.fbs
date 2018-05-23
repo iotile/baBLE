@@ -1,5 +1,6 @@
-namespace Schemas;
+namespace BaBLE;
 
+// Only on Linux. For test purpose only.
 table GetMGMTInfo {
   version:uint8;
   revision:uint16;

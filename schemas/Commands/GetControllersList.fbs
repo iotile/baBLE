@@ -1,5 +1,7 @@
-namespace Schemas;
+include "Models/Controller.fbs";
+
+namespace BaBLE;
 
 table GetControllersList {
-  controllers:[uint16];
+  controllers:[Controller];
 }

@@ -1,5 +1,6 @@
 include "./Commands/GetMGMTInfo.fbs";
 include "./Commands/GetControllersList.fbs";
+include "./Commands/GetControllersIds.fbs";
 include "./Commands/GetControllerInfo.fbs";
 include "./Commands/GetConnectedDevices.fbs";
 include "./Commands/StartScan.fbs";
@@ -10,40 +11,62 @@ include "./Commands/Disconnect.fbs";
 include "./Commands/SetPowered.fbs";
 include "./Commands/SetDiscoverable.fbs";
 include "./Commands/SetConnectable.fbs";
+include "./Commands/Read.fbs";
+include "./Commands/Write.fbs";
+include "./Commands/WriteWithoutResponse.fbs";
+include "./Commands/ProbeServices.fbs";
+include "./Commands/ProbeCharacteristics.fbs";
 include "./Events/DeviceConnected.fbs";
 include "./Events/DeviceDisconnected.fbs";
 include "./Events/DeviceFound.fbs";
 include "./Events/Discovering.fbs";
 include "./Events/ControllerChanged.fbs";
+include "./Events/DeviceChanged.fbs";
+include "./Events/NotificationReceived.fbs";
 include "./Errors/BaBLEError.fbs";
+include "./Control/Ready.fbs";
+include "./Control/Exit.fbs";
 
-namespace Schemas;
+namespace BaBLE;
 
 union Payload {
   // Commands
   AddDevice,
   Disconnect,
   GetConnectedDevices,
+  GetControllersIds,
   GetControllerInfo,
   GetControllersList,
   GetMGMTInfo,
+  ProbeCharacteristics,
+  ProbeServices,
+  Read,
   RemoveDevice,
   SetConnectable,
   SetDiscoverable,
   SetPowered,
   StartScan,
   StopScan,
+  Write,
+  WriteWithoutResponse,
 
   // Events
   ControllerAdded,
   ControllerRemoved,
+  DeviceAdded,
+  DeviceRemoved,
   DeviceConnected,
   DeviceDisconnected,
   DeviceFound,
   Discovering,
+  NotificationReceived,
 
   // Errors
-  BaBLEError
+  BaBLEError,
+
+  // Control
+  Exit,
+  Ready
 }
 
 enum StatusCode:uint8 {
@@ -62,7 +85,9 @@ enum StatusCode:uint8 {
 }
 
 table Packet {
+  uuid:string;
   payload:Payload;
+  controller_id:uint16 = 0xFFFF;
   status:StatusCode = Success;
   native_status:uint8 = 0x00;
   native_class:string;

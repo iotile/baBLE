@@ -1,7 +1,7 @@
-namespace Schemas;
+namespace BaBLE;
 
 table DeviceConnected {
-  controller_id:uint16;
+  connection_handle:uint16;
   address:string;
   address_type:uint8;
   flags:[uint8];

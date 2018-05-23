@@ -1,0 +1,8 @@
+include "Models/Service.fbs";
+
+namespace BaBLE;
+
+table ProbeServices {
+  connection_handle:uint16;
+  services:[Service];
+}

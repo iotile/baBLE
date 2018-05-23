@@ -15,9 +15,19 @@ namespace Format::Ascii {
     SetPowered= 0x0007,
     SetDiscoverable= 0x0008,
     SetConnectable= 0x0009,
-    GetControllersList= 0x000A,
+    GetControllersIds= 0x000A,
     GetControllerInfo= 0x000B,
-    GetConnectedDevices= 0x000C
+    GetControllersList= 0x000C,
+    GetConnectedDevices= 0x000D,
+
+    Read= 0x000E,
+    Write= 0x000F,
+    WriteWithoutResponse= 0x00010,
+    NotificationReceived= 0x0011,
+    ProbeServices= 0x0012,
+    ProbeCharacteristics= 0x0013,
+
+    Exit= 0xFFFF
   };
 
   enum EventCode {
@@ -28,7 +38,11 @@ namespace Format::Ascii {
     ClassOfDeviceChanged= 0x0500,
     NewSettings= 0x0600,
     ControllerAdded= 0x0700,
-    ControllerRemoved= 0x0800
+    ControllerRemoved= 0x0800,
+    DeviceAdded= 0x0900,
+    DeviceRemoved= 0x0A00,
+    LEAdvertisingReport= 0x0B00,
+    LEReadRemoteUsedFeaturesComplete= 0x0C00
   };
 
 }

@@ -1,0 +1,11 @@
+namespace BaBLE;
+
+table DeviceAdded {
+  address:string;
+  address_type:uint8;
+}
+
+table DeviceRemoved {
+  address:string;
+  address_type:uint8;
+}

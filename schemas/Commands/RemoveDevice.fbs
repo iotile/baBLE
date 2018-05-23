@@ -1,7 +1,6 @@
-namespace Schemas;
+namespace BaBLE;
 
 table RemoveDevice {
-  controller_id:uint16;
   address:[uint8];
   address_type:uint8 = 2;  // LE Random
 }

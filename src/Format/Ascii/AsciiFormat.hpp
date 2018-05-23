@@ -25,7 +25,7 @@ public:
     }
 
     return bd_address.str();
-  }
+  };
 
   static std::string format_uuid(const std::vector<uint8_t>& uuid_vector) {
     std::stringstream uuid;
@@ -35,10 +35,14 @@ public:
     }
 
     return uuid.str();
-  }
+  };
 
   template<typename T>
   static std::string bytes_to_string(const T& bytes) {
+    if (bytes.empty()) {
+      return "";
+    }
+
     std::stringstream result;
 
     typename T::const_iterator it;
@@ -52,11 +56,23 @@ public:
     return result.str();
   };
 
-  const Packet::Type packet_type() const override {
+  template<typename T>
+  static T string_to_number(const std::string& str) {
+    try {
+      auto result = static_cast<T>(stoi(str));
+
+    } catch (const std::bad_cast& err) {
+      throw Exceptions::WrongFormatException("Can't cast given string: \"" + str + "\"");
+    } catch (const std::invalid_argument& err) {
+      throw Exceptions::WrongFormatException("Given string is not a number: \"" + str + "\"");
+    }
+  };
+
+  const Packet::Type get_packet_type() const override {
     return Packet::Type::ASCII;
   };
 
-  const size_t header_length() const override {
+  const size_t get_header_length(uint16_t type_code) const override {
     return 0;
   };
 
@@ -68,16 +84,12 @@ public:
     return false;
   };
 
-  uint16_t extract_command_code(const std::vector<uint8_t>& data) override {
-    return AsciiFormatExtractor::extract_command_code(data);
-  };
-
-  uint16_t extract_type_code(const std::vector<uint8_t>& data) override {
-    return 0;
-  };
-
   uint16_t extract_payload_length(const std::vector<uint8_t>& data) override {
-    throw std::runtime_error("Ascii format can't extract payload length: this information is not included in the format.");
+    return AsciiFormatExtractor::extract_payload_length(data);
+  };
+
+  std::shared_ptr<AbstractExtractor> create_extractor(const std::vector<uint8_t>& data) override {
+    return std::make_shared<AsciiFormatExtractor>(data);
   };
 
 };

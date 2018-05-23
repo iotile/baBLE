@@ -1,5 +1,6 @@
-namespace Schemas;
+namespace BaBLE;
 
 table BaBLEError {
+  name:string;
   message:string;
 }

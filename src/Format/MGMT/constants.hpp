@@ -1,12 +1,13 @@
 #ifndef BABLE_LINUX_MGMT_CONSTANTS_HPP
 #define BABLE_LINUX_MGMT_CONSTANTS_HPP
 
+#include <array>
 #include <cstdint>
+#include <vector>
 
 namespace Format::MGMT {
 
   const std::size_t header_length = 6;
-  const uint16_t non_controller_id = 0xFFFF;
 
   enum CommandCode {
     GetMGMTInfo= 0x0001,
@@ -24,6 +25,8 @@ namespace Format::MGMT {
   };
 
   enum EventCode {
+    CommandComplete= 0x0001,
+    CommandStatus= 0x0002,
     IndexAdded= 0x0004,
     IndexRemoved= 0x0005,
     NewSettings= 0x0006,
@@ -31,7 +34,9 @@ namespace Format::MGMT {
     DeviceConnected= 0x000B,
     DeviceDisconnected= 0x000C,
     DeviceFound= 0x0012,
-    Discovering= 0x0013
+    Discovering= 0x0013,
+    DeviceAdded= 0x001A,
+    DeviceRemoved= 0x001B
   };
 
   enum StatusCode {
@@ -64,6 +69,27 @@ namespace Format::MGMT {
     "Connection terminated by local host",
     "Connection terminated by remote host",
     "Connection terminated due to authentication failure"
+  };
+
+  // Structure representing the Extended Inquiry Response data
+  struct EIR {
+    uint8_t flags = 0;
+    std::vector<uint8_t> uuid;
+    uint16_t company_id = 0;
+    std::vector<uint8_t> device_name;
+  };
+
+  // Structure representing a Bluetooth controller
+  struct Controller {
+    uint16_t id = 0;
+    std::array<uint8_t, 6> address;
+    uint8_t bluetooth_version = 0;
+    uint16_t manufacturer = 0;
+    uint32_t supported_settings = 0;
+    uint32_t current_settings = 0;
+    std::array<uint8_t, 3> class_of_device{};
+    std::string name;
+    std::string short_name;
   };
 
 }

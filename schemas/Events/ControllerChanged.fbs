@@ -1,9 +1,5 @@
-namespace Schemas;
+namespace BaBLE;
 
-table ControllerAdded {
-  controller_id:uint16;
-}
+table ControllerAdded {}
 
-table ControllerRemoved {
-  controller_id:uint16;
-}
+table ControllerRemoved {}

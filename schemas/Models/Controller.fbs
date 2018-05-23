@@ -1,0 +1,12 @@
+namespace BaBLE;
+
+table Controller {
+  id:uint16;
+  address:string;
+  bt_version:uint8;
+  powered:bool;
+  connectable:bool;
+  discoverable:bool;
+  low_energy:bool;
+  name:string;
+}
