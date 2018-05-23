@@ -31,6 +31,8 @@
 #include "Application/Packets/Commands/ProbeServices/ProbeServices.hpp"
 #include "Application/Packets/Commands/ProbeCharacteristics/ProbeCharacteristics.hpp"
 #include "Application/Packets/Commands/WriteWithoutResponse/WriteWithoutResponse.hpp"
+#include "Application/Packets/Control/Exit/Exit.hpp"
+#include "Application/Packets/Control/Ready/Ready.hpp"
 
 using namespace std;
 using Packet::Meta::GetControllersList;
@@ -41,7 +43,7 @@ namespace Bootstrap {
   vector<shared_ptr<HCISocket>> create_hci_sockets(const shared_ptr<MGMTSocket>& mgmt_socket, const shared_ptr<HCIFormat>& hci_format) {
     // TODO: use ioctl instead
     vector<shared_ptr<HCISocket>> hci_sockets;
-    Packet::Type packet_type = mgmt_socket->format()->packet_type();
+    Packet::Type packet_type = mgmt_socket->format()->get_packet_type();
     shared_ptr<GetControllersList> get_controllers_list_packet = make_shared<GetControllersList>(packet_type, packet_type);
 
     // Send GetControllersList packet through MGMT
@@ -124,7 +126,9 @@ namespace Bootstrap {
         .register_command<Packet::Commands::Write>()
         .register_command<Packet::Commands::WriteWithoutResponse>()
         .register_command<Packet::Commands::ProbeServices>()
-        .register_command<Packet::Commands::ProbeCharacteristics>();
+        .register_command<Packet::Commands::ProbeCharacteristics>()
+      .set_output_format(nullptr)
+        .register_command<Packet::Control::Exit>();
   }
 
 }

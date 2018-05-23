@@ -12,9 +12,6 @@
 class AsciiFormatExtractor : public AbstractExtractor {
 
 public:
-  static uint16_t extract_type_code(const std::vector<uint8_t>& data);
-  static uint16_t extract_packet_code(const std::vector<uint8_t>& data);
-  static uint16_t extract_controller_id(const std::vector<uint8_t>& data);
   static uint16_t extract_payload_length(const std::vector<uint8_t>& data);
 
   // Constructors

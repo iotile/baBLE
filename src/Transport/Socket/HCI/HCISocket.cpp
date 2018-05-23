@@ -72,7 +72,7 @@ void HCISocket::connect_l2cap_socket(uint16_t connection_handle, const std::arra
     throw std::runtime_error("Error while connecting L2CAP socket.");
   }
 
-  LOG.info("L2CAP socket connected.");
+  LOG.info("L2CAP socket connected.", "HCISocket");
   m_l2cap_sockets.emplace(connection_handle, l2cap_socket);
 }
 
@@ -82,7 +82,7 @@ void HCISocket::disconnect_l2cap_socket(uint16_t connection_handle) {
     OSSocketHandle::Type l2cap_socket = it->second;
     close(l2cap_socket);
     m_l2cap_sockets.erase(it);
-    LOG.debug("L2CAP socket manually disconnected.", "HCISocket");
+    LOG.info("L2CAP socket manually disconnected.", "HCISocket");
   }
 }
 
@@ -116,23 +116,7 @@ vector<uint8_t> HCISocket::receive() {
     throw Exceptions::SocketException("Can't read type code on the HCI socket.");
   }
 
-  size_t header_length;
-  switch(type_code) {
-    case Format::HCI::Type::Command:
-      header_length = Format::HCI::command_header_length;
-      break;
-
-    case Format::HCI::Type::AsyncData:
-      header_length = Format::HCI::async_data_header_length;
-      break;
-
-    case Format::HCI::Type::Event:
-      header_length = Format::HCI::event_header_length;
-      break;
-
-    default:
-      throw Exceptions::WrongFormatException("Unknown type code received on the HCI socket.");
-  }
+  size_t header_length = m_format->get_header_length(type_code);
 
   vector<uint8_t> header(header_length);
 

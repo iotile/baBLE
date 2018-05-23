@@ -8,7 +8,7 @@ Flags<PollHandle::Event> MGMTSocket::writable_flag = Flags<PollHandle::Event>(Po
 
 MGMTSocket::MGMTSocket(shared_ptr<MGMTFormat> format)
     : AbstractSocket(move(format)) {
-  m_header_length = Format::MGMT::header_length;
+  m_header_length = m_format->get_header_length(0);
   m_writable = true;
 
   m_socket = socket(AF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC | SOCK_NONBLOCK, BTPROTO_HCI);

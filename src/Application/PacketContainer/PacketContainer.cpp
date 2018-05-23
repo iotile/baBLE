@@ -88,7 +88,7 @@ shared_ptr<Packet::AbstractPacket> PacketContainer::build(std::shared_ptr<Abstra
 
 shared_ptr<Packet::AbstractPacket> PacketContainer::build_command(std::shared_ptr<AbstractExtractor> extractor) {
   // Extract packet_code from data
-  Packet::Type packet_type = m_building_format->packet_type();
+  Packet::Type packet_type = m_building_format->get_packet_type();
   uint16_t command_code = extractor->get_packet_code();
 
   Packet::ResponseId key{

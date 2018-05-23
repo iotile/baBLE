@@ -103,7 +103,6 @@ namespace Packet::Meta {
     }
   }
 
-  // TODO: find a way to have access to current packet_code easily
   vector<ResponseId> GetControllersList::expected_response_ids() {
     switch (m_waiting_response) {
       case SubPacket::GetControllersIds:

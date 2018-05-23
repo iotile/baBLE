@@ -3,7 +3,7 @@
 using namespace std;
 
 SocketContainer& SocketContainer::register_socket(shared_ptr<AbstractSocket> socket) {
-  Packet::Type packet_type = socket->format()->packet_type();
+  Packet::Type packet_type = socket->format()->get_packet_type();
   m_sockets.emplace(make_tuple(packet_type, socket->get_controller_id()), move(socket));
 
   return *this;

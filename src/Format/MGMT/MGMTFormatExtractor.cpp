@@ -3,59 +3,6 @@
 using namespace std;
 
 // Static
-uint16_t MGMTFormatExtractor::extract_type_code(const vector<uint8_t>& data) {
-  if (data.size() < 2) {
-    throw Exceptions::WrongFormatException("Given MGMT data are too small (< 2 bytes). Can't extract type code.");
-  }
-
-  // Use little endian
-  uint16_t event_code = (data.at(1) << 8) | data.at(0);
-
-  return event_code;
-};
-
-uint16_t MGMTFormatExtractor::extract_packet_code(const vector<uint8_t>& data, bool isRequest) {
-  uint16_t command_code;
-
-  if (isRequest) {
-    if (data.size() < 2) {
-      throw Exceptions::WrongFormatException("Given MGMT data are too small (< 2 bytes). Can't extract command code.");
-    }
-
-    // Use little endian
-    command_code = (data.at(1) << 8) | data.at(0);
-
-  } else {
-    if (data.size() < 8) {
-      throw Exceptions::WrongFormatException("Given MGMT data are too small (< 8 bytes). Can't extract command code.");
-    }
-
-    uint16_t event_code = extract_type_code(data);
-
-    if (event_code != Format::MGMT::EventCode::CommandComplete && event_code != Format::MGMT::EventCode::CommandStatus) {
-      throw Exceptions::WrongFormatException("Can't extract command code from given MGMT data: no command code inside");
-    }
-
-    // Use little endian
-    command_code = (data.at(7) << 8) | data.at(6);
-  }
-
-  return command_code;
-};
-
-uint16_t MGMTFormatExtractor::extract_controller_id(const vector<uint8_t>& data) {
-  uint16_t controller_id;
-
-  if (data.size() < 4) {
-    throw Exceptions::WrongFormatException("Given MGMT data are too small (< 4 bytes). Can't extract controller id.");
-  }
-
-  // Use little endian
-  controller_id = (data.at(3) << 8) | data.at(2);
-
-  return controller_id;
-};
-
 uint16_t MGMTFormatExtractor::extract_payload_length(const vector<uint8_t>& data) {
   if (data.size() < 6) {
     throw Exceptions::WrongFormatException("Given MGMT data are too small (< 6 bytes). Can't extract payload length.");
@@ -83,7 +30,7 @@ MGMTFormatExtractor::MGMTFormatExtractor(const vector<uint8_t>& data)
 
 // Parsers
 void MGMTFormatExtractor::parse_header(const vector<uint8_t>& data) {
-  if (data.size() < Format::MGMT::header_length) {
+  if (data.size() < m_header_length) {
     throw Exceptions::WrongFormatException("Given MGMT data are too small (< 6 bytes). Can't parse header.");
   }
 

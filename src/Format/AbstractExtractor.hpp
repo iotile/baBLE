@@ -16,16 +16,6 @@
 class AbstractExtractor {
 
 public:
-  // TODO: remove extract... except for extract_payload_length which is needed in sockets
-  static uint16_t extract_type_code(const std::vector<uint8_t>& data) {
-    throw std::runtime_error("extract_type_code() not implemented in AbstractExtractor.");
-  };
-  static uint16_t extract_packet_code(const std::vector<uint8_t>& data) {
-    throw std::runtime_error("extract_packet_code() not implemented in AbstractExtractor.");
-  };
-  static uint16_t extract_controller_id(const std::vector<uint8_t>& data) {
-    throw std::runtime_error("extract_controller_id() not implemented in AbstractExtractor.");
-  };
   static uint16_t extract_payload_length(const std::vector<uint8_t>& data) {
     throw std::runtime_error("extract_payload_length() not implemented in AbstractExtractor.");
   };

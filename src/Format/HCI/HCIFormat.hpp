@@ -9,8 +9,12 @@
 class HCIFormat : public AbstractFormat {
 
 public:
-  const Packet::Type packet_type() const override {
+  const Packet::Type get_packet_type() const override {
     return Packet::Type::HCI;
+  };
+
+  const size_t get_header_length(uint16_t type_code) const override {
+    return HCIFormatExtractor::get_header_length(type_code);
   };
 
   bool is_command(uint16_t type_code) override {
@@ -19,18 +23,6 @@ public:
 
   bool is_event(uint16_t type_code) override {
     return type_code == Format::HCI::Type::Event;
-  };
-
-  uint16_t extract_packet_code(const std::vector<uint8_t>& data) override {
-    return HCIFormatExtractor::extract_packet_code(data);
-  };
-
-  uint16_t extract_type_code(const std::vector<uint8_t>& data) override {
-    return HCIFormatExtractor::extract_type_code(data);
-  };
-
-  uint16_t extract_controller_id(const std::vector<uint8_t>& data) override {
-    return HCIFormatExtractor::extract_controller_id(data);
   };
 
   uint16_t extract_payload_length(const std::vector<uint8_t>& data) override {

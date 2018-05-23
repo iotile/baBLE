@@ -87,7 +87,7 @@ int main() {
   auto on_error = [&stdio_socket, &socket_container](const Exceptions::AbstractException& err) {
     LOG.error(err.stringify(), "Error");
     std::shared_ptr<Packet::Errors::BaBLEErrorPacket> error_packet = make_shared<Packet::Errors::BaBLEErrorPacket>(
-        stdio_socket->format()->packet_type()
+        stdio_socket->format()->get_packet_type()
     );
     error_packet->from_exception(err);
     socket_container.send(error_packet);
@@ -153,6 +153,7 @@ int main() {
   }
 
   // TODO: verify schemas to make them as generic/cross-platform as possible
+  // TODO: clean logs (create DeviceAdded/DeviceRemoved + events HCI not to have the NotFound errors)
   stdio_socket->poll(
     loop,
     [&stdio_packet_container, &socket_container, &loop](const std::vector<uint8_t>& received_data, const std::shared_ptr<AbstractFormat>& format) {
@@ -186,9 +187,7 @@ int main() {
 
   // Send Ready packet to indicate that BaBLE has started and is ready to receive commands
   LOG.info("Sending Ready packet...");
-  std::shared_ptr<Packet::Control::Ready> ready_packet = make_shared<Packet::Control::Ready>(
-      stdio_socket->format()->packet_type()
-  );
+  std::shared_ptr<Packet::Control::Ready> ready_packet = make_shared<Packet::Control::Ready>(stdio_socket->format()->get_packet_type());
   socket_container.send(ready_packet);
 
   // Start the loop

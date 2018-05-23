@@ -24,48 +24,6 @@ public:
     return type_code;
   };
 
-  static uint16_t extract_packet_code(const std::vector<uint8_t>& data) {
-    uint16_t packet_code;
-    uint8_t type_code = extract_type_code(data);
-    size_t header_length = get_header_length(type_code);
-
-    if (data.size() < header_length) {
-      throw Exceptions::WrongFormatException("Given HCI data are too small (< " + std::to_string(header_length)
-                                                 + " bytes). Can't extract command code.");
-    }
-
-    switch (type_code) {
-      case Format::HCI::Type::Command:
-        // Use little endian
-        packet_code = (data.at(2) << 8) | data.at(1);
-        break;
-
-      case Format::HCI::Type::AsyncData:
-        packet_code = static_cast<uint16_t>(data.at(9));
-        break;
-
-      case Format::HCI::Type::Event:
-        {
-          uint8_t event_code = data.at(1);
-          if (event_code == Format::HCI::EventCode::LEMeta && data.size() >= header_length + 1) {
-            packet_code = event_code << 8 | data.at(3);
-          } else {
-            packet_code = static_cast<uint16_t>(event_code);
-          }
-        }
-        break;
-
-      default:
-        throw Exceptions::WrongFormatException("Can't extract command code from given HCI data: unknown type code.");
-    }
-
-    return packet_code;
-  };
-
-  static uint16_t extract_controller_id(const std::vector<uint8_t>& data) {
-    throw std::runtime_error("HCI format can't extract controller id: this information is not included in the format.");
-  };
-
   static uint16_t extract_payload_length(const std::vector<uint8_t>& data) {
     uint16_t payload_length;
     uint8_t type_code = extract_type_code(data);

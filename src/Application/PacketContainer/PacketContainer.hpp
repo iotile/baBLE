@@ -56,7 +56,7 @@ private:
 
 template<class T>
 PacketContainer& PacketContainer::register_command() {
-  const Packet::Type initial_type = m_building_format->packet_type();
+  const Packet::Type initial_type = m_building_format->get_packet_type();
   uint16_t command_code = T::packet_code(initial_type);
 
   auto it = m_commands.find(command_code);
@@ -69,7 +69,7 @@ PacketContainer& PacketContainer::register_command() {
   if (m_output_format == nullptr) {
     translated_type = Packet::Type::NONE;
   } else {
-    translated_type = m_output_format->packet_type();
+    translated_type = m_output_format->get_packet_type();
   }
 
   m_commands.emplace(command_code, [initial_type, translated_type](){
@@ -81,7 +81,7 @@ PacketContainer& PacketContainer::register_command() {
 
 template<class T>
 PacketContainer& PacketContainer::register_event() {
-  const Packet::Type initial_type = m_building_format->packet_type();
+  const Packet::Type initial_type = m_building_format->get_packet_type();
   uint16_t event_code = T::packet_code(initial_type);
 
   auto it = m_events.find(event_code);
@@ -94,7 +94,7 @@ PacketContainer& PacketContainer::register_event() {
   if (m_output_format == nullptr) {
     translated_type = Packet::Type::NONE;
   } else {
-    translated_type = m_output_format->packet_type();
+    translated_type = m_output_format->get_packet_type();
   }
 
   m_events.emplace(event_code, [initial_type, translated_type](){
