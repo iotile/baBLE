@@ -34,10 +34,12 @@ public:
   HCIFormatBuilder& add(const T (&container)[N]);
 
   // To build and finish the result object
-  std::vector<uint8_t> build();
+  std::vector<uint8_t> build(Format::HCI::Type type);
 
 private:
-  std::vector<uint8_t> generate_header();
+  std::vector<uint8_t> generate_header(Format::HCI::Type type);
+  std::vector<uint8_t> generate_command_header();
+  std::vector<uint8_t> generate_async_data_header();
 
   uint8_t m_opcode;
   uint16_t m_controller_id;

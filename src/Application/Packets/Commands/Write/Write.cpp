@@ -68,7 +68,7 @@ namespace Packet::Commands {
         .add(m_attribute_handle)
         .add(m_data_to_write);
 
-    return builder.build();
+    return builder.build(Format::HCI::Type::AsyncData);
   };
 
 }

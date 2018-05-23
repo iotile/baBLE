@@ -36,8 +36,8 @@ HCIFormatBuilder& HCIFormatBuilder::add(const string& value) {
 };
 
 // To build and finish the result object
-vector<uint8_t> HCIFormatBuilder::build() {
-  vector<uint8_t> result = generate_header();
+vector<uint8_t> HCIFormatBuilder::build(Format::HCI::Type type) {
+  vector<uint8_t> result = generate_header(type);
 
   result.insert(result.end(), m_formatted_data.begin(), m_formatted_data.end());
 
@@ -45,18 +45,54 @@ vector<uint8_t> HCIFormatBuilder::build() {
 };
 
 // Private
-vector<uint8_t> HCIFormatBuilder::generate_header() {
+vector<uint8_t> HCIFormatBuilder::generate_header(Format::HCI::Type type) {
+
+  switch (type) {
+    case Format::HCI::Command:
+      return generate_command_header();
+
+    case Format::HCI::AsyncData:
+      return generate_async_data_header();
+
+    case Format::HCI::SyncData:
+      throw std::invalid_argument("Header generation for SyncData packet is not implemented.");
+
+    case Format::HCI::Event:
+      throw std::invalid_argument("Can't build Event packet.");
+  }
+};
+
+vector<uint8_t> HCIFormatBuilder::generate_command_header() {
+  auto params_length = static_cast<uint16_t>(m_formatted_data.size());
+
+  vector<uint8_t> header;
+  header.reserve(Format::HCI::command_header_length);
+
+  // Use little-endian
+  header.push_back(Format::HCI::Command);
+
+  header.push_back(static_cast<uint8_t>(m_opcode & 0x00FF));
+  header.push_back(static_cast<uint8_t>(m_opcode >> 8));
+
+  header.push_back(static_cast<uint8_t>(params_length & 0x00FF));
+  header.push_back(static_cast<uint8_t>(params_length >> 8));
+
+  return header;
+};
+
+vector<uint8_t> HCIFormatBuilder::generate_async_data_header() {
   auto data_length = static_cast<uint16_t>(m_formatted_data.size());
   uint16_t l2cap_length = sizeof(m_opcode) + data_length;
   auto total_length = static_cast<uint16_t>(l2cap_length + 4);
 
   vector<uint8_t> header;
-  header.reserve(Format::HCI::async_data_header_length); // TODO: fix -> need arg to build() to adapt header
+  header.reserve(Format::HCI::async_data_header_length);
 
   uint16_t connection_handle_with_flags = m_connection_handle | Format::HCI::HandleFlag::StartNonFlush << 12;
 
   // Use little-endian
   header.push_back(Format::HCI::AsyncData);
+
   header.push_back(static_cast<uint8_t>(connection_handle_with_flags & 0x00FF));
   header.push_back(static_cast<uint8_t>(connection_handle_with_flags >> 8));
 

@@ -133,7 +133,7 @@ namespace Packet::Commands {
         .add(m_ending_handle)
         .add(uuid);
 
-    return builder.build();
+    return builder.build(Format::HCI::Type::AsyncData);
   }
 
   void ProbeCharacteristics::translate() {

@@ -67,7 +67,7 @@ namespace Packet::Commands {
         .set_connection_handle(m_connection_handle)
         .add(m_attribute_handle);
 
-    return builder.build();
+    return builder.build(Format::HCI::Type::AsyncData);
   };
 
 }
