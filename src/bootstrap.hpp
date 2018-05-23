@@ -41,17 +41,18 @@ namespace Bootstrap {
 
   // Create one HCI socket per controller
   vector<shared_ptr<HCISocket>> create_hci_sockets(const shared_ptr<MGMTSocket>& mgmt_socket, const shared_ptr<HCIFormat>& hci_format) {
-    // TODO: use ioctl instead
     vector<shared_ptr<HCISocket>> hci_sockets;
-    Packet::Type packet_type = mgmt_socket->format()->get_packet_type();
-    shared_ptr<GetControllersList> get_controllers_list_packet = make_shared<GetControllersList>(packet_type, packet_type);
+
+    Packet::Type mgmt_packet_type = mgmt_socket->format()->get_packet_type();
+    shared_ptr<GetControllersList> get_controllers_list_packet = make_shared<GetControllersList>(mgmt_packet_type, mgmt_packet_type);
 
     // Send GetControllersList packet through MGMT
     while (!get_controllers_list_packet->expected_response_ids().empty()){
       mgmt_socket->sync_send(get_controllers_list_packet->to_bytes());
       vector<uint8_t> raw_response = mgmt_socket->sync_receive();
+
       shared_ptr<AbstractExtractor> extractor = mgmt_socket->format()->create_extractor(raw_response);
-      get_controllers_list_packet->on_response_received(packet_type, extractor);
+      get_controllers_list_packet->on_response_received(mgmt_packet_type, extractor);
     }
 
     vector<Format::MGMT::Controller> controllers = get_controllers_list_packet->get_controllers();
@@ -67,7 +68,7 @@ namespace Bootstrap {
   // MGMT
   void register_mgmt_packets(PacketContainer& mgmt_packet_container, shared_ptr<AbstractFormat> output_format) {
     mgmt_packet_container
-      .set_output_format(std::move(output_format))
+        .set_output_format(std::move(output_format))
         .register_command<Packet::Commands::GetMGMTInfo>()
         .register_command<Packet::Commands::GetControllersIds>()
         .register_command<Packet::Commands::GetControllerInfo>()
@@ -84,7 +85,7 @@ namespace Bootstrap {
         .register_event<Packet::Events::Discovering>()
         .register_event<Packet::Events::ControllerAdded>()
         .register_event<Packet::Events::ControllerRemoved>()
-      .set_output_format(nullptr)
+        .set_output_format(nullptr)
         .register_event<Packet::Events::DeviceConnected>()
         .register_event<Packet::Events::DeviceDisconnected>()
         .register_event<Packet::Events::ClassOfDeviceChanged>()
@@ -94,7 +95,7 @@ namespace Bootstrap {
   // HCI
   void register_hci_packets(PacketContainer& hci_packet_container, shared_ptr<AbstractFormat> output_format) {
     hci_packet_container
-      .set_output_format(std::move(output_format))
+        .set_output_format(std::move(output_format))
         .register_event<Packet::Events::DeviceConnected>()
         .register_event<Packet::Events::DeviceDisconnected>()
         .register_command<Packet::Commands::Read>()
@@ -107,7 +108,7 @@ namespace Bootstrap {
   // Stdio
   void register_stdio_packets(PacketContainer& stdio_packet_container, shared_ptr<MGMTFormat> mgmt_format, shared_ptr<HCIFormat> hci_format) {
     stdio_packet_container
-      .set_output_format(std::move(mgmt_format))
+        .set_output_format(std::move(mgmt_format))
         .register_command<Packet::Commands::GetMGMTInfo>()
         .register_command<Packet::Commands::GetControllersIds>()
         .register_command<Packet::Commands::GetControllerInfo>()
@@ -121,13 +122,13 @@ namespace Bootstrap {
         .register_command<Packet::Commands::SetDiscoverable>()
         .register_command<Packet::Commands::SetConnectable>()
         .register_command<Packet::Meta::GetControllersList>()
-      .set_output_format(std::move(hci_format))
+        .set_output_format(std::move(hci_format))
         .register_command<Packet::Commands::Read>()
         .register_command<Packet::Commands::Write>()
         .register_command<Packet::Commands::WriteWithoutResponse>()
         .register_command<Packet::Commands::ProbeServices>()
         .register_command<Packet::Commands::ProbeCharacteristics>()
-      .set_output_format(nullptr)
+        .set_output_format(nullptr)
         .register_command<Packet::Control::Exit>();
   }
 

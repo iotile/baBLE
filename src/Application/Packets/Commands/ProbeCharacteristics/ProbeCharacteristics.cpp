@@ -161,6 +161,11 @@ namespace Packet::Commands {
 
     LOG.debug("Response received", "ProbeCharacteristics");
 
+    uint16_t type_code = extractor->get_type_code();
+    if (type_code != Format::HCI::AsyncData) {
+      return false;
+    }
+
     uint16_t packet_code = extractor->get_packet_code();
     switch (packet_code) {
 
@@ -168,8 +173,17 @@ namespace Packet::Commands {
       {
         auto request_opcode_in_error = extractor->get_value<uint8_t>();
         if (request_opcode_in_error != Format::HCI::AttributeCode::ReadByTypeRequest) {
+          extractor->reset_data_pointer();
           return false;
         }
+
+        auto handle_in_error = extractor->get_value<uint16_t>();
+        auto error_code = extractor->get_value<uint8_t>();
+        if (error_code != Format::HCI::AttributeErrorCode::AttributeNotFound) {
+          extractor->reset_data_pointer();
+          return CommandPacket::on_data_error_received(packet_type, extractor);
+        }
+
         m_waiting_characteristics = false;
         break;
       }

@@ -199,9 +199,11 @@ namespace Packet {
 
     virtual void after_translate() {};
 
-    void set_status(uint8_t native_status) {
+    void set_status(uint8_t native_status, bool compute_status = true) {
       m_native_status = native_status;
-      compute_bable_status();
+      if (compute_status) {
+        compute_bable_status();
+      }
     };
 
     void import_status(AbstractPacket& packet) {

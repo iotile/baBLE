@@ -162,6 +162,26 @@ namespace Format::HCI {
     OperationCancelledHost= 0x44
   };
 
+  enum AttributeErrorCode {
+    InvalidHandle= 0x01,
+    ReadNotPermitted= 0x02,
+    WriteNotPermitted= 0x03,
+    InvalidPDU= 0x04,
+    InsufficientAuthentication= 0x05,
+    RequestNotSupported= 0x06,
+    InvalidOffset= 0x07,
+    InsufficientAuthorization= 0x08,
+    PrepareQueueFull= 0x09,
+    AttributeNotFound= 0x0A,
+    AttributeNotLong= 0x0B,
+    InsufficientEncryptionKeySize= 0x0C,
+    InvalidAttributeValueLength= 0x0D,
+    UnlikelyError= 0x0E,
+    InsufficientEncryption= 0x0F,
+    UnsupportedGroupType= 0x10,
+    InsufficientResources= 0x11
+  };
+
   // Structure representing a GATT service
   struct Service {
     uint16_t handle = 0;

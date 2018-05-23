@@ -75,6 +75,10 @@ public:
     m_data_iterator = m_data.begin() + value;
   };
 
+  void reset_data_pointer() {
+    m_data_iterator = m_data.begin() + m_header_length;
+  };
+
   void set_controller_id(uint16_t controller_id) {
     m_controller_id = controller_id;
   };

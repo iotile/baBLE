@@ -110,7 +110,6 @@ int main() {
     on_error
   );
 
-  // TODO: verify exceptions thrown to be AbstractException (add if needed)
   for (auto& hci_socket : hci_sockets) {
     hci_socket->poll(
       loop,
@@ -152,8 +151,10 @@ int main() {
     );
   }
 
+  // TODO: verify exceptions thrown to be AbstractException (add if needed)
   // TODO: verify schemas to make them as generic/cross-platform as possible
   // TODO: clean logs (create DeviceAdded/DeviceRemoved + events HCI not to have the NotFound errors)
+  // TODO: comment and clean includes
   stdio_socket->poll(
     loop,
     [&stdio_packet_container, &socket_container, &loop](const std::vector<uint8_t>& received_data, const std::shared_ptr<AbstractFormat>& format) {
