@@ -8,9 +8,8 @@ namespace Exceptions {
   class InvalidCommandException : public AbstractException {
 
   public:
-    explicit InvalidCommandException(const std::string& message, const std::string& uuid_request = ""): AbstractException(message) {
-      m_uuid_request = uuid_request;
-    };
+    explicit InvalidCommandException(const std::string& message, const std::string& uuid_request = "")
+        : AbstractException(message, uuid_request) {};
 
     const Exceptions::Type get_type() const override {
       return Exceptions::Type::InvalidCommand;

@@ -119,7 +119,7 @@ set(SOURCES_FILES
         src/Application/Packets/Control/Exit/Exit.cpp
         src/Application/Packets/Control/Exit/Exit.hpp
         src/Format/AbstractExtractor.hpp
-        src/Application/ResponseId.hpp)
+        src/Application/ResponseId.hpp src/Exceptions/RuntimeError/RuntimeErrorException.hpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies

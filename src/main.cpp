@@ -13,6 +13,7 @@
 #include "Application/Packets/Errors/BaBLEError/BaBLEErrorPacket.hpp"
 #include "bootstrap.hpp"
 #include "Application/Packets/Control/Ready/Ready.hpp"
+#include "Exceptions/RuntimeError/RuntimeErrorException.hpp"
 
 #define EXPIRATION_DURATION_SECONDS 15
 
@@ -124,7 +125,7 @@ int main() {
           if (packet->get_id() == BaBLE::Payload::DeviceConnected) {
             auto device_connected_packet = std::dynamic_pointer_cast<Packet::Events::DeviceConnected>(packet);
             if (device_connected_packet == nullptr) {
-              throw std::runtime_error("Can't downcast packet to DeviceConnected packet");
+              throw Exceptions::RuntimeErrorException("Can't downcast packet to DeviceConnected packet");
             }
 
             hci_socket->connect_l2cap_socket(
@@ -135,7 +136,7 @@ int main() {
           } else if (packet->get_id() == BaBLE::Payload::DeviceDisconnected) {
             auto device_disconnected_packet = std::dynamic_pointer_cast<Packet::Events::DeviceDisconnected>(packet);
             if (device_disconnected_packet == nullptr) {
-              throw std::runtime_error("Can't downcast packet to DeviceDisconnected packet");
+              throw Exceptions::RuntimeErrorException("Can't downcast packet to DeviceDisconnected packet");
             }
             hci_socket->disconnect_l2cap_socket(device_disconnected_packet->get_connection_handle());
           }
@@ -151,7 +152,6 @@ int main() {
     );
   }
 
-  // TODO: verify exceptions thrown to be AbstractException (add if needed)
   // TODO: verify schemas to make them as generic/cross-platform as possible
   // TODO: clean logs (create DeviceAdded/DeviceRemoved + events HCI not to have the NotFound errors)
   // TODO: comment and clean includes

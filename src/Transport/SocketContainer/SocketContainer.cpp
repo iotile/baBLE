@@ -26,7 +26,7 @@ bool SocketContainer::send(const shared_ptr<Packet::AbstractPacket>& packet) {
 
   auto it = m_sockets.find(key);
   if (it == m_sockets.end()) {
-    throw Exceptions::NotFoundException("Can't find socket in SocketContainer for given packet.");
+    throw Exceptions::NotFoundException("Can't find socket in SocketContainer for given packet.", packet->get_uuid_request());
   }
   shared_ptr<AbstractSocket> socket = it->second;
 

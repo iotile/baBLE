@@ -21,6 +21,7 @@ namespace Packet::Errors {
   };
 
   vector<uint8_t> BaBLEErrorPacket::serialize(FlatbuffersFormatBuilder& builder) const {
+    auto name = builder.CreateString(m_name);
     auto message = builder.CreateString(m_message);
     BaBLE::StatusCode status_code;
 
@@ -44,9 +45,12 @@ namespace Packet::Errors {
       case Exceptions::Type::InvalidCommand:
         status_code = BaBLE::StatusCode::InvalidCommand;
         break;
+
+      case Exceptions::Type::RuntimeError:
+        status_code = BaBLE::StatusCode::Failed;
     }
 
-    auto payload = BaBLE::CreateBaBLEError(builder, message);
+    auto payload = BaBLE::CreateBaBLEError(builder, name, message);
 
     return builder
         .set_status(status_code)

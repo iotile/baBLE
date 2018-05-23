@@ -24,9 +24,9 @@ namespace Exceptions {
     };
 
   protected:
-    explicit AbstractException(const std::string& message) {
+    explicit AbstractException(const std::string& message, const std::string& uuid_request) {
       m_message = message;
-      m_uuid_request = "";
+      m_uuid_request = uuid_request;
     };
 
     std::string m_message;

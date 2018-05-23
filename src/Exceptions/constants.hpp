@@ -4,11 +4,12 @@
 namespace Exceptions {
 
   enum class Type {
-    Unknown,
+    InvalidCommand,
     NotFound,
+    RuntimeError,
     SocketError,
-    WrongFormat,
-    InvalidCommand
+    Unknown,
+    WrongFormat
   };
 
 }

@@ -60,7 +60,7 @@ void HCISocket::connect_l2cap_socket(uint16_t connection_handle, const std::arra
   addr.l2_bdaddr_type = 0x01;
 
   if (bind(l2cap_socket, (struct sockaddr*)&addr, sizeof(addr)) != 0){
-    throw std::runtime_error("Error while binding L2CAP socket.");
+    throw Exceptions::SocketException("Error while binding L2CAP socket.");
   }
 
   addr.l2_family = AF_BLUETOOTH;
@@ -69,7 +69,7 @@ void HCISocket::connect_l2cap_socket(uint16_t connection_handle, const std::arra
   addr.l2_bdaddr_type = device_address_type;
 
   if (connect(l2cap_socket, (struct sockaddr *)&addr, sizeof(addr)) != 0){
-    throw std::runtime_error("Error while connecting L2CAP socket.");
+    throw Exceptions::SocketException("Error while connecting L2CAP socket.");
   }
 
   LOG.info("L2CAP socket connected.", "HCISocket");

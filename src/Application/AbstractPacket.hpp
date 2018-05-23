@@ -10,6 +10,7 @@
 #include "../Format/HCI/HCIFormat.hpp"
 #include "../Format/MGMT/MGMTFormat.hpp"
 #include "../Format/Flatbuffers/FlatbuffersFormat.hpp"
+#include "../Exceptions/RuntimeError/RuntimeErrorException.hpp"
 
 namespace Packet {
 
@@ -61,53 +62,58 @@ namespace Packet {
     };
 
     virtual void from_bytes(const std::shared_ptr<AbstractExtractor>& extractor) {
-      m_controller_id = extractor->get_controller_id();
+      try {
+        m_controller_id = extractor->get_controller_id();
 
-      switch(m_current_type) {
-        case Packet::Type::MGMT:
-        {
-          auto mgmt_extractor = std::dynamic_pointer_cast<MGMTFormatExtractor>(extractor);
-          if(mgmt_extractor == nullptr) {
-            throw std::runtime_error("Can't import data into packet: wrong extractor provided.");
+        switch(m_current_type) {
+          case Packet::Type::MGMT:
+          {
+            auto mgmt_extractor = std::dynamic_pointer_cast<MGMTFormatExtractor>(extractor);
+            if(mgmt_extractor == nullptr) {
+              throw Exceptions::RuntimeErrorException("Can't import data into packet: wrong extractor provided.");
+            }
+            m_native_class = "MGMT";
+            return unserialize(*mgmt_extractor);
           }
-          m_native_class = "MGMT";
-          return unserialize(*mgmt_extractor);
+
+          case Packet::Type::HCI:
+          {
+            auto hci_extractor = std::dynamic_pointer_cast<HCIFormatExtractor>(extractor);
+            if(hci_extractor == nullptr) {
+              throw Exceptions::RuntimeErrorException("Can't import data into packet: wrong extractor provided.");
+            }
+            m_native_class = "HCI";
+            return unserialize(*hci_extractor);
+          }
+
+          case Packet::Type::ASCII:
+          {
+            auto ascii_extractor = std::dynamic_pointer_cast<AsciiFormatExtractor>(extractor);
+            if(ascii_extractor == nullptr) {
+              throw Exceptions::RuntimeErrorException("Can't import data into packet: wrong extractor provided.");
+            }
+            m_uuid_request = ascii_extractor->get_uuid_request();
+            m_native_class = "ASCII";
+            return unserialize(*ascii_extractor);
+          }
+
+          case Packet::Type::FLATBUFFERS:
+          {
+            auto fb_extractor = std::dynamic_pointer_cast<FlatbuffersFormatExtractor>(extractor);
+            if(fb_extractor == nullptr) {
+              throw Exceptions::RuntimeErrorException("Can't import data into packet: wrong extractor provided.");
+            }
+            m_uuid_request = fb_extractor->get_uuid_request();
+            m_native_class = "FLATBUFFERS";
+            return unserialize(*fb_extractor);
+          }
+
+          case Packet::Type::NONE:
+            throw Exceptions::RuntimeErrorException("Can't import data into NONE type packet.");
         }
 
-        case Packet::Type::HCI:
-        {
-          auto hci_extractor = std::dynamic_pointer_cast<HCIFormatExtractor>(extractor);
-          if(hci_extractor == nullptr) {
-            throw std::runtime_error("Can't import data into packet: wrong extractor provided.");
-          }
-          m_native_class = "HCI";
-          return unserialize(*hci_extractor);
-        }
-
-        case Packet::Type::ASCII:
-        {
-          auto ascii_extractor = std::dynamic_pointer_cast<AsciiFormatExtractor>(extractor);
-          if(ascii_extractor == nullptr) {
-            throw std::runtime_error("Can't import data into packet: wrong extractor provided.");
-          }
-          m_uuid_request = ascii_extractor->get_uuid_request();
-          m_native_class = "ASCII";
-          return unserialize(*ascii_extractor);
-        }
-
-        case Packet::Type::FLATBUFFERS:
-        {
-          auto fb_extractor = std::dynamic_pointer_cast<FlatbuffersFormatExtractor>(extractor);
-          if(fb_extractor == nullptr) {
-            throw std::runtime_error("Can't import data into packet: wrong extractor provided.");
-          }
-          m_uuid_request = fb_extractor->get_uuid_request();
-          m_native_class = "FLATBUFFERS";
-          return unserialize(*fb_extractor);
-        }
-
-        case Packet::Type::NONE:
-          throw std::runtime_error("Can't import data into NONE type packet.");
+      } catch (const Exceptions::WrongFormatException& err) {
+        throw Exceptions::InvalidCommandException(err.stringify(), m_uuid_request);
       }
     };
 
@@ -321,7 +327,7 @@ namespace Packet {
           break;
 
         default:
-          throw std::runtime_error("Can't convert status from current type.");
+          throw Exceptions::RuntimeErrorException("Can't convert status from current type.");
       }
     };
 

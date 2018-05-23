@@ -66,7 +66,7 @@ void MGMTSocket::set_blocking(bool state) {
   /* Save the current flags */
   int flags = fcntl(m_socket, F_GETFL, 0);
   if (flags == -1) {
-    throw std::runtime_error("Error while getting the MGMT socket flags.");
+    throw Exceptions::SocketException("Error while getting the MGMT socket flags.");
   }
 
   if (state) {
@@ -76,7 +76,7 @@ void MGMTSocket::set_blocking(bool state) {
   }
 
   if (fcntl(m_socket, F_SETFL, flags) == -1) {
-    throw std::runtime_error("Error while setting the blocking flag of the MGMT socket.");
+    throw Exceptions::SocketException("Error while setting the blocking flag of the MGMT socket.");
   }
 }
 
