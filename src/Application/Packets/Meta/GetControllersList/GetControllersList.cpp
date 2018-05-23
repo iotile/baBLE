@@ -128,6 +128,7 @@ namespace Packet::Meta {
     LOG.debug("Response received", "GetControllersList");
 
     if (m_waiting_response == SubPacket::GetControllersIds) {
+      // We received the list of controllers ids
       m_controllers_ids_packet->from_bytes(extractor);
 
       import_status(*m_controllers_ids_packet);
@@ -146,9 +147,11 @@ namespace Packet::Meta {
 
       m_controllers.reserve(m_controllers_ids.size());
       m_current_index = 0;
+      // Now we want to get the first controller information
       m_waiting_response = SubPacket::GetControllerInfo;
 
     } else if (m_waiting_response == SubPacket::GetControllerInfo) {
+      // We received a controller information
       m_controller_info_packet->from_bytes(extractor);
 
       import_status(*m_controller_info_packet);
@@ -162,6 +165,7 @@ namespace Packet::Meta {
 
 
       if (m_controllers.size() >= m_controllers_ids.size()) {
+        // We get all the controllers information: we have finished
         m_waiting_response = SubPacket::None;
         return true;
       }

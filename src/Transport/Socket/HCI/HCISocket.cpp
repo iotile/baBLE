@@ -37,6 +37,7 @@ bool HCISocket::bind_hci_socket() {
 }
 
 bool HCISocket::set_filter() {
+  // IMPORTANT: without these filters, nothing will be received on the HCI socket...
   struct Format::HCI::hci_filter filter {
     (1 << Format::HCI::Type::Event) | (1 << Format::HCI::Type::AsyncData),
     (1 << Format::HCI::EventCode::DisconnectComplete),

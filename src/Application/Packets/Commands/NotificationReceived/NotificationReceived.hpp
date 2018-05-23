@@ -5,7 +5,7 @@
 
 namespace Packet::Commands {
 
-  // Is a command because type_code == Format::HCI::AsyncData...
+  // Is a command because type_code == Format::HCI::AsyncData, but is considered an event afterwards
   class NotificationReceived : public CommandPacket<NotificationReceived> {
 
   public:

@@ -32,6 +32,7 @@ bool MGMTSocket::bind_socket() {
 }
 
 void MGMTSocket::sync_send(const vector<uint8_t>& data) {
+  // Used to do a blocking write on MGMT socket
   set_blocking(true);
   ssize_t length_written = write(m_socket, data.data(), data.size());
   set_blocking(false);
@@ -81,6 +82,8 @@ void MGMTSocket::set_blocking(bool state) {
 }
 
 vector<uint8_t> MGMTSocket::sync_receive() {
+  // Used to do a blocking read on MGMT socket
+
   set_blocking(true);
   vector<uint8_t> data = receive();
   set_blocking(false);

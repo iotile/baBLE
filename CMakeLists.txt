@@ -14,6 +14,9 @@ set(SOURCES_FILES
         src/Log/Loggable.hpp
         src/Application/Packets/constants.hpp
         src/Application/AbstractPacket.hpp
+        src/Application/ResponseId.hpp
+        src/Application/PacketContainer/PacketContainer.cpp
+        src/Application/PacketContainer/PacketContainer.hpp
         src/Application/Packets/Commands/CommandPacket.hpp
         src/Application/Packets/Commands/GetMGMTInfo/GetMGMTInfo.cpp
         src/Application/Packets/Commands/GetMGMTInfo/GetMGMTInfo.hpp
@@ -33,8 +36,18 @@ set(SOURCES_FILES
         src/Application/Packets/Commands/SetDiscoverable/SetDiscoverable.hpp
         src/Application/Packets/Commands/SetConnectable/SetConnectable.cpp
         src/Application/Packets/Commands/SetConnectable/SetConnectable.hpp
-        src/Application/Packets/Meta/GetControllersList/GetControllersList.cpp
-        src/Application/Packets/Meta/GetControllersList/GetControllersList.hpp
+        src/Application/Packets/Commands/Read/Read.cpp
+        src/Application/Packets/Commands/Read/Read.hpp
+        src/Application/Packets/Commands/Write/Write.cpp
+        src/Application/Packets/Commands/Write/Write.hpp
+        src/Application/Packets/Commands/WriteWithoutResponse/WriteWithoutResponse.cpp
+        src/Application/Packets/Commands/WriteWithoutResponse/WriteWithoutResponse.hpp
+        src/Application/Packets/Commands/NotificationReceived/NotificationReceived.cpp
+        src/Application/Packets/Commands/NotificationReceived/NotificationReceived.hpp
+        src/Application/Packets/Commands/ProbeServices/ProbeServices.cpp
+        src/Application/Packets/Commands/ProbeServices/ProbeServices.hpp
+        src/Application/Packets/Commands/ProbeCharacteristics/ProbeCharacteristics.cpp
+        src/Application/Packets/Commands/ProbeCharacteristics/ProbeCharacteristics.hpp
         src/Application/Packets/Commands/GetControllersIds/GetControllersIds.cpp
         src/Application/Packets/Commands/GetControllersIds/GetControllersIds.hpp
         src/Application/Packets/Commands/GetControllerInfo/GetControllerInfo.cpp
@@ -58,9 +71,24 @@ set(SOURCES_FILES
         src/Application/Packets/Events/ControllerAdded/ControllerAdded.hpp
         src/Application/Packets/Events/ControllerRemoved/ControllerRemoved.cpp
         src/Application/Packets/Events/ControllerRemoved/ControllerRemoved.hpp
+        src/Application/Packets/Events/DeviceAdded/DeviceAdded.cpp
+        src/Application/Packets/Events/DeviceAdded/DeviceAdded.hpp
+        src/Application/Packets/Events/DeviceRemoved/DeviceRemoved.cpp
+        src/Application/Packets/Events/DeviceRemoved/DeviceRemoved.hpp
+        src/Application/Packets/Events/LEAdvertisingReport/LEAdvertisingReport.cpp
+        src/Application/Packets/Events/LEAdvertisingReport/LEAdvertisingReport.hpp
+        src/Application/Packets/Events/LEReadRemoteUsedFeaturesComplete/LEReadRemoteUsedFeaturesComplete.cpp
+        src/Application/Packets/Events/LEReadRemoteUsedFeaturesComplete/LEReadRemoteUsedFeaturesComplete.hpp
         src/Application/Packets/Errors/BaBLEError/BaBLEErrorPacket.cpp
         src/Application/Packets/Errors/BaBLEError/BaBLEErrorPacket.hpp
+        src/Application/Packets/Meta/GetControllersList/GetControllersList.cpp
+        src/Application/Packets/Meta/GetControllersList/GetControllersList.hpp
+        src/Application/Packets/Control/Ready/Ready.cpp
+        src/Application/Packets/Control/Ready/Ready.hpp
+        src/Application/Packets/Control/Exit/Exit.cpp
+        src/Application/Packets/Control/Exit/Exit.hpp
         src/Format/AbstractFormat.hpp
+        src/Format/AbstractExtractor.hpp
         src/Format/MGMT/constants.hpp
         src/Format/MGMT/MGMTFormat.hpp
         src/Format/MGMT/MGMTFormatBuilder.cpp
@@ -78,8 +106,12 @@ set(SOURCES_FILES
         src/Format/Ascii/AsciiFormatBuilder.hpp
         src/Format/Ascii/AsciiFormatExtractor.cpp
         src/Format/Ascii/AsciiFormatExtractor.hpp
-        src/Application/PacketContainer/PacketContainer.cpp
-        src/Application/PacketContainer/PacketContainer.hpp
+        src/Format/HCI/constants.hpp
+        src/Format/HCI/HCIFormat.hpp
+        src/Format/HCI/HCIFormatBuilder.cpp
+        src/Format/HCI/HCIFormatBuilder.hpp
+        src/Format/HCI/HCIFormatExtractor.cpp
+        src/Format/HCI/HCIFormatExtractor.hpp
         src/Transport/AbstractSocket.hpp
         src/Transport/SocketContainer/SocketContainer.cpp
         src/Transport/SocketContainer/SocketContainer.hpp
@@ -87,39 +119,16 @@ set(SOURCES_FILES
         src/Transport/Socket/MGMT/MGMTSocket.hpp
         src/Transport/Socket/StdIO/StdIOSocket.cpp
         src/Transport/Socket/StdIO/StdIOSocket.hpp
+        src/Transport/Socket/HCI/HCISocket.cpp
+        src/Transport/Socket/HCI/HCISocket.hpp
         src/Exceptions/constants.hpp
         src/Exceptions/AbstractException.hpp
         src/Exceptions/NotFound/NotFoundException.hpp
         src/Exceptions/WrongFormat/WrongFormatException.hpp
         src/Exceptions/Socket/SocketException.hpp
         src/Exceptions/InvalidCommand/InvalidCommandException.hpp
-        src/bootstrap.hpp
-        src/Format/HCI/constants.hpp
-        src/Format/HCI/HCIFormat.hpp
-        src/Format/HCI/HCIFormatExtractor.cpp
-        src/Format/HCI/HCIFormatExtractor.hpp
-        src/Transport/Socket/HCI/HCISocket.cpp
-        src/Transport/Socket/HCI/HCISocket.hpp
-        src/Format/HCI/HCIFormatBuilder.cpp
-        src/Format/HCI/HCIFormatBuilder.hpp
-        src/Application/Packets/Commands/Read/Read.cpp
-        src/Application/Packets/Commands/Read/Read.hpp
-        src/Application/Packets/Commands/Write/Write.cpp
-        src/Application/Packets/Commands/Write/Write.hpp
-        src/Application/Packets/Commands/WriteWithoutResponse/WriteWithoutResponse.cpp
-        src/Application/Packets/Commands/WriteWithoutResponse/WriteWithoutResponse.hpp
-        src/Application/Packets/Commands/NotificationReceived/NotificationReceived.cpp
-        src/Application/Packets/Commands/NotificationReceived/NotificationReceived.hpp
-        src/Application/Packets/Commands/ProbeServices/ProbeServices.cpp
-        src/Application/Packets/Commands/ProbeServices/ProbeServices.hpp
-        src/Application/Packets/Commands/ProbeCharacteristics/ProbeCharacteristics.cpp
-        src/Application/Packets/Commands/ProbeCharacteristics/ProbeCharacteristics.hpp
-        src/Application/Packets/Control/Ready/Ready.cpp
-        src/Application/Packets/Control/Ready/Ready.hpp
-        src/Application/Packets/Control/Exit/Exit.cpp
-        src/Application/Packets/Control/Exit/Exit.hpp
-        src/Format/AbstractExtractor.hpp
-        src/Application/ResponseId.hpp src/Exceptions/RuntimeError/RuntimeErrorException.hpp src/Application/Packets/Events/LEAdvertisingReport/LEAdvertisingReport.cpp src/Application/Packets/Events/LEAdvertisingReport/LEAdvertisingReport.hpp src/Application/Packets/Events/LEReadRemoteUsedFeaturesComplete/LEReadRemoteUsedFeaturesComplete.cpp src/Application/Packets/Events/LEReadRemoteUsedFeaturesComplete/LEReadRemoteUsedFeaturesComplete.hpp src/Application/Packets/Events/DeviceAdded/DeviceAdded.cpp src/Application/Packets/Events/DeviceAdded/DeviceAdded.hpp src/Application/Packets/Events/DeviceRemoved/DeviceRemoved.cpp src/Application/Packets/Events/DeviceRemoved/DeviceRemoved.hpp)
+        src/Exceptions/RuntimeError/RuntimeErrorException.hpp
+        src/bootstrap.hpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies

@@ -7,6 +7,7 @@ unordered_map<Packet::ResponseId, shared_ptr<Packet::AbstractPacket>> PacketCont
 multimap<PacketContainer::TimePoint, Packet::ResponseId> PacketContainer::m_expiration_waiting_packets{};
 
 void PacketContainer::register_response(shared_ptr<Packet::AbstractPacket> packet) {
+  // Register request waiting for a response into a static map
   vector<Packet::ResponseId> expected_uuids = packet->expected_response_ids();
 
   if (expected_uuids.empty()) {
@@ -22,7 +23,7 @@ void PacketContainer::register_response(shared_ptr<Packet::AbstractPacket> packe
     }
 
     m_waiting_packets.emplace(expected_uuid, packet);
-    m_expiration_waiting_packets.emplace(inserted_time, expected_uuid);
+    m_expiration_waiting_packets.emplace(inserted_time, expected_uuid); // To expire waiting packets without response
   }
 }
 
@@ -91,6 +92,7 @@ shared_ptr<Packet::AbstractPacket> PacketContainer::build_command(std::shared_pt
   Packet::Type packet_type = m_building_format->get_packet_type();
   uint16_t command_code = extractor->get_packet_code();
 
+  // First, we check if there is a request packet waiting for a response
   Packet::ResponseId key{
     packet_type,
     extractor->get_controller_id(),
@@ -103,7 +105,7 @@ shared_ptr<Packet::AbstractPacket> PacketContainer::build_command(std::shared_pt
     vector<Packet::ResponseId> expected_uuids = packet->expected_response_ids();
 
     if (packet->on_response_received(packet_type, extractor)) {
-
+      // We remove all the other possible waiting response as the request has already received its response
       for (auto& expected_uuid : expected_uuids) {
         for (auto expiration_it = m_expiration_waiting_packets.begin(); expiration_it != m_expiration_waiting_packets.end(); ++expiration_it) {
           if (expiration_it->second == expected_uuid) {

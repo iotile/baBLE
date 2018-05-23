@@ -36,6 +36,7 @@ namespace Packet::Commands {
     std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
 
     std::vector<ResponseId> expected_response_ids() override {
+      // WriteWithoutResponse doesn't wait for any acknowledgement
       return {};
     };
 

@@ -15,7 +15,12 @@
 #include "Application/Packets/Commands/SetConnectable/SetConnectable.hpp"
 #include "Application/Packets/Commands/GetControllersIds/GetControllersIds.hpp"
 #include "Application/Packets/Commands/GetControllerInfo/GetControllerInfo.hpp"
-#include "Application/Packets/Meta/GetControllersList/GetControllersList.hpp"
+#include "Application/Packets/Commands/Read/Read.hpp"
+#include "Application/Packets/Commands/Write/Write.hpp"
+#include "Application/Packets/Commands/NotificationReceived/NotificationReceived.hpp"
+#include "Application/Packets/Commands/ProbeServices/ProbeServices.hpp"
+#include "Application/Packets/Commands/ProbeCharacteristics/ProbeCharacteristics.hpp"
+#include "Application/Packets/Commands/WriteWithoutResponse/WriteWithoutResponse.hpp"
 #include "Application/Packets/Commands/GetConnectedDevices/GetConnectedDevices.hpp"
 #include "Application/Packets/Events/DeviceConnected/DeviceConnected.hpp"
 #include "Application/Packets/Events/DeviceDisconnected/DeviceDisconnected.hpp"
@@ -25,25 +30,20 @@
 #include "Application/Packets/Events/NewSettings/NewSettings.hpp"
 #include "Application/Packets/Events/ControllerAdded/ControllerAdded.hpp"
 #include "Application/Packets/Events/ControllerRemoved/ControllerRemoved.hpp"
-#include "Application/Packets/Commands/Read/Read.hpp"
-#include "Application/Packets/Commands/Write/Write.hpp"
-#include "Application/Packets/Commands/NotificationReceived/NotificationReceived.hpp"
-#include "Application/Packets/Commands/ProbeServices/ProbeServices.hpp"
-#include "Application/Packets/Commands/ProbeCharacteristics/ProbeCharacteristics.hpp"
-#include "Application/Packets/Commands/WriteWithoutResponse/WriteWithoutResponse.hpp"
-#include "Application/Packets/Control/Exit/Exit.hpp"
-#include "Application/Packets/Control/Ready/Ready.hpp"
-#include "Application/Packets/Events/LEAdvertisingReport/LEAdvertisingReport.hpp"
-#include "Application/Packets/Events/LEReadRemoteUsedFeaturesComplete/LEReadRemoteUsedFeaturesComplete.hpp"
 #include "Application/Packets/Events/DeviceAdded/DeviceAdded.hpp"
 #include "Application/Packets/Events/DeviceRemoved/DeviceRemoved.hpp"
+#include "Application/Packets/Events/LEAdvertisingReport/LEAdvertisingReport.hpp"
+#include "Application/Packets/Events/LEReadRemoteUsedFeaturesComplete/LEReadRemoteUsedFeaturesComplete.hpp"
+#include "Application/Packets/Meta/GetControllersList/GetControllersList.hpp"
+#include "Application/Packets/Control/Exit/Exit.hpp"
+#include "Application/Packets/Control/Ready/Ready.hpp"
 
 using namespace std;
 using Packet::Meta::GetControllersList;
 
 namespace Bootstrap {
 
-  // Create one HCI socket per controller
+  // Create one HCI socket per Bluetooth controller
   vector<shared_ptr<HCISocket>> create_hci_sockets(const shared_ptr<MGMTSocket>& mgmt_socket, const shared_ptr<HCIFormat>& hci_format) {
     vector<shared_ptr<HCISocket>> hci_sockets;
 
@@ -59,9 +59,11 @@ namespace Bootstrap {
       get_controllers_list_packet->on_response_received(mgmt_packet_type, extractor);
     }
 
+    // Get controllers list from GetControllersList packet
     vector<Format::MGMT::Controller> controllers = get_controllers_list_packet->get_controllers();
     hci_sockets.reserve(controllers.size());
 
+    // Create HCI sockets
     for (auto& controller : controllers) {
       hci_sockets.push_back(make_shared<HCISocket>(hci_format, controller.id, controller.address));
     }

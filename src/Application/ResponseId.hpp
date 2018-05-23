@@ -8,6 +8,7 @@
 
 namespace Packet {
 
+  // Represents all the information to identify a response matching a waiting request
   struct ResponseId {
     Packet::Type packet_type = Packet::Type::NONE;
     uint16_t controller_id = NON_CONTROLLER_ID;
@@ -34,6 +35,7 @@ namespace Packet {
 
 }
 
+// To use ResponseId as a key in an unordered_map, we have to describe how to calculate a ResponseId hash (as global function)
 namespace std {
 
   template <>

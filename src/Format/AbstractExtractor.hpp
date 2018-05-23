@@ -6,8 +6,8 @@
 #include <utility>
 #include <stdexcept>
 #include <vector>
+#include "./HCI/constants.hpp"
 #include "../Exceptions/WrongFormat/WrongFormatException.hpp"
-#include "HCI/constants.hpp"
 
 #if __BYTE_ORDER__ == __ORDER_PDP_ENDIAN__
 #error "Byte order not suported (PDP endian)"

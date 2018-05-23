@@ -10,10 +10,10 @@
 #include "Transport/SocketContainer/SocketContainer.hpp"
 #include "Application/PacketContainer/PacketContainer.hpp"
 #include "Exceptions/AbstractException.hpp"
-#include "Application/Packets/Errors/BaBLEError/BaBLEErrorPacket.hpp"
-#include "bootstrap.hpp"
-#include "Application/Packets/Control/Ready/Ready.hpp"
 #include "Exceptions/RuntimeError/RuntimeErrorException.hpp"
+#include "Application/Packets/Errors/BaBLEError/BaBLEErrorPacket.hpp"
+#include "Application/Packets/Control/Ready/Ready.hpp"
+#include "bootstrap.hpp"
 
 #define EXPIRATION_DURATION_SECONDS 15
 
@@ -152,7 +152,6 @@ int main() {
     );
   }
 
-  // TODO: comment and clean includes
   stdio_socket->poll(
     loop,
     [&stdio_packet_container, &socket_container, &loop](const std::vector<uint8_t>& received_data, const std::shared_ptr<AbstractFormat>& format) {
@@ -177,6 +176,7 @@ int main() {
     on_error
   );
 
+  // Removed all expired waiting response (> 5 minutes)
   LOG.info("Creating expiration timer...");
   shared_ptr<TimerHandle> expiration_timer = loop->resource<TimerHandle>();
   expiration_timer->on<TimerEvent>([](const TimerEvent&, TimerHandle& t) {

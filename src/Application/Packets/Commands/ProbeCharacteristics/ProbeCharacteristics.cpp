@@ -138,6 +138,7 @@ namespace Packet::Commands {
   }
 
   void ProbeCharacteristics::translate() {
+    // We want to keep the same Packet::Type to resend command until we probed all the characteristics
     if (!m_response_received | !m_waiting_characteristics) {
       AbstractPacket::translate();
     }
@@ -170,17 +171,18 @@ namespace Packet::Commands {
     switch (packet_code) {
 
       case Format::HCI::AttributeCode::ErrorResponse:
+      // ErrorResponse with AttributeNotFound error code means that we have received all the characteristics
       {
         auto request_opcode_in_error = extractor->get_value<uint8_t>();
         if (request_opcode_in_error != Format::HCI::AttributeCode::ReadByTypeRequest) {
-          extractor->reset_data_pointer();
+          extractor->reset_data_pointer(); // Reset pointer for future extractor uses
           return false;
         }
 
         auto handle_in_error = extractor->get_value<uint16_t>();
         auto error_code = extractor->get_value<uint8_t>();
         if (error_code != Format::HCI::AttributeErrorCode::AttributeNotFound) {
-          extractor->reset_data_pointer();
+          extractor->reset_data_pointer(); // Reset pointer for future extractor uses
           return CommandPacket::on_data_error_received(packet_type, extractor);
         }
 
