@@ -24,6 +24,10 @@ namespace Packet::Events {
 
     while (data_length > 0) {
       auto report_length = extractor.get_value<uint8_t>();
+      if (report_length == 0) {
+        // Sometimes LEAdvertisingReport has 0 bytes padding, meaning it is the end of advertising data
+        break;
+      }
       data_length -= report_length + 1;
       auto report_type = extractor.get_value<uint8_t>();
 
@@ -33,7 +37,12 @@ namespace Packet::Events {
           m_flags = extractor.get_value<uint8_t>();
           break;
 
-        case Format::HCI::ReportType::UUID128:
+        case Format::HCI::ReportType::IncompleteUUID16ServiceClass:
+        case Format::HCI::ReportType::UUID16ServiceClass:
+        case Format::HCI::ReportType::IncompleteUUID32ServiceClass:
+        case Format::HCI::ReportType::UUID32ServiceClass:
+        case Format::HCI::ReportType::IncompleteUUID128ServiceClass:
+        case Format::HCI::ReportType::UUID128ServiceClass:
           m_uuid = extractor.get_vector<uint8_t>(static_cast<size_t>(report_length - 1));
           break;
 
@@ -44,7 +53,7 @@ namespace Packet::Events {
           break;
         }
 
-        case Format::HCI::ReportType::DeviceName:
+        case Format::HCI::ReportType::CompleteDeviceName:
         {
           std::vector<uint8_t> raw_device_name = extractor.get_vector<uint8_t>(static_cast<size_t>(report_length - 1));
           m_device_name = AsciiFormat::bytes_to_string(raw_device_name);
@@ -53,12 +62,12 @@ namespace Packet::Events {
 
         default:
           LOG.warning("Unknown HCI Advertising Report type: " + to_string(report_type));
+          auto unknown_data = extractor.get_vector<uint8_t>(static_cast<size_t>(report_length - 1));
           break;
       }
     }
 
     m_rssi = extractor.get_value<int8_t>();
-
   }
 
   vector<uint8_t> LEAdvertisingReport::serialize(AsciiFormatBuilder& builder) const {

@@ -13,6 +13,8 @@ namespace Packet::Events {
   }
 
   void DeviceFound::unserialize(MGMTFormatExtractor& extractor) {
+    LOG.debug(extractor.get_raw_data(), "DeviceFound");
+    
     EventPacket::unserialize(extractor);
     m_address = extractor.get_array<uint8_t, 6>();
     m_address_type = extractor.get_value<uint8_t>();
@@ -44,6 +46,8 @@ namespace Packet::Events {
         .add("EIR flags: ", m_eir.flags)
         .add("EIR UUID: ", AsciiFormat::format_uuid(m_eir.uuid))
         .add("EIR company ID: ", m_eir.company_id)
+        .add("EIR manufacturer data advertised", m_eir.manufacturer_data_advertised)
+        .add("EIR manufacturer data scanned", m_eir.manufacturer_data_scanned)
         .add("EIR device name", AsciiFormat::bytes_to_string(m_eir.device_name));
 
     return builder.build();
@@ -58,6 +62,8 @@ namespace Packet::Events {
     auto flags = builder.CreateVector(flags_vector);
     auto uuid = builder.CreateString(AsciiFormat::format_uuid(m_eir.uuid));
     auto device_name = builder.CreateString(AsciiFormat::bytes_to_string(m_eir.device_name));
+    auto manufacturer_data_advertised = builder.CreateVector(m_eir.manufacturer_data_advertised);
+    auto manufacturer_data_scanned = builder.CreateVector(m_eir.manufacturer_data_scanned);
 
     auto payload = BaBLE::CreateDeviceFound(
         builder,
@@ -67,6 +73,8 @@ namespace Packet::Events {
         flags,
         uuid,
         m_eir.company_id,
+        manufacturer_data_advertised,
+        manufacturer_data_scanned,
         device_name
     );
 

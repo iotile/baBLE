@@ -63,6 +63,18 @@ namespace Format::MGMT {
     PermissionDenied= 0x14
   };
 
+  enum EIRType {
+    Flags= 0x01,
+    IncompleteUUID16ServiceClass= 0x02,
+    UUID16ServiceClass= 0x03,
+    IncompleteUUID32ServiceClass= 0x04,
+    UUID32ServiceClass= 0x05,
+    IncompleteUUID128ServiceClass= 0x06,
+    UUID128ServiceClass= 0x07,
+    CompleteDeviceName= 0x09,
+    ManufacturerSpecific= 0xFF
+  };
+
   const std::string Reasons[] = {
     "Unspecified",
     "Connection timeout",
@@ -76,6 +88,8 @@ namespace Format::MGMT {
     uint8_t flags = 0;
     std::vector<uint8_t> uuid;
     uint16_t company_id = 0;
+    std::vector<uint8_t> manufacturer_data_advertised;
+    std::vector<uint8_t> manufacturer_data_scanned;
     std::vector<uint8_t> device_name;
   };
 

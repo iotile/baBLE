@@ -72,8 +72,13 @@ namespace Format::HCI {
 
   enum ReportType {
     Flags= 0x01,
-    UUID128= 0x06,
-    DeviceName= 0x09,
+    IncompleteUUID16ServiceClass= 0x02,
+    UUID16ServiceClass= 0x03,
+    IncompleteUUID32ServiceClass= 0x04,
+    UUID32ServiceClass= 0x05,
+    IncompleteUUID128ServiceClass= 0x06,
+    UUID128ServiceClass= 0x07,
+    CompleteDeviceName= 0x09,
     ManufacturerSpecific= 0xFF
   };
 
