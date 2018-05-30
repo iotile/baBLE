@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_ROUTER_HPP
-#define BABLE_LINUX_ROUTER_HPP
+#ifndef BABLE_LINUX_SOCKETCONTAINER_HPP
+#define BABLE_LINUX_SOCKETCONTAINER_HPP
 
 #include <cstdint>
 #include <memory>
@@ -22,4 +22,4 @@ private:
 
 };
 
-#endif //BABLE_LINUX_ROUTER_HPP
+#endif //BABLE_LINUX_SOCKETCONTAINER_HPP

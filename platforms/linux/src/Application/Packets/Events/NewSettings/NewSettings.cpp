@@ -6,12 +6,11 @@ namespace Packet::Events {
 
   NewSettings::NewSettings(Packet::Type initial_type, Packet::Type translated_type)
       : EventPacket(initial_type, translated_type) {
-    m_id = BaBLE::Payload::NONE;
+    m_id = Packet::Id::NewSettings;
     m_current_settings = 0;
   }
 
   void NewSettings::unserialize(MGMTFormatExtractor& extractor) {
-    EventPacket::unserialize(extractor);
     m_current_settings = extractor.get_value<uint32_t>();
   }
 

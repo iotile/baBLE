@@ -6,14 +6,12 @@ namespace Packet::Events {
 
   DeviceConnected::DeviceConnected(Packet::Type initial_type, Packet::Type translated_type)
       : EventPacket(initial_type, translated_type) {
-    m_id = BaBLE::Payload::DeviceConnected;
+    m_id = Packet::Id::DeviceConnected;
     m_address_type = 0;
     m_eir_data_length = 0;
-    m_connection_handle = 0;
   }
 
   void DeviceConnected::unserialize(MGMTFormatExtractor& extractor) {
-    EventPacket::unserialize(extractor);
     m_address = extractor.get_array<uint8_t, 6>();
     m_address_type = extractor.get_value<uint8_t>();
     m_flags = extractor.get_array<uint8_t, 4>();
@@ -31,9 +29,8 @@ namespace Packet::Events {
   }
 
   void DeviceConnected::unserialize(HCIFormatExtractor& extractor) {
-    EventPacket::unserialize(extractor);
     set_status(extractor.get_value<uint8_t>());
-    m_connection_handle = extractor.get_value<uint16_t>();
+    m_connection_id = extractor.get_value<uint16_t>();
     auto role = extractor.get_value<uint8_t>();
     m_address_type = static_cast<uint8_t>(extractor.get_value<uint8_t>() + 1);
     m_address = extractor.get_array<uint8_t, 6>();
@@ -44,7 +41,6 @@ namespace Packet::Events {
 
     builder
         .set_name("DeviceConnected")
-        .add("Connection handle", m_connection_handle)
         .add("Address", AsciiFormat::format_bd_address(m_address))
         .add("Address type", m_address_type)
         .add("Flags", m_flags)
@@ -57,11 +53,9 @@ namespace Packet::Events {
         .add("EIR device name", AsciiFormat::bytes_to_string(m_eir.device_name));
 
     return builder.build();
-  };
+  }
 
   vector<uint8_t> DeviceConnected::serialize(FlatbuffersFormatBuilder& builder) const {
-    EventPacket::serialize(builder);
-
     vector<uint8_t> flags_vector(m_flags.begin(), m_flags.end());
 
     auto address = builder.CreateString(AsciiFormat::format_bd_address(m_address));
@@ -73,7 +67,7 @@ namespace Packet::Events {
 
     auto payload = BaBLE::CreateDeviceConnected(
         builder,
-        m_connection_handle,
+        m_connection_id,
         address,
         m_address_type,
         flags,

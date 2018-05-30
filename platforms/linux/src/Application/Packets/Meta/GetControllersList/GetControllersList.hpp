@@ -2,12 +2,14 @@
 #define BABLE_LINUX_GETCONTROLLERSLIST_HPP
 
 #include "../../../AbstractPacket.hpp"
-#include "../../Commands/GetControllersIds/GetControllersIds.hpp"
-#include "../../Commands/GetControllerInfo/GetControllerInfo.hpp"
+#include "../../Commands/GetControllersIds/GetControllersIdsRequest.hpp"
+#include "../../Commands/GetControllersIds/GetControllersIdsResponse.hpp"
+#include "../../Commands/GetControllerInfo/GetControllerInfoRequest.hpp"
+#include "../../Commands/GetControllerInfo/GetControllerInfoResponse.hpp"
 
 namespace Packet::Meta {
 
-  class GetControllersList : public AbstractPacket {
+class GetControllersList : public AbstractPacket, std::enable_shared_from_this<GetControllersList> {
 
   public:
     static const uint16_t packet_code(Packet::Type type) {
@@ -38,10 +40,9 @@ namespace Packet::Meta {
     std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
     std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override;
 
-    void translate() override;
-
-    std::vector<ResponseId> expected_response_ids() override;
-    bool on_response_received(Packet::Type packet_type, const std::shared_ptr<AbstractExtractor>& extractor) override;
+    void before_sent(const std::shared_ptr<PacketRouter>& router) override;
+    std::shared_ptr<AbstractPacket> on_controllers_ids_response_received(std::shared_ptr<AbstractPacket> packet);
+    std::shared_ptr<AbstractPacket> on_controller_info_response_received(std::shared_ptr<AbstractPacket> packet);
 
     inline const std::vector<Format::MGMT::Controller>& get_controllers() const {
       return m_controllers;
@@ -57,13 +58,11 @@ namespace Packet::Meta {
     SubPacket m_waiting_response;
     uint16_t m_current_index;
 
-    std::unique_ptr<Packet::Commands::GetControllerInfo> m_controller_info_packet;
-    std::unique_ptr<Packet::Commands::GetControllersIds> m_controllers_ids_packet;
+    std::unique_ptr<Packet::Commands::GetControllerInfoRequest> m_controller_info_request_packet;
+    std::unique_ptr<Packet::Commands::GetControllersIdsRequest> m_controllers_ids_request_packet;
+
     std::vector<Format::MGMT::Controller> m_controllers;
     std::vector<uint16_t> m_controllers_ids;
-
-    uint8_t m_native_status;
-    BaBLE::StatusCode m_status;
 
   };
 

@@ -43,10 +43,6 @@ namespace Packet::Events {
       return m_address_type;
     };
 
-    inline uint16_t get_connection_handle() const {
-      return m_connection_handle;
-    };
-
   private:
     std::array<uint8_t, 6> m_address{};
     uint8_t m_address_type;
@@ -54,8 +50,6 @@ namespace Packet::Events {
     uint16_t m_eir_data_length;
     std::vector<uint8_t> m_eir_data;
     Format::MGMT::EIR m_eir{};
-
-    uint16_t m_connection_handle;
   };
 
 }

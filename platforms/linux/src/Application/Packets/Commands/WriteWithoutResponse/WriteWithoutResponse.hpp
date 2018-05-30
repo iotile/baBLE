@@ -1,11 +1,11 @@
 #ifndef BABLE_LINUX_WRITEWITHOUTRESPONSE_HPP
 #define BABLE_LINUX_WRITEWITHOUTRESPONSE_HPP
 
-#include "../CommandPacket.hpp"
+#include "../RequestPacket.hpp"
 
 namespace Packet::Commands {
 
-  class WriteWithoutResponse : public CommandPacket<WriteWithoutResponse> {
+  class WriteWithoutResponse : public RequestPacket<WriteWithoutResponse> {
 
   public:
     static const uint16_t packet_code(Packet::Type type) {
@@ -35,13 +35,9 @@ namespace Packet::Commands {
     std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
     std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
 
-    std::vector<ResponseId> expected_response_ids() override {
-      // WriteWithoutResponse doesn't wait for any acknowledgement
-      return {};
-    };
+    void before_sent(const std::shared_ptr<PacketRouter>& router) override;
 
   private:
-    uint16_t m_connection_handle;
     uint16_t m_attribute_handle;
     std::vector<uint8_t> m_data_to_write;
 

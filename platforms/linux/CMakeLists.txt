@@ -14,46 +14,43 @@ set(SOURCES_FILES
         src/Log/Loggable.hpp
         src/Application/Packets/constants.hpp
         src/Application/AbstractPacket.hpp
-        src/Application/ResponseId.hpp
-        src/Application/PacketContainer/PacketContainer.cpp
-        src/Application/PacketContainer/PacketContainer.hpp
-        src/Application/Packets/Commands/CommandPacket.hpp
-        src/Application/Packets/Commands/GetMGMTInfo/GetMGMTInfo.cpp
-        src/Application/Packets/Commands/GetMGMTInfo/GetMGMTInfo.hpp
-        src/Application/Packets/Commands/Scan/StartScan.cpp
-        src/Application/Packets/Commands/Scan/StartScan.hpp
-        src/Application/Packets/Commands/Scan/StopScan.cpp
-        src/Application/Packets/Commands/Scan/StopScan.hpp
-        src/Application/Packets/Commands/AddDevice/AddDevice.cpp
-        src/Application/Packets/Commands/AddDevice/AddDevice.hpp
-        src/Application/Packets/Commands/RemoveDevice/RemoveDevice.cpp
-        src/Application/Packets/Commands/RemoveDevice/RemoveDevice.hpp
-        src/Application/Packets/Commands/Disconnect/Disconnect.cpp
-        src/Application/Packets/Commands/Disconnect/Disconnect.hpp
-        src/Application/Packets/Commands/SetPowered/SetPowered.cpp
-        src/Application/Packets/Commands/SetPowered/SetPowered.hpp
-        src/Application/Packets/Commands/SetDiscoverable/SetDiscoverable.cpp
-        src/Application/Packets/Commands/SetDiscoverable/SetDiscoverable.hpp
-        src/Application/Packets/Commands/SetConnectable/SetConnectable.cpp
-        src/Application/Packets/Commands/SetConnectable/SetConnectable.hpp
-        src/Application/Packets/Commands/Read/Read.cpp
-        src/Application/Packets/Commands/Read/Read.hpp
-        src/Application/Packets/Commands/Write/Write.cpp
-        src/Application/Packets/Commands/Write/Write.hpp
+        src/Application/PacketUuid.hpp
+        src/Application/PacketBuilder/PacketBuilder.cpp
+        src/Application/PacketBuilder/PacketBuilder.hpp
+        src/Application/Packets/Commands/RequestPacket.hpp
+        src/Application/Packets/Commands/ResponsePacket.hpp
+        src/Application/Packets/Commands/GetMGMTInfo/GetMGMTInfoRequest.cpp
+        src/Application/Packets/Commands/GetMGMTInfo/GetMGMTInfoRequest.hpp
+        src/Application/Packets/Commands/StartScan/StartScanRequest.cpp
+        src/Application/Packets/Commands/StartScan/StartScanRequest.hpp
+        src/Application/Packets/Commands/StopScan/StopScanRequest.cpp
+        src/Application/Packets/Commands/StopScan/StopScanRequest.hpp
+        src/Application/Packets/Commands/AddDevice/AddDeviceRequest.cpp
+        src/Application/Packets/Commands/AddDevice/AddDeviceRequest.hpp
+        src/Application/Packets/Commands/RemoveDevice/RemoveDeviceRequest.cpp
+        src/Application/Packets/Commands/RemoveDevice/RemoveDeviceRequest.hpp
+        src/Application/Packets/Commands/Disconnect/DisconnectRequest.cpp
+        src/Application/Packets/Commands/Disconnect/DisconnectRequest.hpp
+        src/Application/Packets/Commands/SetPowered/SetPoweredRequest.cpp
+        src/Application/Packets/Commands/SetPowered/SetPoweredRequest.hpp
+        src/Application/Packets/Commands/SetDiscoverable/SetDiscoverableRequest.cpp
+        src/Application/Packets/Commands/SetDiscoverable/SetDiscoverableRequest.hpp
+        src/Application/Packets/Commands/SetConnectable/SetConnectableRequest.cpp
+        src/Application/Packets/Commands/SetConnectable/SetConnectableRequest.hpp
+        src/Application/Packets/Commands/Read/ReadRequest.cpp
+        src/Application/Packets/Commands/Read/ReadRequest.hpp
+        src/Application/Packets/Commands/Write/WriteRequest.cpp
+        src/Application/Packets/Commands/Write/WriteRequest.hpp
         src/Application/Packets/Commands/WriteWithoutResponse/WriteWithoutResponse.cpp
         src/Application/Packets/Commands/WriteWithoutResponse/WriteWithoutResponse.hpp
         src/Application/Packets/Commands/NotificationReceived/NotificationReceived.cpp
         src/Application/Packets/Commands/NotificationReceived/NotificationReceived.hpp
-        src/Application/Packets/Commands/ProbeServices/ProbeServices.cpp
-        src/Application/Packets/Commands/ProbeServices/ProbeServices.hpp
-        src/Application/Packets/Commands/ProbeCharacteristics/ProbeCharacteristics.cpp
-        src/Application/Packets/Commands/ProbeCharacteristics/ProbeCharacteristics.hpp
-        src/Application/Packets/Commands/GetControllersIds/GetControllersIds.cpp
-        src/Application/Packets/Commands/GetControllersIds/GetControllersIds.hpp
-        src/Application/Packets/Commands/GetControllerInfo/GetControllerInfo.cpp
-        src/Application/Packets/Commands/GetControllerInfo/GetControllerInfo.hpp
-        src/Application/Packets/Commands/GetConnectedDevices/GetConnectedDevices.cpp
-        src/Application/Packets/Commands/GetConnectedDevices/GetConnectedDevices.hpp
+        src/Application/Packets/Commands/GetControllersIds/GetControllersIdsRequest.cpp
+        src/Application/Packets/Commands/GetControllersIds/GetControllersIdsRequest.hpp
+        src/Application/Packets/Commands/GetControllerInfo/GetControllerInfoRequest.cpp
+        src/Application/Packets/Commands/GetControllerInfo/GetControllerInfoRequest.hpp
+        src/Application/Packets/Commands/GetConnectedDevices/GetConnectedDevicesRequest.cpp
+        src/Application/Packets/Commands/GetConnectedDevices/GetConnectedDevicesRequest.hpp
         src/Application/Packets/Events/EventPacket.hpp
         src/Application/Packets/Events/DeviceFound/DeviceFound.cpp
         src/Application/Packets/Events/DeviceFound/DeviceFound.hpp
@@ -79,10 +76,14 @@ set(SOURCES_FILES
         src/Application/Packets/Events/LEAdvertisingReport/LEAdvertisingReport.hpp
         src/Application/Packets/Events/LEReadRemoteUsedFeaturesComplete/LEReadRemoteUsedFeaturesComplete.cpp
         src/Application/Packets/Events/LEReadRemoteUsedFeaturesComplete/LEReadRemoteUsedFeaturesComplete.hpp
-        src/Application/Packets/Errors/BaBLEError/BaBLEErrorPacket.cpp
-        src/Application/Packets/Errors/BaBLEError/BaBLEErrorPacket.hpp
+        src/Application/Packets/Errors/BaBLEError/BaBLEError.cpp
+        src/Application/Packets/Errors/BaBLEError/BaBLEError.hpp
         src/Application/Packets/Meta/GetControllersList/GetControllersList.cpp
         src/Application/Packets/Meta/GetControllersList/GetControllersList.hpp
+        src/Application/Packets/Meta/ProbeServices/ProbeServices.cpp
+        src/Application/Packets/Meta/ProbeServices/ProbeServices.hpp
+        src/Application/Packets/Meta/ProbeCharacteristics/ProbeCharacteristics.cpp
+        src/Application/Packets/Meta/ProbeCharacteristics/ProbeCharacteristics.hpp
         src/Application/Packets/Control/Ready/Ready.cpp
         src/Application/Packets/Control/Ready/Ready.hpp
         src/Application/Packets/Control/Exit/Exit.cpp
@@ -128,11 +129,60 @@ set(SOURCES_FILES
         src/Exceptions/Socket/SocketException.hpp
         src/Exceptions/InvalidCommand/InvalidCommandException.hpp
         src/Exceptions/RuntimeError/RuntimeErrorException.hpp
-        src/bootstrap.hpp)
+        src/bootstrap.hpp
+        src/Application/PacketRouter/PacketRouter.cpp
+        src/Application/PacketRouter/PacketRouter.hpp
+        src/Application/Packets/Errors/ErrorResponse/ErrorResponse.cpp
+        src/Application/Packets/Errors/ErrorResponse/ErrorResponse.hpp
+        src/Application/Packets/Commands/ReadByType/ReadByTypeRequest.cpp
+        src/Application/Packets/Commands/ReadByType/ReadByTypeRequest.hpp
+        src/Application/Packets/Commands/ReadByType/ReadByTypeResponse.cpp
+        src/Application/Packets/Commands/ReadByType/ReadByTypeResponse.hpp
+        src/Application/Packets/Commands/ReadByGroupType/ReadByGroupTypeRequest.cpp
+        src/Application/Packets/Commands/ReadByGroupType/ReadByGroupTypeRequest.hpp
+        src/Application/Packets/Commands/ReadByGroupType/ReadByGroupTypeResponse.cpp
+        src/Application/Packets/Commands/ReadByGroupType/ReadByGroupTypeResponse.hpp
+        src/Application/Packets/Commands/AddDevice/AddDeviceResponse.cpp
+        src/Application/Packets/Commands/AddDevice/AddDeviceResponse.hpp
+        src/Application/Packets/Commands/Disconnect/DisconnectResponse.cpp
+        src/Application/Packets/Commands/Disconnect/DisconnectResponse.hpp
+        src/Application/Packets/Commands/GetConnectedDevices/GetConnectedDevicesResponse.cpp
+        src/Application/Packets/Commands/GetConnectedDevices/GetConnectedDevicesResponse.hpp
+        src/Application/Packets/Commands/GetControllerInfo/GetControllerInfoResponse.cpp
+        src/Application/Packets/Commands/GetControllerInfo/GetControllerInfoResponse.hpp
+        src/Application/Packets/Commands/GetControllersIds/GetControllersIdsResponse.cpp
+        src/Application/Packets/Commands/GetControllersIds/GetControllersIdsResponse.hpp
+        src/Application/Packets/Commands/GetMGMTInfo/GetMGMTInfoResponse.cpp
+        src/Application/Packets/Commands/GetMGMTInfo/GetMGMTInfoResponse.hpp
+        src/Application/Packets/Commands/Read/ReadResponse.cpp
+        src/Application/Packets/Commands/Read/ReadResponse.hpp
+        src/Application/Packets/Commands/RemoveDevice/RemoveDeviceResponse.cpp
+        src/Application/Packets/Commands/RemoveDevice/RemoveDeviceResponse.hpp
+        src/Application/Packets/Commands/StartScan/StartScanResponse.cpp
+        src/Application/Packets/Commands/StartScan/StartScanResponse.hpp
+        src/Application/Packets/Commands/StopScan/StopScanResponse.cpp
+        src/Application/Packets/Commands/StopScan/StopScanResponse.hpp
+        src/Application/Packets/Commands/SetConnectable/SetConnectableResponse.cpp
+        src/Application/Packets/Commands/SetConnectable/SetConnectableResponse.hpp
+        src/Application/Packets/Commands/SetDiscoverable/SetDiscoverableResponse.cpp
+        src/Application/Packets/Commands/SetDiscoverable/SetDiscoverableResponse.hpp
+        src/Application/Packets/Commands/SetPowered/SetPoweredResponse.cpp
+        src/Application/Packets/Commands/SetPowered/SetPoweredResponse.hpp
+        src/Application/Packets/Commands/Write/WriteResponse.cpp
+        src/Application/Packets/Commands/Write/WriteResponse.hpp src/Application/AbstractPacket.cpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
+find_program(iwyu_path NAMES include-what-you-use iwyu)
+if(NOT iwyu_path)
+    message(FATAL_ERROR "Could not find the program include-what-you-use")
+endif()
+
+set_property(TARGET baBLE_linux PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
+
 ## Include dependencies
+# TODO: download dependencies using cmake ExternalProject -> git repo will be lighter but dependent on other repos...
 ### libuv
+include_directories(deps/uv/libuv/include)
 add_subdirectory(deps/uv)
 target_link_libraries(baBLE_linux uv)
 ### uvw
@@ -142,8 +192,8 @@ target_link_libraries(baBLE_linux uvw)
 add_subdirectory(deps/flatbuffers)
 target_link_libraries(baBLE_linux flatbuffers)
 
-## Include generated flatbuffers protocole
-include_directories(deps/protocole)
+## Include generated flatbuffers protocol
+include_directories(deps/protocol)
 
 ## Install
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR})

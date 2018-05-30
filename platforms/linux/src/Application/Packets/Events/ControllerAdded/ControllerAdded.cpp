@@ -6,12 +6,10 @@ namespace Packet::Events {
 
   ControllerAdded::ControllerAdded(Packet::Type initial_type, Packet::Type translated_type)
       : EventPacket(initial_type, translated_type) {
-    m_id = BaBLE::Payload::ControllerAdded;
+    m_id = Packet::Id::ControllerAdded;
   }
 
-  void ControllerAdded::unserialize(MGMTFormatExtractor& extractor) {
-    EventPacket::unserialize(extractor);
-  };
+  void ControllerAdded::unserialize(MGMTFormatExtractor& extractor) {};
 
   vector<uint8_t> ControllerAdded::serialize(AsciiFormatBuilder& builder) const {
     EventPacket::serialize(builder);
@@ -22,8 +20,6 @@ namespace Packet::Events {
   };
 
   vector<uint8_t> ControllerAdded::serialize(FlatbuffersFormatBuilder& builder) const {
-    EventPacket::serialize(builder);
-
     auto payload = BaBLE::CreateControllerAdded(builder);
 
     return builder.build(payload, BaBLE::Payload::ControllerAdded);

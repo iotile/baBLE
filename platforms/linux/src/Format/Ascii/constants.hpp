@@ -6,6 +6,8 @@ namespace Format::Ascii {
   const char Delimiter = ',';
 
   enum CommandCode {
+    ErrorResponse= 0x0000,
+
     GetMGMTInfo= 0x0001,
     StartScan= 0x0002,
     StopScan= 0x0003,
@@ -24,8 +26,12 @@ namespace Format::Ascii {
     Write= 0x000F,
     WriteWithoutResponse= 0x00010,
     NotificationReceived= 0x0011,
-    ProbeServices= 0x0012,
-    ProbeCharacteristics= 0x0013,
+    ReadByGroupTypeRequest= 0x0012,
+    ReadByGroupTypeResponse= 0x0013,
+    ProbeServices= 0x0014,
+    ReadByTypeRequest= 0x0015,
+    ReadByTypeResponse= 0x0016,
+    ProbeCharacteristics= 0x0017,
 
     Exit= 0xFFFF
   };

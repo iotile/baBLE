@@ -8,18 +8,20 @@
 #include "Transport/Socket/HCI/HCISocket.hpp"
 #include "Transport/Socket/StdIO/StdIOSocket.hpp"
 #include "Transport/SocketContainer/SocketContainer.hpp"
-#include "Application/PacketContainer/PacketContainer.hpp"
+#include "Application/PacketBuilder/PacketBuilder.hpp"
 #include "Exceptions/AbstractException.hpp"
 #include "Exceptions/RuntimeError/RuntimeErrorException.hpp"
-#include "Application/Packets/Errors/BaBLEError/BaBLEErrorPacket.hpp"
+#include "Application/Packets/Errors/BaBLEError/BaBLEError.hpp"
 #include "Application/Packets/Control/Ready/Ready.hpp"
 #include "bootstrap.hpp"
+#include "Application/PacketRouter/PacketRouter.hpp"
 
 #define EXPIRATION_DURATION_SECONDS 15
 
 using namespace std;
 using namespace uvw;
 
+// TODO: clean includes to make cmake faster
 // Function used to call all handlers closing callbacks before stopping the loop
 void cleanly_stop_loop(Loop& loop) {
   loop.walk([](BaseHandle &handle){
@@ -71,23 +73,26 @@ int main() {
     socket_container.register_socket(hci_socket);
   }
 
-  // PacketContainer
-  LOG.info("Registering packets into packet container...");
-  PacketContainer mgmt_packet_container(mgmt_format);
-  Bootstrap::register_mgmt_packets(mgmt_packet_container, stdio_socket->format());
+  // PacketRouter
+  shared_ptr<PacketRouter> packet_router = make_shared<PacketRouter>();
 
-  PacketContainer hci_packet_container(hci_format);
-  Bootstrap::register_hci_packets(hci_packet_container, stdio_socket->format());
+  // PacketBuilder
+  LOG.info("Registering packets into packet builder...");
+  PacketBuilder mgmt_packet_builder(mgmt_format);
+  Bootstrap::register_mgmt_packets(mgmt_packet_builder, stdio_socket->format());
 
-  PacketContainer stdio_packet_container(stdio_socket->format());
-  Bootstrap::register_stdio_packets(stdio_packet_container, mgmt_format, hci_format);
+  PacketBuilder hci_packet_builder(hci_format);
+  Bootstrap::register_hci_packets(hci_packet_builder, stdio_socket->format());
+
+  PacketBuilder stdio_packet_builder(stdio_socket->format());
+  Bootstrap::register_stdio_packets(stdio_packet_builder, mgmt_format, hci_format);
 
   // Poll sockets
   LOG.info("Creating socket pollers...");
 
   auto on_error = [&stdio_socket, &socket_container](const Exceptions::AbstractException& err) {
     LOG.error(err.stringify(), "Error");
-    std::shared_ptr<Packet::Errors::BaBLEErrorPacket> error_packet = make_shared<Packet::Errors::BaBLEErrorPacket>(
+    std::shared_ptr<Packet::Errors::BaBLEError> error_packet = make_shared<Packet::Errors::BaBLEError>(
         stdio_socket->format()->get_packet_type()
     );
     error_packet->from_exception(err);
@@ -96,15 +101,16 @@ int main() {
 
   mgmt_socket->poll(
     loop,
-    [&mgmt_packet_container, &socket_container](const std::vector<uint8_t>& received_data, const std::shared_ptr<AbstractFormat>& format) {
+    [&mgmt_packet_builder, &packet_router, &socket_container](const std::vector<uint8_t>& received_data, const std::shared_ptr<AbstractFormat>& format) {
       shared_ptr<AbstractExtractor> extractor = format->create_extractor(received_data);
-      std::shared_ptr<Packet::AbstractPacket> packet = mgmt_packet_container.build(extractor);
+
+      std::shared_ptr<Packet::AbstractPacket> packet = mgmt_packet_builder.build(extractor);
       LOG.debug("Packet built", "MGMT poller");
 
-      packet->translate();
-      LOG.debug("Packet translated", "MGMT poller");
+      packet = packet_router->route(packet);
 
-      PacketContainer::register_response(packet);
+      packet->before_sent(packet_router);
+      LOG.debug("Packet translated", "MGMT poller");
 
       socket_container.send(packet);
     },
@@ -114,39 +120,42 @@ int main() {
   for (auto& hci_socket : hci_sockets) {
     hci_socket->poll(
       loop,
-      [&hci_packet_container, &socket_container, &hci_socket](const std::vector<uint8_t>& received_data, const std::shared_ptr<AbstractFormat>& format) {
-          shared_ptr<AbstractExtractor> extractor = format->create_extractor(received_data);
-          extractor->set_controller_id(hci_socket->get_controller_id());
-          std::shared_ptr<Packet::AbstractPacket> packet = hci_packet_container.build(extractor);
-          LOG.debug("Packet built", "HCI poller");
+      [&hci_socket, &hci_packet_builder, &packet_router, &socket_container](const std::vector<uint8_t>& received_data, const std::shared_ptr<AbstractFormat>& format) {
+        // Create extractor from raw bytes received
+        shared_ptr<AbstractExtractor> extractor = format->create_extractor(received_data);
+        extractor->set_controller_id(hci_socket->get_controller_id());
 
-          // This part is needed due to a bug since Linux Kernel v4 : we have to create manually the L2CAP socket, else
-          // we'll be disconnected after sending one packet.
-          if (packet->get_id() == BaBLE::Payload::DeviceConnected) {
-            auto device_connected_packet = std::dynamic_pointer_cast<Packet::Events::DeviceConnected>(packet);
-            if (device_connected_packet == nullptr) {
-              throw Exceptions::RuntimeErrorException("Can't downcast packet to DeviceConnected packet");
-            }
+        // Build packet
+        std::shared_ptr<Packet::AbstractPacket> packet = hci_packet_builder.build(extractor);
+        LOG.debug("Packet built", "HCI poller");
 
-            hci_socket->connect_l2cap_socket(
-                device_connected_packet->get_connection_handle(),
-                device_connected_packet->get_raw_device_address(),
-                device_connected_packet->get_device_address_type()
-            );
-          } else if (packet->get_id() == BaBLE::Payload::DeviceDisconnected) {
-            auto device_disconnected_packet = std::dynamic_pointer_cast<Packet::Events::DeviceDisconnected>(packet);
-            if (device_disconnected_packet == nullptr) {
-              throw Exceptions::RuntimeErrorException("Can't downcast packet to DeviceDisconnected packet");
-            }
-            hci_socket->disconnect_l2cap_socket(device_disconnected_packet->get_connection_handle());
+        // This part is needed due to a bug since Linux Kernel v4 : we have to create manually the L2CAP socket, else
+        // we'll be disconnected after sending one packet.
+        if (packet->get_id() == Packet::Id::DeviceConnected) {
+          auto device_connected_packet = std::dynamic_pointer_cast<Packet::Events::DeviceConnected>(packet);
+          if (device_connected_packet == nullptr) {
+            throw Exceptions::RuntimeErrorException("Can't downcast packet to DeviceConnected packet");
           }
 
-          packet->translate();
-          LOG.debug("Packet translated", "HCI poller");
+          hci_socket->connect_l2cap_socket(
+              device_connected_packet->get_connection_id(),
+              device_connected_packet->get_raw_device_address(),
+              device_connected_packet->get_device_address_type()
+          );
+        } else if (packet->get_id() == Packet::Id::DeviceDisconnected) {
+          auto device_disconnected_packet = std::dynamic_pointer_cast<Packet::Events::DeviceDisconnected>(packet);
+          if (device_disconnected_packet == nullptr) {
+            throw Exceptions::RuntimeErrorException("Can't downcast packet to DeviceDisconnected packet");
+          }
+          hci_socket->disconnect_l2cap_socket(device_disconnected_packet->get_connection_id());
+        }
 
-          PacketContainer::register_response(packet);
+        // Check if there are packets waiting for a response
+        packet = packet_router->route(packet);
 
-          socket_container.send(packet);
+        packet->before_sent(packet_router);
+
+        socket_container.send(packet);
       },
       on_error
     );
@@ -154,35 +163,28 @@ int main() {
 
   stdio_socket->poll(
     loop,
-    [&stdio_packet_container, &socket_container, &loop](const std::vector<uint8_t>& received_data, const std::shared_ptr<AbstractFormat>& format) {
+    [&stdio_packet_builder, &packet_router, &socket_container, &loop](const std::vector<uint8_t>& received_data, const std::shared_ptr<AbstractFormat>& format) {
       shared_ptr<AbstractExtractor> extractor = format->create_extractor(received_data);
-      std::shared_ptr<Packet::AbstractPacket> packet = stdio_packet_container.build(extractor);
 
+      std::shared_ptr<Packet::AbstractPacket> packet = stdio_packet_builder.build(extractor);
       LOG.debug("Packet built", "BABLE poller");
 
-      if (packet->get_id() == BaBLE::Payload::Exit) {
+      packet->before_sent(packet_router);
+
+      socket_container.send(packet);
+
+      if (packet->get_id() == Packet::Id::Exit) {
         LOG.debug("Received Exit packet. Cleanly stopping loop...");
         cleanly_stop_loop(*loop);
         return;
       }
-
-      packet->translate();
-      LOG.debug("Packet translated", "BABLE poller");
-
-      PacketContainer::register_response(packet);
-
-      socket_container.send(packet);
     },
     on_error
   );
 
   // Removed all expired waiting response (> 5 minutes)
   LOG.info("Creating expiration timer...");
-  shared_ptr<TimerHandle> expiration_timer = loop->resource<TimerHandle>();
-  expiration_timer->on<TimerEvent>([](const TimerEvent&, TimerHandle& t) {
-    PacketContainer::expire_waiting_packets(EXPIRATION_DURATION_SECONDS);
-  });
-  expiration_timer->start(chrono::seconds(EXPIRATION_DURATION_SECONDS), chrono::seconds(EXPIRATION_DURATION_SECONDS));
+  packet_router->start_expiration_timer(loop, EXPIRATION_DURATION_SECONDS);
 
   // Send Ready packet to indicate that BaBLE has started and is ready to receive commands
   LOG.info("Sending Ready packet...");

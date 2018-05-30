@@ -6,11 +6,10 @@ namespace Packet::Events {
 
   ClassOfDeviceChanged::ClassOfDeviceChanged(Packet::Type initial_type, Packet::Type translated_type)
       : EventPacket(initial_type, translated_type) {
-    m_id = BaBLE::Payload::NONE;
+    m_id = Packet::Id::ClassOfDeviceChanged;
   };
 
   void ClassOfDeviceChanged::unserialize(MGMTFormatExtractor& extractor) {
-    EventPacket::unserialize(extractor);
     m_class_of_device = extractor.get_array<uint8_t, 3>();
   };
 

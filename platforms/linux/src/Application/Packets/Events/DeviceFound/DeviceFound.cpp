@@ -6,16 +6,13 @@ namespace Packet::Events {
 
   DeviceFound::DeviceFound(Packet::Type initial_type, Packet::Type translated_type)
       : EventPacket(initial_type, translated_type) {
-    m_id = BaBLE::Payload::DeviceFound;
+    m_id = Packet::Id::DeviceFound;
     m_address_type = 0;
     m_rssi = 0;
     m_eir_data_length = 0;
   }
 
   void DeviceFound::unserialize(MGMTFormatExtractor& extractor) {
-    LOG.debug(extractor.get_raw_data(), "DeviceFound");
-    
-    EventPacket::unserialize(extractor);
     m_address = extractor.get_array<uint8_t, 6>();
     m_address_type = extractor.get_value<uint8_t>();
     m_rssi = extractor.get_value<int8_t>();
@@ -54,8 +51,6 @@ namespace Packet::Events {
   };
 
   vector<uint8_t> DeviceFound::serialize(FlatbuffersFormatBuilder& builder) const {
-    EventPacket::serialize(builder);
-
     vector<uint8_t> flags_vector(m_flags.begin(), m_flags.end());
 
     auto address = builder.CreateString(AsciiFormat::format_bd_address(m_address));

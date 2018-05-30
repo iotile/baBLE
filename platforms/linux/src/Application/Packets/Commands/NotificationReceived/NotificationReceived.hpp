@@ -1,12 +1,12 @@
 #ifndef BABLE_LINUX_NOTIFICATIONRECEIVED_HPP
 #define BABLE_LINUX_NOTIFICATIONRECEIVED_HPP
 
-#include "../CommandPacket.hpp"
+#include "../ResponsePacket.hpp"
 
 namespace Packet::Commands {
 
-  // Is a command because type_code == Format::HCI::AsyncData, but is considered an event afterwards
-  class NotificationReceived : public CommandPacket<NotificationReceived> {
+  // Is a response because type_code == Format::HCI::AsyncData, but is considered as an event afterward
+  class NotificationReceived : public ResponsePacket<NotificationReceived> {
 
   public:
     static const uint16_t packet_code(Packet::Type type) {
@@ -30,21 +30,12 @@ namespace Packet::Commands {
 
     NotificationReceived(Packet::Type initial_type, Packet::Type translated_type);
 
-    void unserialize(AsciiFormatExtractor& extractor) override {
-      throw Exceptions::InvalidCommandException("Can't send a 'NotificationReceived packet...");
-    };
-
-    void unserialize(FlatbuffersFormatExtractor& extractor) override {
-      throw Exceptions::InvalidCommandException("Can't send a 'NotificationReceived packet...");
-    };
-
     void unserialize(HCIFormatExtractor& extractor) override;
 
     std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
     std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
 
   private:
-    uint16_t m_connection_handle;
     uint16_t m_attribute_handle;
     std::vector<uint8_t> m_value;
   };

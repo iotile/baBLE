@@ -6,7 +6,7 @@ namespace Packet::Events {
 
   LEAdvertisingReport::LEAdvertisingReport(Packet::Type initial_type, Packet::Type translated_type)
       : EventPacket(initial_type, translated_type) {
-    m_id = BaBLE::Payload::NONE;
+    m_id = Packet::Id::LEAdvertisingReport;
     m_address_type = 0;
     m_flags = 0;
     m_company_id = 0;
@@ -14,8 +14,6 @@ namespace Packet::Events {
   }
 
   void LEAdvertisingReport::unserialize(HCIFormatExtractor& extractor) {
-    EventPacket::unserialize(extractor);
-
     auto num_reports = extractor.get_value<uint8_t>();
     auto event_type = extractor.get_value<uint8_t>();
     m_address_type = extractor.get_value<uint8_t>();

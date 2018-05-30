@@ -1,9 +1,3 @@
-# Compiled files
-platforms/linux/build/*
-platforms/linux/bin/*
-
-*.pyc
-
 # IDE
 **/.idea/
 

@@ -35,7 +35,6 @@ namespace Packet::Events {
     std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
 
   private:
-    uint16_t m_connection_handle;
     bool m_le_encryption;
   };
 

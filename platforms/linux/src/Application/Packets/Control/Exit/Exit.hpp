@@ -32,6 +32,9 @@ namespace Packet::Control {
     void unserialize(AsciiFormatExtractor& extractor) override;
     void unserialize(FlatbuffersFormatExtractor& extractor) override;
 
+    std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
+    std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
+
   };
 
 }

@@ -35,17 +35,11 @@ namespace Packet::Events {
     std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
     std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
 
-    inline uint16_t get_connection_handle() const {
-      return m_connection_handle;
-    };
-
   private:
     std::array<uint8_t, 6> m_address{};
     uint8_t m_address_type;
     uint8_t m_raw_reason;
     std::string m_reason;
-
-    uint16_t m_connection_handle;
   };
 
 }

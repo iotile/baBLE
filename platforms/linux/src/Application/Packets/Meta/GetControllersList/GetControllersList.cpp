@@ -6,10 +6,11 @@ namespace Packet::Meta {
 
   GetControllersList::GetControllersList(Packet::Type initial_type, Packet::Type translated_type)
       : AbstractPacket(initial_type, translated_type) {
-    m_id = BaBLE::Payload::GetControllersList;
+    m_id = Packet::Id::GetControllersList;
+    m_packet_code = packet_code(m_current_type);
 
-    m_controller_info_packet = std::make_unique<Packet::Commands::GetControllerInfo>(translated_type, translated_type);
-    m_controllers_ids_packet = std::make_unique<Packet::Commands::GetControllersIds>(translated_type, translated_type);
+    m_controller_info_request_packet = std::make_unique<Packet::Commands::GetControllerInfoRequest>(translated_type, translated_type);
+    m_controllers_ids_request_packet = std::make_unique<Packet::Commands::GetControllersIdsRequest>(translated_type, translated_type);
 
     m_waiting_response = SubPacket::GetControllersIds;
     m_current_index = 0;
@@ -79,103 +80,103 @@ namespace Packet::Meta {
     switch (m_waiting_response) {
       case SubPacket::GetControllersIds:
         builder.set_controller_id(NON_CONTROLLER_ID);
-        return m_controllers_ids_packet->serialize(builder);
+        return m_controllers_ids_request_packet->serialize(builder);
 
       case SubPacket::GetControllerInfo:
         builder.set_controller_id(m_controllers_ids.at(m_current_index));
-        return m_controller_info_packet->serialize(builder);
+        return m_controller_info_request_packet->serialize(builder);
 
       case SubPacket::None:
         throw std::runtime_error("Can't serialize 'GetControllersList' to MGMT.");
     }
   }
 
-  void GetControllersList::translate() {
+  void GetControllersList::before_sent(const std::shared_ptr<PacketRouter>& router) {
     switch (m_waiting_response) {
-      case SubPacket::GetControllersIds:
-      case SubPacket::GetControllerInfo:
+      case GetControllersIds:
+      {
         m_current_type = m_translated_type;
+        PacketUuid uuid = m_controllers_ids_request_packet->get_uuid();
+        auto callback = [this](std::shared_ptr<Packet::AbstractPacket> packet) {
+          return on_controllers_ids_response_received(packet);
+        };
+        router->add_callback(uuid, callback);
         break;
+      }
 
-      case SubPacket::None:
+      case GetControllerInfo:
+      {
+        m_current_type = m_translated_type;
+        PacketUuid uuid = m_controller_info_request_packet->get_uuid();
+        uuid.controller_id = m_controllers_ids.at(m_current_index);
+        auto callback = [this](std::shared_ptr<Packet::AbstractPacket> packet) {
+          return on_controller_info_response_received(packet);
+        };
+        router->add_callback(uuid, callback);
+        break;
+      }
+
+      case None:
         m_current_type = m_initial_type;
         break;
     }
+
+    m_packet_code = packet_code(m_current_type);
   }
 
-  vector<ResponseId> GetControllersList::expected_response_ids() {
-    switch (m_waiting_response) {
-      case SubPacket::GetControllersIds:
-        return {
-          ResponseId{m_current_type, NON_CONTROLLER_ID, m_controllers_ids_packet->packet_code(m_current_type)}
-        };
+  shared_ptr<AbstractPacket> GetControllersList::on_controllers_ids_response_received(shared_ptr<AbstractPacket> packet) {
+    LOG.debug("Controllers ids response received", "GetControllersList");
 
-      case SubPacket::GetControllerInfo:
-        return {
-          ResponseId{m_current_type, m_controllers_ids.at(m_current_index), m_controller_info_packet->packet_code(m_current_type)}
-        };
-
-      case SubPacket::None:
-        return {};
-    }
-  }
-
-  bool GetControllersList::on_response_received(Packet::Type packet_type, const std::shared_ptr<AbstractExtractor>& extractor) {
-    if (packet_type != m_translated_type) {
-      return false;
+    auto controllers_ids_response_packet = dynamic_pointer_cast<Packet::Commands::GetControllersIdsResponse>(packet);
+    if(controllers_ids_response_packet == nullptr) {
+      throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to GetControllersIds packet.");
     }
 
-    LOG.debug("Response received", "GetControllersList");
+    import_status(*controllers_ids_response_packet);
 
-    if (m_waiting_response == SubPacket::GetControllersIds) {
-      // We received the list of controllers ids
-      m_controllers_ids_packet->from_bytes(extractor);
-
-      import_status(*m_controllers_ids_packet);
-
-      if (m_status != BaBLE::StatusCode::Success) {
-        m_waiting_response = SubPacket::None;
-        return true;
-      }
-
-      m_controllers_ids = m_controllers_ids_packet->get_controllers_ids();
+    if (m_status != BaBLE::StatusCode::Success) {
+      m_waiting_response = SubPacket::None;
+    } else {
+      m_controllers_ids = controllers_ids_response_packet->get_controllers_ids();
 
       if (m_controllers_ids.empty()) {
         m_waiting_response = SubPacket::None;
-        return true;
+      } else {
+        m_controllers.reserve(m_controllers_ids.size());
+        m_current_index = 0;
+        // Now we want to get the first controller information
+        m_waiting_response = SubPacket::GetControllerInfo;
       }
+    }
 
-      m_controllers.reserve(m_controllers_ids.size());
-      m_current_index = 0;
-      // Now we want to get the first controller information
-      m_waiting_response = SubPacket::GetControllerInfo;
+    return shared_from_this();
+  }
 
-    } else if (m_waiting_response == SubPacket::GetControllerInfo) {
-      // We received a controller information
-      m_controller_info_packet->from_bytes(extractor);
+  shared_ptr<AbstractPacket> GetControllersList::on_controller_info_response_received(std::shared_ptr<Packet::AbstractPacket> packet) {
+    LOG.debug("Controller info response received", "GetControllersList");
 
-      import_status(*m_controller_info_packet);
+    auto controller_info_response_packet = dynamic_pointer_cast<Packet::Commands::GetControllerInfoResponse>(packet);
+    if(controller_info_response_packet == nullptr) {
+      throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to GetControllerInfo packet.");
+    }
 
-      if (m_status != BaBLE::StatusCode::Success) {
-        m_waiting_response = SubPacket::None;
-        return true;
-      }
+    import_status(*controller_info_response_packet);
 
-      m_controllers.push_back(m_controller_info_packet->get_controller_info());
-
+    if (m_status != BaBLE::StatusCode::Success) {
+      m_waiting_response = SubPacket::None;
+    } else {
+      m_controllers.push_back(controller_info_response_packet->get_controller_info());
 
       if (m_controllers.size() >= m_controllers_ids.size()) {
         // We get all the controllers information: we have finished
         m_waiting_response = SubPacket::None;
-        return true;
+      } else {
+        m_waiting_response = SubPacket::GetControllerInfo;
+        m_current_index++;
       }
-
-      m_current_index++;
-    } else {
-      return false;
     }
 
-    return true;
+    return shared_from_this();
   }
 
 }

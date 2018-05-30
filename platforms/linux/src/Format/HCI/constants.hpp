@@ -177,6 +177,7 @@ namespace Format::HCI {
   };
 
   enum AttributeErrorCode {
+    None= 0x00,
     InvalidHandle= 0x01,
     ReadNotPermitted= 0x02,
     WriteNotPermitted= 0x03,

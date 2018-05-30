@@ -6,7 +6,7 @@ namespace Packet::Events {
 
   DeviceAdded::DeviceAdded(Packet::Type initial_type, Packet::Type translated_type)
       : EventPacket(initial_type, translated_type) {
-    m_id = BaBLE::Payload::DeviceAdded;
+    m_id = Packet::Id::DeviceAdded;
     m_address_type = 0;
     m_action = 0;
   }
@@ -31,8 +31,6 @@ namespace Packet::Events {
   };
 
   vector<uint8_t> DeviceAdded::serialize(FlatbuffersFormatBuilder& builder) const {
-    EventPacket::serialize(builder);
-
     auto address = builder.CreateString(AsciiFormat::format_bd_address(m_address));
 
     auto payload = BaBLE::CreateDeviceAdded(builder, address, m_address_type);

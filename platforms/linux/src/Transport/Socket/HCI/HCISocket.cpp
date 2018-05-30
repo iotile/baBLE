@@ -96,7 +96,7 @@ bool HCISocket::send(const vector<uint8_t>& data) {
   } else {
     set_writable(false);
 
-    LOG.info("Sending data...", "HCI socket");
+    LOG.debug("Sending data...", "HCI socket");
     LOG.debug(data, "HCI socket");
     if (write(m_hci_socket, data.data(), data.size()) < 0) {
       LOG.error("Error while sending a message to HCI socket: " + string(strerror(errno)), "HCISocket");
@@ -149,7 +149,7 @@ void HCISocket::poll(shared_ptr<uvw::Loop> loop, OnReceivedCallback on_received,
   m_poller->on<uvw::PollEvent>([this, on_received, on_error](const uvw::PollEvent& event, const uvw::PollHandle& handle){
     try {
       if (event.flags & uvw::PollHandle::Event::READABLE) {
-        LOG.info("Reading data...", "HCISocket");
+        LOG.debug("Reading data...", "HCISocket");
         vector<uint8_t> received_payload = receive();
 
         on_received(received_payload, m_format);

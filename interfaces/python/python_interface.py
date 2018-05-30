@@ -2,11 +2,11 @@ import subprocess
 import time
 import flatbuffers
 
-from BaBLE import Packet, Payload, GetMGMTInfo, StartScan, StopScan, Discovering, DeviceFound, BaBLEError, StatusCode, \
-                    AddDevice, DeviceConnected, RemoveDevice, Disconnect, DeviceDisconnected, SetPowered, \
-                    SetDiscoverable, SetConnectable, GetControllersList, ControllerAdded, ControllerRemoved, \
-                    GetControllerInfo, GetConnectedDevices, GetControllersIds, Read, Write, NotificationReceived, \
-                    ProbeServices, ProbeCharacteristics, WriteWithoutResponse, Ready, Exit, DeviceAdded, DeviceRemoved
+from bable_interface.BaBLE import Packet, Payload, GetMGMTInfo, StartScan, StopScan, Discovering, DeviceFound, BaBLEError, StatusCode, \
+    AddDevice, DeviceConnected, RemoveDevice, Disconnect, DeviceDisconnected, SetPowered, \
+    SetDiscoverable, SetConnectable, GetControllersList, ControllerAdded, ControllerRemoved, \
+    GetControllerInfo, GetConnectedDevices, GetControllersIds, Read, Write, NotificationReceived, \
+    ProbeServices, ProbeCharacteristics, WriteWithoutResponse, Ready, Exit, DeviceAdded, DeviceRemoved
 
 
 def status_code_to_string(status_code):
@@ -257,7 +257,7 @@ def fb_probe_characteristics(uuid, controller_id, connection_handle):
     return build_packet(builder, uuid, payload, Payload.Payload.ProbeCharacteristics, controller_id)
 
 
-## ProbeCharacteristics
+## Exit
 def fb_exit():
     builder = flatbuffers.Builder(0)
     Exit.ExitStart(builder)
@@ -416,7 +416,7 @@ try:
                   "Flags:", flags, "Device UUID:", device_uuid, "Company id:", company_id, "Device name:", device_name)
 
             # process.stdin.write(fb_write("0002", 0, 0x0040, 0x0003, "Alexis"))
-            process.stdin.write(fb_probe_characteristics("12356789", 0, 0x0040))
+            # process.stdin.write(fb_probe_characteristics("12356789", 0, 0x0040))
         elif packet.PayloadType() == Payload.Payload().DeviceDisconnected:
             device_disconnected = DeviceDisconnected.DeviceDisconnected()
             device_disconnected.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -432,7 +432,7 @@ try:
                   "Controller ID:", controller_id, "Address type:", address_type, "Address:", address,
                   "Reason:", reason)
 
-            process.stdin.write(fb_exit())
+            # process.stdin.write(fb_exit())
 
         elif packet.PayloadType() == Payload.Payload().Disconnect:
             disconnect = Disconnect.Disconnect()
@@ -586,7 +586,7 @@ try:
                   "Controller ID:", controller_id, "Connection handle:", connection_handle,
                   "Attribute handle:", attribute_handle, "Data:", data_written)
 
-            process.stdin.write(fb_remove_device("0003", 0, address_device))
+            # process.stdin.write(fb_remove_device("0003", 0, address_device))
             # process.stdin.write(fb_disconnect("0004", 0, address_device))
 
         elif packet.PayloadType() == Payload.Payload().WriteWithoutResponse:
@@ -650,7 +650,7 @@ try:
                       "Notify:", characteristic.Notify(), "Read:", characteristic.Read(),
                       "Write:", characteristic.Write(), "Broadcast:", characteristic.Broadcast())
 
-            process.stdin.write(fb_remove_device("0003", 0, address_device))
+            # process.stdin.write(fb_remove_device("0003", 0, address_device))
             # process.stdin.write(fb_disconnect("0004", 0, address_device))
         elif packet.PayloadType() == Payload.Payload().Ready:
             ready = Ready.Ready()
@@ -660,7 +660,8 @@ try:
 
             # process.stdin.write(fb_add_device("0001", 0, address_device))
             # process.stdin.write(fb_probe_characteristics("0001", 0, 0x0040))
-            process.stdin.write(fb_start_scan("0001", 0))
+            # process.stdin.write(fb_start_scan("0001", 0))
+            process.stdin.write(fb_get_controllers_ids("0001"))
 
         elif packet.PayloadType() == Payload.Payload().BaBLEError:
             error = BaBLEError.BaBLEError()
