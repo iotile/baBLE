@@ -16,12 +16,19 @@
 #include "bootstrap.hpp"
 #include "Application/PacketRouter/PacketRouter.hpp"
 
-#define EXPIRATION_DURATION_SECONDS 15
+#define EXPIRATION_DURATION_SECONDS 60
 
 using namespace std;
 using namespace uvw;
 
+// TODO: test all the functions
 // TODO: clean includes to make cmake faster
+// TODO: Merge manufacturer_data_advertised and manufacturer_data_scanned into one variable in DeviceFound packet
+// TODO: Add an option to set the logging level (--logging=[debug|info|warning|error|critical])
+// TODO: use ioctl and put function into a static create_all function in HCI socket
+// TODO: replace bytearray addresses by string address in flatbuffers
+// TODO: Create a ScanBLEForever command
+
 // Function used to call all handlers closing callbacks before stopping the loop
 void cleanly_stop_loop(Loop& loop) {
   loop.walk([](BaseHandle &handle){
@@ -107,12 +114,14 @@ int main() {
       std::shared_ptr<Packet::AbstractPacket> packet = mgmt_packet_builder.build(extractor);
       LOG.debug("Packet built", "MGMT poller");
 
-      packet = packet_router->route(packet);
+      packet = packet_router->route(packet_router, packet);
+      LOG.debug("Packet routed", "HCI poller");
 
       packet->before_sent(packet_router);
-      LOG.debug("Packet translated", "MGMT poller");
+      LOG.debug("Packet prepared to be sent", "HCI poller");
 
       socket_container.send(packet);
+      LOG.debug("Packet sent", "HCI poller");
     },
     on_error
   );
@@ -137,6 +146,7 @@ int main() {
             throw Exceptions::RuntimeErrorException("Can't downcast packet to DeviceConnected packet");
           }
 
+          LOG.debug(*device_connected_packet, "HCI poller - DeviceConnected");
           hci_socket->connect_l2cap_socket(
               device_connected_packet->get_connection_id(),
               device_connected_packet->get_raw_device_address(),
@@ -147,15 +157,20 @@ int main() {
           if (device_disconnected_packet == nullptr) {
             throw Exceptions::RuntimeErrorException("Can't downcast packet to DeviceDisconnected packet");
           }
+          LOG.debug(*device_disconnected_packet, "HCI poller - DeviceDisconnected");
+
           hci_socket->disconnect_l2cap_socket(device_disconnected_packet->get_connection_id());
         }
 
         // Check if there are packets waiting for a response
-        packet = packet_router->route(packet);
+        packet = packet_router->route(packet_router, packet);
+        LOG.debug("Packet routed", "HCI poller");
 
         packet->before_sent(packet_router);
+        LOG.debug("Packet prepared to be sent", "HCI poller");
 
         socket_container.send(packet);
+        LOG.debug("Packet sent", "HCI poller");
       },
       on_error
     );
@@ -170,8 +185,10 @@ int main() {
       LOG.debug("Packet built", "BABLE poller");
 
       packet->before_sent(packet_router);
+      LOG.debug("Packet prepared to be sent", "BABLE poller");
 
       socket_container.send(packet);
+      LOG.debug("Packet sent", "BABLE poller");
 
       if (packet->get_id() == Packet::Id::Exit) {
         LOG.debug("Received Exit packet. Cleanly stopping loop...");

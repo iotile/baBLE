@@ -29,7 +29,6 @@ namespace Packet::Commands {
     return builder.build();
   }
 
-  // TODO: send string address
   vector<uint8_t> RemoveDeviceResponse::serialize(FlatbuffersFormatBuilder& builder) const {
     auto address = builder.CreateVector(m_address.data(), m_address.size());
 

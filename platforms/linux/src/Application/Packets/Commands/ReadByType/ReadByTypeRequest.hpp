@@ -28,12 +28,17 @@ namespace Packet::Commands {
     };
 
     ReadByTypeRequest(Packet::Type initial_type, Packet::Type translated_type);
-    ReadByTypeRequest& set_handles(uint16_t starting_handle, uint16_t ending_handle);
+    void set_handles(uint16_t starting_handle, uint16_t ending_handle);
 
     void unserialize(AsciiFormatExtractor& extractor) override;
+    void unserialize(HCIFormatExtractor& extractor) override;
 
     std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
     std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
+
+    void before_sent(const std::shared_ptr<PacketRouter>& router) override;
+    std::shared_ptr<Packet::AbstractPacket> on_response_received(const std::shared_ptr<PacketRouter>& router, const std::shared_ptr<AbstractPacket>& packet) override;
+    std::shared_ptr<Packet::AbstractPacket> on_error_response_received(const std::shared_ptr<PacketRouter>& router, const std::shared_ptr<AbstractPacket>& packet);
 
   private:
     uint16_t m_starting_handle;

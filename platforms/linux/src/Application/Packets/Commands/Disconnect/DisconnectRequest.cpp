@@ -32,7 +32,6 @@ namespace Packet::Commands {
   };
 
   void DisconnectRequest::unserialize(FlatbuffersFormatExtractor& extractor) {
-    RequestPacket::unserialize(extractor);
     auto payload = extractor.get_payload<const BaBLE::Disconnect*>();
 
     m_address_type = payload->address_type();

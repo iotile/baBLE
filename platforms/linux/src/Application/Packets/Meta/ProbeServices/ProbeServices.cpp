@@ -10,7 +10,7 @@ namespace Packet::Meta {
     m_packet_code = packet_code(m_current_type);
 
     m_waiting_services = true;
-    m_read_by_type_group_request_packet = make_unique<Packet::Commands::ReadByGroupTypeRequest>(translated_type, translated_type);
+    m_read_by_type_group_request_packet = make_shared<Packet::Commands::ReadByGroupTypeRequest>(translated_type, translated_type);
   }
 
   void ProbeServices::unserialize(AsciiFormatExtractor& extractor) {
@@ -77,20 +77,19 @@ namespace Packet::Meta {
       m_current_type = m_translated_type;
 
       PacketUuid uuid = get_uuid();
-      uuid.packet_code = Format::HCI::AttributeCode::ReadByGroupTypeResponse;
+      uuid.response_packet_code = Format::HCI::AttributeCode::ReadByGroupTypeResponse;
 
-      auto callback = [this](std::shared_ptr<Packet::AbstractPacket> packet) {
-        return on_read_by_group_type_response_received(packet);
+      auto callback = [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {
+        return on_read_by_group_type_response_received(router, packet);
       };
-      router->add_callback(uuid, callback);
+      router->add_callback(uuid, shared_from(this), callback);
     } else {
       m_current_type = m_initial_type;
+      m_packet_code = packet_code(m_current_type);
     }
-
-    m_packet_code = packet_code(m_current_type);
   }
 
-  shared_ptr<AbstractPacket> ProbeServices::on_read_by_group_type_response_received(shared_ptr<AbstractPacket> packet) {
+  shared_ptr<AbstractPacket> ProbeServices::on_read_by_group_type_response_received(const std::shared_ptr<PacketRouter>& router, const shared_ptr<AbstractPacket>& packet) {
     LOG.debug("Response received", "ProbeServices");
 
     auto read_by_group_type_response_packet = dynamic_pointer_cast<Packet::Commands::ReadByGroupTypeResponse>(packet);
@@ -110,7 +109,7 @@ namespace Packet::Meta {
       m_read_by_type_group_request_packet->set_handles(static_cast<uint16_t>(last_group_end_handle + 1), 0xFFFF);
     }
 
-    return shared_from_this();
+    return shared_from(this);
   }
 
 }

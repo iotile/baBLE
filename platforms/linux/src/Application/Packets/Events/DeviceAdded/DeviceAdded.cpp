@@ -12,7 +12,6 @@ namespace Packet::Events {
   }
 
   void DeviceAdded::unserialize(MGMTFormatExtractor& extractor) {
-    EventPacket::unserialize(extractor);
     m_address = extractor.get_array<uint8_t, 6>();
     m_address_type = extractor.get_value<uint8_t>();
     m_action = extractor.get_value<uint8_t>();

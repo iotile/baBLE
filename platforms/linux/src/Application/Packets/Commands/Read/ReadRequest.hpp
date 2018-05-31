@@ -6,7 +6,7 @@
 
 namespace Packet::Commands {
 
-  class ReadRequest : public RequestPacket<ReadRequest> {
+class ReadRequest : public RequestPacket<ReadRequest> {
 
   public:
     static const uint16_t packet_code(Packet::Type type) {
@@ -32,12 +32,14 @@ namespace Packet::Commands {
 
     void unserialize(AsciiFormatExtractor& extractor) override;
     void unserialize(FlatbuffersFormatExtractor& extractor) override;
+    void unserialize(HCIFormatExtractor& extractor) override;
 
     std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
     std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
 
     void before_sent(const std::shared_ptr<PacketRouter>& router) override;
-    std::shared_ptr<Packet::AbstractPacket> on_read_response_received(std::shared_ptr<Packet::AbstractPacket> packet);
+    std::shared_ptr<Packet::AbstractPacket> on_response_received(const std::shared_ptr<PacketRouter>& router, const std::shared_ptr<AbstractPacket>& packet) override;
+    std::shared_ptr<Packet::AbstractPacket> on_error_response_received(const std::shared_ptr<PacketRouter>& router, const std::shared_ptr<AbstractPacket>& packet);
 
   private:
     uint16_t m_attribute_handle;

@@ -5,21 +5,22 @@
 #include <functional>
 #include <map>
 #include <uvw.hpp>
-#include "../Packets/Errors/ErrorResponse/ErrorResponse.hpp"
+#include "../AbstractPacket.hpp"
 #include "../../Log/Loggable.hpp"
 #include "../PacketUuid.hpp"
 
 class PacketRouter : public Loggable {
-  using CallbackFunction = std::function<std::shared_ptr<Packet::AbstractPacket>(std::shared_ptr<Packet::AbstractPacket>)>;
+
+  using CallbackFunction = std::function<std::shared_ptr<Packet::AbstractPacket>(const std::shared_ptr<PacketRouter>& router, const std::shared_ptr<Packet::AbstractPacket>&)>;
   using TimePoint = std::chrono::time_point<std::chrono::steady_clock, std::chrono::nanoseconds>;
 
 public:
+  static std::shared_ptr<Packet::AbstractPacket> route(const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet);
+
   PacketRouter();
 
-  PacketRouter& add_callback(Packet::PacketUuid uuid, const CallbackFunction& callback);
-  PacketRouter& remove_callback(Packet::PacketUuid uuid);
-
-  std::shared_ptr<Packet::AbstractPacket> route(std::shared_ptr<Packet::AbstractPacket> packet);
+  void add_callback(Packet::PacketUuid uuid, std::shared_ptr<Packet::AbstractPacket> packet, const CallbackFunction& callback);
+  void remove_callback(Packet::PacketUuid uuid);
 
   void expire_waiting_packets(unsigned int expiration_duration_seconds);
   void start_expiration_timer(const std::shared_ptr<uvw::Loop>& loop, unsigned int expiration_duration_seconds);
@@ -27,7 +28,7 @@ public:
   const std::string stringify() const override;
 
 private:
-  std::unordered_map<Packet::PacketUuid, CallbackFunction> m_callbacks;
+  std::unordered_map<Packet::PacketUuid, std::tuple<std::shared_ptr<Packet::AbstractPacket>, CallbackFunction>> m_callbacks;
   std::multimap<TimePoint, Packet::PacketUuid> m_timestamps;
 
 };

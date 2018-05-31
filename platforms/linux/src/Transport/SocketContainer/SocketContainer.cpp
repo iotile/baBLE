@@ -31,5 +31,6 @@ bool SocketContainer::send(const shared_ptr<Packet::AbstractPacket>& packet) {
   shared_ptr<AbstractSocket> socket = it->second;
 
   vector<uint8_t> data = packet->to_bytes();
+
   return socket->send(data);
 };

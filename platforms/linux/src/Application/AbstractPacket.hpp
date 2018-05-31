@@ -17,15 +17,14 @@ class PacketRouter;
 
 namespace Packet {
 
-  class AbstractPacket : public Loggable {
+  class AbstractPacket : public Loggable, public std::enable_shared_from_this<AbstractPacket> {
 
   public:
     static const uint16_t packet_code(Packet::Type type) {
       throw std::runtime_error("packet_code(Packet::Type) not defined.");
     };
 
-    // TODO: remove virtual on to_bytes and from_bytes (useless ??)
-    virtual std::vector<uint8_t> to_bytes() const;
+    std::vector<uint8_t> to_bytes() const;
     virtual std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const {
       throw std::runtime_error("serialize(MGMTFormatBuilder&) not defined.");
     };
@@ -39,7 +38,7 @@ namespace Packet {
       throw std::runtime_error("serialize(FlatbuffersFormatBuilder&) not defined.");
     };
 
-    virtual void from_bytes(const std::shared_ptr<AbstractExtractor>& extractor);
+    void from_bytes(const std::shared_ptr<AbstractExtractor>& extractor);
     virtual void unserialize(MGMTFormatExtractor& extractor) {
       throw std::runtime_error("unserialize() not defined for MGMTFormatExtractor.");
     };
@@ -73,7 +72,7 @@ namespace Packet {
       return m_status;
     };
 
-    inline const PacketUuid get_uuid() const {
+    virtual const PacketUuid get_uuid() const {
       return PacketUuid{
           m_current_type,
           m_controller_id,
@@ -86,7 +85,7 @@ namespace Packet {
       return m_id;
     };
 
-    void set_uuid_request(std::string uuid_request) {
+    void set_uuid_request(const std::string& uuid_request) {
       m_uuid_request = uuid_request;
     }
 
@@ -94,13 +93,17 @@ namespace Packet {
 
     const std::string stringify() const override;
 
-    virtual ~AbstractPacket() = default;
-
   protected:
     AbstractPacket(Packet::Type initial_type, Packet::Type translated_type);
 
     void set_status(uint8_t native_status, bool compute_status = true);
     void import_status(const AbstractPacket& packet);
+
+    template <class T>
+    inline std::shared_ptr<T> shared_from(T* that)
+    {
+      return std::static_pointer_cast<T>(shared_from_this());
+    }
 
     Packet::Id m_id;
 

@@ -10,7 +10,7 @@ namespace Packet::Meta {
     m_packet_code = packet_code(m_current_type);
 
     m_waiting_characteristics = true;
-    m_read_by_type_request_packet = make_unique<Packet::Commands::ReadByTypeRequest>(translated_type, translated_type);
+    m_read_by_type_request_packet = make_shared<Packet::Commands::ReadByTypeRequest>(translated_type, translated_type);
   }
 
   void ProbeCharacteristics::unserialize(AsciiFormatExtractor& extractor) {
@@ -88,56 +88,72 @@ namespace Packet::Meta {
     if (m_waiting_characteristics) {
       m_current_type = m_translated_type;
 
-      PacketUuid uuid = get_uuid();
-      uuid.packet_code = Format::HCI::AttributeCode::ReadByTypeResponse;
-      auto callback = [this](std::shared_ptr<Packet::AbstractPacket> packet) {
-        return on_read_by_type_response_received(packet);
+      PacketUuid response_uuid = get_uuid();
+      response_uuid.response_packet_code = Format::HCI::AttributeCode::ReadByTypeResponse;
+      auto response_callback = [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {
+        return on_read_by_type_response_received(router, packet);
       };
-      router->add_callback(uuid, callback);
+
+      PacketUuid error_uuid = get_uuid();
+      error_uuid.response_packet_code = Format::HCI::AttributeCode::ErrorResponse;
+      auto error_callback = [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {
+        return on_error_response_received(router, packet);
+      };
+
+      router->add_callback(response_uuid, shared_from(this), response_callback);
+      router->add_callback(error_uuid, shared_from(this), error_callback);
     } else {
       m_current_type = m_initial_type;
+      m_packet_code = packet_code(m_current_type);
     }
-
-    m_packet_code = packet_code(m_current_type);
   }
 
-  shared_ptr<AbstractPacket> ProbeCharacteristics::on_read_by_type_response_received(shared_ptr<AbstractPacket> packet) {
+  shared_ptr<AbstractPacket> ProbeCharacteristics::on_read_by_type_response_received(const std::shared_ptr<PacketRouter>& router, const shared_ptr<AbstractPacket>& packet) {
     LOG.debug("Response received", "ProbeCharacteristics");
+    PacketUuid error_uuid = get_uuid();
+    error_uuid.response_packet_code = Format::HCI::AttributeCode::ErrorResponse;
+    router->remove_callback(error_uuid);
 
-    if (packet->get_id() == Packet::Id::ErrorResponse) {
-      auto error_packet = dynamic_pointer_cast<Packet::Errors::ErrorResponse>(packet);
-      if(error_packet == nullptr) {
-        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to ErrorResponse packet.");
-      }
-
-      Format::HCI::AttributeErrorCode error_code = error_packet->get_error_code();
-
-      if (error_code != Format::HCI::AttributeErrorCode::AttributeNotFound) {
-        import_status(*error_packet);
-      }
-
-      m_waiting_characteristics = false;
-
-    } else if (packet->get_id() == Packet::Id::ReadByTypeResponse) {
-      auto read_by_type_response_packet = dynamic_pointer_cast<Packet::Commands::ReadByTypeResponse>(packet);
-      if(read_by_type_response_packet == nullptr) {
-        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to ReadByTypeResponse packet.");
-      }
-
-      vector<Format::HCI::Characteristic> new_characteristics = read_by_type_response_packet->get_characteristics();
-
-      m_characteristics.insert(m_characteristics.end(), new_characteristics.begin(), new_characteristics.end());
-
-      uint16_t last_ending_handle = read_by_type_response_packet->get_last_ending_handle();
-      if (last_ending_handle == 0xFFFF) {
-        m_waiting_characteristics = false;
-      } else {
-        m_waiting_characteristics = true;
-        m_read_by_type_request_packet->set_handles(static_cast<uint16_t>(last_ending_handle + 1), 0xFFFF);
-      }
+    auto read_by_type_response_packet = dynamic_pointer_cast<Packet::Commands::ReadByTypeResponse>(packet);
+    if(read_by_type_response_packet == nullptr) {
+      throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to ReadByTypeResponse packet.");
     }
 
-    return shared_from_this();
+    vector<Format::HCI::Characteristic> new_characteristics = read_by_type_response_packet->get_characteristics();
+
+    m_characteristics.insert(m_characteristics.end(), new_characteristics.begin(), new_characteristics.end());
+
+    uint16_t last_ending_handle = read_by_type_response_packet->get_last_ending_handle();
+    if (last_ending_handle == 0xFFFF) {
+      m_waiting_characteristics = false;
+    } else {
+      m_waiting_characteristics = true;
+      m_read_by_type_request_packet->set_handles(static_cast<uint16_t>(last_ending_handle + 1), 0xFFFF);
+    }
+
+    return shared_from(this);
+  }
+
+  shared_ptr<AbstractPacket> ProbeCharacteristics::on_error_response_received(const std::shared_ptr<PacketRouter>& router, const shared_ptr<AbstractPacket>& packet) {
+    LOG.debug("Error received", "ProbeCharacteristics");
+    PacketUuid response_uuid = get_uuid();
+    response_uuid.response_packet_code = Format::HCI::AttributeCode::ReadByTypeResponse;
+    router->remove_callback(response_uuid);
+
+    auto error_packet = dynamic_pointer_cast<Packet::Errors::ErrorResponse>(packet);
+    if(error_packet == nullptr) {
+      throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to ErrorResponse packet.");
+    }
+
+    Format::HCI::AttributeErrorCode error_code = error_packet->get_error_code();
+
+    if (error_code != Format::HCI::AttributeErrorCode::AttributeNotFound) {
+      import_status(*error_packet);
+    }
+
+    m_waiting_characteristics = false;
+
+    return shared_from(this);
   }
 
 }

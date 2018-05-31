@@ -31,6 +31,7 @@ namespace Packet::Commands {
 
     void unserialize(AsciiFormatExtractor& extractor) override;
     void unserialize(FlatbuffersFormatExtractor& extractor) override;
+    void unserialize(HCIFormatExtractor& extractor) override;
 
     std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
     std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;

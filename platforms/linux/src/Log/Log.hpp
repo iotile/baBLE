@@ -44,6 +44,8 @@ public:
 
   template<typename T>
   void debug(std::vector<T> bytes, const std::string &name = DEFAULT_NAME);
+  template<typename T, size_t N>
+  void debug(std::array<T, N> bytes, const std::string &name = DEFAULT_NAME);
 
 private:
   Log();
@@ -60,8 +62,19 @@ template<typename T>
 void Log::debug(std::vector<T> bytes, const std::string &name) {
   std::stringstream message_stream;
   message_stream << "[ ";
-  for(auto it = bytes.begin(); it != bytes.end(); ++it) {
-    message_stream << HEX(*it) << " ";
+  for(auto& value : bytes) {
+    message_stream << HEX(value) << " ";
+  }
+  message_stream << "]";
+  debug(message_stream.str(), name);
+};
+
+template<typename T, size_t N>
+void Log::debug(std::array<T, N> bytes, const std::string &name) {
+  std::stringstream message_stream;
+  message_stream << "[ ";
+  for(auto& value : bytes) {
+    message_stream << HEX(value) << " ";
   }
   message_stream << "]";
   debug(message_stream.str(), name);

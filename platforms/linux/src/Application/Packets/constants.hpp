@@ -27,7 +27,7 @@ namespace Packet {
     DisconnectRequest,
     DisconnectResponse,
     Discovering,
-    LEAdvertisingReport, // TODO: put with DeviceFound ???
+    LEAdvertisingReport,
     LEReadRemoteUsedFeaturesComplete,
     NewSettings,
     NotificationReceived,

@@ -1,22 +1,27 @@
 #include "PacketRouter.hpp"
 
+using namespace std;
+
 PacketRouter::PacketRouter() = default;
 
-PacketRouter& PacketRouter::add_callback(Packet::PacketUuid uuid, const CallbackFunction& callback) {
-  TimePoint inserted_time = std::chrono::steady_clock::now();
+void PacketRouter::add_callback(Packet::PacketUuid waiting_uuid, shared_ptr<Packet::AbstractPacket> packet, const CallbackFunction& callback) {
+  TimePoint inserted_time = chrono::steady_clock::now();
 
-  auto waiting_it = m_callbacks.find(uuid);
+  auto waiting_it = m_callbacks.find(waiting_uuid);
   if (waiting_it != m_callbacks.end()) {
-    throw Exceptions::RuntimeErrorException("Command already in flight.");
+    throw Exceptions::RuntimeErrorException("Command already in flight ("
+                                              "type=" + to_string(static_cast<uint16_t>(waiting_uuid.packet_type)) +
+                                              ", controller=" + to_string(waiting_uuid.controller_id) +
+                                              ", connection=" + to_string(waiting_uuid.connection_id) +
+                                              ", request_packet=" + to_string(waiting_uuid.request_packet_code) +
+                                              ", response_packet=" + to_string(waiting_uuid.response_packet_code));
   }
 
-  m_callbacks.emplace(uuid, callback);
-  m_timestamps.emplace(inserted_time, uuid); // To expire waiting packets without response
+  m_callbacks.emplace(waiting_uuid, make_tuple(packet, callback));
+  m_timestamps.emplace(inserted_time, waiting_uuid); // To expire waiting packets without response
+}
 
-  return *this;
-};
-
-PacketRouter& PacketRouter::remove_callback(Packet::PacketUuid uuid) {
+void PacketRouter::remove_callback(Packet::PacketUuid uuid) {
   for (auto expiration_it = m_timestamps.begin(); expiration_it != m_timestamps.end(); ++expiration_it) {
     if (expiration_it->second == uuid) {
       m_timestamps.erase(expiration_it);
@@ -24,41 +29,37 @@ PacketRouter& PacketRouter::remove_callback(Packet::PacketUuid uuid) {
     }
   }
   m_callbacks.erase(uuid);
+}
 
-  return *this;
-};
+shared_ptr<Packet::AbstractPacket> PacketRouter::route(const std::shared_ptr<PacketRouter>& router, shared_ptr<Packet::AbstractPacket> received_packet) {
+  Packet::PacketUuid key = received_packet->get_uuid();
 
-std::shared_ptr<Packet::AbstractPacket> PacketRouter::route(std::shared_ptr<Packet::AbstractPacket> packet) {
-  Packet::PacketUuid key = packet->get_uuid();
+  auto callback_it = router->m_callbacks.find(key);
+  if (callback_it != router->m_callbacks.end()) {
+    CallbackFunction callback = get<1>(callback_it->second);
 
-  if (packet->get_id() == Packet::Id::ErrorResponse) {
-    auto error_packet = std::dynamic_pointer_cast<Packet::Errors::ErrorResponse>(packet);
-    if(error_packet == nullptr) {
-      throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to ErrorResponse packet.");
+    try {
+      shared_ptr<Packet::AbstractPacket> packet_routed = callback(router, received_packet);
+      router->remove_callback(key);
+
+      return packet_routed;
+
+    } catch (const std::exception& err) {
+      router->remove_callback(key);
+      throw;
     }
-    key.packet_code = error_packet->get_opcode();
   }
 
-  auto callback_it = m_callbacks.find(key);
-  if (callback_it != m_callbacks.end()) {
-    CallbackFunction callback = callback_it->second;
-
-    std::shared_ptr<Packet::AbstractPacket> packet_routed = callback(packet);
-
-    remove_callback(key);
-    return packet_routed;
-  }
-
-  return packet;
-};
+  return received_packet;
+}
 
 void PacketRouter::expire_waiting_packets(unsigned int expiration_duration_seconds) {
   if (m_timestamps.empty()) {
     return;
   }
 
-  TimePoint current_time = std::chrono::steady_clock::now();
-  auto expiration_start_time = current_time - std::chrono::seconds(expiration_duration_seconds);
+  TimePoint current_time = chrono::steady_clock::now();
+  auto expiration_start_time = current_time - chrono::seconds(expiration_duration_seconds);
 
   auto it_last_expired = m_timestamps.upper_bound(expiration_start_time);
   if (it_last_expired == m_timestamps.begin()) {
@@ -71,7 +72,7 @@ void PacketRouter::expire_waiting_packets(unsigned int expiration_duration_secon
 
     LOG.debug("Waiting packets UUID: ", "PacketBuilder");
     for (auto& kv : m_timestamps) {
-      LOG.debug("\t - " + std::to_string(kv.second.packet_code), "PacketBuilder");
+      LOG.debug("\t - " + to_string(kv.second.response_packet_code), "PacketBuilder");
     }
 
     m_callbacks.clear();
@@ -80,30 +81,30 @@ void PacketRouter::expire_waiting_packets(unsigned int expiration_duration_secon
   }
 
   for (auto it = m_timestamps.begin(); it != it_last_expired; ++it) {
-    LOG.warning("Expiring packet (" + std::to_string(it->second.packet_code) + ")", "PacketBuilder");
+    LOG.warning("Expiring packet (" + to_string(it->second.response_packet_code) + ")", "PacketBuilder");
     m_callbacks.erase(it->second);
   }
 
   m_timestamps.erase(m_timestamps.begin(), it_last_expired);
-};
+}
 
-void PacketRouter::start_expiration_timer(const std::shared_ptr<uvw::Loop>& loop, unsigned int expiration_duration_seconds) {
-  std::shared_ptr<uvw::TimerHandle> expiration_timer = loop->resource<uvw::TimerHandle>();
+void PacketRouter::start_expiration_timer(const shared_ptr<uvw::Loop>& loop, unsigned int expiration_duration_seconds) {
+  shared_ptr<uvw::TimerHandle> expiration_timer = loop->resource<uvw::TimerHandle>();
 
   expiration_timer->on<uvw::TimerEvent>([this, expiration_duration_seconds](const uvw::TimerEvent&, uvw::TimerHandle& t) {
     expire_waiting_packets(expiration_duration_seconds);
   });
 
   expiration_timer->start(
-      std::chrono::seconds(expiration_duration_seconds),
-      std::chrono::seconds(expiration_duration_seconds)
+      chrono::seconds(expiration_duration_seconds),
+      chrono::seconds(expiration_duration_seconds)
   );
-};
+}
 
-const std::string PacketRouter::stringify() const {
-  std::stringstream result;
+const string PacketRouter::stringify() const {
+  stringstream result;
 
-  result << "Router" << std::endl;
+  result << "Router" << endl;
   for (auto& element : m_callbacks) {
     result << "\tType: ";
     switch (element.first.packet_type) {
@@ -123,7 +124,7 @@ const std::string PacketRouter::stringify() const {
         result << "NONE";
         break;
     }
-    result << ", Packet code: " << element.first.packet_code << std::endl;
+    result << ", Packet code: " << element.first.response_packet_code << endl;
   }
 
   return result.str();

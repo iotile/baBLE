@@ -57,7 +57,6 @@ using Packet::Meta::GetControllersList;
 
 namespace Bootstrap {
 
-  // TODO: use ioctl and put this into a static create_all function in HCI socket
   // Create one HCI socket per Bluetooth controller
   vector<shared_ptr<HCISocket>> create_hci_sockets(const shared_ptr<MGMTSocket>& mgmt_socket, const shared_ptr<HCIFormat>& hci_format) {
     vector<shared_ptr<HCISocket>> hci_sockets;
@@ -76,7 +75,7 @@ namespace Bootstrap {
 
     // Get controllers list from GetControllersList packet
 //    vector<Format::MGMT::Controller> controllers = get_controllers_list_packet->get_controllers();
-    std::array<uint8_t, 6> address = {0x48, 0xE2, 0x44, 0xF6, 0xF3, 0x30};
+    std::array<uint8_t, 6> address = {0x30, 0xF3, 0xF6, 0x44, 0xE2, 0x48};
     vector<Format::MGMT::Controller> controllers = {
         Format::MGMT::Controller{
             0,
@@ -131,9 +130,12 @@ namespace Bootstrap {
         .register_command<Packet::Commands::ReadResponse>()
         .register_command<Packet::Commands::WriteResponse>()
         .register_command<Packet::Commands::NotificationReceived>()
+        .register_command<Packet::Errors::ErrorResponse>()
+      .set_output_format(nullptr)
         .register_command<Packet::Commands::ReadByGroupTypeResponse>()
         .register_command<Packet::Commands::ReadByTypeResponse>()
-      .set_output_format(nullptr)
+        .register_command<Packet::Commands::ReadRequest>()
+        .register_command<Packet::Commands::ReadByGroupTypeRequest>()
         .register_event<Packet::Events::LEAdvertisingReport>()
         .register_event<Packet::Events::LEReadRemoteUsedFeaturesComplete>();
   }

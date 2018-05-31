@@ -7,7 +7,7 @@
 
 namespace Packet::Meta {
 
-class ProbeServices : public AbstractPacket, std::enable_shared_from_this<ProbeServices> {
+  class ProbeServices : public AbstractPacket {
 
   public:
     static const uint16_t packet_code(Packet::Type type) {
@@ -39,12 +39,12 @@ class ProbeServices : public AbstractPacket, std::enable_shared_from_this<ProbeS
     std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
 
     void before_sent(const std::shared_ptr<PacketRouter>& router) override;
-    std::shared_ptr<AbstractPacket> on_read_by_group_type_response_received(std::shared_ptr<AbstractPacket> packet);
+    std::shared_ptr<AbstractPacket> on_read_by_group_type_response_received(const std::shared_ptr<PacketRouter>& router, const std::shared_ptr<AbstractPacket>& packet);
 
   private:
     bool m_waiting_services;
 
-    std::unique_ptr<Packet::Commands::ReadByGroupTypeRequest> m_read_by_type_group_request_packet;
+    std::shared_ptr<Packet::Commands::ReadByGroupTypeRequest> m_read_by_type_group_request_packet;
     std::vector<Format::HCI::Service> m_services;
 
   };

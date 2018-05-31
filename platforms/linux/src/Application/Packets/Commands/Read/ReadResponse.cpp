@@ -8,12 +8,12 @@ namespace Packet::Commands {
       : ResponsePacket(initial_type, translated_type) {
     m_id = Packet::Id::ReadResponse;
     m_attribute_handle = 0;
-  };
+  }
 
   void ReadResponse::unserialize(HCIFormatExtractor& extractor) {
     uint16_t data_length = extractor.get_data_length();
     m_data_read = extractor.get_vector<uint8_t>(data_length);
-  };
+  }
 
   vector<uint8_t> ReadResponse::serialize(AsciiFormatBuilder& builder) const {
     ResponsePacket::serialize(builder);
@@ -23,7 +23,7 @@ namespace Packet::Commands {
         .add("Data", m_data_read);
 
     return builder.build();
-  };
+  }
 
   vector<uint8_t> ReadResponse::serialize(FlatbuffersFormatBuilder& builder) const {
     auto data_read = builder.CreateVector(m_data_read);

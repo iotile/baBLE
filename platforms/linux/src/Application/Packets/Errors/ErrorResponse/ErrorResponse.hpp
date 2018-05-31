@@ -34,6 +34,16 @@ namespace Packet::Errors {
     std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
     std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
 
+    const PacketUuid get_uuid() const override {
+      return PacketUuid{
+          m_current_type,
+          m_controller_id,
+          m_connection_id,
+          m_packet_code,
+          get_opcode()
+      };
+    }
+
     inline uint8_t get_opcode() const {
       return m_opcode;
     };

@@ -7,6 +7,8 @@ namespace Packet::Commands {
   ReadRequest::ReadRequest(Packet::Type initial_type, Packet::Type translated_type)
       : RequestPacket(initial_type, translated_type) {
     m_id = Packet::Id::ReadRequest;
+    m_response_packet_code = Format::HCI::AttributeCode::ReadResponse;
+
     m_attribute_handle = 0;
   }
 
@@ -29,6 +31,10 @@ namespace Packet::Commands {
     m_attribute_handle = payload->attribute_handle();
   }
 
+  void ReadRequest::unserialize(HCIFormatExtractor& extractor) {
+    m_attribute_handle = extractor.get_value<uint16_t>();
+  }
+
   vector<uint8_t> ReadRequest::serialize(AsciiFormatBuilder& builder) const {
     RequestPacket::serialize(builder);
     builder
@@ -47,20 +53,22 @@ namespace Packet::Commands {
   }
 
   void ReadRequest::before_sent(const std::shared_ptr<PacketRouter>& router) {
-    AbstractPacket::before_sent(router);
-    m_packet_code = packet_code(m_current_type);
+    RequestPacket::before_sent(router);
 
-    PacketUuid response_uuid = get_uuid();
-    response_uuid.packet_code = Format::HCI::AttributeCode::ReadResponse;
-
-    auto callback = [this](std::shared_ptr<Packet::AbstractPacket> packet) {
-      return on_read_response_received(packet);
+    PacketUuid error_uuid = get_uuid();
+    error_uuid.response_packet_code = Format::HCI::AttributeCode::ErrorResponse;
+    auto error_callback = [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {
+      return on_error_response_received(router, packet);
     };
-    router->add_callback(response_uuid, callback);
+    router->add_callback(error_uuid, shared_from(this), error_callback);
   }
 
-  shared_ptr<Packet::AbstractPacket> ReadRequest::on_read_response_received(shared_ptr<Packet::AbstractPacket> packet) {
+  shared_ptr<Packet::AbstractPacket> ReadRequest::on_response_received(const std::shared_ptr<PacketRouter>& router, const shared_ptr<Packet::AbstractPacket>& packet) {
     LOG.debug("Response received", "ReadRequest");
+    PacketUuid error_uuid = get_uuid();
+    error_uuid.response_packet_code = Format::HCI::AttributeCode::ErrorResponse;
+    router->remove_callback(error_uuid);
+
     auto read_response_packet = dynamic_pointer_cast<Packet::Commands::ReadResponse>(packet);
     if(read_response_packet == nullptr) {
       throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to ReadResponse packet.");
@@ -69,7 +77,17 @@ namespace Packet::Commands {
     read_response_packet->set_uuid_request(m_uuid_request);
     read_response_packet->set_attribute_handle(m_attribute_handle);
 
-    return move(read_response_packet);
+    return read_response_packet;
+  }
+
+  shared_ptr<Packet::AbstractPacket> ReadRequest::on_error_response_received(const std::shared_ptr<PacketRouter>& router, const shared_ptr<AbstractPacket>& packet) {
+    LOG.debug("ErrorResponse received", "ReadRequest");
+    PacketUuid response_uuid = get_response_uuid();
+    router->remove_callback(response_uuid);
+
+    import_status(*packet);
+
+    return shared_from(this);
   }
 
 }

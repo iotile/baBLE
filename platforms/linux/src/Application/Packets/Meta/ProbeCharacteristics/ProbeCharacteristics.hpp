@@ -8,7 +8,7 @@
 
 namespace Packet::Meta {
 
-  class ProbeCharacteristics : public AbstractPacket, std::enable_shared_from_this<ProbeCharacteristics> {
+  class ProbeCharacteristics : public AbstractPacket {
 
   public:
     static const uint16_t packet_code(Packet::Type type) {
@@ -40,12 +40,13 @@ namespace Packet::Meta {
     std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
 
     void before_sent(const std::shared_ptr<PacketRouter>& router) override;
-    std::shared_ptr<AbstractPacket> on_read_by_type_response_received(std::shared_ptr<AbstractPacket> packet);
+    std::shared_ptr<AbstractPacket> on_read_by_type_response_received(const std::shared_ptr<PacketRouter>& router, const std::shared_ptr<AbstractPacket>& packet);
+    std::shared_ptr<AbstractPacket> on_error_response_received(const std::shared_ptr<PacketRouter>& router, const std::shared_ptr<AbstractPacket>& packet);
 
   private:
     bool m_waiting_characteristics;
 
-    std::unique_ptr<Packet::Commands::ReadByTypeRequest> m_read_by_type_request_packet;
+    std::shared_ptr<Packet::Commands::ReadByTypeRequest> m_read_by_type_request_packet;
     std::vector<Format::HCI::Characteristic> m_characteristics;
 
   };

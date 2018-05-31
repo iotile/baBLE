@@ -6,7 +6,7 @@ from bable_interface.BaBLE import Packet, Payload, GetMGMTInfo, StartScan, StopS
     AddDevice, DeviceConnected, RemoveDevice, Disconnect, DeviceDisconnected, SetPowered, \
     SetDiscoverable, SetConnectable, GetControllersList, ControllerAdded, ControllerRemoved, \
     GetControllerInfo, GetConnectedDevices, GetControllersIds, Read, Write, NotificationReceived, \
-    ProbeServices, ProbeCharacteristics, WriteWithoutResponse, Ready, Exit, DeviceAdded, DeviceRemoved
+    ProbeServices, ProbeCharacteristics, WriteWithoutResponse, Ready, Exit, DeviceAdded, DeviceRemoved, ErrorResponse
 
 
 def status_code_to_string(status_code):
@@ -287,11 +287,15 @@ def build_packet(builder, uuid, payload, payload_type, controller_id = None):
 address_device = [0xC4, 0xF0, 0xA5, 0xE6, 0x8A, 0x91]
 
 header_length = 4
+exitted = False
 
 try:
     while True:
         if process.poll() is not None:
             print("Subprocess terminated.")
+            break
+
+        if exitted:
             break
 
         header = bytearray()
@@ -377,6 +381,10 @@ try:
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Address type:", address_type, "State:", state)
+
+            if state is False:
+                process.stdin.write(fb_exit())
+
         elif packet.PayloadType() == Payload.Payload().DeviceFound:
             devicefound = DeviceFound.DeviceFound()
             devicefound.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -416,7 +424,7 @@ try:
                   "Flags:", flags, "Device UUID:", device_uuid, "Company id:", company_id, "Device name:", device_name)
 
             # process.stdin.write(fb_write("0002", 0, 0x0040, 0x0003, "Alexis"))
-            # process.stdin.write(fb_probe_characteristics("12356789", 0, 0x0040))
+            process.stdin.write(fb_probe_characteristics("12356789", 0, 0x0040))
         elif packet.PayloadType() == Payload.Payload().DeviceDisconnected:
             device_disconnected = DeviceDisconnected.DeviceDisconnected()
             device_disconnected.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -432,7 +440,7 @@ try:
                   "Controller ID:", controller_id, "Address type:", address_type, "Address:", address,
                   "Reason:", reason)
 
-            # process.stdin.write(fb_exit())
+            process.stdin.write(fb_exit())
 
         elif packet.PayloadType() == Payload.Payload().Disconnect:
             disconnect = Disconnect.Disconnect()
@@ -650,18 +658,18 @@ try:
                       "Notify:", characteristic.Notify(), "Read:", characteristic.Read(),
                       "Write:", characteristic.Write(), "Broadcast:", characteristic.Broadcast())
 
-            # process.stdin.write(fb_remove_device("0003", 0, address_device))
-            # process.stdin.write(fb_disconnect("0004", 0, address_device))
+            process.stdin.write(fb_remove_device("0003", 0, address_device))
+            process.stdin.write(fb_disconnect("0004", 0, address_device))
         elif packet.PayloadType() == Payload.Payload().Ready:
             ready = Ready.Ready()
             ready.Init(packet.Payload().Bytes, packet.Payload().Pos)
 
             print("ReadyPacket")
 
-            # process.stdin.write(fb_add_device("0001", 0, address_device))
+            process.stdin.write(fb_add_device("0001", 0, address_device))
             # process.stdin.write(fb_probe_characteristics("0001", 0, 0x0040))
             # process.stdin.write(fb_start_scan("0001", 0))
-            process.stdin.write(fb_get_controllers_ids("0001"))
+            # process.stdin.write(fb_get_controllers_ids("0001"))
 
         elif packet.PayloadType() == Payload.Payload().BaBLEError:
             error = BaBLEError.BaBLEError()
@@ -672,6 +680,22 @@ try:
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Message:", message)
+
+        elif packet.PayloadType() == Payload.Payload().ErrorResponse:
+            error = ErrorResponse.ErrorResponse()
+            error.Init(packet.Payload().Bytes, packet.Payload().Pos)
+            opcode = error.Opcode()
+            handle = error.Handle()
+
+            print("ErrorResponse",
+                  "UUID:", uuid,
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id, "Opcode:", opcode, "Handle:", handle)
+
+        elif packet.PayloadType() == Payload.Payload().Exit:
+            print("Exit")
+            exitted = True
+
         else:
             print('NOPE...')
 except KeyboardInterrupt:

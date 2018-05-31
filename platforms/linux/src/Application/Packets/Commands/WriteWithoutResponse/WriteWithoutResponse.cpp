@@ -31,6 +31,11 @@ namespace Packet::Commands {
     m_data_to_write.assign(raw_data_to_write->begin(), raw_data_to_write->end());
   }
 
+  void WriteWithoutResponse::unserialize(HCIFormatExtractor& extractor) {
+    m_attribute_handle = extractor.get_value<uint16_t>();
+    m_data_to_write = extractor.get_vector<uint8_t>();
+  }
+
   vector<uint8_t> WriteWithoutResponse::serialize(AsciiFormatBuilder& builder) const {
     RequestPacket::serialize(builder);
     builder
