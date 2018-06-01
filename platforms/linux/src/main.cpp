@@ -1,4 +1,5 @@
 #include <memory>
+#include <iostream>
 #include <uvw.hpp>
 #include "Log/Log.hpp"
 #include "Application/PacketBuilder/PacketBuilder.hpp"
@@ -20,7 +21,6 @@
 using namespace std;
 using namespace uvw;
 
-// TODO: Add an option to set the logging level (--logging=[debug|info|warning|error|critical])
 // TODO: replace bytearray addresses by string address in flatbuffers
 // TODO: use ioctl and put function into a static create_all function in HCI socket
 // TODO: Create a ScanBLEForever command (remove MGMT StartScan ? -> can't be implemented in Windows and Mac...) /!\ Needs to return ScanResponse AND Advertisments
@@ -34,8 +34,24 @@ void cleanly_stop_loop(Loop& loop) {
   LOG.debug("Handles stopped.");
 }
 
-int main() {
-  ENABLE_LOGGING(DEBUG);
+void parse_options(int argc, char* argv[]) {
+  for (int i = 1; i < argc; i++) {
+    string option_name = string(argv[i]);
+    if (option_name == "--logging") {
+      if (i + 1 < argc) {
+        LOG.set_level(string(argv[++i]));
+      } else {
+        throw invalid_argument("Invalid option: --logging option requires one argument [debug|info|warning|error|critical]");
+      }
+    } else {
+      cerr << "Unknown option given (" << option_name << ")" << endl;
+    }
+  }
+}
+
+int main(int argc, char* argv[]) {
+  ENABLE_LOGGING(INFO);
+  parse_options(argc, argv);
 
   // Create loop
   shared_ptr<Loop> loop = Loop::getDefault();

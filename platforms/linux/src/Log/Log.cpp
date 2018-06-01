@@ -37,6 +37,24 @@ void Log::set_level(const Level& level) {
   m_log_level = level;
 }
 
+void Log::set_level(const string& str_level) {
+  if (str_level == "debug") {
+    m_log_level = Level::DEBUG;
+  } else if (str_level == "info") {
+    m_log_level = Level::INFO;
+  } else if (str_level == "warning") {
+    m_log_level = Level::WARNING;
+  } else if (str_level == "error") {
+    m_log_level = Level::ERROR;
+  } else if (str_level == "critical") {
+    m_log_level = Level::CRITICAL;
+  } else if (str_level == "disabled") {
+    m_log_level = Level::DISABLED;
+  } else {
+    throw invalid_argument("Wrong log level.");
+  }
+}
+
 string Log::build_prefix(const string &name, const Level& level) {
   string prefix;
   string level_name = get_level_name(level);

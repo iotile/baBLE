@@ -27,6 +27,7 @@ public:
   };
 
   void set_level(const Level& level);
+  void set_level(const std::string& level);
 
   void write_log(const std::string &name, const std::string& message, const Level& level, const std::string& color = WHITE_COLOR);
   void critical(const std::string& message, const std::string &name = DEFAULT_NAME);
