@@ -23,8 +23,6 @@ using namespace uvw;
 
 // TODO: Create a ScanBLEForever command (remove MGMT StartScan ? -> can't be implemented in Windows and Mac...) /!\ Needs to return ScanResponse AND Advertisments
 
-// TODO: replace bytearray addresses by string address in flatbuffers (USEFUL ? If yes -> AddDevice/RemoveDevice and Disconnect to change)
-
 // Function used to call all handlers closing callbacks before stopping the loop
 void cleanly_stop_loop(Loop& loop) {
   loop.walk([](BaseHandle &handle){
@@ -211,7 +209,7 @@ int main(int argc, char* argv[]) {
     on_error
   );
 
-  // Removed all expired waiting response (> 5 minutes)
+  // Removed all expired waiting response
   LOG.info("Creating expiration timer...");
   packet_router->start_expiration_timer(loop, EXPIRATION_DURATION_SECONDS);
 

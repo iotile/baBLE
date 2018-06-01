@@ -36,7 +36,8 @@ namespace Packet::Commands {
 
   private:
     uint8_t m_address_type;
-    std::array<uint8_t, 6> m_address{};
+    std::array<uint8_t, 6> m_raw_address{};
+    std::string m_address;
 
   };
 

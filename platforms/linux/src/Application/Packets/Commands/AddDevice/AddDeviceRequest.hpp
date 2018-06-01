@@ -36,7 +36,8 @@
       std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override;
 
     private:
-      std::array<uint8_t, 6> m_address{};
+      std::string m_address;
+      std::array<uint8_t, 6> m_raw_address{};
       uint8_t m_address_type;
       uint8_t m_action;
 

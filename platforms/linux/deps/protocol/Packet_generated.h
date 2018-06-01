@@ -846,8 +846,8 @@ struct AddDevice FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_ADDRESS = 4,
     VT_ADDRESS_TYPE = 6
   };
-  const flatbuffers::Vector<uint8_t> *address() const {
-    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_ADDRESS);
+  const flatbuffers::String *address() const {
+    return GetPointer<const flatbuffers::String *>(VT_ADDRESS);
   }
   uint8_t address_type() const {
     return GetField<uint8_t>(VT_ADDRESS_TYPE, 2);
@@ -864,7 +864,7 @@ struct AddDevice FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct AddDeviceBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_address(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> address) {
+  void add_address(flatbuffers::Offset<flatbuffers::String> address) {
     fbb_.AddOffset(AddDevice::VT_ADDRESS, address);
   }
   void add_address_type(uint8_t address_type) {
@@ -884,7 +884,7 @@ struct AddDeviceBuilder {
 
 inline flatbuffers::Offset<AddDevice> CreateAddDevice(
     flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> address = 0,
+    flatbuffers::Offset<flatbuffers::String> address = 0,
     uint8_t address_type = 2) {
   AddDeviceBuilder builder_(_fbb);
   builder_.add_address(address);
@@ -894,11 +894,11 @@ inline flatbuffers::Offset<AddDevice> CreateAddDevice(
 
 inline flatbuffers::Offset<AddDevice> CreateAddDeviceDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    const std::vector<uint8_t> *address = nullptr,
+    const char *address = nullptr,
     uint8_t address_type = 2) {
   return BaBLE::CreateAddDevice(
       _fbb,
-      address ? _fbb.CreateVector<uint8_t>(*address) : 0,
+      address ? _fbb.CreateString(address) : 0,
       address_type);
 }
 
@@ -907,8 +907,8 @@ struct RemoveDevice FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_ADDRESS = 4,
     VT_ADDRESS_TYPE = 6
   };
-  const flatbuffers::Vector<uint8_t> *address() const {
-    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_ADDRESS);
+  const flatbuffers::String *address() const {
+    return GetPointer<const flatbuffers::String *>(VT_ADDRESS);
   }
   uint8_t address_type() const {
     return GetField<uint8_t>(VT_ADDRESS_TYPE, 2);
@@ -925,7 +925,7 @@ struct RemoveDevice FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct RemoveDeviceBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_address(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> address) {
+  void add_address(flatbuffers::Offset<flatbuffers::String> address) {
     fbb_.AddOffset(RemoveDevice::VT_ADDRESS, address);
   }
   void add_address_type(uint8_t address_type) {
@@ -945,7 +945,7 @@ struct RemoveDeviceBuilder {
 
 inline flatbuffers::Offset<RemoveDevice> CreateRemoveDevice(
     flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> address = 0,
+    flatbuffers::Offset<flatbuffers::String> address = 0,
     uint8_t address_type = 2) {
   RemoveDeviceBuilder builder_(_fbb);
   builder_.add_address(address);
@@ -955,11 +955,11 @@ inline flatbuffers::Offset<RemoveDevice> CreateRemoveDevice(
 
 inline flatbuffers::Offset<RemoveDevice> CreateRemoveDeviceDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    const std::vector<uint8_t> *address = nullptr,
+    const char *address = nullptr,
     uint8_t address_type = 2) {
   return BaBLE::CreateRemoveDevice(
       _fbb,
-      address ? _fbb.CreateVector<uint8_t>(*address) : 0,
+      address ? _fbb.CreateString(address) : 0,
       address_type);
 }
 
@@ -968,8 +968,8 @@ struct Disconnect FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_ADDRESS = 4,
     VT_ADDRESS_TYPE = 6
   };
-  const flatbuffers::Vector<uint8_t> *address() const {
-    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_ADDRESS);
+  const flatbuffers::String *address() const {
+    return GetPointer<const flatbuffers::String *>(VT_ADDRESS);
   }
   uint8_t address_type() const {
     return GetField<uint8_t>(VT_ADDRESS_TYPE, 2);
@@ -986,7 +986,7 @@ struct Disconnect FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct DisconnectBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_address(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> address) {
+  void add_address(flatbuffers::Offset<flatbuffers::String> address) {
     fbb_.AddOffset(Disconnect::VT_ADDRESS, address);
   }
   void add_address_type(uint8_t address_type) {
@@ -1006,7 +1006,7 @@ struct DisconnectBuilder {
 
 inline flatbuffers::Offset<Disconnect> CreateDisconnect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> address = 0,
+    flatbuffers::Offset<flatbuffers::String> address = 0,
     uint8_t address_type = 2) {
   DisconnectBuilder builder_(_fbb);
   builder_.add_address(address);
@@ -1016,11 +1016,11 @@ inline flatbuffers::Offset<Disconnect> CreateDisconnect(
 
 inline flatbuffers::Offset<Disconnect> CreateDisconnectDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    const std::vector<uint8_t> *address = nullptr,
+    const char *address = nullptr,
     uint8_t address_type = 2) {
   return BaBLE::CreateDisconnect(
       _fbb,
-      address ? _fbb.CreateVector<uint8_t>(*address) : 0,
+      address ? _fbb.CreateString(address) : 0,
       address_type);
 }
 

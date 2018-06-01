@@ -14,7 +14,8 @@ namespace Packet::Commands {
     ResponsePacket::unserialize(extractor);
 
     if (m_status == BaBLE::StatusCode::Success){
-      m_address = extractor.get_array<uint8_t, 6>();
+      m_raw_address = extractor.get_array<uint8_t, 6>();
+      m_address = AsciiFormat::format_bd_address(m_raw_address);
       m_address_type = extractor.get_value<uint8_t>();
     }
   }
@@ -30,7 +31,7 @@ namespace Packet::Commands {
   }
 
   vector<uint8_t> RemoveDeviceResponse::serialize(FlatbuffersFormatBuilder& builder) const {
-    auto address = builder.CreateVector(m_address.data(), m_address.size());
+    auto address = builder.CreateString(m_address);
 
     auto payload = BaBLE::CreateRemoveDevice(builder, address, m_address_type);
 
