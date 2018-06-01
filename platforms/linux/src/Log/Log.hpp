@@ -35,11 +35,10 @@ public:
   void info(const std::string& message, const std::string &name = DEFAULT_NAME);
   void debug(const std::string& message, const std::string &name = DEFAULT_NAME);
   void debug(const Loggable& object, const std::string &name = DEFAULT_NAME);
+  void debug(std::vector<uint8_t> bytes, const std::string &name = DEFAULT_NAME);
 
-  template<typename T>
-  void debug(std::vector<T> bytes, const std::string &name = DEFAULT_NAME);
-  template<typename T, size_t N>
-  void debug(std::array<T, N> bytes, const std::string &name = DEFAULT_NAME);
+  template<size_t N>
+  void debug(std::array<uint8_t, N> bytes, const std::string &name = DEFAULT_NAME);
 
 private:
   Log();
@@ -52,22 +51,11 @@ private:
   unsigned char m_log_level;
 };
 
-template<typename T>
-void Log::debug(std::vector<T> bytes, const std::string &name) {
+template<size_t N>
+void Log::debug(std::array<uint8_t, N> bytes, const std::string &name) {
   std::stringstream message_stream;
   message_stream << "[ ";
-  for(auto& value : bytes) {
-    message_stream << HEX(value) << " ";
-  }
-  message_stream << "]";
-  debug(message_stream.str(), name);
-};
-
-template<typename T, size_t N>
-void Log::debug(std::array<T, N> bytes, const std::string &name) {
-  std::stringstream message_stream;
-  message_stream << "[ ";
-  for(auto& value : bytes) {
+  for(uint8_t& value : bytes) {
     message_stream << HEX(value) << " ";
   }
   message_stream << "]";

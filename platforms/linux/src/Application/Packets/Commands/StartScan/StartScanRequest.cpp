@@ -6,7 +6,7 @@ using namespace std;
 namespace Packet::Commands {
 
   StartScanRequest::StartScanRequest(Packet::Type initial_type, Packet::Type translated_type)
-  : RequestPacket<StartScanRequest>(initial_type, translated_type) {
+  : RequestPacket(initial_type, translated_type) {
     m_id = Packet::Id::StartScanRequest;
     m_address_type = 0;
   }

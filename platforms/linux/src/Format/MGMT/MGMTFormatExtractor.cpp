@@ -82,16 +82,9 @@ Format::MGMT::EIR MGMTFormatExtractor::parse_eir(const vector<uint8_t>& data) {
         field_length -= sizeof(result.company_id);
         it += sizeof(result.company_id);
 
-        if (result.manufacturer_data_advertised.empty()) {
-          result.manufacturer_data_advertised.reserve(field_length);
-          for (uint8_t i = 0; i < field_length; i ++) {
-            result.manufacturer_data_advertised.push_back(*(it + i));
-          }
-        } else {
-          result.manufacturer_data_scanned.reserve(field_length);
-          for (uint8_t i = 0; i < field_length; i ++) {
-            result.manufacturer_data_scanned.push_back(*(it + i));
-          }
+        result.manufacturer_data.reserve(field_length);
+        for (uint8_t i = 0; i < field_length; i ++) {
+          result.manufacturer_data.push_back(*(it + i));
         }
         break;
       }

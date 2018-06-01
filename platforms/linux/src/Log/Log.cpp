@@ -79,3 +79,13 @@ void Log::debug(const string& message, const string& name) {
 void Log::debug(const Loggable& object, const string& name) {
   debug(object.stringify(), name);
 }
+
+void Log::debug(std::vector<uint8_t> bytes, const std::string &name) {
+  std::stringstream message_stream;
+  message_stream << "[ ";
+  for(uint8_t& value : bytes) {
+    message_stream << HEX(value) << " ";
+  }
+  message_stream << "]";
+  debug(message_stream.str(), name);
+}

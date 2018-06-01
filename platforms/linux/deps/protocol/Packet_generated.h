@@ -1711,9 +1711,8 @@ struct DeviceConnected FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_FLAGS = 10,
     VT_UUID = 12,
     VT_COMPANY_ID = 14,
-    VT_MANUFACTURER_DATA_ADVERTISED = 16,
-    VT_MANUFACTURER_DATA_SCANNED = 18,
-    VT_DEVICE_NAME = 20
+    VT_MANUFACTURER_DATA = 16,
+    VT_DEVICE_NAME = 18
   };
   uint16_t connection_handle() const {
     return GetField<uint16_t>(VT_CONNECTION_HANDLE, 0);
@@ -1733,11 +1732,8 @@ struct DeviceConnected FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   uint16_t company_id() const {
     return GetField<uint16_t>(VT_COMPANY_ID, 0);
   }
-  const flatbuffers::Vector<uint8_t> *manufacturer_data_advertised() const {
-    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_MANUFACTURER_DATA_ADVERTISED);
-  }
-  const flatbuffers::Vector<uint8_t> *manufacturer_data_scanned() const {
-    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_MANUFACTURER_DATA_SCANNED);
+  const flatbuffers::Vector<uint8_t> *manufacturer_data() const {
+    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_MANUFACTURER_DATA);
   }
   const flatbuffers::String *device_name() const {
     return GetPointer<const flatbuffers::String *>(VT_DEVICE_NAME);
@@ -1753,10 +1749,8 @@ struct DeviceConnected FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            VerifyOffset(verifier, VT_UUID) &&
            verifier.Verify(uuid()) &&
            VerifyField<uint16_t>(verifier, VT_COMPANY_ID) &&
-           VerifyOffset(verifier, VT_MANUFACTURER_DATA_ADVERTISED) &&
-           verifier.Verify(manufacturer_data_advertised()) &&
-           VerifyOffset(verifier, VT_MANUFACTURER_DATA_SCANNED) &&
-           verifier.Verify(manufacturer_data_scanned()) &&
+           VerifyOffset(verifier, VT_MANUFACTURER_DATA) &&
+           verifier.Verify(manufacturer_data()) &&
            VerifyOffset(verifier, VT_DEVICE_NAME) &&
            verifier.Verify(device_name()) &&
            verifier.EndTable();
@@ -1784,11 +1778,8 @@ struct DeviceConnectedBuilder {
   void add_company_id(uint16_t company_id) {
     fbb_.AddElement<uint16_t>(DeviceConnected::VT_COMPANY_ID, company_id, 0);
   }
-  void add_manufacturer_data_advertised(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> manufacturer_data_advertised) {
-    fbb_.AddOffset(DeviceConnected::VT_MANUFACTURER_DATA_ADVERTISED, manufacturer_data_advertised);
-  }
-  void add_manufacturer_data_scanned(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> manufacturer_data_scanned) {
-    fbb_.AddOffset(DeviceConnected::VT_MANUFACTURER_DATA_SCANNED, manufacturer_data_scanned);
+  void add_manufacturer_data(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> manufacturer_data) {
+    fbb_.AddOffset(DeviceConnected::VT_MANUFACTURER_DATA, manufacturer_data);
   }
   void add_device_name(flatbuffers::Offset<flatbuffers::String> device_name) {
     fbb_.AddOffset(DeviceConnected::VT_DEVICE_NAME, device_name);
@@ -1813,13 +1804,11 @@ inline flatbuffers::Offset<DeviceConnected> CreateDeviceConnected(
     flatbuffers::Offset<flatbuffers::Vector<uint8_t>> flags = 0,
     flatbuffers::Offset<flatbuffers::String> uuid = 0,
     uint16_t company_id = 0,
-    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> manufacturer_data_advertised = 0,
-    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> manufacturer_data_scanned = 0,
+    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> manufacturer_data = 0,
     flatbuffers::Offset<flatbuffers::String> device_name = 0) {
   DeviceConnectedBuilder builder_(_fbb);
   builder_.add_device_name(device_name);
-  builder_.add_manufacturer_data_scanned(manufacturer_data_scanned);
-  builder_.add_manufacturer_data_advertised(manufacturer_data_advertised);
+  builder_.add_manufacturer_data(manufacturer_data);
   builder_.add_uuid(uuid);
   builder_.add_flags(flags);
   builder_.add_address(address);
@@ -1837,8 +1826,7 @@ inline flatbuffers::Offset<DeviceConnected> CreateDeviceConnectedDirect(
     const std::vector<uint8_t> *flags = nullptr,
     const char *uuid = nullptr,
     uint16_t company_id = 0,
-    const std::vector<uint8_t> *manufacturer_data_advertised = nullptr,
-    const std::vector<uint8_t> *manufacturer_data_scanned = nullptr,
+    const std::vector<uint8_t> *manufacturer_data = nullptr,
     const char *device_name = nullptr) {
   return BaBLE::CreateDeviceConnected(
       _fbb,
@@ -1848,8 +1836,7 @@ inline flatbuffers::Offset<DeviceConnected> CreateDeviceConnectedDirect(
       flags ? _fbb.CreateVector<uint8_t>(*flags) : 0,
       uuid ? _fbb.CreateString(uuid) : 0,
       company_id,
-      manufacturer_data_advertised ? _fbb.CreateVector<uint8_t>(*manufacturer_data_advertised) : 0,
-      manufacturer_data_scanned ? _fbb.CreateVector<uint8_t>(*manufacturer_data_scanned) : 0,
+      manufacturer_data ? _fbb.CreateVector<uint8_t>(*manufacturer_data) : 0,
       device_name ? _fbb.CreateString(device_name) : 0);
 }
 
@@ -1947,9 +1934,8 @@ struct DeviceFound FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_FLAGS = 10,
     VT_UUID = 12,
     VT_COMPANY_ID = 14,
-    VT_MANUFACTURER_DATA_ADVERTISED = 16,
-    VT_MANUFACTURER_DATA_SCANNED = 18,
-    VT_DEVICE_NAME = 20
+    VT_MANUFACTURER_DATA = 16,
+    VT_DEVICE_NAME = 18
   };
   const flatbuffers::String *address() const {
     return GetPointer<const flatbuffers::String *>(VT_ADDRESS);
@@ -1969,11 +1955,8 @@ struct DeviceFound FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   uint16_t company_id() const {
     return GetField<uint16_t>(VT_COMPANY_ID, 0);
   }
-  const flatbuffers::Vector<uint8_t> *manufacturer_data_advertised() const {
-    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_MANUFACTURER_DATA_ADVERTISED);
-  }
-  const flatbuffers::Vector<uint8_t> *manufacturer_data_scanned() const {
-    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_MANUFACTURER_DATA_SCANNED);
+  const flatbuffers::Vector<uint8_t> *manufacturer_data() const {
+    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_MANUFACTURER_DATA);
   }
   const flatbuffers::String *device_name() const {
     return GetPointer<const flatbuffers::String *>(VT_DEVICE_NAME);
@@ -1989,10 +1972,8 @@ struct DeviceFound FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            VerifyOffset(verifier, VT_UUID) &&
            verifier.Verify(uuid()) &&
            VerifyField<uint16_t>(verifier, VT_COMPANY_ID) &&
-           VerifyOffset(verifier, VT_MANUFACTURER_DATA_ADVERTISED) &&
-           verifier.Verify(manufacturer_data_advertised()) &&
-           VerifyOffset(verifier, VT_MANUFACTURER_DATA_SCANNED) &&
-           verifier.Verify(manufacturer_data_scanned()) &&
+           VerifyOffset(verifier, VT_MANUFACTURER_DATA) &&
+           verifier.Verify(manufacturer_data()) &&
            VerifyOffset(verifier, VT_DEVICE_NAME) &&
            verifier.Verify(device_name()) &&
            verifier.EndTable();
@@ -2020,11 +2001,8 @@ struct DeviceFoundBuilder {
   void add_company_id(uint16_t company_id) {
     fbb_.AddElement<uint16_t>(DeviceFound::VT_COMPANY_ID, company_id, 0);
   }
-  void add_manufacturer_data_advertised(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> manufacturer_data_advertised) {
-    fbb_.AddOffset(DeviceFound::VT_MANUFACTURER_DATA_ADVERTISED, manufacturer_data_advertised);
-  }
-  void add_manufacturer_data_scanned(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> manufacturer_data_scanned) {
-    fbb_.AddOffset(DeviceFound::VT_MANUFACTURER_DATA_SCANNED, manufacturer_data_scanned);
+  void add_manufacturer_data(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> manufacturer_data) {
+    fbb_.AddOffset(DeviceFound::VT_MANUFACTURER_DATA, manufacturer_data);
   }
   void add_device_name(flatbuffers::Offset<flatbuffers::String> device_name) {
     fbb_.AddOffset(DeviceFound::VT_DEVICE_NAME, device_name);
@@ -2049,13 +2027,11 @@ inline flatbuffers::Offset<DeviceFound> CreateDeviceFound(
     flatbuffers::Offset<flatbuffers::Vector<uint8_t>> flags = 0,
     flatbuffers::Offset<flatbuffers::String> uuid = 0,
     uint16_t company_id = 0,
-    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> manufacturer_data_advertised = 0,
-    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> manufacturer_data_scanned = 0,
+    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> manufacturer_data = 0,
     flatbuffers::Offset<flatbuffers::String> device_name = 0) {
   DeviceFoundBuilder builder_(_fbb);
   builder_.add_device_name(device_name);
-  builder_.add_manufacturer_data_scanned(manufacturer_data_scanned);
-  builder_.add_manufacturer_data_advertised(manufacturer_data_advertised);
+  builder_.add_manufacturer_data(manufacturer_data);
   builder_.add_uuid(uuid);
   builder_.add_flags(flags);
   builder_.add_address(address);
@@ -2073,8 +2049,7 @@ inline flatbuffers::Offset<DeviceFound> CreateDeviceFoundDirect(
     const std::vector<uint8_t> *flags = nullptr,
     const char *uuid = nullptr,
     uint16_t company_id = 0,
-    const std::vector<uint8_t> *manufacturer_data_advertised = nullptr,
-    const std::vector<uint8_t> *manufacturer_data_scanned = nullptr,
+    const std::vector<uint8_t> *manufacturer_data = nullptr,
     const char *device_name = nullptr) {
   return BaBLE::CreateDeviceFound(
       _fbb,
@@ -2084,8 +2059,7 @@ inline flatbuffers::Offset<DeviceFound> CreateDeviceFoundDirect(
       flags ? _fbb.CreateVector<uint8_t>(*flags) : 0,
       uuid ? _fbb.CreateString(uuid) : 0,
       company_id,
-      manufacturer_data_advertised ? _fbb.CreateVector<uint8_t>(*manufacturer_data_advertised) : 0,
-      manufacturer_data_scanned ? _fbb.CreateVector<uint8_t>(*manufacturer_data_scanned) : 0,
+      manufacturer_data ? _fbb.CreateVector<uint8_t>(*manufacturer_data) : 0,
       device_name ? _fbb.CreateString(device_name) : 0);
 }
 

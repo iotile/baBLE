@@ -38,7 +38,7 @@ def status_code_to_string(status_code):
         return "-"
 
 
-process = subprocess.Popen(["../../platforms/linux/build/baBLE_linux"],
+process = subprocess.Popen(["../../platforms/linux/build/debug/baBLE_linux"],
                            stdout=subprocess.PIPE, stdin=subprocess.PIPE,
                            bufsize=0,
                            universal_newlines=False)
@@ -405,8 +405,7 @@ try:
             flags = devicefound.FlagsAsNumpy()
             device_uuid = devicefound.Uuid()
             company_id = devicefound.CompanyId()
-            manufacturer_data_advertised = devicefound.ManufacturerDataAdvertisedAsNumpy()
-            manufacturer_data_scanned = devicefound.ManufacturerDataScannedAsNumpy()
+            manufacturer_data = devicefound.ManufacturerDataAsNumpy()
             device_name = devicefound.DeviceName()
 
             print("DeviceFound",
@@ -414,10 +413,9 @@ try:
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Address type:", address_type, "Address:", address,
                   "RSSI:", rssi, "Flags:", flags, "Device UUID:", device_uuid, "Company id:", company_id,
-                  "Manufacturer data advertised:", manufacturer_data_advertised,
-                  "Manufacturer data scanned:", manufacturer_data_scanned, "Device name:", device_name)
+                  "Manufacturer data:", manufacturer_data, "Device name:", device_name)
 
-            process.stdin.write(fb_stop_scan("0002", 0))
+            # process.stdin.write(fb_stop_scan("0002", 0))
 
         elif packet.PayloadType() == Payload.Payload().DeviceConnected:
             device_connected = DeviceConnected.DeviceConnected()
@@ -689,9 +687,9 @@ try:
 
             print("ReadyPacket")
 
-            process.stdin.write(fb_add_device("0001", 0, address_device))
+            # process.stdin.write(fb_add_device("0001", 0, address_device))
             # process.stdin.write(fb_probe_characteristics("0001", 0, 0x0040))
-            # process.stdin.write(fb_start_scan("0001", 0))
+            process.stdin.write(fb_start_scan("0001", 0))
             # process.stdin.write(fb_get_controllers_ids("0001"))
             # process.stdin.write(fb_set_powered("0001", 0, True))
             # process.stdin.write(fb_get_controllers_list("list"))

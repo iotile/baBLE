@@ -84,8 +84,7 @@ namespace Format::MGMT {
     uint8_t flags = 0;
     std::vector<uint8_t> uuid;
     uint16_t company_id = 0;
-    std::vector<uint8_t> manufacturer_data_advertised;
-    std::vector<uint8_t> manufacturer_data_scanned;
+    std::vector<uint8_t> manufacturer_data;
     std::vector<uint8_t> device_name;
   };
 

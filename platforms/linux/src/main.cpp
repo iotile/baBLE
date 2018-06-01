@@ -20,11 +20,9 @@
 using namespace std;
 using namespace uvw;
 
-// TODO: clean includes to make cmake faster
-// TODO: Merge manufacturer_data_advertised and manufacturer_data_scanned into one variable in DeviceFound packet
 // TODO: Add an option to set the logging level (--logging=[debug|info|warning|error|critical])
-// TODO: use ioctl and put function into a static create_all function in HCI socket
 // TODO: replace bytearray addresses by string address in flatbuffers
+// TODO: use ioctl and put function into a static create_all function in HCI socket
 // TODO: Create a ScanBLEForever command (remove MGMT StartScan ? -> can't be implemented in Windows and Mac...) /!\ Needs to return ScanResponse AND Advertisments
 
 // Function used to call all handlers closing callbacks before stopping the loop
