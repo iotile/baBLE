@@ -18,10 +18,6 @@ public:
   template<typename T>
   T get_payload() const;
 
-  inline uint16_t get_controller_id() const override {
-    return m_packet->controller_id();
-  };
-
   inline std::string get_uuid_request() const {
     return m_packet->uuid()->str();
   };

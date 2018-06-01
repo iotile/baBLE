@@ -103,7 +103,7 @@ set(SOURCES_FILES
         src/Application/Packets/Commands/SetPowered/SetPoweredResponse.cpp
         src/Application/Packets/Commands/Write/WriteResponse.cpp
         src/Application/AbstractPacket.cpp
-        src/Application/Packets/Events/CommandComplete/CommandComplete.cpp)
+        src/Application/Packets/Events/CommandComplete/CommandComplete.cpp src/Format/AbstractExtractor.cpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies
