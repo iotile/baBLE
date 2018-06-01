@@ -1,11 +1,6 @@
 #ifndef BABLE_LINUX_EXTRACTOR_HPP
 #define BABLE_LINUX_EXTRACTOR_HPP
 
-#include <array>
-#include <cstdint>
-#include <utility>
-#include <stdexcept>
-#include <vector>
 #include "./HCI/constants.hpp"
 #include "../Exceptions/WrongFormat/WrongFormatException.hpp"
 

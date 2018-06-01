@@ -1,22 +1,11 @@
 #ifndef BABLE_LINUX_HCISOCKET_HPP
 #define BABLE_LINUX_HCISOCKET_HPP
 
-#include <cerrno>
-#include <cstring>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <utility>
-#include <memory>
 #include <queue>
-#include <unordered_map>
 #include <uvw.hpp>
 
 #include "../../AbstractSocket.hpp"
-#include "../../../Log/Log.hpp"
 #include "../../../Format/HCI/HCIFormat.hpp"
-#include "../../../Exceptions/Socket/SocketException.hpp"
-#include "../../../Application/Packets/Events/DeviceConnected/DeviceConnected.hpp"
-#include "../../../Application/Packets/Events/DeviceDisconnected/DeviceDisconnected.hpp"
 
 class HCISocket : public AbstractSocket {
 

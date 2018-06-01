@@ -1,9 +1,7 @@
 #ifndef BABLE_LINUX_PROBESERVICES_HPP
 #define BABLE_LINUX_PROBESERVICES_HPP
 
-#include "../../../AbstractPacket.hpp"
 #include "../../Commands/ReadByGroupType/ReadByGroupTypeRequest.hpp"
-#include "../../Commands/ReadByGroupType/ReadByGroupTypeResponse.hpp"
 
 namespace Packet::Meta {
 
@@ -40,6 +38,7 @@ namespace Packet::Meta {
 
     void before_sent(const std::shared_ptr<PacketRouter>& router) override;
     std::shared_ptr<AbstractPacket> on_read_by_group_type_response_received(const std::shared_ptr<PacketRouter>& router, const std::shared_ptr<AbstractPacket>& packet);
+    std::shared_ptr<AbstractPacket> on_error_response_received(const std::shared_ptr<PacketRouter>& router, const std::shared_ptr<AbstractPacket>& packet);
 
   private:
     bool m_waiting_services;

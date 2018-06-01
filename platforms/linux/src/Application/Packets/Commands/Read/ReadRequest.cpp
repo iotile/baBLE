@@ -1,4 +1,7 @@
 #include "ReadRequest.hpp"
+#include "./ReadResponse.hpp"
+#include "../../../../Exceptions/RuntimeError/RuntimeErrorException.hpp"
+#include "../../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 
 using namespace std;
 

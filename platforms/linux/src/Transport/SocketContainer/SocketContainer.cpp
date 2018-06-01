@@ -1,4 +1,6 @@
 #include "SocketContainer.hpp"
+#include "../../Log/Log.hpp"
+#include "../../Exceptions/NotFound/NotFoundException.hpp"
 
 using namespace std;
 

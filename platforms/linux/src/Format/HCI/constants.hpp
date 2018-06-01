@@ -1,9 +1,9 @@
 #ifndef BABLE_LINUX_CONSTANTS_HPP
 #define BABLE_LINUX_CONSTANTS_HPP
 
-#include <cstdint>
 #include <sys/socket.h>
 #include <unordered_map>
+#include <vector>
 
 // Protocol
 #define BTPROTO_L2CAP   0

@@ -1,4 +1,7 @@
 #include "ProbeServices.hpp"
+#include "../../Commands/ReadByGroupType/ReadByGroupTypeResponse.hpp"
+#include "../../../../Exceptions/RuntimeError/RuntimeErrorException.hpp"
+#include "../../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 
 using namespace std;
 
@@ -76,13 +79,20 @@ namespace Packet::Meta {
     if (m_waiting_services) {
       m_current_type = m_translated_type;
 
-      PacketUuid uuid = get_uuid();
-      uuid.response_packet_code = Format::HCI::AttributeCode::ReadByGroupTypeResponse;
-
-      auto callback = [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {
+      PacketUuid response_uuid = get_uuid();
+      response_uuid.response_packet_code = Format::HCI::AttributeCode::ReadByGroupTypeResponse;
+      auto response_callback = [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {
         return on_read_by_group_type_response_received(router, packet);
       };
-      router->add_callback(uuid, shared_from(this), callback);
+
+      PacketUuid error_uuid = get_uuid();
+      error_uuid.response_packet_code = Format::HCI::AttributeCode::ErrorResponse;
+      auto error_callback = [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {
+        return on_error_response_received(router, packet);
+      };
+
+      router->add_callback(response_uuid, shared_from(this), response_callback);
+      router->add_callback(error_uuid, shared_from(this), error_callback);
     } else {
       m_current_type = m_initial_type;
       m_packet_code = packet_code(m_current_type);
@@ -91,6 +101,9 @@ namespace Packet::Meta {
 
   shared_ptr<AbstractPacket> ProbeServices::on_read_by_group_type_response_received(const std::shared_ptr<PacketRouter>& router, const shared_ptr<AbstractPacket>& packet) {
     LOG.debug("Response received", "ProbeServices");
+    PacketUuid error_uuid = get_uuid();
+    error_uuid.response_packet_code = Format::HCI::AttributeCode::ErrorResponse;
+    router->remove_callback(error_uuid);
 
     auto read_by_group_type_response_packet = dynamic_pointer_cast<Packet::Commands::ReadByGroupTypeResponse>(packet);
     if(read_by_group_type_response_packet == nullptr) {
@@ -108,6 +121,17 @@ namespace Packet::Meta {
       m_waiting_services = true;
       m_read_by_type_group_request_packet->set_handles(static_cast<uint16_t>(last_group_end_handle + 1), 0xFFFF);
     }
+
+    return shared_from(this);
+  }
+
+  shared_ptr<AbstractPacket> ProbeServices::on_error_response_received(const std::shared_ptr<PacketRouter>& router, const shared_ptr<AbstractPacket>& packet) {
+    LOG.debug("Error received", "ProbeCharacteristics");
+    PacketUuid response_uuid = get_uuid();
+    response_uuid.response_packet_code = Format::HCI::AttributeCode::ReadByTypeResponse;
+    router->remove_callback(response_uuid);
+
+    import_status(*packet);
 
     return shared_from(this);
   }

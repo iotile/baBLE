@@ -2,7 +2,6 @@
 #define BABLE_LINUX_DISCONNECTREQUEST_HPP
 
 #include "../RequestPacket.hpp"
-#include "../../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 
 namespace Packet::Commands {
 

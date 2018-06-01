@@ -2,6 +2,7 @@
 #define BABLE_LINUX_REQUESTPACKET_HPP
 
 #include "../../PacketRouter/PacketRouter.hpp"
+#include "../../../Log/Log.hpp"
 
 namespace Packet::Commands {
 

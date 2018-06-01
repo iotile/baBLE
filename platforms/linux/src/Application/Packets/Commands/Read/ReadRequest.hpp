@@ -2,7 +2,6 @@
 #define BABLE_LINUX_READREQUEST_HPP
 
 #include "../RequestPacket.hpp"
-#include "./ReadResponse.hpp"
 
 namespace Packet::Commands {
 

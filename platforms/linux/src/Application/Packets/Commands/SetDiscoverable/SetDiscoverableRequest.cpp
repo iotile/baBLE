@@ -1,4 +1,5 @@
 #include "SetDiscoverableRequest.hpp"
+#include "../../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 
 using namespace std;
 

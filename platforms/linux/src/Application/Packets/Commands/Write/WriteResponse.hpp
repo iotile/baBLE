@@ -1,5 +1,6 @@
 #ifndef BABLE_LINUX_WRITERESPONSE_HPP
 #define BABLE_LINUX_WRITERESPONSE_HPP
+
 #include "../ResponsePacket.hpp"
 
 namespace Packet::Commands {

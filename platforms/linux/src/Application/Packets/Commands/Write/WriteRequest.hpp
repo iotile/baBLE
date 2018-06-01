@@ -2,7 +2,6 @@
 #define BABLE_LINUX_WRITEREQUEST_HPP
 
 #include "../RequestPacket.hpp"
-#include "./WriteResponse.hpp"
 
 namespace Packet::Commands {
 

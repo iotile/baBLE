@@ -1,20 +1,19 @@
 #include <memory>
 #include <uvw.hpp>
 #include "Log/Log.hpp"
+#include "Application/PacketBuilder/PacketBuilder.hpp"
+#include "Application/PacketRouter/PacketRouter.hpp"
 #include "Format/Ascii/AsciiFormat.hpp"
-#include "Format/MGMT/MGMTFormat.hpp"
 #include "Format/Flatbuffers/FlatbuffersFormat.hpp"
 #include "Transport/Socket/MGMT/MGMTSocket.hpp"
 #include "Transport/Socket/HCI/HCISocket.hpp"
 #include "Transport/Socket/StdIO/StdIOSocket.hpp"
 #include "Transport/SocketContainer/SocketContainer.hpp"
-#include "Application/PacketBuilder/PacketBuilder.hpp"
 #include "Exceptions/AbstractException.hpp"
 #include "Exceptions/RuntimeError/RuntimeErrorException.hpp"
 #include "Application/Packets/Errors/BaBLEError/BaBLEError.hpp"
 #include "Application/Packets/Control/Ready/Ready.hpp"
 #include "bootstrap.hpp"
-#include "Application/PacketRouter/PacketRouter.hpp"
 
 #define EXPIRATION_DURATION_SECONDS 60
 

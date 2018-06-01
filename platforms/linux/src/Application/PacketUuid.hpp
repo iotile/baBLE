@@ -1,11 +1,8 @@
-#ifndef BABLE_LINUX_PacketUuid_HPP
-#define BABLE_LINUX_PacketUuid_HPP
+#ifndef BABLE_LINUX_PACKETUUID_HPP
+#define BABLE_LINUX_PACKETUUID_HPP
 
-#include <cstdint>
-#include <string>
-#include "Packets/constants.hpp"
 #include "../Format/HCI/constants.hpp"
-#include "../Log/Log.hpp"
+#include "Packets/constants.hpp"
 
 namespace Packet {
 
@@ -68,4 +65,4 @@ namespace std {
 
 }
 
-#endif //BABLE_LINUX_PacketUuid_HPP
+#endif //BABLE_LINUX_PACKETUUID_HPPs

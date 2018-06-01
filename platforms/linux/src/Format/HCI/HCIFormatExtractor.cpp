@@ -1,4 +1,5 @@
 #include "HCIFormatExtractor.hpp"
+#include "../../Log/Log.hpp"
 
 // Statics
 uint8_t HCIFormatExtractor::extract_type_code(const std::vector<uint8_t>& data) {

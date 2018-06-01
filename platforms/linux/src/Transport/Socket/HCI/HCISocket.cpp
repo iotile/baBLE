@@ -1,4 +1,9 @@
+#include <cerrno>
+#include <cstring>
+#include <unistd.h>
 #include "HCISocket.hpp"
+#include "../../../Exceptions/Socket/SocketException.hpp"
+#include "../../../Log/Log.hpp"
 
 using namespace std;
 using namespace uvw;

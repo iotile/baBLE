@@ -1,15 +1,7 @@
 #ifndef BABLE_LINUX_HCIFORMATEXTRACTOR_HPP
 #define BABLE_LINUX_HCIFORMATEXTRACTOR_HPP
 
-#include <array>
-#include <cstdint>
-#include <utility>
-#include <stdexcept>
-#include <vector>
-#include "./constants.hpp"
 #include "../AbstractExtractor.hpp"
-#include "../../Log/Log.hpp"
-#include "../../Exceptions/WrongFormat/WrongFormatException.hpp"
 
 class HCIFormatExtractor : public AbstractExtractor {
 

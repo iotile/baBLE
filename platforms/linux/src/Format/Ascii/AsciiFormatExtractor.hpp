@@ -1,13 +1,7 @@
 #ifndef BABLE_LINUX_ASCIIFORMATEXTRACTOR_HPP
 #define BABLE_LINUX_ASCIIFORMATEXTRACTOR_HPP
 
-#include <cstdint>
-#include <vector>
-#include <stdexcept>
-#include "./constants.hpp"
 #include "../AbstractExtractor.hpp"
-#include "../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
-#include "../../Exceptions/WrongFormat/WrongFormatException.hpp"
 
 class AsciiFormatExtractor : public AbstractExtractor {
 

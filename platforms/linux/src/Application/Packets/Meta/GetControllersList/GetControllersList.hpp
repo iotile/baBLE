@@ -3,9 +3,7 @@
 
 #include "../../../AbstractPacket.hpp"
 #include "../../Commands/GetControllersIds/GetControllersIdsRequest.hpp"
-#include "../../Commands/GetControllersIds/GetControllersIdsResponse.hpp"
 #include "../../Commands/GetControllerInfo/GetControllerInfoRequest.hpp"
-#include "../../Commands/GetControllerInfo/GetControllerInfoResponse.hpp"
 
 namespace Packet::Meta {
 

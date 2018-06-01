@@ -1,4 +1,6 @@
 #include "PacketRouter.hpp"
+#include "../../Log/Log.hpp"
+#include "../../Exceptions/RuntimeError/RuntimeErrorException.hpp"
 
 using namespace std;
 

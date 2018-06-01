@@ -1,4 +1,5 @@
 #include "DeviceFound.hpp"
+#include "../../../../Log/Log.hpp"
 
 using namespace std;
 

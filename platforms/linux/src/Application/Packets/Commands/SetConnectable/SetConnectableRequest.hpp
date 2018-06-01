@@ -2,7 +2,6 @@
 #define BABLE_LINUX_SETCONNECTABLEREQUEST_HPP
 
 #include "../RequestPacket.hpp"
-#include "../../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 
 namespace Packet::Commands {
 

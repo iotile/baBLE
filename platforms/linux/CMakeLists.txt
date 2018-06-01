@@ -169,15 +169,9 @@ set(SOURCES_FILES
         src/Application/Packets/Commands/SetPowered/SetPoweredResponse.cpp
         src/Application/Packets/Commands/SetPowered/SetPoweredResponse.hpp
         src/Application/Packets/Commands/Write/WriteResponse.cpp
-        src/Application/Packets/Commands/Write/WriteResponse.hpp src/Application/AbstractPacket.cpp)
+        src/Application/Packets/Commands/Write/WriteResponse.hpp
+        src/Application/AbstractPacket.cpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
-
-#find_program(iwyu_path NAMES include-what-you-use iwyu)
-#if(NOT iwyu_path)
-#    message(FATAL_ERROR "Could not find the program include-what-you-use")
-#endif()
-#
-#set_property(TARGET baBLE_linux PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
 
 ## Include dependencies
 # TODO: download dependencies using cmake ExternalProject -> git repo will be lighter but dependent on other repos...

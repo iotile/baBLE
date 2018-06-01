@@ -1,10 +1,7 @@
 #ifndef BABLE_LINUX_PROBECHARACTERISTICS_HPP
 #define BABLE_LINUX_PROBECHARACTERISTICS_HPP
 
-#include "../../../AbstractPacket.hpp"
 #include "../../Commands/ReadByType/ReadByTypeRequest.hpp"
-#include "../../Commands/ReadByType/ReadByTypeResponse.hpp"
-#include "../../Errors/ErrorResponse/ErrorResponse.hpp"
 
 namespace Packet::Meta {
 

@@ -179,6 +179,15 @@ def fb_get_controller_info(uuid, controller_id):
     return build_packet(builder, uuid, payload, Payload.Payload.GetControllerInfo, controller_id)
 
 
+## GetControllerInfo
+def fb_get_mgmt_info(uuid):
+    builder = flatbuffers.Builder(0)
+    GetMGMTInfo.GetMGMTInfoStart(builder)
+    payload = GetMGMTInfo.GetMGMTInfoEnd(builder)
+
+    return build_packet(builder, uuid, payload, Payload.Payload.GetMGMTInfo)
+
+
 ## GetConnectedDevices
 def fb_get_connected_devices(uuid, controller_id):
     builder = flatbuffers.Builder(0)
@@ -333,6 +342,8 @@ try:
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Version:", version, "Revision:", revision)
+
+            process.stdin.write(fb_get_connected_devices("mgmt", 0))
         elif packet.PayloadType() == Payload.Payload().StartScan:
             startscan = StartScan.StartScan()
             startscan.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -405,6 +416,9 @@ try:
                   "RSSI:", rssi, "Flags:", flags, "Device UUID:", device_uuid, "Company id:", company_id,
                   "Manufacturer data advertised:", manufacturer_data_advertised,
                   "Manufacturer data scanned:", manufacturer_data_scanned, "Device name:", device_name)
+
+            process.stdin.write(fb_stop_scan("0002", 0))
+
         elif packet.PayloadType() == Payload.Payload().DeviceConnected:
             device_connected = DeviceConnected.DeviceConnected()
             device_connected.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -423,8 +437,12 @@ try:
                   "Controller ID:", controller_id, "Address type:", address_type, "Address:", address,
                   "Flags:", flags, "Device UUID:", device_uuid, "Company id:", company_id, "Device name:", device_name)
 
-            # process.stdin.write(fb_write("0002", 0, 0x0040, 0x0003, "Alexis"))
-            process.stdin.write(fb_probe_characteristics("12356789", 0, 0x0040))
+            process.stdin.write(fb_write_without_response("0002", 0, 0x0040, 0x0003, "Alex"))
+            time.sleep(2)
+            process.stdin.write(fb_read("0002", 0, 0x0040, 0x0003))
+
+            # process.stdin.write(fb_probe_characteristics("12356789", 0, 0x0040))
+            # process.stdin.write(fb_probe_services("12356789", 0, 0x0040))
         elif packet.PayloadType() == Payload.Payload().DeviceDisconnected:
             device_disconnected = DeviceDisconnected.DeviceDisconnected()
             device_disconnected.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -509,6 +527,8 @@ try:
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controllers IDs:", ids, "Num controllers:", num_controllers)
+
+            # process.stdin.write(fb_get_controller_info("test", 0))
         elif packet.PayloadType() == Payload.Payload().ControllerAdded:
             controller_added = ControllerAdded.ControllerAdded()
             controller_added.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -581,6 +601,9 @@ try:
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Connection handle:", connection_handle,
                   "Attribute handle:", attribute_handle, "Data:", data_read)
+
+            process.stdin.write(fb_remove_device("0003", 0, address_device))
+            process.stdin.write(fb_disconnect("0004", 0, address_device))
         elif packet.PayloadType() == Payload.Payload().Write:
             write = Write.Write()
             write.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -593,9 +616,6 @@ try:
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Connection handle:", connection_handle,
                   "Attribute handle:", attribute_handle, "Data:", data_written)
-
-            # process.stdin.write(fb_remove_device("0003", 0, address_device))
-            # process.stdin.write(fb_disconnect("0004", 0, address_device))
 
         elif packet.PayloadType() == Payload.Payload().WriteWithoutResponse:
             write_without_response = WriteWithoutResponse.WriteWithoutResponse()
@@ -638,6 +658,9 @@ try:
             for service in services:
                 print("\tHandle:", service.Handle(), "Group end handle:", service.GroupEndHandle(),
                       "UUID:", service.Uuid())
+
+            process.stdin.write(fb_remove_device("0003", 0, address_device))
+            process.stdin.write(fb_disconnect("0004", 0, address_device))
         elif packet.PayloadType() == Payload.Payload().ProbeCharacteristics:
             probe_characteristics = ProbeCharacteristics.ProbeCharacteristics()
             probe_characteristics.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -658,8 +681,8 @@ try:
                       "Notify:", characteristic.Notify(), "Read:", characteristic.Read(),
                       "Write:", characteristic.Write(), "Broadcast:", characteristic.Broadcast())
 
-            process.stdin.write(fb_remove_device("0003", 0, address_device))
-            process.stdin.write(fb_disconnect("0004", 0, address_device))
+            # process.stdin.write(fb_remove_device("0003", 0, address_device))
+            # process.stdin.write(fb_disconnect("0004", 0, address_device))
         elif packet.PayloadType() == Payload.Payload().Ready:
             ready = Ready.Ready()
             ready.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -670,6 +693,8 @@ try:
             # process.stdin.write(fb_probe_characteristics("0001", 0, 0x0040))
             # process.stdin.write(fb_start_scan("0001", 0))
             # process.stdin.write(fb_get_controllers_ids("0001"))
+            # process.stdin.write(fb_set_powered("0001", 0, True))
+            # process.stdin.write(fb_get_controllers_list("list"))
 
         elif packet.PayloadType() == Payload.Payload().BaBLEError:
             error = BaBLEError.BaBLEError()

@@ -1,5 +1,7 @@
 #include "./AbstractPacket.hpp"
 #include "./PacketRouter/PacketRouter.hpp"
+#include "../Exceptions/RuntimeError/RuntimeErrorException.hpp"
+#include "../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 
 namespace Packet {
 

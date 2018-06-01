@@ -1,3 +1,4 @@
+#include <iostream>
 #include "Log.hpp"
 
 using namespace std;

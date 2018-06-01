@@ -1,15 +1,13 @@
 #ifndef BABLE_LINUX_MGMTFORMATBUILDER_HPP
 #define BABLE_LINUX_MGMTFORMATBUILDER_HPP
 
+#include <array>
+#include <vector>
+#include "./constants.hpp"
+
 #if __BYTE_ORDER__ == __ORDER_PDP_ENDIAN__
 #error "Byte order not suported (PDP endian)"
 #endif
-
-#include <array>
-#include <cstdint>
-#include <vector>
-#include <string>
-#include "./constants.hpp"
 
 class MGMTFormatBuilder {
 

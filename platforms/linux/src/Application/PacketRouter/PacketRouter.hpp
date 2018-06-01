@@ -1,13 +1,10 @@
 #ifndef BABLE_LINUX_PACKETROUTER_HPP
 #define BABLE_LINUX_PACKETROUTER_HPP
 
-#include <chrono>
-#include <functional>
 #include <map>
 #include <uvw.hpp>
 #include "../AbstractPacket.hpp"
 #include "../../Log/Loggable.hpp"
-#include "../PacketUuid.hpp"
 
 class PacketRouter : public Loggable {
 

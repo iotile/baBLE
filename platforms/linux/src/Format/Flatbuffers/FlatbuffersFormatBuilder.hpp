@@ -6,21 +6,9 @@
 class FlatbuffersFormatBuilder : public flatbuffers::FlatBufferBuilder {
 
 public:
-  explicit FlatbuffersFormatBuilder(uint16_t controller_id, const std::string& uuid_request, const std::string& native_class)
-      : flatbuffers::FlatBufferBuilder::FlatBufferBuilder(0) {
-    m_controller_id = controller_id;
-    m_native_class = native_class;
-    m_uuid_request = uuid_request;
-    m_status = BaBLE::StatusCode::Success;
-    m_native_status = 0x00;
-  };
+  explicit FlatbuffersFormatBuilder(uint16_t controller_id, const std::string& uuid_request, const std::string& native_class);
 
-  FlatbuffersFormatBuilder& set_status(BaBLE::StatusCode status, uint8_t native_status = 0x00) {
-    m_status = status;
-    m_native_status = native_status;
-
-    return *this;
-  };
+  FlatbuffersFormatBuilder& set_status(BaBLE::StatusCode status, uint8_t native_status = 0x00);
 
   template<class T>
   std::vector<uint8_t> build(const flatbuffers::Offset<T>& payload, BaBLE::Payload payload_type);

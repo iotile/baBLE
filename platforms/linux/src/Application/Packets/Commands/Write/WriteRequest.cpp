@@ -1,4 +1,7 @@
 #include "WriteRequest.hpp"
+#include "./WriteResponse.hpp"
+#include "../../../../Exceptions/RuntimeError/RuntimeErrorException.hpp"
+#include "../../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 
 using namespace std;
 

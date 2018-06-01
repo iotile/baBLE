@@ -1,14 +1,8 @@
 #ifndef BABLE_LINUX_PACKETBUILDER_HPP
 #define BABLE_LINUX_PACKETBUILDER_HPP
 
-#include <functional>
-#include <memory>
-#include <iostream>
-#include <unordered_map>
 #include "../AbstractPacket.hpp"
 #include "../../Format/AbstractFormat.hpp"
-#include "../../Exceptions/NotFound/NotFoundException.hpp"
-#include "../PacketRouter/PacketRouter.hpp"
 
 // Used to register all the packets on startup and then build them from received raw bytes.
 class PacketBuilder : public Loggable {

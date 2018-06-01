@@ -1,13 +1,7 @@
 #ifndef BABLE_LINUX_LOG_HPP
 #define BABLE_LINUX_LOG_HPP
 
-#include <ctime>
-#include <iomanip>
-#include <iostream>
-#include <sstream>
-#include <string>
 #include <vector>
-
 #include "Loggable.hpp"
 #include "../utils/colors.hpp"
 #include "../utils/stream_formats.hpp"

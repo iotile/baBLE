@@ -1,4 +1,8 @@
 #include "ProbeCharacteristics.hpp"
+#include "../../Commands/ReadByType/ReadByTypeResponse.hpp"
+#include "../../Errors/ErrorResponse/ErrorResponse.hpp"
+#include "../../../../Exceptions/RuntimeError/RuntimeErrorException.hpp"
+#include "../../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 
 using namespace std;
 

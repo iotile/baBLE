@@ -1,16 +1,11 @@
 #ifndef BABLE_LINUX_ABSTRACTPACKET_HPP
 #define BABLE_LINUX_ABSTRACTPACKET_HPP
 
-#include <cstdint>
-#include <utility>
-#include <vector>
-#include "Packets/constants.hpp"
 #include "PacketUuid.hpp"
 #include "../Format/Ascii/AsciiFormat.hpp"
 #include "../Format/HCI/HCIFormat.hpp"
 #include "../Format/MGMT/MGMTFormat.hpp"
 #include "../Format/Flatbuffers/FlatbuffersFormat.hpp"
-#include "../Exceptions/RuntimeError/RuntimeErrorException.hpp"
 
 // FIXME: Need it to avoid cyclic dependency...
 class PacketRouter;

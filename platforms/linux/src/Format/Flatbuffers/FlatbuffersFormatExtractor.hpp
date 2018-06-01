@@ -1,11 +1,8 @@
 #ifndef BABLE_LINUX_FLATBUFFERSFORMATEXTRACTOR_HPP
 #define BABLE_LINUX_FLATBUFFERSFORMATEXTRACTOR_HPP
 
-#include <cstdint>
 #include <Packet_generated.h>
-#include <vector>
 #include "../AbstractExtractor.hpp"
-#include "../../Exceptions/WrongFormat/WrongFormatException.hpp"
 
 class FlatbuffersFormatExtractor : public AbstractExtractor {
 

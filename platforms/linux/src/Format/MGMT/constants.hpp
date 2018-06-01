@@ -1,10 +1,6 @@
 #ifndef BABLE_LINUX_MGMT_CONSTANTS_HPP
 #define BABLE_LINUX_MGMT_CONSTANTS_HPP
 
-#include <array>
-#include <cstdint>
-#include <vector>
-
 namespace Format::MGMT {
 
   const std::size_t header_length = 6;

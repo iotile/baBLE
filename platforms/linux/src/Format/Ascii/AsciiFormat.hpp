@@ -1,11 +1,7 @@
 #ifndef BABLE_LINUX_ASCIIFORMAT_HPP
 #define BABLE_LINUX_ASCIIFORMAT_HPP
 
-#include <array>
-#include <cstdint>
-#include <sstream>
-#include <string>
-#include <vector>
+#include "constants.hpp"
 #include "../AbstractFormat.hpp"
 #include "AsciiFormatBuilder.hpp"
 #include "AsciiFormatExtractor.hpp"

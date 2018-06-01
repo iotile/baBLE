@@ -1,4 +1,10 @@
+#include <cerrno>
+#include <cstring>
+#include <fcntl.h>
+#include <unistd.h>
 #include "MGMTSocket.hpp"
+#include "../../../Exceptions/Socket/SocketException.hpp"
+#include "../../../Log/Log.hpp"
 
 using namespace std;
 using namespace uvw;

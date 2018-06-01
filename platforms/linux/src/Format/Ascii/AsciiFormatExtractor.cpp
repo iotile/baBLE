@@ -1,4 +1,6 @@
 #include "AsciiFormatExtractor.hpp"
+#include "constants.hpp"
+#include "../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 
 using namespace std;
 

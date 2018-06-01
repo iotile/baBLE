@@ -1,4 +1,5 @@
 #include "StdIOSocket.hpp"
+#include "../../../Log/Log.hpp"
 
 using namespace std;
 

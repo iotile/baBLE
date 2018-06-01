@@ -1,12 +1,9 @@
 #ifndef BABLE_LINUX_SOCKETCONTAINER_HPP
 #define BABLE_LINUX_SOCKETCONTAINER_HPP
 
-#include <cstdint>
-#include <memory>
 #include <map>
 #include "../AbstractSocket.hpp"
 #include "../../Application/AbstractPacket.hpp"
-#include "../../Exceptions/NotFound/NotFoundException.hpp"
 
 class SocketContainer {
 

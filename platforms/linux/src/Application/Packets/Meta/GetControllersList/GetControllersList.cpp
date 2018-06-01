@@ -1,4 +1,7 @@
 #include "GetControllersList.hpp"
+#include "../../Commands/GetControllersIds/GetControllersIdsResponse.hpp"
+#include "../../Commands/GetControllerInfo/GetControllerInfoResponse.hpp"
+#include "../../../../Exceptions/RuntimeError/RuntimeErrorException.hpp"
 
 using namespace std;
 

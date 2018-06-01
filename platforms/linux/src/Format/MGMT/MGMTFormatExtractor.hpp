@@ -1,15 +1,8 @@
 #ifndef BABLE_LINUX_MGMTFORMATEXTRACTOR_HPP
 #define BABLE_LINUX_MGMTFORMATEXTRACTOR_HPP
 
-#include <array>
-#include <cstdint>
-#include <utility>
-#include <stdexcept>
-#include <vector>
-#include "./constants.hpp"
-#include "../../Log/Log.hpp"
-#include "../../Exceptions/WrongFormat/WrongFormatException.hpp"
 #include "../AbstractExtractor.hpp"
+#include "./constants.hpp"
 
 class MGMTFormatExtractor : public AbstractExtractor {
 

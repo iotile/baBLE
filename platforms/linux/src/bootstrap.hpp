@@ -1,7 +1,6 @@
 #ifndef BABLE_LINUX_BOOTSTRAP_CPP
 #define BABLE_LINUX_BOOTSTRAP_CPP
 
-#include <memory>
 #include "Format/AbstractFormat.hpp"
 #include "Application/PacketBuilder/PacketBuilder.hpp"
 #include "Application/Packets/Commands/GetMGMTInfo/GetMGMTInfoRequest.hpp"
@@ -26,16 +25,19 @@
 #include "Application/Packets/Commands/GetControllersIds/GetControllersIdsResponse.hpp"
 #include "Application/Packets/Commands/GetControllerInfo/GetControllerInfoRequest.hpp"
 #include "Application/Packets/Commands/GetControllerInfo/GetControllerInfoResponse.hpp"
+#include "Application/Packets/Commands/ReadByGroupType/ReadByGroupTypeResponse.hpp"
+#include "Application/Packets/Commands/ReadByType/ReadByTypeResponse.hpp"
 #include "Application/Packets/Commands/Read/ReadRequest.hpp"
 #include "Application/Packets/Commands/Read/ReadResponse.hpp"
 #include "Application/Packets/Commands/Write/WriteRequest.hpp"
 #include "Application/Packets/Commands/Write/WriteResponse.hpp"
 #include "Application/Packets/Commands/NotificationReceived/NotificationReceived.hpp"
-#include "Application/Packets/Meta/ProbeServices/ProbeServices.hpp"
-#include "Application/Packets/Meta/ProbeCharacteristics/ProbeCharacteristics.hpp"
 #include "Application/Packets/Commands/WriteWithoutResponse/WriteWithoutResponse.hpp"
 #include "Application/Packets/Commands/GetConnectedDevices/GetConnectedDevicesRequest.hpp"
 #include "Application/Packets/Commands/GetConnectedDevices/GetConnectedDevicesResponse.hpp"
+#include "Application/Packets/Control/Exit/Exit.hpp"
+#include "Application/Packets/Control/Ready/Ready.hpp"
+#include "Application/Packets/Errors/ErrorResponse/ErrorResponse.hpp"
 #include "Application/Packets/Events/DeviceConnected/DeviceConnected.hpp"
 #include "Application/Packets/Events/DeviceDisconnected/DeviceDisconnected.hpp"
 #include "Application/Packets/Events/DeviceFound/DeviceFound.hpp"
@@ -49,8 +51,8 @@
 #include "Application/Packets/Events/LEAdvertisingReport/LEAdvertisingReport.hpp"
 #include "Application/Packets/Events/LEReadRemoteUsedFeaturesComplete/LEReadRemoteUsedFeaturesComplete.hpp"
 #include "Application/Packets/Meta/GetControllersList/GetControllersList.hpp"
-#include "Application/Packets/Control/Exit/Exit.hpp"
-#include "Application/Packets/Control/Ready/Ready.hpp"
+#include "Application/Packets/Meta/ProbeServices/ProbeServices.hpp"
+#include "Application/Packets/Meta/ProbeCharacteristics/ProbeCharacteristics.hpp"
 
 using namespace std;
 using Packet::Meta::GetControllersList;
