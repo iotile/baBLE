@@ -3,46 +3,52 @@
 
 #include "../RequestPacket.hpp"
 
-namespace Packet::Commands {
+namespace Packet {
 
-class ReadRequest : public RequestPacket<ReadRequest> {
+  namespace Commands {
 
-  public:
-    static const uint16_t packet_code(Packet::Type type) {
-      switch(type) {
-        case Packet::Type::MGMT:
-          throw std::invalid_argument("'Read' packet is not compatible with MGMT protocol.");
+    class ReadRequest : public RequestPacket<ReadRequest> {
 
-        case Packet::Type::HCI:
-          return Format::HCI::AttributeCode::ReadRequest;
+    public:
+      static const uint16_t packet_code(Packet::Type type) {
+        switch (type) {
+          case Packet::Type::MGMT:
+            throw std::invalid_argument("'Read' packet is not compatible with MGMT protocol.");
 
-        case Packet::Type::ASCII:
-          return Format::Ascii::CommandCode::Read;
+          case Packet::Type::HCI:
+            return Format::HCI::AttributeCode::ReadRequest;
 
-        case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(BaBLE::Payload::Read);
+          case Packet::Type::ASCII:
+            return Format::Ascii::CommandCode::Read;
 
-        case Packet::Type::NONE:
-          return 0;
-      }
+          case Packet::Type::FLATBUFFERS:
+            return static_cast<uint16_t>(BaBLE::Payload::Read);
+
+          case Packet::Type::NONE:
+            return 0;
+        }
+      };
+
+      ReadRequest(Packet::Type initial_type, Packet::Type translated_type);
+
+      void unserialize(AsciiFormatExtractor& extractor) override;
+      void unserialize(FlatbuffersFormatExtractor& extractor) override;
+      void unserialize(HCIFormatExtractor& extractor) override;
+
+      std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
+      std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
+
+      void before_sent(const std::shared_ptr<PacketRouter>& router) override;
+      std::shared_ptr<Packet::AbstractPacket> on_response_received(const std::shared_ptr<PacketRouter>& router,
+                                                                   const std::shared_ptr<AbstractPacket>& packet) override;
+      std::shared_ptr<Packet::AbstractPacket> on_error_response_received(const std::shared_ptr<PacketRouter>& router,
+                                                                         const std::shared_ptr<AbstractPacket>& packet);
+
+    private:
+      uint16_t m_attribute_handle;
     };
 
-    ReadRequest(Packet::Type initial_type, Packet::Type translated_type);
-
-    void unserialize(AsciiFormatExtractor& extractor) override;
-    void unserialize(FlatbuffersFormatExtractor& extractor) override;
-    void unserialize(HCIFormatExtractor& extractor) override;
-
-    std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
-    std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
-
-    void before_sent(const std::shared_ptr<PacketRouter>& router) override;
-    std::shared_ptr<Packet::AbstractPacket> on_response_received(const std::shared_ptr<PacketRouter>& router, const std::shared_ptr<AbstractPacket>& packet) override;
-    std::shared_ptr<Packet::AbstractPacket> on_error_response_received(const std::shared_ptr<PacketRouter>& router, const std::shared_ptr<AbstractPacket>& packet);
-
-  private:
-    uint16_t m_attribute_handle;
-  };
+  }
 
 }
 

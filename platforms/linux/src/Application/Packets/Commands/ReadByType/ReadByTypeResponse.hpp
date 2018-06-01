@@ -3,49 +3,53 @@
 
 #include "../ResponsePacket.hpp"
 
-namespace Packet::Commands {
+namespace Packet {
 
-  class ReadByTypeResponse : public ResponsePacket<ReadByTypeResponse> {
+  namespace Commands {
 
-  public:
-    static const uint16_t packet_code(Packet::Type type) {
-      switch(type) {
-        case Packet::Type::MGMT:
-          throw std::invalid_argument("'ReadByTypeResponse' packet is not compatible with MGMT protocol.");
+    class ReadByTypeResponse : public ResponsePacket<ReadByTypeResponse> {
 
-        case Packet::Type::HCI:
-          return Format::HCI::AttributeCode::ReadByTypeResponse;
+    public:
+      static const uint16_t packet_code(Packet::Type type) {
+        switch (type) {
+          case Packet::Type::MGMT:
+            throw std::invalid_argument("'ReadByTypeResponse' packet is not compatible with MGMT protocol.");
 
-        case Packet::Type::ASCII:
-          return Format::Ascii::CommandCode::ReadByTypeResponse;
+          case Packet::Type::HCI:
+            return Format::HCI::AttributeCode::ReadByTypeResponse;
 
-        case Packet::Type::FLATBUFFERS:
-          throw std::invalid_argument("'ReadByTypeResponse' packet is not compatible with Flatbuffers protocol.");
+          case Packet::Type::ASCII:
+            return Format::Ascii::CommandCode::ReadByTypeResponse;
 
-        case Packet::Type::NONE:
-          return 0;
-      }
+          case Packet::Type::FLATBUFFERS:
+            throw std::invalid_argument("'ReadByTypeResponse' packet is not compatible with Flatbuffers protocol.");
+
+          case Packet::Type::NONE:
+            return 0;
+        }
+      };
+
+      ReadByTypeResponse(Packet::Type initial_type, Packet::Type translated_type);
+
+      void unserialize(HCIFormatExtractor& extractor) override;
+
+      std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
+
+      inline std::vector<Format::HCI::Characteristic> get_characteristics() const {
+        return m_characteristics;
+      };
+
+      inline uint16_t get_last_ending_handle() const {
+        return m_last_ending_handle;
+      };
+
+    private:
+      std::vector<Format::HCI::Characteristic> m_characteristics;
+      uint16_t m_last_ending_handle;
+
     };
 
-    ReadByTypeResponse(Packet::Type initial_type, Packet::Type translated_type);
-
-    void unserialize(HCIFormatExtractor& extractor) override;
-
-    std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
-
-    inline std::vector<Format::HCI::Characteristic> get_characteristics() const {
-      return m_characteristics;
-    };
-
-    inline uint16_t get_last_ending_handle() const {
-      return m_last_ending_handle;
-    };
-
-  private:
-    std::vector<Format::HCI::Characteristic> m_characteristics;
-    uint16_t m_last_ending_handle;
-
-  };
+  }
 
 }
 

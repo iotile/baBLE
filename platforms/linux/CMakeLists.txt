@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.5)
 project(baBLE_linux)
 
 set(CMAKE_CXX_STANDARD 14)
@@ -7,8 +7,16 @@ set(CMAKE_CXX_FLAGS "-funsigned-char")
 ## Build executable from sources files
 set(SOURCES_FILES
         src/main.cpp
+        src/utils/colors.hpp
+        src/utils/stream_formats.hpp
         src/Log/Log.cpp
+        src/Log/Loggable.hpp
+        src/Application/Packets/constants.hpp
+        src/Application/AbstractPacket.hpp
+        src/Application/PacketUuid.hpp
         src/Application/PacketBuilder/PacketBuilder.cpp
+        src/Application/Packets/Commands/RequestPacket.hpp
+        src/Application/Packets/Commands/ResponsePacket.hpp
         src/Application/Packets/Commands/GetMGMTInfo/GetMGMTInfoRequest.cpp
         src/Application/Packets/Commands/StartScan/StartScanRequest.cpp
         src/Application/Packets/Commands/StopScan/StopScanRequest.cpp
@@ -25,6 +33,7 @@ set(SOURCES_FILES
         src/Application/Packets/Commands/GetControllersIds/GetControllersIdsRequest.cpp
         src/Application/Packets/Commands/GetControllerInfo/GetControllerInfoRequest.cpp
         src/Application/Packets/Commands/GetConnectedDevices/GetConnectedDevicesRequest.cpp
+        src/Application/Packets/Events/EventPacket.hpp
         src/Application/Packets/Events/DeviceFound/DeviceFound.cpp
         src/Application/Packets/Events/Discovering/Discovering.cpp
         src/Application/Packets/Events/DeviceConnected/DeviceConnected.cpp
@@ -43,18 +52,36 @@ set(SOURCES_FILES
         src/Application/Packets/Meta/ProbeCharacteristics/ProbeCharacteristics.cpp
         src/Application/Packets/Control/Ready/Ready.cpp
         src/Application/Packets/Control/Exit/Exit.cpp
+        src/Format/AbstractFormat.hpp
+        src/Format/AbstractExtractor.hpp
+        src/Format/MGMT/constants.hpp
+        src/Format/MGMT/MGMTFormat.hpp
         src/Format/MGMT/MGMTFormatBuilder.cpp
         src/Format/MGMT/MGMTFormatExtractor.cpp
+        src/Format/Flatbuffers/FlatbuffersFormat.hpp
         src/Format/Flatbuffers/FlatbuffersFormatBuilder.cpp
         src/Format/Flatbuffers/FlatbuffersFormatExtractor.cpp
+        src/Format/Ascii/constants.hpp
+        src/Format/Ascii/AsciiFormat.hpp
         src/Format/Ascii/AsciiFormatBuilder.cpp
         src/Format/Ascii/AsciiFormatExtractor.cpp
+        src/Format/HCI/constants.hpp
+        src/Format/HCI/HCIFormat.hpp
         src/Format/HCI/HCIFormatBuilder.cpp
         src/Format/HCI/HCIFormatExtractor.cpp
+        src/Transport/AbstractSocket.hpp
         src/Transport/SocketContainer/SocketContainer.cpp
         src/Transport/Socket/MGMT/MGMTSocket.cpp
         src/Transport/Socket/StdIO/StdIOSocket.cpp
         src/Transport/Socket/HCI/HCISocket.cpp
+        src/Exceptions/constants.hpp
+        src/Exceptions/AbstractException.hpp
+        src/Exceptions/NotFound/NotFoundException.hpp
+        src/Exceptions/WrongFormat/WrongFormatException.hpp
+        src/Exceptions/Socket/SocketException.hpp
+        src/Exceptions/InvalidCommand/InvalidCommandException.hpp
+        src/Exceptions/RuntimeError/RuntimeErrorException.hpp
+        src/bootstrap.hpp
         src/Application/PacketRouter/PacketRouter.cpp
         src/Application/Packets/Errors/ErrorResponse/ErrorResponse.cpp
         src/Application/Packets/Commands/ReadByType/ReadByTypeRequest.cpp
@@ -75,7 +102,8 @@ set(SOURCES_FILES
         src/Application/Packets/Commands/SetDiscoverable/SetDiscoverableResponse.cpp
         src/Application/Packets/Commands/SetPowered/SetPoweredResponse.cpp
         src/Application/Packets/Commands/Write/WriteResponse.cpp
-        src/Application/AbstractPacket.cpp)
+        src/Application/AbstractPacket.cpp
+        src/Application/Packets/Events/CommandComplete/CommandComplete.cpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies

@@ -3,50 +3,56 @@
 
 #include "../../Commands/ReadByType/ReadByTypeRequest.hpp"
 
-namespace Packet::Meta {
+namespace Packet {
 
-  class ProbeCharacteristics : public AbstractPacket {
+  namespace Meta {
 
-  public:
-    static const uint16_t packet_code(Packet::Type type) {
-      switch(type) {
-        case Packet::Type::MGMT:
-          throw std::invalid_argument("'ProbeCharacteristics' packet is not compatible with MGMT protocol.");
+    class ProbeCharacteristics : public AbstractPacket {
 
-        case Packet::Type::HCI:
-          throw std::invalid_argument("'ProbeCharacteristics' packet is not compatible with HCI protocol.");
+    public:
+      static const uint16_t packet_code(Packet::Type type) {
+        switch (type) {
+          case Packet::Type::MGMT:
+            throw std::invalid_argument("'ProbeCharacteristics' packet is not compatible with MGMT protocol.");
 
-        case Packet::Type::ASCII:
-          return Format::Ascii::CommandCode::ProbeCharacteristics;
+          case Packet::Type::HCI:
+            throw std::invalid_argument("'ProbeCharacteristics' packet is not compatible with HCI protocol.");
 
-        case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(BaBLE::Payload::ProbeCharacteristics);
+          case Packet::Type::ASCII:
+            return Format::Ascii::CommandCode::ProbeCharacteristics;
 
-        case Packet::Type::NONE:
-          return 0;
-      }
+          case Packet::Type::FLATBUFFERS:
+            return static_cast<uint16_t>(BaBLE::Payload::ProbeCharacteristics);
+
+          case Packet::Type::NONE:
+            return 0;
+        }
+      };
+
+      ProbeCharacteristics(Packet::Type initial_type, Packet::Type translated_type);
+
+      void unserialize(AsciiFormatExtractor& extractor) override;
+      void unserialize(FlatbuffersFormatExtractor& extractor) override;
+
+      std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
+      std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
+      std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
+
+      void before_sent(const std::shared_ptr<PacketRouter>& router) override;
+      std::shared_ptr<AbstractPacket> on_read_by_type_response_received(const std::shared_ptr<PacketRouter>& router,
+                                                                        const std::shared_ptr<AbstractPacket>& packet);
+      std::shared_ptr<AbstractPacket> on_error_response_received(const std::shared_ptr<PacketRouter>& router,
+                                                                 const std::shared_ptr<AbstractPacket>& packet);
+
+    private:
+      bool m_waiting_characteristics;
+
+      std::shared_ptr<Packet::Commands::ReadByTypeRequest> m_read_by_type_request_packet;
+      std::vector<Format::HCI::Characteristic> m_characteristics;
+
     };
 
-    ProbeCharacteristics(Packet::Type initial_type, Packet::Type translated_type);
-
-    void unserialize(AsciiFormatExtractor& extractor) override;
-    void unserialize(FlatbuffersFormatExtractor& extractor) override;
-
-    std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
-    std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
-    std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
-
-    void before_sent(const std::shared_ptr<PacketRouter>& router) override;
-    std::shared_ptr<AbstractPacket> on_read_by_type_response_received(const std::shared_ptr<PacketRouter>& router, const std::shared_ptr<AbstractPacket>& packet);
-    std::shared_ptr<AbstractPacket> on_error_response_received(const std::shared_ptr<PacketRouter>& router, const std::shared_ptr<AbstractPacket>& packet);
-
-  private:
-    bool m_waiting_characteristics;
-
-    std::shared_ptr<Packet::Commands::ReadByTypeRequest> m_read_by_type_request_packet;
-    std::vector<Format::HCI::Characteristic> m_characteristics;
-
-  };
+  }
 
 }
 

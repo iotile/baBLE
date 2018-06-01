@@ -17,6 +17,7 @@ namespace Packet {
     AddDeviceResponse,
     BaBLEError,
     ClassOfDeviceChanged,
+    CommandComplete,
     ControllerAdded,
     ControllerRemoved,
     DeviceAdded,

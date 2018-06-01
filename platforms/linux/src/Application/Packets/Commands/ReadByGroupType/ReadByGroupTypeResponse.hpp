@@ -3,49 +3,53 @@
 
 #include "../ResponsePacket.hpp"
 
-namespace Packet::Commands {
+namespace Packet {
 
-  class ReadByGroupTypeResponse : public ResponsePacket<ReadByGroupTypeResponse> {
+  namespace Commands {
 
-  public:
-    static const uint16_t packet_code(Packet::Type type) {
-      switch(type) {
-        case Packet::Type::MGMT:
-          throw std::invalid_argument("'ReadByGroupTypeResponse' packet is not compatible with MGMT protocol.");
+    class ReadByGroupTypeResponse : public ResponsePacket<ReadByGroupTypeResponse> {
 
-        case Packet::Type::HCI:
-          return Format::HCI::AttributeCode::ReadByGroupTypeResponse;
+    public:
+      static const uint16_t packet_code(Packet::Type type) {
+        switch (type) {
+          case Packet::Type::MGMT:
+            throw std::invalid_argument("'ReadByGroupTypeResponse' packet is not compatible with MGMT protocol.");
 
-        case Packet::Type::ASCII:
-          return Format::Ascii::CommandCode::ReadByGroupTypeResponse;
+          case Packet::Type::HCI:
+            return Format::HCI::AttributeCode::ReadByGroupTypeResponse;
 
-        case Packet::Type::FLATBUFFERS:
-          throw std::invalid_argument("'ReadByGroupTypeResponse' packet is not compatible with Flatbuffers protocol.");
+          case Packet::Type::ASCII:
+            return Format::Ascii::CommandCode::ReadByGroupTypeResponse;
 
-        case Packet::Type::NONE:
-          return 0;
-      }
+          case Packet::Type::FLATBUFFERS:
+            throw std::invalid_argument("'ReadByGroupTypeResponse' packet is not compatible with Flatbuffers protocol.");
+
+          case Packet::Type::NONE:
+            return 0;
+        }
+      };
+
+      ReadByGroupTypeResponse(Packet::Type initial_type, Packet::Type translated_type);
+
+      void unserialize(HCIFormatExtractor& extractor) override;
+
+      std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
+
+      inline std::vector<Format::HCI::Service> get_services() const {
+        return m_services;
+      };
+
+      inline uint16_t get_last_group_end_handle() const {
+        return m_last_group_end_handle;
+      };
+
+    private:
+      std::vector<Format::HCI::Service> m_services;
+      uint16_t m_last_group_end_handle;
+
     };
 
-    ReadByGroupTypeResponse(Packet::Type initial_type, Packet::Type translated_type);
-
-    void unserialize(HCIFormatExtractor& extractor) override;
-
-    std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
-
-    inline std::vector<Format::HCI::Service> get_services() const {
-      return m_services;
-    };
-
-    inline uint16_t get_last_group_end_handle() const {
-      return m_last_group_end_handle;
-    };
-
-  private:
-    std::vector<Format::HCI::Service> m_services;
-    uint16_t m_last_group_end_handle;
-
-  };
+  }
 
 }
 

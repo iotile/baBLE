@@ -2,27 +2,31 @@
 
 using namespace std;
 
-namespace Packet::Commands {
+namespace Packet {
 
-  GetControllerInfoRequest::GetControllerInfoRequest(Packet::Type initial_type, Packet::Type translated_type)
-      : RequestPacket(initial_type, translated_type) {
-    m_id = Packet::Id::GetControllerInfoRequest;
-  };
+  namespace Commands {
 
-  void GetControllerInfoRequest::unserialize(AsciiFormatExtractor& extractor) {};
+    GetControllerInfoRequest::GetControllerInfoRequest(Packet::Type initial_type, Packet::Type translated_type)
+        : RequestPacket(initial_type, translated_type) {
+      m_id = Packet::Id::GetControllerInfoRequest;
+    }
 
-  void GetControllerInfoRequest::unserialize(FlatbuffersFormatExtractor& extractor) {};
+    void GetControllerInfoRequest::unserialize(AsciiFormatExtractor& extractor) {}
 
-  vector<uint8_t> GetControllerInfoRequest::serialize(AsciiFormatBuilder& builder) const {
-    RequestPacket::serialize(builder);
-    builder.set_name("GetControllerInfo");
+    void GetControllerInfoRequest::unserialize(FlatbuffersFormatExtractor& extractor) {}
 
-    return builder.build();
-  };
+    vector<uint8_t> GetControllerInfoRequest::serialize(AsciiFormatBuilder& builder) const {
+      RequestPacket::serialize(builder);
+      builder.set_name("GetControllerInfo");
 
-  vector<uint8_t> GetControllerInfoRequest::serialize(MGMTFormatBuilder& builder) const {
-    RequestPacket::serialize(builder);
-    return builder.build();
-  };
+      return builder.build();
+    }
+
+    vector<uint8_t> GetControllerInfoRequest::serialize(MGMTFormatBuilder& builder) const {
+      RequestPacket::serialize(builder);
+      return builder.build();
+    }
+
+  }
 
 }

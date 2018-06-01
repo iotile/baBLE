@@ -3,13 +3,15 @@
 
 #include "../RequestPacket.hpp"
 
-  namespace Packet::Commands {
+namespace Packet {
+
+  namespace Commands {
 
     class AddDeviceRequest : public RequestPacket<AddDeviceRequest> {
 
     public:
       static const uint16_t packet_code(Packet::Type type) {
-        switch(type) {
+        switch (type) {
           case Packet::Type::MGMT:
             return Format::MGMT::CommandCode::AddDevice;
 
@@ -42,6 +44,8 @@
       uint8_t m_action;
 
     };
+
+  }
 
 }
 

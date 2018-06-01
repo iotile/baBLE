@@ -4,24 +4,28 @@
 #include "../../../AbstractPacket.hpp"
 #include "../../../../Exceptions/AbstractException.hpp"
 
-namespace Packet::Errors {
+namespace Packet {
 
-  class BaBLEError : public AbstractPacket {
+  namespace Errors {
 
-  public:
-    explicit BaBLEError(Packet::Type output_type);
+    class BaBLEError : public AbstractPacket {
 
-    std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
-    std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
+    public:
+      explicit BaBLEError(Packet::Type output_type);
 
-    void from_exception(const Exceptions::AbstractException& exception);
+      std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
+      std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
 
-  private:
-    Exceptions::Type m_type;
-    std::string m_message;
-    std::string m_name;
+      void from_exception(const Exceptions::AbstractException& exception);
 
-  };
+    private:
+      Exceptions::Type m_type;
+      std::string m_message;
+      std::string m_name;
+
+    };
+
+  }
 
 }
 

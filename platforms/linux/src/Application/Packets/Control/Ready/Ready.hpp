@@ -3,17 +3,21 @@
 
 #include "../../../AbstractPacket.hpp"
 
-namespace Packet::Control {
+namespace Packet {
 
-  class Ready : public AbstractPacket {
+  namespace Control {
 
-  public:
-    explicit Ready(Packet::Type output_type);
+    class Ready : public AbstractPacket {
 
-    std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
-    std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
+    public:
+      explicit Ready(Packet::Type output_type);
 
-  };
+      std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
+      std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
+
+    };
+
+  }
 
 }
 

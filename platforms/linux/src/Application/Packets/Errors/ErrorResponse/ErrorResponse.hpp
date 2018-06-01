@@ -3,65 +3,69 @@
 
 #include "../../../AbstractPacket.hpp"
 
-namespace Packet::Errors {
+namespace Packet {
 
-  class ErrorResponse : public AbstractPacket {
+  namespace Errors {
 
-  public:
-    static const uint16_t packet_code(Packet::Type type) {
-      switch(type) {
-        case Packet::Type::MGMT:
-          throw std::invalid_argument("'ErrorResponse' packet is not compatible with MGMT protocol.");
+    class ErrorResponse : public AbstractPacket {
 
-        case Packet::Type::HCI:
-          return Format::HCI::AttributeCode::ErrorResponse;
+    public:
+      static const uint16_t packet_code(Packet::Type type) {
+        switch (type) {
+          case Packet::Type::MGMT:
+            throw std::invalid_argument("'ErrorResponse' packet is not compatible with MGMT protocol.");
 
-        case Packet::Type::ASCII:
-          return Format::Ascii::CommandCode::ErrorResponse;
+          case Packet::Type::HCI:
+            return Format::HCI::AttributeCode::ErrorResponse;
 
-        case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(BaBLE::Payload::ErrorResponse);
+          case Packet::Type::ASCII:
+            return Format::Ascii::CommandCode::ErrorResponse;
 
-        case Packet::Type::NONE:
-          return 0;
-      }
-    };
+          case Packet::Type::FLATBUFFERS:
+            return static_cast<uint16_t>(BaBLE::Payload::ErrorResponse);
 
-    ErrorResponse(Packet::Type initial_type, Packet::Type translated_type);
-
-    void unserialize(HCIFormatExtractor& extractor) override;
-
-    std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
-    std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
-
-    const PacketUuid get_uuid() const override {
-      return PacketUuid{
-          m_current_type,
-          m_controller_id,
-          m_connection_id,
-          m_packet_code,
-          get_opcode()
+          case Packet::Type::NONE:
+            return 0;
+        }
       };
-    }
 
-    inline uint8_t get_opcode() const {
-      return m_opcode;
+      ErrorResponse(Packet::Type initial_type, Packet::Type translated_type);
+
+      void unserialize(HCIFormatExtractor& extractor) override;
+
+      std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
+      std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
+
+      const PacketUuid get_uuid() const override {
+        return PacketUuid{
+            m_current_type,
+            m_controller_id,
+            m_connection_id,
+            m_packet_code,
+            get_opcode()
+        };
+      }
+
+      inline uint8_t get_opcode() const {
+        return m_opcode;
+      };
+
+      inline uint16_t get_handle() const {
+        return m_handle;
+      };
+
+      inline Format::HCI::AttributeErrorCode get_error_code() const {
+        return m_error_code;
+      };
+
+    private:
+      uint8_t m_opcode;
+      uint16_t m_handle;
+      Format::HCI::AttributeErrorCode m_error_code;
+
     };
 
-    inline uint16_t get_handle() const {
-      return m_handle;
-    };
-
-    inline Format::HCI::AttributeErrorCode get_error_code() const {
-      return m_error_code;
-    };
-
-  private:
-    uint8_t m_opcode;
-    uint16_t m_handle;
-    Format::HCI::AttributeErrorCode m_error_code;
-
-  };
+  }
 
 }
 

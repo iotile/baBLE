@@ -92,7 +92,7 @@ bool HCISocket::set_filter() {
   // IMPORTANT: without these filters, nothing will be received on the HCI socket...
   struct Format::HCI::hci_filter filter {
     (1 << Format::HCI::Type::Event) | (1 << Format::HCI::Type::AsyncData),
-    (1 << Format::HCI::EventCode::DisconnectComplete),
+    (1 << Format::HCI::EventCode::DisconnectComplete) | (1 << Format::HCI::EventCode::CommandComplete),
     (1 << Format::HCI::EventCode::LEMeta - 32),
     0
   };
