@@ -59,41 +59,6 @@ using Packet::Meta::GetControllersList;
 
 namespace Bootstrap {
 
-  // Create one HCI socket per Bluetooth controller
-  vector<shared_ptr<HCISocket>> create_hci_sockets(const shared_ptr<MGMTSocket>& mgmt_socket, const shared_ptr<HCIFormat>& hci_format) {
-    vector<shared_ptr<HCISocket>> hci_sockets;
-
-//    Packet::Type mgmt_packet_type = mgmt_socket->format()->get_packet_type();
-//    shared_ptr<GetControllersList> get_controllers_list_packet = make_shared<GetControllersList>(Packet::Type::NONE, mgmt_packet_type);
-//
-//    // Send GetControllersList packet through MGMT
-//    while (!get_controllers_list_packet->expected_response_ids().empty()){
-//      mgmt_socket->sync_send(get_controllers_list_packet->to_bytes());
-//      vector<uint8_t> raw_response = mgmt_socket->sync_receive();
-//
-//      shared_ptr<AbstractExtractor> extractor = mgmt_socket->format()->create_extractor(raw_response);
-//      get_controllers_list_packet->on_response_received(mgmt_packet_type, extractor);
-//    }
-
-    // Get controllers list from GetControllersList packet
-//    vector<Format::MGMT::Controller> controllers = get_controllers_list_packet->get_controllers();
-    std::array<uint8_t, 6> address = {0x30, 0xF3, 0xF6, 0x44, 0xE2, 0x48};
-    vector<Format::MGMT::Controller> controllers = {
-        Format::MGMT::Controller{
-            0,
-            address
-        }
-    };
-    hci_sockets.reserve(controllers.size());
-
-    // Create HCI sockets
-    for (auto& controller : controllers) {
-      hci_sockets.push_back(make_shared<HCISocket>(hci_format, controller.id, controller.address));
-    }
-
-    return hci_sockets;
-  }
-
   // MGMT
   void register_mgmt_packets(PacketBuilder& mgmt_packet_builder, shared_ptr<AbstractFormat> output_format) {
     mgmt_packet_builder

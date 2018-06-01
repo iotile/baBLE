@@ -18,6 +18,10 @@
 #define SOL_HCI 0
 #define HCI_FILTER 2
 
+#define HCIGETDEVLIST _IOR('H', 210, int)
+#define HCIGETDEVINFO _IOR('H', 211, int)
+#define HCI_MAX_DEV 16
+
 // BLE only supports ATT Channel ID for L2CAP
 #define ATT_CID 4
 
@@ -53,6 +57,49 @@ namespace Format::HCI {
     uint32_t event_mask1;
     uint32_t event_mask2;
     uint16_t opcode;
+  };
+
+  struct hci_dev_req {
+    uint16_t dev_id;
+    uint32_t dev_opt;
+  };
+
+  struct hci_dev_list_req {
+    uint16_t dev_num;
+    struct hci_dev_req dev_req[0];
+  };
+
+  struct hci_dev_info {
+    uint16_t dev_id;
+    char     name[8];
+
+    bdaddr_t bdaddr;
+
+    uint32_t flags;
+    uint8_t  type;
+
+    uint8_t  features[8];
+
+    uint32_t pkt_type;
+    uint32_t link_policy;
+    uint32_t link_mode;
+
+    uint16_t acl_mtu;
+    uint16_t acl_pkts;
+    uint16_t sco_mtu;
+    uint16_t sco_pkts;
+
+    // hci_dev_stats
+    uint32_t err_rx;
+    uint32_t err_tx;
+    uint32_t cmd_tx;
+    uint32_t evt_rx;
+    uint32_t acl_tx;
+    uint32_t acl_rx;
+    uint32_t sco_tx;
+    uint32_t sco_rx;
+    uint32_t byte_rx;
+    uint32_t byte_tx;
   };
 
   // Contains PacketBoundary Flag concatenated with Broadcast Flag=0b00 (No broadcast)

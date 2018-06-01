@@ -1,5 +1,6 @@
 #include <cerrno>
 #include <cstring>
+#include <sys/ioctl.h>
 #include <unistd.h>
 #include "HCISocket.hpp"
 #include "../../../Exceptions/Socket/SocketException.hpp"
@@ -11,10 +12,37 @@ using namespace uvw;
 Flags<PollHandle::Event> HCISocket::readable_flag = Flags<PollHandle::Event>(PollHandle::Event::READABLE);
 Flags<PollHandle::Event> HCISocket::writable_flag = Flags<PollHandle::Event>(PollHandle::Event::WRITABLE);
 
-HCISocket::HCISocket(shared_ptr<HCIFormat> format, uint16_t controller_id, const std::array<uint8_t, 6>& controller_address)
+// Create one HCI socket per Bluetooth controller
+vector<shared_ptr<HCISocket>> HCISocket::create_all(shared_ptr<HCIFormat> hci_format) {
+  vector<shared_ptr<HCISocket>> hci_sockets;
+
+  int sock = socket(AF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC, BTPROTO_HCI);
+
+  struct Format::HCI::hci_dev_list_req* dl;
+  struct Format::HCI::hci_dev_req* dr;
+
+  dl = (Format::HCI::hci_dev_list_req*)calloc(HCI_MAX_DEV * sizeof(*dr) + sizeof(*dl), 1);
+  dr = dl->dev_req;
+
+  dl->dev_num = HCI_MAX_DEV;
+
+  if (ioctl(sock, HCIGETDEVLIST, dl) < 0) {
+    throw runtime_error("Can't get controllers list (using ioctl): " + string(strerror(errno)));
+  }
+
+  for (int i = 0; i < dl->dev_num; i++, dr++) {
+    shared_ptr<HCISocket> hci_socket = make_shared<HCISocket>(hci_format, dr->dev_id);
+    hci_sockets.push_back(hci_socket);
+  }
+
+  free(dl);
+
+  return hci_sockets;
+}
+
+HCISocket::HCISocket(shared_ptr<HCIFormat> format, uint16_t controller_id)
     : AbstractSocket(move(format)) {
   m_controller_id = controller_id;
-  m_controller_address = controller_address;
   m_writable = true;
 
   m_hci_socket = socket(AF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC | SOCK_NONBLOCK, BTPROTO_HCI);
@@ -29,6 +57,12 @@ HCISocket::HCISocket(shared_ptr<HCIFormat> format, uint16_t controller_id, const
   if(!bind_hci_socket()) {
     throw Exceptions::SocketException("Error while binding the HCI socket: " + string(strerror(errno)));
   }
+
+  if (!get_controller_address()) {
+    throw Exceptions::SocketException("Error while retrieving the Bluetooth controller address: " + string(strerror(errno)));
+  }
+
+  LOG.debug(m_controller_address, "HCI socket");
 }
 
 bool HCISocket::bind_hci_socket() {
@@ -39,6 +73,19 @@ bool HCISocket::bind_hci_socket() {
   };
 
   return bind(m_hci_socket, (struct sockaddr*) &addr, sizeof(addr)) == 0;
+}
+
+bool HCISocket::get_controller_address() {
+  struct Format::HCI::hci_dev_info di{};
+  di.dev_id = m_controller_id;
+
+  // TO GET THE ADDRESS OF THE CONTROLLER
+  if (ioctl(m_hci_socket, HCIGETDEVINFO, (void *)&di) < 0) {
+    return false;
+  }
+
+  copy(std::begin(di.bdaddr.b), std::end(di.bdaddr.b), m_controller_address.begin());
+  return true;
 }
 
 bool HCISocket::set_filter() {
@@ -198,4 +245,4 @@ HCISocket::~HCISocket() {
 
   close(m_hci_socket);
   LOG.debug("HCI socket closed", "HCI socket");
-};
+}

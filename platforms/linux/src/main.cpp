@@ -21,9 +21,9 @@
 using namespace std;
 using namespace uvw;
 
-// TODO: replace bytearray addresses by string address in flatbuffers
-// TODO: use ioctl and put function into a static create_all function in HCI socket
 // TODO: Create a ScanBLEForever command (remove MGMT StartScan ? -> can't be implemented in Windows and Mac...) /!\ Needs to return ScanResponse AND Advertisments
+
+// TODO: replace bytearray addresses by string address in flatbuffers (USEFUL ? If yes -> AddDevice/RemoveDevice and Disconnect to change)
 
 // Function used to call all handlers closing callbacks before stopping the loop
 void cleanly_stop_loop(Loop& loop) {
@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
   LOG.info("Creating sockets...");
   shared_ptr<MGMTSocket> mgmt_socket = make_shared<MGMTSocket>(mgmt_format);
   shared_ptr<StdIOSocket> stdio_socket = make_shared<StdIOSocket>(fb_format);
-  vector<shared_ptr<HCISocket>> hci_sockets = Bootstrap::create_hci_sockets(mgmt_socket, hci_format);
+  vector<shared_ptr<HCISocket>> hci_sockets = HCISocket::create_all(hci_format);
 
   // Socket container
   LOG.info("Registering sockets into socket container...");

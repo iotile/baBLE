@@ -10,8 +10,10 @@
 class HCISocket : public AbstractSocket {
 
 public:
+  static std::vector<std::shared_ptr<HCISocket>> create_all(std::shared_ptr<HCIFormat> hci_format);
+
   // TODO: keep bindings connection_handle <=> device_address (in main.cpp) ?
-  explicit HCISocket(std::shared_ptr<HCIFormat> format, uint16_t controller_id, const std::array<uint8_t, 6>& controller_address);
+  explicit HCISocket(std::shared_ptr<HCIFormat> format, uint16_t controller_id);
 
   bool send(const std::vector<uint8_t>& data) override;
   void poll(std::shared_ptr<uvw::Loop> loop, OnReceivedCallback on_received, OnErrorCallback on_error) override;
@@ -30,6 +32,7 @@ private:
 
   bool bind_hci_socket();
   bool set_filter();
+  bool get_controller_address();
 
   std::array<uint8_t, 6> m_controller_address;
   uvw::OSSocketHandle::Type m_hci_socket;
