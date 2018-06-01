@@ -95,6 +95,8 @@ namespace Packet::Meta {
     switch (m_waiting_response) {
       case GetControllersIds:
       {
+        m_current_type = m_translated_type;
+
         PacketUuid uuid = m_controllers_ids_request_packet->get_uuid();
         auto callback = [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {
           return on_controllers_ids_response_received(router, packet);
@@ -105,6 +107,8 @@ namespace Packet::Meta {
 
       case GetControllerInfo:
       {
+        m_current_type = m_translated_type;
+
         PacketUuid uuid = m_controller_info_request_packet->get_uuid();
         uuid.controller_id = m_controllers_ids.at(m_current_index);
         auto callback = [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {
@@ -115,6 +119,7 @@ namespace Packet::Meta {
       }
 
       case None:
+        m_current_type = m_initial_type;
         break;
     }
   }

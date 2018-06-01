@@ -68,15 +68,15 @@ public:
 
   // Setters
   void set_data_pointer(size_t value) {
-    if (value < 0 || value >= m_data.size()) {
+    if (value < 0 || value > m_data.size()) {
       throw std::invalid_argument("Trying to set a new data pointer value which is out of bonds.");
     }
 
-    m_data_iterator = m_data.begin() + value;
-  };
-
-  void reset_data_pointer() {
-    m_data_iterator = m_data.begin() + m_header_length;
+    if (value == m_data.size()) {
+      m_data_iterator = m_data.end();
+    } else {
+      m_data_iterator = m_data.begin() + value;
+    }
   };
 
   void set_controller_id(uint16_t controller_id) {

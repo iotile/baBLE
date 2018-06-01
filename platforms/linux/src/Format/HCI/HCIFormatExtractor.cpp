@@ -73,6 +73,7 @@ const size_t HCIFormatExtractor::get_header_length(uint16_t type_code) {
 HCIFormatExtractor::HCIFormatExtractor(const std::vector<uint8_t>& data)
     : AbstractExtractor(data) {
   parse_header(data);
+  LOG.debug(m_data, "HCIFormatExtractor");
   set_data_pointer(m_header_length);
 }
 
