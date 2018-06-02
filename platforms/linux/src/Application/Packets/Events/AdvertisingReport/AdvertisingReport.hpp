@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_DEVICEFOUND_HPP
-#define BABLE_LINUX_DEVICEFOUND_HPP
+#ifndef BABLE_LINUX_ADVERSTISINGREPORT_HPP
+#define BABLE_LINUX_ADVERSTISINGREPORT_HPP
 
 #include "../EventPacket.hpp"
 
@@ -7,19 +7,19 @@ namespace Packet {
 
   namespace Events {
 
-    class DeviceFound : public EventPacket<DeviceFound> {
+    class AdvertisingReport : public EventPacket<AdvertisingReport> {
 
     public:
       static const uint16_t packet_code(Packet::Type type) {
         switch (type) {
           case Packet::Type::MGMT:
-            return Format::MGMT::EventCode::DeviceFound;
+            throw std::invalid_argument("'AdvertisingReport' packet is not compatible with MGMT protocol.");
 
           case Packet::Type::HCI:
-            throw std::invalid_argument("'DeviceFound' packet is not compatible with HCI protocol.");
+            return Format::HCI::SubEventCode::LEAdvertisingReport;
 
           case Packet::Type::ASCII:
-            return Format::Ascii::EventCode::DeviceFound;
+            return Format::Ascii::EventCode::AdvertisingReport;
 
           case Packet::Type::FLATBUFFERS:
             return static_cast<uint16_t>(BaBLE::Payload::DeviceFound);
@@ -29,25 +29,28 @@ namespace Packet {
         }
       };
 
-      DeviceFound(Packet::Type initial_type, Packet::Type translated_type);
+      AdvertisingReport(Packet::Type initial_type, Packet::Type translated_type);
 
-      void unserialize(MGMTFormatExtractor& extractor) override;
+      void unserialize(HCIFormatExtractor& extractor) override;
 
       std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
       std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
 
     private:
-      std::array<uint8_t, 6> m_address{};
+      Format::HCI::AdvertisingReportType m_type;
+
       uint8_t m_address_type;
-      int8_t m_rssi;
-      std::array<uint8_t, 4> m_flags{};
+      std::array<uint8_t, 6> m_address{};
+
       uint16_t m_eir_data_length;
       std::vector<uint8_t> m_eir_data;
-      Format::MGMT::EIR m_eir{};
+      Format::HCI::EIR m_eir{};
+
+      int8_t m_rssi;
     };
 
   }
 
 }
 
-#endif //BABLE_LINUX_DEVICEFOUND_HPP
+#endif //BABLE_LINUX_ADVERSTISINGREPORT_HPP

@@ -5,10 +5,7 @@
 #include "Application/PacketBuilder/PacketBuilder.hpp"
 #include "Application/Packets/Commands/GetMGMTInfo/GetMGMTInfoRequest.hpp"
 #include "Application/Packets/Commands/GetMGMTInfo/GetMGMTInfoResponse.hpp"
-#include "Application/Packets/Commands/StartScan/StartScanRequest.hpp"
-#include "Application/Packets/Commands/StartScan/StartScanResponse.hpp"
-#include "Application/Packets/Commands/StopScan/StopScanRequest.hpp"
-#include "Application/Packets/Commands/StopScan/StopScanResponse.hpp"
+#include "Application/Packets/Meta/StartScan/StartScan.hpp"
 #include "Application/Packets/Commands/AddDevice/AddDeviceRequest.hpp"
 #include "Application/Packets/Commands/AddDevice/AddDeviceResponse.hpp"
 #include "Application/Packets/Commands/RemoveDevice/RemoveDeviceRequest.hpp"
@@ -40,7 +37,6 @@
 #include "Application/Packets/Errors/ErrorResponse/ErrorResponse.hpp"
 #include "Application/Packets/Events/DeviceConnected/DeviceConnected.hpp"
 #include "Application/Packets/Events/DeviceDisconnected/DeviceDisconnected.hpp"
-#include "Application/Packets/Events/DeviceFound/DeviceFound.hpp"
 #include "Application/Packets/Events/Discovering/Discovering.hpp"
 #include "Application/Packets/Events/ClassOfDeviceChanged/ClassOfDeviceChanged.hpp"
 #include "Application/Packets/Events/NewSettings/NewSettings.hpp"
@@ -48,11 +44,13 @@
 #include "Application/Packets/Events/ControllerRemoved/ControllerRemoved.hpp"
 #include "Application/Packets/Events/DeviceAdded/DeviceAdded.hpp"
 #include "Application/Packets/Events/DeviceRemoved/DeviceRemoved.hpp"
-#include "Application/Packets/Events/LEAdvertisingReport/LEAdvertisingReport.hpp"
-#include "Application/Packets/Events/LEReadRemoteUsedFeaturesComplete/LEReadRemoteUsedFeaturesComplete.hpp"
+#include "Application/Packets/Events/AdvertisingReport/AdvertisingReport.hpp"
+#include "Application/Packets/Events/ReadRemoteUsedFeaturesComplete/ReadRemoteUsedFeaturesComplete.hpp"
 #include "Application/Packets/Meta/GetControllersList/GetControllersList.hpp"
 #include "Application/Packets/Meta/ProbeServices/ProbeServices.hpp"
 #include "Application/Packets/Meta/ProbeCharacteristics/ProbeCharacteristics.hpp"
+#include "Application/Packets/Events/CommandComplete/CommandComplete.hpp"
+#include "Application/Packets/Events/LocalNameChanged/LocalNameChanged.hpp"
 
 using namespace std;
 using Packet::Meta::GetControllersList;
@@ -67,15 +65,12 @@ namespace Bootstrap {
         .register_command<Packet::Commands::GetControllersIdsResponse>()
         .register_command<Packet::Commands::GetControllerInfoResponse>()
         .register_command<Packet::Commands::GetConnectedDevicesResponse>()
-        .register_command<Packet::Commands::StartScanResponse>()
-        .register_command<Packet::Commands::StopScanResponse>()
         .register_command<Packet::Commands::AddDeviceResponse>()
         .register_command<Packet::Commands::RemoveDeviceResponse>()
         .register_command<Packet::Commands::DisconnectResponse>()
         .register_command<Packet::Commands::SetPoweredResponse>()
         .register_command<Packet::Commands::SetDiscoverableResponse>()
         .register_command<Packet::Commands::SetConnectableResponse>()
-        .register_event<Packet::Events::DeviceFound>()
         .register_event<Packet::Events::Discovering>()
         .register_event<Packet::Events::ControllerAdded>()
         .register_event<Packet::Events::ControllerRemoved>()
@@ -85,6 +80,7 @@ namespace Bootstrap {
         .register_event<Packet::Events::DeviceConnected>()
         .register_event<Packet::Events::DeviceDisconnected>()
         .register_event<Packet::Events::ClassOfDeviceChanged>()
+        .register_event<Packet::Events::LocalNameChanged>()
         .register_event<Packet::Events::NewSettings>();
   }
 
@@ -92,19 +88,20 @@ namespace Bootstrap {
   void register_hci_packets(PacketBuilder& hci_packet_builder, shared_ptr<AbstractFormat> output_format) {
     hci_packet_builder
       .set_output_format(std::move(output_format))
-        .register_event<Packet::Events::DeviceConnected>()
-        .register_event<Packet::Events::DeviceDisconnected>()
         .register_command<Packet::Commands::ReadResponse>()
         .register_command<Packet::Commands::WriteResponse>()
         .register_command<Packet::Commands::NotificationReceived>()
+        .register_event<Packet::Events::DeviceConnected>()
+        .register_event<Packet::Events::DeviceDisconnected>()
+        .register_event<Packet::Events::AdvertisingReport>()
         .register_command<Packet::Errors::ErrorResponse>()
       .set_output_format(nullptr)
         .register_command<Packet::Commands::ReadByGroupTypeResponse>()
         .register_command<Packet::Commands::ReadByTypeResponse>()
         .register_command<Packet::Commands::ReadRequest>()
         .register_command<Packet::Commands::ReadByGroupTypeRequest>()
-        .register_event<Packet::Events::LEAdvertisingReport>()
-        .register_event<Packet::Events::LEReadRemoteUsedFeaturesComplete>();
+        .register_event<Packet::Events::CommandComplete>()
+        .register_event<Packet::Events::ReadRemoteUsedFeaturesComplete>();
   }
 
   // Stdio
@@ -115,8 +112,6 @@ namespace Bootstrap {
         .register_command<Packet::Commands::GetControllersIdsRequest>()
         .register_command<Packet::Commands::GetControllerInfoRequest>()
         .register_command<Packet::Commands::GetConnectedDevicesRequest>()
-        .register_command<Packet::Commands::StartScanRequest>()
-        .register_command<Packet::Commands::StopScanRequest>()
         .register_command<Packet::Commands::AddDeviceRequest>()
         .register_command<Packet::Commands::RemoveDeviceRequest>()
         .register_command<Packet::Commands::DisconnectRequest>()
@@ -125,6 +120,8 @@ namespace Bootstrap {
         .register_command<Packet::Commands::SetConnectableRequest>()
         .register_command<Packet::Meta::GetControllersList>()
       .set_output_format(std::move(hci_format))
+        .register_command<Packet::Meta::StartScan>()
+        .register_command<Packet::Commands::SetScanEnable>()
         .register_command<Packet::Commands::ReadRequest>()
         .register_command<Packet::Commands::WriteRequest>()
         .register_command<Packet::Commands::WriteWithoutResponse>()

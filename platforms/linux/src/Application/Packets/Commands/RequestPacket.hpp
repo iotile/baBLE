@@ -29,12 +29,14 @@ namespace Packet {
         AbstractPacket::before_sent(router);
         m_packet_code = T::packet_code(m_current_type);
 
-        PacketUuid response_uuid = get_response_uuid();
-        auto response_callback =
-            [this](const std::shared_ptr<PacketRouter>& router, const std::shared_ptr<AbstractPacket>& packet) {
-              return on_response_received(router, packet);
-            };
-        router->add_callback(response_uuid, shared_from(this), response_callback);
+        if (m_current_type == m_translated_type) {
+          PacketUuid response_uuid = get_response_uuid();
+          auto response_callback =
+              [this](const std::shared_ptr<PacketRouter>& router, const std::shared_ptr<AbstractPacket>& packet) {
+                return on_response_received(router, packet);
+              };
+          router->add_callback(response_uuid, shared_from(this), response_callback);
+        }
       };
 
       std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override {
@@ -50,7 +52,7 @@ namespace Packet {
       };
 
       std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override {
-        builder.set_opcode(static_cast<uint8_t>(m_packet_code));
+        builder.set_opcode(m_packet_code);
 
         return {};
       };

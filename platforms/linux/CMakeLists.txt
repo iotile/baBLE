@@ -18,8 +18,6 @@ set(SOURCES_FILES
         src/Application/Packets/Commands/RequestPacket.hpp
         src/Application/Packets/Commands/ResponsePacket.hpp
         src/Application/Packets/Commands/GetMGMTInfo/GetMGMTInfoRequest.cpp
-        src/Application/Packets/Commands/StartScan/StartScanRequest.cpp
-        src/Application/Packets/Commands/StopScan/StopScanRequest.cpp
         src/Application/Packets/Commands/AddDevice/AddDeviceRequest.cpp
         src/Application/Packets/Commands/RemoveDevice/RemoveDeviceRequest.cpp
         src/Application/Packets/Commands/Disconnect/DisconnectRequest.cpp
@@ -34,7 +32,6 @@ set(SOURCES_FILES
         src/Application/Packets/Commands/GetControllerInfo/GetControllerInfoRequest.cpp
         src/Application/Packets/Commands/GetConnectedDevices/GetConnectedDevicesRequest.cpp
         src/Application/Packets/Events/EventPacket.hpp
-        src/Application/Packets/Events/DeviceFound/DeviceFound.cpp
         src/Application/Packets/Events/Discovering/Discovering.cpp
         src/Application/Packets/Events/DeviceConnected/DeviceConnected.cpp
         src/Application/Packets/Events/DeviceDisconnected/DeviceDisconnected.cpp
@@ -44,8 +41,8 @@ set(SOURCES_FILES
         src/Application/Packets/Events/ControllerRemoved/ControllerRemoved.cpp
         src/Application/Packets/Events/DeviceAdded/DeviceAdded.cpp
         src/Application/Packets/Events/DeviceRemoved/DeviceRemoved.cpp
-        src/Application/Packets/Events/LEAdvertisingReport/LEAdvertisingReport.cpp
-        src/Application/Packets/Events/LEReadRemoteUsedFeaturesComplete/LEReadRemoteUsedFeaturesComplete.cpp
+        src/Application/Packets/Events/AdvertisingReport/AdvertisingReport.cpp
+        src/Application/Packets/Events/ReadRemoteUsedFeaturesComplete/ReadRemoteUsedFeaturesComplete.cpp
         src/Application/Packets/Errors/BaBLEError/BaBLEError.cpp
         src/Application/Packets/Meta/GetControllersList/GetControllersList.cpp
         src/Application/Packets/Meta/ProbeServices/ProbeServices.cpp
@@ -96,14 +93,16 @@ set(SOURCES_FILES
         src/Application/Packets/Commands/GetMGMTInfo/GetMGMTInfoResponse.cpp
         src/Application/Packets/Commands/Read/ReadResponse.cpp
         src/Application/Packets/Commands/RemoveDevice/RemoveDeviceResponse.cpp
-        src/Application/Packets/Commands/StartScan/StartScanResponse.cpp
-        src/Application/Packets/Commands/StopScan/StopScanResponse.cpp
         src/Application/Packets/Commands/SetConnectable/SetConnectableResponse.cpp
         src/Application/Packets/Commands/SetDiscoverable/SetDiscoverableResponse.cpp
         src/Application/Packets/Commands/SetPowered/SetPoweredResponse.cpp
         src/Application/Packets/Commands/Write/WriteResponse.cpp
         src/Application/AbstractPacket.cpp
-        src/Application/Packets/Events/CommandComplete/CommandComplete.cpp src/Format/AbstractExtractor.cpp)
+        src/Application/Packets/Events/CommandComplete/CommandComplete.cpp
+        src/Format/AbstractExtractor.cpp
+        src/Application/Packets/Commands/SetScanParameters/SetScanParameters.cpp
+        src/Application/Packets/Commands/SetScanEnable/SetScanEnable.cpp
+        src/Application/Packets/Meta/StartScan/StartScan.cpp src/Application/Packets/Events/LocalNameChanged/LocalNameChanged.cpp src/Application/Packets/Events/LocalNameChanged/LocalNameChanged.hpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies

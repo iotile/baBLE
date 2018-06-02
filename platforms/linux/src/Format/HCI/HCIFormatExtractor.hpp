@@ -14,6 +14,8 @@ public:
   // Constructors
   explicit HCIFormatExtractor(const std::vector<uint8_t>& data);
 
+  Format::HCI::EIR parse_eir(const std::vector<uint8_t>& data);
+
 private:
   // Parsers
   void parse_header(const std::vector<uint8_t>& data) override;

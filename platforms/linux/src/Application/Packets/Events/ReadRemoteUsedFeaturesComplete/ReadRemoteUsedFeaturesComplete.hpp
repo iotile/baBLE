@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_LEREADREMOTEUSEDFEATURESCOMPLETE_HPP
-#define BABLE_LINUX_LEREADREMOTEUSEDFEATURESCOMPLETE_HPP
+#ifndef BABLE_LINUX_READREMOTEUSEDFEATURESCOMPLETE_HPP
+#define BABLE_LINUX_READREMOTEUSEDFEATURESCOMPLETE_HPP
 
 #include "../EventPacket.hpp"
 #include "../../../../Exceptions/NotFound/NotFoundException.hpp"
@@ -8,31 +8,31 @@ namespace Packet {
 
   namespace Events {
 
-    class LEReadRemoteUsedFeaturesComplete : public EventPacket<LEReadRemoteUsedFeaturesComplete> {
+    class ReadRemoteUsedFeaturesComplete : public EventPacket<ReadRemoteUsedFeaturesComplete> {
 
     public:
       static const uint16_t packet_code(Packet::Type type) {
         switch (type) {
           case Packet::Type::MGMT:
             throw std::invalid_argument(
-                "'LEReadRemoteUsedFeaturesComplete' packet is not compatible with MGMT protocol.");
+                "'ReadRemoteUsedFeaturesComplete' packet is not compatible with MGMT protocol.");
 
           case Packet::Type::HCI:
             return Format::HCI::SubEventCode::LEReadRemoteUsedFeaturesComplete;
 
           case Packet::Type::ASCII:
-            return Format::Ascii::EventCode::LEReadRemoteUsedFeaturesComplete;
+            return Format::Ascii::EventCode::ReadRemoteUsedFeaturesComplete;
 
           case Packet::Type::FLATBUFFERS:
             throw Exceptions::NotFoundException(
-                "LEReadRemoteUsedFeaturesComplete event has no event code for Flatbuffers.");
+                "ReadRemoteUsedFeaturesComplete event has no event code for Flatbuffers.");
 
           case Packet::Type::NONE:
             return 0;
         }
       };
 
-      LEReadRemoteUsedFeaturesComplete(Packet::Type initial_type, Packet::Type translated_type);
+      ReadRemoteUsedFeaturesComplete(Packet::Type initial_type, Packet::Type translated_type);
 
       void unserialize(HCIFormatExtractor& extractor) override;
 
@@ -46,4 +46,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_LEREADREMOTEUSEDFEATURESCOMPLETE_HPP
+#endif //BABLE_LINUX_READREMOTEUSEDFEATURESCOMPLETE_HPP

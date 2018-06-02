@@ -3,9 +3,11 @@
 #include "../Exceptions/RuntimeError/RuntimeErrorException.hpp"
 #include "../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 
+using namespace std;
+
 namespace Packet {
 
-  std::vector<uint8_t> AbstractPacket::to_bytes() const {
+  vector<uint8_t> AbstractPacket::to_bytes() const {
     switch(m_current_type) {
       case Packet::Type::MGMT:
       {
@@ -23,7 +25,7 @@ namespace Packet {
 
       case Packet::Type::ASCII:
       {
-        std::string status_name = BaBLE::EnumNameStatusCode(m_status);
+        string status_name = BaBLE::EnumNameStatusCode(m_status);
 
         AsciiFormatBuilder builder;
         builder
@@ -44,11 +46,11 @@ namespace Packet {
       }
 
       case Packet::Type::NONE:
-        throw std::runtime_error("Can't serialize NONE type packet.");
+        throw runtime_error("Can't serialize NONE type packet.");
     }
   }
 
-  void AbstractPacket::from_bytes(const std::shared_ptr<AbstractExtractor>& extractor) {
+  void AbstractPacket::from_bytes(const shared_ptr<AbstractExtractor>& extractor) {
     try {
       m_controller_id = extractor->get_controller_id();
       m_connection_id = extractor->get_connection_id();
@@ -56,7 +58,7 @@ namespace Packet {
       switch(m_current_type) {
         case Packet::Type::MGMT:
         {
-          auto mgmt_extractor = std::dynamic_pointer_cast<MGMTFormatExtractor>(extractor);
+          auto mgmt_extractor = dynamic_pointer_cast<MGMTFormatExtractor>(extractor);
           if(mgmt_extractor == nullptr) {
             throw Exceptions::RuntimeErrorException("Can't import data into packet: wrong extractor provided.");
           }
@@ -66,7 +68,7 @@ namespace Packet {
 
         case Packet::Type::HCI:
         {
-          auto hci_extractor = std::dynamic_pointer_cast<HCIFormatExtractor>(extractor);
+          auto hci_extractor = dynamic_pointer_cast<HCIFormatExtractor>(extractor);
           if(hci_extractor == nullptr) {
             throw Exceptions::RuntimeErrorException("Can't import data into packet: wrong extractor provided.");
           }
@@ -76,7 +78,7 @@ namespace Packet {
 
         case Packet::Type::ASCII:
         {
-          auto ascii_extractor = std::dynamic_pointer_cast<AsciiFormatExtractor>(extractor);
+          auto ascii_extractor = dynamic_pointer_cast<AsciiFormatExtractor>(extractor);
           if(ascii_extractor == nullptr) {
             throw Exceptions::RuntimeErrorException("Can't import data into packet: wrong extractor provided.");
           }
@@ -87,7 +89,7 @@ namespace Packet {
 
         case Packet::Type::FLATBUFFERS:
         {
-          auto fb_extractor = std::dynamic_pointer_cast<FlatbuffersFormatExtractor>(extractor);
+          auto fb_extractor = dynamic_pointer_cast<FlatbuffersFormatExtractor>(extractor);
           if(fb_extractor == nullptr) {
             throw Exceptions::RuntimeErrorException("Can't import data into packet: wrong extractor provided.");
           }
@@ -105,12 +107,12 @@ namespace Packet {
     }
   }
 
-  void AbstractPacket::before_sent(const std::shared_ptr<PacketRouter>& router) {
-    m_current_type = m_translated_type;
+  void AbstractPacket::before_sent(const shared_ptr<PacketRouter>& router) {
+    m_current_type = m_current_type == m_initial_type ? m_translated_type : m_initial_type;
   }
 
-  const std::string AbstractPacket::stringify() const {
-    std::string status_name = BaBLE::EnumNameStatusCode(m_status);
+  const string AbstractPacket::stringify() const {
+    string status_name = BaBLE::EnumNameStatusCode(m_status);
 
     AsciiFormatBuilder builder;
     builder
@@ -122,7 +124,7 @@ namespace Packet {
         .add("Native class", m_native_class)
         .add("Native status", m_native_status);
 
-    std::vector<uint8_t> data = serialize(builder);
+    vector<uint8_t> data = serialize(builder);
     return AsciiFormat::bytes_to_string(data);
   }
 
@@ -143,7 +145,15 @@ namespace Packet {
     if (compute_status) {
       compute_bable_status();
     }
-  };
+  }
+
+  void AbstractPacket::set_uuid_request(const string& uuid_request) {
+    m_uuid_request = uuid_request;
+  }
+
+  void AbstractPacket::set_controller_id(uint16_t controller_id) {
+    m_controller_id = controller_id;
+  }
 
   void AbstractPacket::import_status(const AbstractPacket& packet) {
     m_status = packet.m_status;

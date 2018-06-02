@@ -38,7 +38,7 @@ def status_code_to_string(status_code):
         return "-"
 
 
-process = subprocess.Popen(["../../platforms/linux/build/debug/baBLE_linux", "--logging", "debug"],
+process = subprocess.Popen(["../../platforms/linux/build/debug/baBLE_linux", "--logging", "info"],
                            stdout=subprocess.PIPE, stdin=subprocess.PIPE,
                            bufsize=0,
                            universal_newlines=False)
@@ -58,7 +58,7 @@ def fb_start_scan(uuid, controller_id):
     builder = flatbuffers.Builder(0)
 
     StartScan.StartScanStart(builder)
-    StartScan.StartScanAddAddressType(builder, 0x07)
+    StartScan.StartScanAddActiveScan(builder, True)
     payload = StartScan.StartScanEnd(builder)
 
     return build_packet(builder, uuid, payload, Payload.Payload.StartScan, controller_id)
@@ -68,7 +68,6 @@ def fb_start_scan(uuid, controller_id):
 def fb_stop_scan(uuid, controller_id):
     builder = flatbuffers.Builder(0)
     StopScan.StopScanStart(builder)
-    StopScan.StopScanAddAddressType(builder, 0x07)
     payload = StopScan.StopScanEnd(builder)
 
     return build_packet(builder, uuid, payload, Payload.Payload.StopScan, controller_id)
@@ -339,21 +338,20 @@ try:
         elif packet.PayloadType() == Payload.Payload().StartScan:
             startscan = StartScan.StartScan()
             startscan.Init(packet.Payload().Bytes, packet.Payload().Pos)
-            address_type = startscan.AddressType()
+            active_scan = startscan.ActiveScan()
 
             print("StartScan",
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
-                  "Controller ID:", controller_id, "Address type:", address_type)
+                  "Controller ID:", controller_id, "Active scan:", active_scan)
         elif packet.PayloadType() == Payload.Payload().StopScan:
             stopscan = StopScan.StopScan()
             stopscan.Init(packet.Payload().Bytes, packet.Payload().Pos)
-            address_type = stopscan.AddressType()
 
             print("StopScan",
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
-                  "Controller ID:", controller_id, "Address type:", address_type)
+                  "Controller ID:", controller_id)
         elif packet.PayloadType() == Payload.Payload().AddDevice:
             add_device = AddDevice.AddDevice()
             add_device.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -392,10 +390,10 @@ try:
         elif packet.PayloadType() == Payload.Payload().DeviceFound:
             devicefound = DeviceFound.DeviceFound()
             devicefound.Init(packet.Payload().Bytes, packet.Payload().Pos)
+            type = devicefound.Type()
             address_type = devicefound.AddressType()
             address = devicefound.Address()
             rssi = devicefound.Rssi()
-            flags = devicefound.FlagsAsNumpy()
             device_uuid = devicefound.Uuid()
             company_id = devicefound.CompanyId()
             manufacturer_data = devicefound.ManufacturerDataAsNumpy()
@@ -405,7 +403,7 @@ try:
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Address type:", address_type, "Address:", address,
-                  "RSSI:", rssi, "Flags:", flags, "Device UUID:", device_uuid, "Company id:", company_id,
+                  "RSSI:", rssi, "Type:", type, "Device UUID:", device_uuid, "Company id:", company_id,
                   "Manufacturer data:", manufacturer_data, "Device name:", device_name)
 
             # process.stdin.write(fb_stop_scan("0002", 0))
@@ -681,9 +679,11 @@ try:
 
             print("ReadyPacket")
 
-            process.stdin.write(fb_add_device("0001", 0, address_device_str))
+            # process.stdin.write(fb_add_device("0001", 0, address_device_str))
             # process.stdin.write(fb_probe_characteristics("0001", 0, 0x0040))
-            # process.stdin.write(fb_start_scan("0001", 0))
+            process.stdin.write(fb_start_scan("0001", 0))
+            time.sleep(3)
+            process.stdin.write(fb_stop_scan("0002", 0))
             # process.stdin.write(fb_get_controllers_ids("0001"))
             # process.stdin.write(fb_set_powered("0001", 0, True))
             # process.stdin.write(fb_get_controllers_list("list"))

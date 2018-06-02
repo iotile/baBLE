@@ -19,46 +19,31 @@ class DeviceFound(object):
         self._tab = flatbuffers.table.Table(buf, pos)
 
     # DeviceFound
-    def Address(self):
+    def Type(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Uint8Flags, o + self._tab.Pos)
+        return 0
+
+    # DeviceFound
+    def Address(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         if o != 0:
             return self._tab.String(o + self._tab.Pos)
         return None
 
     # DeviceFound
     def AddressType(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
         if o != 0:
             return self._tab.Get(flatbuffers.number_types.Uint8Flags, o + self._tab.Pos)
         return 0
 
     # DeviceFound
     def Rssi(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
         if o != 0:
             return self._tab.Get(flatbuffers.number_types.Int8Flags, o + self._tab.Pos)
-        return 0
-
-    # DeviceFound
-    def Flags(self, j):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
-        if o != 0:
-            a = self._tab.Vector(o)
-            return self._tab.Get(flatbuffers.number_types.Uint8Flags, a + flatbuffers.number_types.UOffsetTFlags.py_type(j * 1))
-        return 0
-
-    # DeviceFound
-    def FlagsAsNumpy(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
-        if o != 0:
-            return self._tab.GetVectorAsNumpy(flatbuffers.number_types.Uint8Flags, o)
-        return 0
-
-    # DeviceFound
-    def FlagsLength(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
-        if o != 0:
-            return self._tab.VectorLen(o)
         return 0
 
     # DeviceFound
@@ -105,11 +90,10 @@ class DeviceFound(object):
         return None
 
 def DeviceFoundStart(builder): builder.StartObject(8)
-def DeviceFoundAddAddress(builder, address): builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(address), 0)
-def DeviceFoundAddAddressType(builder, addressType): builder.PrependUint8Slot(1, addressType, 0)
-def DeviceFoundAddRssi(builder, rssi): builder.PrependInt8Slot(2, rssi, 0)
-def DeviceFoundAddFlags(builder, flags): builder.PrependUOffsetTRelativeSlot(3, flatbuffers.number_types.UOffsetTFlags.py_type(flags), 0)
-def DeviceFoundStartFlagsVector(builder, numElems): return builder.StartVector(1, numElems, 1)
+def DeviceFoundAddType(builder, type): builder.PrependUint8Slot(0, type, 0)
+def DeviceFoundAddAddress(builder, address): builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(address), 0)
+def DeviceFoundAddAddressType(builder, addressType): builder.PrependUint8Slot(2, addressType, 0)
+def DeviceFoundAddRssi(builder, rssi): builder.PrependInt8Slot(3, rssi, 0)
 def DeviceFoundAddUuid(builder, uuid): builder.PrependUOffsetTRelativeSlot(4, flatbuffers.number_types.UOffsetTFlags.py_type(uuid), 0)
 def DeviceFoundAddCompanyId(builder, companyId): builder.PrependUint16Slot(5, companyId, 0)
 def DeviceFoundAddManufacturerData(builder, manufacturerData): builder.PrependUOffsetTRelativeSlot(6, flatbuffers.number_types.UOffsetTFlags.py_type(manufacturerData), 0)

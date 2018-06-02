@@ -14,7 +14,7 @@ public:
   explicit HCIFormatBuilder(uint16_t controller_id);
 
   // Setters
-  HCIFormatBuilder& set_opcode(uint8_t code);
+  HCIFormatBuilder& set_opcode(uint16_t code);
   HCIFormatBuilder& set_controller_id(uint16_t controller_id);
   HCIFormatBuilder& set_connection_handle(uint16_t connection_handle);
 
@@ -37,7 +37,7 @@ private:
   std::vector<uint8_t> generate_command_header();
   std::vector<uint8_t> generate_async_data_header();
 
-  uint8_t m_opcode;
+  uint16_t m_opcode;
   uint16_t m_controller_id;
   uint16_t m_connection_handle;
   std::vector<uint8_t> m_formatted_data;

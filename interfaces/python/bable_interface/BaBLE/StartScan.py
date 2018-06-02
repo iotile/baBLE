@@ -19,12 +19,12 @@ class StartScan(object):
         self._tab = flatbuffers.table.Table(buf, pos)
 
     # StartScan
-    def AddressType(self):
+    def ActiveScan(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         if o != 0:
-            return self._tab.Get(flatbuffers.number_types.Uint8Flags, o + self._tab.Pos)
-        return 6
+            return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
+        return False
 
 def StartScanStart(builder): builder.StartObject(1)
-def StartScanAddAddressType(builder, addressType): builder.PrependUint8Slot(0, addressType, 6)
+def StartScanAddActiveScan(builder, activeScan): builder.PrependBoolSlot(0, activeScan, 1)
 def StartScanEnd(builder): return builder.EndObject()

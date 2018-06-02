@@ -21,7 +21,7 @@
 using namespace std;
 using namespace uvw;
 
-// TODO: Create a ScanBLEForever command (remove MGMT StartScan ? -> can't be implemented in Windows and Mac...) /!\ Needs to return ScanResponse AND Advertisments
+// TODO: Retest Meta packets
 
 // Function used to call all handlers closing callbacks before stopping the loop
 void cleanly_stop_loop(Loop& loop) {

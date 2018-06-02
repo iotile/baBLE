@@ -34,12 +34,14 @@ namespace Format {
       ReadByTypeRequest = 0x0015,
       ReadByTypeResponse = 0x0016,
       ProbeCharacteristics = 0x0017,
+      SetScanParameters = 0x0018,
+      SetScanEnable = 0x0019,
 
       Exit = 0xFFFF
     };
 
     enum EventCode {
-      DeviceFound = 0x0100,
+      AdvertisingReport = 0x0100,
       Discovering = 0x0200,
       DeviceConnected = 0x0300,
       DeviceDisconnected = 0x0400,
@@ -49,9 +51,9 @@ namespace Format {
       ControllerRemoved = 0x0800,
       DeviceAdded = 0x0900,
       DeviceRemoved = 0x0A00,
-      LEAdvertisingReport = 0x0B00,
-      LEReadRemoteUsedFeaturesComplete = 0x0C00,
-      CommandComplete = 0x0D00
+      ReadRemoteUsedFeaturesComplete = 0x0B00,
+      CommandComplete = 0x0C00,
+      LocalNameChanged = 0x0D00
     };
 
   }

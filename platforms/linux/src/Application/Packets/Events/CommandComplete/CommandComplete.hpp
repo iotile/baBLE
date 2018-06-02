@@ -35,6 +35,28 @@ namespace Packet {
 
       std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
 
+      const PacketUuid get_uuid() const override {
+        return PacketUuid{
+            m_current_type,
+            m_controller_id,
+            m_connection_id,
+            m_packet_code,
+            get_opcode()
+        };
+      }
+
+      inline uint16_t get_opcode() const {
+        return m_opcode;
+      };
+
+      inline std::vector<uint8_t> get_returned_params() const {
+        return m_returned_params;
+      };
+
+    private:
+      uint16_t m_opcode;
+      std::vector<uint8_t> m_returned_params;
+
     };
 
   }

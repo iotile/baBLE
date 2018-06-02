@@ -83,14 +83,13 @@ namespace Packet {
       if (m_waiting_services) {
         m_current_type = m_translated_type;
 
-        PacketUuid response_uuid = get_uuid();
-        response_uuid.response_packet_code = Format::HCI::AttributeCode::ReadByGroupTypeResponse;
+        PacketUuid response_uuid = m_read_by_type_group_request_packet->get_uuid();
         auto response_callback =
             [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {
               return on_read_by_group_type_response_received(router, packet);
             };
 
-        PacketUuid error_uuid = get_uuid();
+        PacketUuid error_uuid = m_read_by_type_group_request_packet->get_uuid();
         error_uuid.response_packet_code = Format::HCI::AttributeCode::ErrorResponse;
         auto error_callback =
             [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {

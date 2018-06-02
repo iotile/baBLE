@@ -87,11 +87,9 @@ namespace Packet {
     vector<uint8_t> GetControllersList::serialize(MGMTFormatBuilder& builder) const {
       switch (m_waiting_response) {
         case SubPacket::GetControllersIds:
-          builder.set_controller_id(NON_CONTROLLER_ID);
           return m_controllers_ids_request_packet->serialize(builder);
 
         case SubPacket::GetControllerInfo:
-          builder.set_controller_id(m_controllers_ids.at(m_current_index));
           return m_controller_info_request_packet->serialize(builder);
 
         case SubPacket::None:
@@ -103,6 +101,8 @@ namespace Packet {
       switch (m_waiting_response) {
         case GetControllersIds: {
           m_current_type = m_translated_type;
+          set_controller_id(NON_CONTROLLER_ID);
+          m_controller_info_request_packet->set_controller_id(NON_CONTROLLER_ID);
 
           PacketUuid uuid = m_controllers_ids_request_packet->get_uuid();
           auto callback =
@@ -115,9 +115,10 @@ namespace Packet {
 
         case GetControllerInfo: {
           m_current_type = m_translated_type;
+          set_controller_id(m_controllers_ids.at(m_current_index));
+          m_controller_info_request_packet->set_controller_id(m_controllers_ids.at(m_current_index));
 
           PacketUuid uuid = m_controller_info_request_packet->get_uuid();
-          uuid.controller_id = m_controllers_ids.at(m_current_index);
           auto callback =
               [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {
                 return on_controller_info_response_received(router, packet);
@@ -132,8 +133,8 @@ namespace Packet {
       }
     }
 
-    shared_ptr<AbstractPacket> GetControllersList::on_controllers_ids_response_received(const std::shared_ptr<
-        PacketRouter>& router, const shared_ptr<AbstractPacket>& packet) {
+    shared_ptr<AbstractPacket> GetControllersList::on_controllers_ids_response_received(const std::shared_ptr<PacketRouter>& router,
+                                                                                        const shared_ptr<AbstractPacket>& packet) {
       LOG.debug("Controllers ids response received", "GetControllersList");
 
       auto controllers_ids_response_packet = dynamic_pointer_cast<Packet::Commands::GetControllersIdsResponse>(packet);
@@ -161,8 +162,8 @@ namespace Packet {
       return shared_from(this);
     }
 
-    shared_ptr<AbstractPacket> GetControllersList::on_controller_info_response_received(const std::shared_ptr<
-        PacketRouter>& router, const std::shared_ptr<AbstractPacket>& packet) {
+    shared_ptr<AbstractPacket> GetControllersList::on_controller_info_response_received(const std::shared_ptr<PacketRouter>& router,
+                                                                                        const std::shared_ptr<AbstractPacket>& packet) {
       LOG.debug("Controller info response received", "GetControllersList");
 
       auto controller_info_response_packet = dynamic_pointer_cast<Packet::Commands::GetControllerInfoResponse>(packet);

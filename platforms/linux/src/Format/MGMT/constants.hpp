@@ -29,6 +29,7 @@ namespace Format {
       IndexRemoved = 0x0005,
       NewSettings = 0x0006,
       ClassOfDeviceChanged = 0x0007,
+      LocalNameChanged = 0x0008,
       DeviceConnected = 0x000B,
       DeviceDisconnected = 0x000C,
       DeviceFound = 0x0012,

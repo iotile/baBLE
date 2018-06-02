@@ -763,14 +763,14 @@ inline flatbuffers::Offset<GetConnectedDevices> CreateGetConnectedDevicesDirect(
 
 struct StartScan FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_ADDRESS_TYPE = 4
+    VT_ACTIVE_SCAN = 4
   };
-  uint8_t address_type() const {
-    return GetField<uint8_t>(VT_ADDRESS_TYPE, 6);
+  bool active_scan() const {
+    return GetField<uint8_t>(VT_ACTIVE_SCAN, 1) != 0;
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint8_t>(verifier, VT_ADDRESS_TYPE) &&
+           VerifyField<uint8_t>(verifier, VT_ACTIVE_SCAN) &&
            verifier.EndTable();
   }
 };
@@ -778,8 +778,8 @@ struct StartScan FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct StartScanBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_address_type(uint8_t address_type) {
-    fbb_.AddElement<uint8_t>(StartScan::VT_ADDRESS_TYPE, address_type, 6);
+  void add_active_scan(bool active_scan) {
+    fbb_.AddElement<uint8_t>(StartScan::VT_ACTIVE_SCAN, static_cast<uint8_t>(active_scan), 1);
   }
   explicit StartScanBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -795,22 +795,15 @@ struct StartScanBuilder {
 
 inline flatbuffers::Offset<StartScan> CreateStartScan(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint8_t address_type = 6) {
+    bool active_scan = true) {
   StartScanBuilder builder_(_fbb);
-  builder_.add_address_type(address_type);
+  builder_.add_active_scan(active_scan);
   return builder_.Finish();
 }
 
 struct StopScan FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
-    VT_ADDRESS_TYPE = 4
-  };
-  uint8_t address_type() const {
-    return GetField<uint8_t>(VT_ADDRESS_TYPE, 6);
-  }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint8_t>(verifier, VT_ADDRESS_TYPE) &&
            verifier.EndTable();
   }
 };
@@ -818,9 +811,6 @@ struct StopScan FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct StopScanBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_address_type(uint8_t address_type) {
-    fbb_.AddElement<uint8_t>(StopScan::VT_ADDRESS_TYPE, address_type, 6);
-  }
   explicit StopScanBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -834,10 +824,8 @@ struct StopScanBuilder {
 };
 
 inline flatbuffers::Offset<StopScan> CreateStopScan(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    uint8_t address_type = 6) {
+    flatbuffers::FlatBufferBuilder &_fbb) {
   StopScanBuilder builder_(_fbb);
-  builder_.add_address_type(address_type);
   return builder_.Finish();
 }
 
@@ -1928,15 +1916,18 @@ inline flatbuffers::Offset<DeviceDisconnected> CreateDeviceDisconnectedDirect(
 
 struct DeviceFound FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_ADDRESS = 4,
-    VT_ADDRESS_TYPE = 6,
-    VT_RSSI = 8,
-    VT_FLAGS = 10,
+    VT_TYPE = 4,
+    VT_ADDRESS = 6,
+    VT_ADDRESS_TYPE = 8,
+    VT_RSSI = 10,
     VT_UUID = 12,
     VT_COMPANY_ID = 14,
     VT_MANUFACTURER_DATA = 16,
     VT_DEVICE_NAME = 18
   };
+  uint8_t type() const {
+    return GetField<uint8_t>(VT_TYPE, 0);
+  }
   const flatbuffers::String *address() const {
     return GetPointer<const flatbuffers::String *>(VT_ADDRESS);
   }
@@ -1945,9 +1936,6 @@ struct DeviceFound FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   int8_t rssi() const {
     return GetField<int8_t>(VT_RSSI, 0);
-  }
-  const flatbuffers::Vector<uint8_t> *flags() const {
-    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_FLAGS);
   }
   const flatbuffers::String *uuid() const {
     return GetPointer<const flatbuffers::String *>(VT_UUID);
@@ -1963,12 +1951,11 @@ struct DeviceFound FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint8_t>(verifier, VT_TYPE) &&
            VerifyOffset(verifier, VT_ADDRESS) &&
            verifier.Verify(address()) &&
            VerifyField<uint8_t>(verifier, VT_ADDRESS_TYPE) &&
            VerifyField<int8_t>(verifier, VT_RSSI) &&
-           VerifyOffset(verifier, VT_FLAGS) &&
-           verifier.Verify(flags()) &&
            VerifyOffset(verifier, VT_UUID) &&
            verifier.Verify(uuid()) &&
            VerifyField<uint16_t>(verifier, VT_COMPANY_ID) &&
@@ -1983,6 +1970,9 @@ struct DeviceFound FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct DeviceFoundBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
+  void add_type(uint8_t type) {
+    fbb_.AddElement<uint8_t>(DeviceFound::VT_TYPE, type, 0);
+  }
   void add_address(flatbuffers::Offset<flatbuffers::String> address) {
     fbb_.AddOffset(DeviceFound::VT_ADDRESS, address);
   }
@@ -1991,9 +1981,6 @@ struct DeviceFoundBuilder {
   }
   void add_rssi(int8_t rssi) {
     fbb_.AddElement<int8_t>(DeviceFound::VT_RSSI, rssi, 0);
-  }
-  void add_flags(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> flags) {
-    fbb_.AddOffset(DeviceFound::VT_FLAGS, flags);
   }
   void add_uuid(flatbuffers::Offset<flatbuffers::String> uuid) {
     fbb_.AddOffset(DeviceFound::VT_UUID, uuid);
@@ -2021,10 +2008,10 @@ struct DeviceFoundBuilder {
 
 inline flatbuffers::Offset<DeviceFound> CreateDeviceFound(
     flatbuffers::FlatBufferBuilder &_fbb,
+    uint8_t type = 0,
     flatbuffers::Offset<flatbuffers::String> address = 0,
     uint8_t address_type = 0,
     int8_t rssi = 0,
-    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> flags = 0,
     flatbuffers::Offset<flatbuffers::String> uuid = 0,
     uint16_t company_id = 0,
     flatbuffers::Offset<flatbuffers::Vector<uint8_t>> manufacturer_data = 0,
@@ -2033,30 +2020,30 @@ inline flatbuffers::Offset<DeviceFound> CreateDeviceFound(
   builder_.add_device_name(device_name);
   builder_.add_manufacturer_data(manufacturer_data);
   builder_.add_uuid(uuid);
-  builder_.add_flags(flags);
   builder_.add_address(address);
   builder_.add_company_id(company_id);
   builder_.add_rssi(rssi);
   builder_.add_address_type(address_type);
+  builder_.add_type(type);
   return builder_.Finish();
 }
 
 inline flatbuffers::Offset<DeviceFound> CreateDeviceFoundDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
+    uint8_t type = 0,
     const char *address = nullptr,
     uint8_t address_type = 0,
     int8_t rssi = 0,
-    const std::vector<uint8_t> *flags = nullptr,
     const char *uuid = nullptr,
     uint16_t company_id = 0,
     const std::vector<uint8_t> *manufacturer_data = nullptr,
     const char *device_name = nullptr) {
   return BaBLE::CreateDeviceFound(
       _fbb,
+      type,
       address ? _fbb.CreateString(address) : 0,
       address_type,
       rssi,
-      flags ? _fbb.CreateVector<uint8_t>(*flags) : 0,
       uuid ? _fbb.CreateString(uuid) : 0,
       company_id,
       manufacturer_data ? _fbb.CreateVector<uint8_t>(*manufacturer_data) : 0,

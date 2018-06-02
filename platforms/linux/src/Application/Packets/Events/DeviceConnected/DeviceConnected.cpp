@@ -26,7 +26,7 @@ namespace Packet {
         try {
           m_eir = extractor.parse_eir(m_eir_data);
         } catch (invalid_argument& err) {
-          LOG.error("Can't parse EIR", "DeviceFound");
+          LOG.error("Can't parse EIR", "DeviceConnected");
         }
       }
     }

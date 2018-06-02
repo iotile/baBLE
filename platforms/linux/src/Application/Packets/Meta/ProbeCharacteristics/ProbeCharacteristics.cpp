@@ -16,8 +16,7 @@ namespace Packet {
       m_packet_code = packet_code(m_current_type);
 
       m_waiting_characteristics = true;
-      m_read_by_type_request_packet =
-          make_shared<Packet::Commands::ReadByTypeRequest>(translated_type, translated_type);
+      m_read_by_type_request_packet = make_shared<Packet::Commands::ReadByTypeRequest>(translated_type, translated_type);
     }
 
     void ProbeCharacteristics::unserialize(AsciiFormatExtractor& extractor) {
@@ -96,14 +95,13 @@ namespace Packet {
       if (m_waiting_characteristics) {
         m_current_type = m_translated_type;
 
-        PacketUuid response_uuid = get_uuid();
-        response_uuid.response_packet_code = Format::HCI::AttributeCode::ReadByTypeResponse;
+        PacketUuid response_uuid = m_read_by_type_request_packet->get_uuid();
         auto response_callback =
             [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {
               return on_read_by_type_response_received(router, packet);
             };
 
-        PacketUuid error_uuid = get_uuid();
+        PacketUuid error_uuid = m_read_by_type_request_packet->get_uuid();
         error_uuid.response_packet_code = Format::HCI::AttributeCode::ErrorResponse;
         auto error_callback =
             [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {
@@ -118,8 +116,8 @@ namespace Packet {
       }
     }
 
-    shared_ptr<AbstractPacket> ProbeCharacteristics::on_read_by_type_response_received(const std::shared_ptr<
-        PacketRouter>& router, const shared_ptr<AbstractPacket>& packet) {
+    shared_ptr<AbstractPacket> ProbeCharacteristics::on_read_by_type_response_received(const std::shared_ptr<PacketRouter>& router,
+                                                                                       const shared_ptr<AbstractPacket>& packet) {
       LOG.debug("Response received", "ProbeCharacteristics");
       PacketUuid error_uuid = get_uuid();
       error_uuid.response_packet_code = Format::HCI::AttributeCode::ErrorResponse;

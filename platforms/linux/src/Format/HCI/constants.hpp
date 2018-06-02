@@ -31,7 +31,7 @@
 namespace Format {
 
   namespace HCI {
-    
+
     const std::size_t command_header_length = 4;
     const std::size_t async_data_header_length = 10;
     const std::size_t event_header_length = 3;
@@ -104,6 +104,23 @@ namespace Format {
       uint32_t byte_tx;
     };
 
+    // Structure representing the Extended Inquiry Response data
+    struct EIR {
+      uint8_t flags = 0;
+      std::vector<uint8_t> uuid;
+      uint16_t company_id = 0;
+      std::vector<uint8_t> manufacturer_data;
+      std::vector<uint8_t> device_name;
+    };
+
+    enum AdvertisingReportType {
+      ConnectableUndirected = 0x00,
+      ConnectableDirected = 0x01,
+      ScannableUndirected = 0x02,
+      NonConnectableUndirected = 0x03,
+      ScanResponse = 0x04
+    };
+
     // Contains PacketBoundary Flag concatenated with Broadcast Flag=0b00 (No broadcast)
     enum HandleFlag {
       StartNonFlush = 0x00,
@@ -127,6 +144,7 @@ namespace Format {
       UUID32ServiceClass= 0x05,
       IncompleteUUID128ServiceClass= 0x06,
       UUID128ServiceClass= 0x07,
+      ShortDeviceName = 0x08,
       CompleteDeviceName= 0x09,
       ManufacturerSpecific= 0xFF
     };
@@ -141,6 +159,11 @@ namespace Format {
       LEConnectionComplete= (EventCode::LEMeta << 8) | 0x01,
       LEAdvertisingReport= (EventCode::LEMeta << 8) | 0x02,
       LEReadRemoteUsedFeaturesComplete= (EventCode::LEMeta << 8) | 0x04
+    };
+
+    enum CommandCode {
+      SetScanParameters = 0x200b,
+      SetScanEnable = 0x200c
     };
 
     enum AttributeCode {

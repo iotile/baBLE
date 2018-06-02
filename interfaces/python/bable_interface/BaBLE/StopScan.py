@@ -18,13 +18,5 @@ class StopScan(object):
     def Init(self, buf, pos):
         self._tab = flatbuffers.table.Table(buf, pos)
 
-    # StopScan
-    def AddressType(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
-        if o != 0:
-            return self._tab.Get(flatbuffers.number_types.Uint8Flags, o + self._tab.Pos)
-        return 6
-
-def StopScanStart(builder): builder.StartObject(1)
-def StopScanAddAddressType(builder, addressType): builder.PrependUint8Slot(0, addressType, 6)
+def StopScanStart(builder): builder.StartObject(0)
 def StopScanEnd(builder): return builder.EndObject()

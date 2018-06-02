@@ -94,7 +94,7 @@ Format::MGMT::EIR MGMTFormatExtractor::parse_eir(const vector<uint8_t>& data) {
         break;
 
       default:
-        LOG.warning("Unknown EIR type received: " + to_string(type), "DeviceFoundEvent");
+        LOG.warning("Unknown EIR type received: " + to_string(type));
         break;
     }
 

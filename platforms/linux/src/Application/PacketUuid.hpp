@@ -3,6 +3,7 @@
 
 #include "../Format/HCI/constants.hpp"
 #include "Packets/constants.hpp"
+#include "../Log/Log.hpp"
 
 namespace Packet {
 
@@ -26,6 +27,13 @@ namespace Packet {
       : PacketUuid(_packet_type, _controller_id, _connection_id, _response_packet_code, _response_packet_code){};
 
     bool operator==(const PacketUuid& other) const {
+
+//      LOG.critical("type=" + std::to_string(static_cast<uint16_t>(other.packet_type)) +
+//          ", controller=" + std::to_string(other.controller_id) +
+//          ", connection=" + std::to_string(other.connection_id) +
+//          ", request_packet=" + std::to_string(other.request_packet_code) +
+//          ", response_packet=" + std::to_string(other.response_packet_code), "OTHER");
+
       if (packet_type != other.packet_type
           || controller_id != other.controller_id
           || response_packet_code != other.response_packet_code) {

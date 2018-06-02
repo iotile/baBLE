@@ -80,9 +80,8 @@ namespace Packet {
       return m_id;
     };
 
-    void set_uuid_request(const std::string& uuid_request) {
-      m_uuid_request = uuid_request;
-    }
+    void set_uuid_request(const std::string& uuid_request);
+    void set_controller_id(uint16_t controller_id);
 
     virtual void before_sent(const std::shared_ptr<PacketRouter>& router);
 

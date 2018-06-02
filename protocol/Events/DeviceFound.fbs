@@ -1,10 +1,10 @@
 namespace BaBLE;
 
 table DeviceFound {
+  type:uint8;
   address:string;
   address_type:uint8;
   rssi:int8;
-  flags:[uint8];
   uuid:string;
   company_id:uint16;
   manufacturer_data:[uint8];
