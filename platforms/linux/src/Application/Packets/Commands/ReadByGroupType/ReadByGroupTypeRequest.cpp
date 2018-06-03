@@ -10,7 +10,7 @@ namespace Packet {
     ReadByGroupTypeRequest::ReadByGroupTypeRequest(Packet::Type initial_type, Packet::Type translated_type)
         : RequestPacket(initial_type, translated_type) {
       m_id = Packet::Id::ReadByGroupTypeRequest;
-      m_response_packet_code = Format::HCI::AttributeCode::ReadByTypeResponse;
+      m_response_packet_code = Format::HCI::AttributeCode::ReadByGroupTypeResponse;
 
       m_starting_handle = 0x0001;
       m_ending_handle = 0xFFFF;

@@ -16,7 +16,8 @@ void PacketRouter::add_callback(Packet::PacketUuid waiting_uuid, shared_ptr<Pack
                                               ", controller=" + to_string(waiting_uuid.controller_id) +
                                               ", connection=" + to_string(waiting_uuid.connection_id) +
                                               ", request_packet=" + to_string(waiting_uuid.request_packet_code) +
-                                              ", response_packet=" + to_string(waiting_uuid.response_packet_code) + ")");
+                                              ", response_packet=" + to_string(waiting_uuid.response_packet_code) + ")",
+                                            packet->get_uuid_request());
   }
 
   m_callbacks.emplace(waiting_uuid, make_tuple(packet, callback));

@@ -104,7 +104,7 @@ namespace Packet {
           set_controller_id(NON_CONTROLLER_ID);
           m_controller_info_request_packet->set_controller_id(NON_CONTROLLER_ID);
 
-          PacketUuid uuid = m_controllers_ids_request_packet->get_uuid();
+          PacketUuid uuid = m_controllers_ids_request_packet->get_response_uuid();
           auto callback =
               [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {
                 return on_controllers_ids_response_received(router, packet);
@@ -118,7 +118,7 @@ namespace Packet {
           set_controller_id(m_controllers_ids.at(m_current_index));
           m_controller_info_request_packet->set_controller_id(m_controllers_ids.at(m_current_index));
 
-          PacketUuid uuid = m_controller_info_request_packet->get_uuid();
+          PacketUuid uuid = m_controller_info_request_packet->get_response_uuid();
           auto callback =
               [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {
                 return on_controller_info_response_received(router, packet);

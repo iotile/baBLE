@@ -21,8 +21,6 @@
 using namespace std;
 using namespace uvw;
 
-// TODO: Retest Meta packets
-
 // Function used to call all handlers closing callbacks before stopping the loop
 void cleanly_stop_loop(Loop& loop) {
   loop.walk([](BaseHandle &handle){
@@ -193,6 +191,8 @@ int main(int argc, char* argv[]) {
 
       std::shared_ptr<Packet::AbstractPacket> packet = stdio_packet_builder.build(extractor);
       LOG.debug("Packet built", "BABLE poller");
+
+      LOG.debug(*packet, "BaBLE poller");
 
       packet->before_sent(packet_router);
       LOG.debug("Packet prepared to be sent", "BABLE poller");

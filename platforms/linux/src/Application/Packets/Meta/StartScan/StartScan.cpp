@@ -81,8 +81,7 @@ namespace Packet {
         case SetScanParameters: {
           m_current_type = m_translated_type;
 
-          PacketUuid uuid = m_set_scan_params_packet->get_uuid();
-          uuid.response_packet_code = Format::HCI::EventCode::CommandComplete;
+          PacketUuid uuid = m_set_scan_params_packet->get_response_uuid();
           auto callback =
               [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {
                 return on_set_scan_params_response_received(router, packet);
@@ -94,8 +93,7 @@ namespace Packet {
         case SetScanEnable: {
           m_current_type = m_translated_type;
 
-          PacketUuid uuid = m_set_scan_enable_packet->get_uuid();
-          uuid.response_packet_code = Format::HCI::EventCode::CommandComplete;
+          PacketUuid uuid = m_set_scan_enable_packet->get_response_uuid();
           auto callback =
               [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {
                 return on_set_scan_enable_response_received(router, packet);

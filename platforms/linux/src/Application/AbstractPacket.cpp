@@ -155,6 +155,10 @@ namespace Packet {
     m_controller_id = controller_id;
   }
 
+  void AbstractPacket::set_connection_id(uint16_t connection_id) {
+    m_connection_id = connection_id;
+  }
+
   void AbstractPacket::import_status(const AbstractPacket& packet) {
     m_status = packet.m_status;
     m_native_class = packet.m_native_class;

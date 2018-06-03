@@ -15,8 +15,7 @@ namespace Packet {
       m_packet_code = packet_code(m_current_type);
 
       m_waiting_services = true;
-      m_read_by_type_group_request_packet =
-          make_shared<Packet::Commands::ReadByGroupTypeRequest>(translated_type, translated_type);
+      m_read_by_type_group_request_packet = make_shared<Packet::Commands::ReadByGroupTypeRequest>(translated_type, translated_type);
     }
 
     void ProbeServices::unserialize(AsciiFormatExtractor& extractor) {
@@ -28,12 +27,18 @@ namespace Packet {
                                                   "Usage: <uuid>,<command_code>,<controller_id>,<connection_handle>",
                                                   m_uuid_request);
       }
+
+      m_read_by_type_group_request_packet->set_controller_id(m_controller_id);
+      m_read_by_type_group_request_packet->set_connection_id(m_connection_id);
     }
 
     void ProbeServices::unserialize(FlatbuffersFormatExtractor& extractor) {
       auto payload = extractor.get_payload<const BaBLE::ProbeServices*>();
 
       m_connection_id = payload->connection_handle();
+
+      m_read_by_type_group_request_packet->set_controller_id(m_controller_id);
+      m_read_by_type_group_request_packet->set_connection_id(m_connection_id);
     }
 
     vector<uint8_t> ProbeServices::serialize(AsciiFormatBuilder& builder) const {
@@ -83,13 +88,13 @@ namespace Packet {
       if (m_waiting_services) {
         m_current_type = m_translated_type;
 
-        PacketUuid response_uuid = m_read_by_type_group_request_packet->get_uuid();
+        PacketUuid response_uuid = m_read_by_type_group_request_packet->get_response_uuid();
         auto response_callback =
             [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {
               return on_read_by_group_type_response_received(router, packet);
             };
 
-        PacketUuid error_uuid = m_read_by_type_group_request_packet->get_uuid();
+        PacketUuid error_uuid = m_read_by_type_group_request_packet->get_response_uuid();
         error_uuid.response_packet_code = Format::HCI::AttributeCode::ErrorResponse;
         auto error_callback =
             [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {
@@ -107,7 +112,7 @@ namespace Packet {
     shared_ptr<AbstractPacket> ProbeServices::on_read_by_group_type_response_received(const std::shared_ptr<PacketRouter>& router,
                                                                                       const shared_ptr<AbstractPacket>& packet) {
       LOG.debug("Response received", "ProbeServices");
-      PacketUuid error_uuid = get_uuid();
+      PacketUuid error_uuid = m_read_by_type_group_request_packet->get_response_uuid();
       error_uuid.response_packet_code = Format::HCI::AttributeCode::ErrorResponse;
       router->remove_callback(error_uuid);
 
@@ -134,8 +139,8 @@ namespace Packet {
     shared_ptr<AbstractPacket> ProbeServices::on_error_response_received(const std::shared_ptr<PacketRouter>& router,
                                                                          const shared_ptr<AbstractPacket>& packet) {
       LOG.debug("Error received", "ProbeCharacteristics");
-      PacketUuid response_uuid = get_uuid();
-      response_uuid.response_packet_code = Format::HCI::AttributeCode::ReadByTypeResponse;
+      PacketUuid response_uuid = m_read_by_type_group_request_packet->get_response_uuid();
+      response_uuid.response_packet_code = Format::HCI::AttributeCode::ReadByGroupTypeResponse;
       router->remove_callback(response_uuid);
 
       import_status(*packet);

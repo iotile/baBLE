@@ -38,7 +38,7 @@ def status_code_to_string(status_code):
         return "-"
 
 
-process = subprocess.Popen(["../../platforms/linux/build/debug/baBLE_linux", "--logging", "info"],
+process = subprocess.Popen(["../../platforms/linux/build/debug/baBLE_linux", "--logging", "debug"],
                            stdout=subprocess.PIPE, stdin=subprocess.PIPE,
                            bufsize=0,
                            universal_newlines=False)
@@ -372,6 +372,7 @@ try:
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Address type:", address_type, "Address:", address)
+
             process.stdin.write(fb_disconnect("disconnect", 0, address_device_str))
         elif packet.PayloadType() == Payload.Payload().Discovering:
             discovering = Discovering.Discovering()
@@ -430,9 +431,9 @@ try:
             # time.sleep(2)
             # process.stdin.write(fb_read("0002", 0, 0x0040, 0x0003))
 
-            # process.stdin.write(fb_probe_characteristics("12356789", 0, 0x0040))
+            process.stdin.write(fb_probe_characteristics("12356789", 0, 0x0040))
             # process.stdin.write(fb_probe_services("12356789", 0, 0x0040))
-            process.stdin.write(fb_remove_device("remove", 0, address_device_str))
+            # process.stdin.write(fb_remove_device("remove", 0, address_device_str))
         elif packet.PayloadType() == Payload.Payload().DeviceDisconnected:
             device_disconnected = DeviceDisconnected.DeviceDisconnected()
             device_disconnected.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -671,8 +672,8 @@ try:
                       "Notify:", characteristic.Notify(), "Read:", characteristic.Read(),
                       "Write:", characteristic.Write(), "Broadcast:", characteristic.Broadcast())
 
-            # process.stdin.write(fb_remove_device("0003", 0, address_device_str))
-            # process.stdin.write(fb_disconnect("0004", 0, address_device_str))
+            process.stdin.write(fb_remove_device("0003", 0, address_device_str))
+            process.stdin.write(fb_disconnect("0004", 0, address_device_str))
         elif packet.PayloadType() == Payload.Payload().Ready:
             ready = Ready.Ready()
             ready.Init(packet.Payload().Bytes, packet.Payload().Pos)
