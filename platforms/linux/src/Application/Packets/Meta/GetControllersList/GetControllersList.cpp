@@ -10,15 +10,15 @@ namespace Packet {
 
   namespace Meta {
 
-    GetControllersList::GetControllersList(Packet::Type initial_type, Packet::Type translated_type)
-        : AbstractPacket(initial_type, translated_type) {
+    GetControllersList::GetControllersList(Packet::Type initial_type, Packet::Type final_type)
+        : AbstractPacket(initial_type, final_type) {
       m_id = Packet::Id::GetControllersList;
       m_packet_code = packet_code(m_current_type);
 
       m_controller_info_request_packet =
-          std::make_shared<Packet::Commands::GetControllerInfoRequest>(translated_type, translated_type);
+          std::make_shared<Packet::Commands::GetControllerInfoRequest>(final_type, final_type);
       m_controllers_ids_request_packet =
-          std::make_shared<Packet::Commands::GetControllersIdsRequest>(translated_type, translated_type);
+          std::make_shared<Packet::Commands::GetControllersIdsRequest>(final_type, final_type);
 
       m_waiting_response = SubPacket::GetControllersIds;
       m_current_index = 0;
@@ -102,7 +102,7 @@ namespace Packet {
     void GetControllersList::before_sent(const std::shared_ptr<PacketRouter>& router) {
       switch (m_waiting_response) {
         case GetControllersIds: {
-          m_current_type = m_translated_type;
+          m_current_type = m_final_type;
           set_controller_id(NON_CONTROLLER_ID);
           m_controller_info_request_packet->set_controller_id(NON_CONTROLLER_ID);
 
@@ -116,7 +116,7 @@ namespace Packet {
         }
 
         case GetControllerInfo: {
-          m_current_type = m_translated_type;
+          m_current_type = m_final_type;
           set_controller_id(m_controllers_ids.at(m_current_index));
           m_controller_info_request_packet->set_controller_id(m_controllers_ids.at(m_current_index));
 

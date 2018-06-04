@@ -1,6 +1,0 @@
-namespace BaBLE;
-
-table AddDevice {
-  address:string;
-  address_type:uint8 = 2;  // LE Random
-}

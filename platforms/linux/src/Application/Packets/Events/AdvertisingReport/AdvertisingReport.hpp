@@ -26,7 +26,7 @@ namespace Packet {
         }
       };
 
-      AdvertisingReport(Packet::Type initial_type, Packet::Type translated_type);
+      AdvertisingReport(Packet::Type initial_type, Packet::Type final_type);
 
       void unserialize(HCIFormatExtractor& extractor) override;
 

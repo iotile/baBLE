@@ -27,7 +27,7 @@ namespace Packet {
         }
       };
 
-      NotificationReceived(Packet::Type initial_type, Packet::Type translated_type);
+      NotificationReceived(Packet::Type initial_type, Packet::Type final_type);
 
       void unserialize(HCIFormatExtractor& extractor) override;
 

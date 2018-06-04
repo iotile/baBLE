@@ -7,19 +7,10 @@ namespace Packet {
 
   namespace Events {
 
-    DeviceDisconnected::DeviceDisconnected(Packet::Type initial_type, Packet::Type translated_type)
-        : EventPacket(initial_type, translated_type) {
+    DeviceDisconnected::DeviceDisconnected(Packet::Type initial_type, Packet::Type final_type)
+        : EventPacket(initial_type, final_type) {
       m_id = Packet::Id::DeviceDisconnected;
-      m_address_type = 0;
       m_raw_reason = 0;
-    }
-
-    void DeviceDisconnected::unserialize(MGMTFormatExtractor& extractor) {
-      m_address = extractor.get_array<uint8_t, 6>();
-      m_address_type = extractor.get_value<uint8_t>();
-      m_raw_reason = extractor.get_value<uint8_t>();
-
-      m_reason = Format::MGMT::Reasons[m_raw_reason];
     }
 
     void DeviceDisconnected::unserialize(HCIFormatExtractor& extractor) {
@@ -54,14 +45,11 @@ namespace Packet {
     }
 
     vector<uint8_t> DeviceDisconnected::serialize(FlatbuffersFormatBuilder& builder) const {
-      auto address = builder.CreateString(Utils::format_bd_address(m_address));
       auto reason = builder.CreateString(m_reason);
 
       auto payload = BaBLE::CreateDeviceDisconnected(
           builder,
           m_connection_id,
-          address,
-          m_address_type,
           reason
       );
 
@@ -73,8 +61,6 @@ namespace Packet {
 
       result << "<DeviceDisconnected> "
              << AbstractPacket::stringify() << ", "
-             << "Address: " << Utils::format_bd_address(m_address) << ", "
-             << "Address type: " << to_string(m_address_type) << ", "
              << "Reason: " << m_reason;
 
       return result.str();

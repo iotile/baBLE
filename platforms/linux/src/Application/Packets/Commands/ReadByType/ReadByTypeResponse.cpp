@@ -7,8 +7,8 @@ namespace Packet {
 
   namespace Commands {
 
-    ReadByTypeResponse::ReadByTypeResponse(Packet::Type initial_type, Packet::Type translated_type)
-        : ResponsePacket(initial_type, translated_type) {
+    ReadByTypeResponse::ReadByTypeResponse(Packet::Type initial_type, Packet::Type final_type)
+        : ResponsePacket(initial_type, final_type) {
       m_id = Packet::Id::ReadByTypeResponse;
       m_last_ending_handle = 0;
     }

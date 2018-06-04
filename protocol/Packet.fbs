@@ -5,8 +5,7 @@ include "./Commands/GetControllerInfo.fbs";
 include "./Commands/GetConnectedDevices.fbs";
 include "./Commands/StartScan.fbs";
 include "./Commands/StopScan.fbs";
-include "./Commands/AddDevice.fbs";
-include "./Commands/RemoveDevice.fbs";
+include "./Commands/Connect.fbs";
 include "./Commands/Disconnect.fbs";
 include "./Commands/SetPowered.fbs";
 include "./Commands/SetDiscoverable.fbs";
@@ -21,7 +20,6 @@ include "./Events/DeviceDisconnected.fbs";
 include "./Events/DeviceFound.fbs";
 include "./Events/Discovering.fbs";
 include "./Events/ControllerChanged.fbs";
-include "./Events/DeviceChanged.fbs";
 include "./Events/NotificationReceived.fbs";
 include "./Errors/BaBLEError.fbs";
 include "./Errors/ErrorResponse.fbs";
@@ -32,7 +30,7 @@ namespace BaBLE;
 
 union Payload {
   // Commands
-  AddDevice,
+  Connect,
   Disconnect,
   GetConnectedDevices,
   GetControllersIds,
@@ -42,7 +40,6 @@ union Payload {
   ProbeCharacteristics,
   ProbeServices,
   Read,
-  RemoveDevice,
   SetConnectable,
   SetDiscoverable,
   SetPowered,
@@ -54,8 +51,6 @@ union Payload {
   // Events
   ControllerAdded,
   ControllerRemoved,
-  DeviceAdded,
-  DeviceRemoved,
   DeviceConnected,
   DeviceDisconnected,
   DeviceFound,

@@ -8,8 +8,8 @@ namespace Packet {
 
   namespace Events {
 
-    AdvertisingReport::AdvertisingReport(Packet::Type initial_type, Packet::Type translated_type)
-        : EventPacket(initial_type, translated_type) {
+    AdvertisingReport::AdvertisingReport(Packet::Type initial_type, Packet::Type final_type)
+        : EventPacket(initial_type, final_type) {
       m_id = Packet::Id::AdvertisingReport;
       m_address_type = 0;
       m_eir_data_length = 0;

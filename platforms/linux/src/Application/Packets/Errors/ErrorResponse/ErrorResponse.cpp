@@ -6,8 +6,8 @@ namespace Packet {
 
   namespace Errors {
 
-    ErrorResponse::ErrorResponse(Packet::Type initial_type, Packet::Type translated_type)
-        : AbstractPacket(initial_type, translated_type) {
+    ErrorResponse::ErrorResponse(Packet::Type initial_type, Packet::Type final_type)
+        : AbstractPacket(initial_type, final_type) {
       m_id = Packet::Id::ErrorResponse;
       m_packet_code = packet_code(m_current_type);
       m_opcode = 0;

@@ -7,8 +7,8 @@ namespace Packet {
 
   namespace Commands {
 
-    ReadByGroupTypeRequest::ReadByGroupTypeRequest(Packet::Type initial_type, Packet::Type translated_type)
-        : RequestPacket(initial_type, translated_type) {
+    ReadByGroupTypeRequest::ReadByGroupTypeRequest(Packet::Type initial_type, Packet::Type final_type)
+        : RequestPacket(initial_type, final_type) {
       m_id = Packet::Id::ReadByGroupTypeRequest;
       m_response_packet_code = Format::HCI::AttributeCode::ReadByGroupTypeResponse;
 

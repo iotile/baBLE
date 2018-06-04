@@ -6,8 +6,8 @@ namespace Packet {
 
   namespace Control {
 
-    Exit::Exit(Packet::Type initial_type, Packet::Type translated_type)
-        : AbstractPacket(initial_type, translated_type) {
+    Exit::Exit(Packet::Type initial_type, Packet::Type final_type)
+        : AbstractPacket(initial_type, final_type) {
       m_id = Packet::Id::Exit;
       m_packet_code = packet_code(m_current_type);
     }

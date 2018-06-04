@@ -6,8 +6,8 @@ namespace Packet {
 
   namespace Commands {
 
-    GetMGMTInfoResponse::GetMGMTInfoResponse(Packet::Type initial_type, Packet::Type translated_type)
-        : ResponsePacket(initial_type, translated_type) {
+    GetMGMTInfoResponse::GetMGMTInfoResponse(Packet::Type initial_type, Packet::Type final_type)
+        : ResponsePacket(initial_type, final_type) {
       m_id = Packet::Id::GetMGMTInfoResponse;
       m_version = 0;
       m_revision = 0;

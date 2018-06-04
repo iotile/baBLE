@@ -7,8 +7,8 @@ namespace Packet {
 
   namespace Commands {
 
-    ReadByGroupTypeResponse::ReadByGroupTypeResponse(Packet::Type initial_type, Packet::Type translated_type)
-        : ResponsePacket(initial_type, translated_type) {
+    ReadByGroupTypeResponse::ReadByGroupTypeResponse(Packet::Type initial_type, Packet::Type final_type)
+        : ResponsePacket(initial_type, final_type) {
       m_id = Packet::Id::ReadByGroupTypeResponse;
       m_last_group_end_handle = 0;
     }

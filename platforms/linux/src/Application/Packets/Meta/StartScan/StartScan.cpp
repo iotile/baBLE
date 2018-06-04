@@ -8,13 +8,13 @@ namespace Packet {
 
   namespace Meta {
 
-    StartScan::StartScan(Packet::Type initial_type, Packet::Type translated_type)
-        : AbstractPacket(initial_type, translated_type) {
+    StartScan::StartScan(Packet::Type initial_type, Packet::Type final_type)
+        : AbstractPacket(initial_type, final_type) {
       m_id = Packet::Id::StartScan;
       m_packet_code = packet_code(m_current_type);
 
-      m_set_scan_params_packet = std::make_shared<Packet::Commands::SetScanParameters>(translated_type, translated_type);
-      m_set_scan_enable_packet = std::make_shared<Packet::Commands::SetScanEnable>(translated_type, translated_type);
+      m_set_scan_params_packet = std::make_shared<Packet::Commands::SetScanParameters>(final_type, final_type);
+      m_set_scan_enable_packet = std::make_shared<Packet::Commands::SetScanEnable>(final_type, final_type);
       m_set_scan_enable_packet->set_state(true);
 
       m_waiting_response = SubPacket::SetScanParameters;
@@ -65,7 +65,7 @@ namespace Packet {
     void StartScan::before_sent(const std::shared_ptr<PacketRouter>& router) {
       switch (m_waiting_response) {
         case SetScanParameters: {
-          m_current_type = m_translated_type;
+          m_current_type = m_final_type;
 
           PacketUuid uuid = m_set_scan_params_packet->get_response_uuid();
           auto callback =
@@ -77,7 +77,7 @@ namespace Packet {
         }
 
         case SetScanEnable: {
-          m_current_type = m_translated_type;
+          m_current_type = m_final_type;
 
           PacketUuid uuid = m_set_scan_enable_packet->get_response_uuid();
           auto callback =

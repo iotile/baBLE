@@ -20,17 +20,17 @@ namespace Packet {
       }
 
     protected:
-      RequestPacket(Packet::Type initial_type, Packet::Type translated_type)
-          : AbstractPacket(initial_type, translated_type) {
+      RequestPacket(Packet::Type initial_type, Packet::Type final_type)
+          : AbstractPacket(initial_type, final_type) {
         m_packet_code = T::packet_code(m_current_type);
-        m_response_packet_code = T::packet_code(m_translated_type);
+        m_response_packet_code = T::packet_code(m_final_type);
       };
 
       void before_sent(const std::shared_ptr<PacketRouter>& router) override {
         AbstractPacket::before_sent(router);
         m_packet_code = T::packet_code(m_current_type);
 
-        if (m_current_type == m_translated_type) {
+        if (m_current_type == m_final_type) {
           PacketUuid response_uuid = get_response_uuid();
           auto response_callback =
               [this](const std::shared_ptr<PacketRouter>& router, const std::shared_ptr<AbstractPacket>& packet) {

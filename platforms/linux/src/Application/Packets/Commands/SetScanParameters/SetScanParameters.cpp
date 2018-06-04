@@ -9,9 +9,9 @@ namespace Packet {
 
   namespace Commands {
 
-    SetScanParameters::SetScanParameters(Packet::Type initial_type, Packet::Type translated_type)
-        : RequestPacket(initial_type, translated_type) {
-      m_id = Packet::Id::ReadRequest;
+    SetScanParameters::SetScanParameters(Packet::Type initial_type, Packet::Type final_type)
+        : RequestPacket(initial_type, final_type) {
+      m_id = Packet::Id::SetScanParameters;
       m_response_packet_code = Format::HCI::EventCode::CommandComplete;
 
       m_scan_type = 0x01; // Active

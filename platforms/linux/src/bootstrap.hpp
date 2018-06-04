@@ -6,12 +6,7 @@
 #include "Application/Packets/Commands/GetMGMTInfo/GetMGMTInfoRequest.hpp"
 #include "Application/Packets/Commands/GetMGMTInfo/GetMGMTInfoResponse.hpp"
 #include "Application/Packets/Meta/StartScan/StartScan.hpp"
-#include "Application/Packets/Commands/AddDevice/AddDeviceRequest.hpp"
-#include "Application/Packets/Commands/AddDevice/AddDeviceResponse.hpp"
-#include "Application/Packets/Commands/RemoveDevice/RemoveDeviceRequest.hpp"
-#include "Application/Packets/Commands/RemoveDevice/RemoveDeviceResponse.hpp"
-#include "Application/Packets/Commands/Disconnect/DisconnectRequest.hpp"
-#include "Application/Packets/Commands/Disconnect/DisconnectResponse.hpp"
+#include "Application/Packets/Commands/Disconnect/Disconnect.hpp"
 #include "Application/Packets/Commands/SetPowered/SetPoweredRequest.hpp"
 #include "Application/Packets/Commands/SetPowered/SetPoweredResponse.hpp"
 #include "Application/Packets/Commands/SetDiscoverable/SetDiscoverableRequest.hpp"
@@ -40,13 +35,12 @@
 #include "Application/Packets/Events/Discovering/Discovering.hpp"
 #include "Application/Packets/Events/ControllerAdded/ControllerAdded.hpp"
 #include "Application/Packets/Events/ControllerRemoved/ControllerRemoved.hpp"
-#include "Application/Packets/Events/DeviceAdded/DeviceAdded.hpp"
-#include "Application/Packets/Events/DeviceRemoved/DeviceRemoved.hpp"
 #include "Application/Packets/Events/AdvertisingReport/AdvertisingReport.hpp"
 #include "Application/Packets/Meta/GetControllersList/GetControllersList.hpp"
 #include "Application/Packets/Meta/ProbeServices/ProbeServices.hpp"
 #include "Application/Packets/Meta/ProbeCharacteristics/ProbeCharacteristics.hpp"
 #include "Application/Packets/Events/CommandComplete/CommandComplete.hpp"
+#include "Application/Packets/Commands/CreateConnection/CreateConnection.hpp"
 
 using namespace std;
 using Packet::Meta::GetControllersList;
@@ -61,24 +55,20 @@ namespace Bootstrap {
         .register_command<Packet::Commands::GetControllersIdsResponse>()
         .register_command<Packet::Commands::GetControllerInfoResponse>()
         .register_command<Packet::Commands::GetConnectedDevicesResponse>()
-        .register_command<Packet::Commands::AddDeviceResponse>()
-        .register_command<Packet::Commands::RemoveDeviceResponse>()
-        .register_command<Packet::Commands::DisconnectResponse>()
         .register_command<Packet::Commands::SetPoweredResponse>()
         .register_command<Packet::Commands::SetDiscoverableResponse>()
         .register_command<Packet::Commands::SetConnectableResponse>()
         .register_event<Packet::Events::Discovering>()
         .register_event<Packet::Events::ControllerAdded>()
         .register_event<Packet::Events::ControllerRemoved>()
-        .register_event<Packet::Events::DeviceAdded>()
-        .register_event<Packet::Events::DeviceRemoved>()
-      .set_output_format(nullptr)
-        .register_event<Packet::Events::DeviceConnected>()
-        .register_event<Packet::Events::DeviceDisconnected>()
       .set_ignored_packets({
         Format::MGMT::EventCode::ClassOfDeviceChanged,
         Format::MGMT::EventCode::LocalNameChanged,
-        Format::MGMT::EventCode::NewSettings
+        Format::MGMT::EventCode::NewSettings,
+        Format::MGMT::EventCode::DeviceAdded,
+        Format::MGMT::EventCode::DeviceConnected,
+        Format::MGMT::EventCode::DeviceDisconnected,
+        Format::MGMT::EventCode::DeviceRemoved,
       });
   }
 
@@ -112,9 +102,6 @@ namespace Bootstrap {
         .register_command<Packet::Commands::GetControllersIdsRequest>()
         .register_command<Packet::Commands::GetControllerInfoRequest>()
         .register_command<Packet::Commands::GetConnectedDevicesRequest>()
-        .register_command<Packet::Commands::AddDeviceRequest>()
-        .register_command<Packet::Commands::RemoveDeviceRequest>()
-        .register_command<Packet::Commands::DisconnectRequest>()
         .register_command<Packet::Commands::SetPoweredRequest>()
         .register_command<Packet::Commands::SetDiscoverableRequest>()
         .register_command<Packet::Commands::SetConnectableRequest>()
@@ -122,6 +109,8 @@ namespace Bootstrap {
       .set_output_format(std::move(hci_format))
         .register_command<Packet::Meta::StartScan>()
         .register_command<Packet::Commands::SetScanEnable>()
+        .register_command<Packet::Commands::CreateConnection>()
+        .register_command<Packet::Commands::Disconnect>()
         .register_command<Packet::Commands::ReadRequest>()
         .register_command<Packet::Commands::WriteRequest>()
         .register_command<Packet::Commands::WriteWithoutResponse>()

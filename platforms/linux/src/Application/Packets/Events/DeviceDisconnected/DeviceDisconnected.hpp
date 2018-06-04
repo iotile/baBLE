@@ -13,7 +13,7 @@ namespace Packet {
       static const uint16_t packet_code(Packet::Type type) {
         switch (type) {
           case Packet::Type::MGMT:
-            return Format::MGMT::EventCode::DeviceDisconnected;
+            throw std::invalid_argument("'DeviceDisconnected' packet not implemented with MGMT protocol.");
 
           case Packet::Type::HCI:
             return Format::HCI::EventCode::DisconnectComplete;
@@ -26,9 +26,8 @@ namespace Packet {
         }
       };
 
-      DeviceDisconnected(Packet::Type initial_type, Packet::Type translated_type);
+      DeviceDisconnected(Packet::Type initial_type, Packet::Type final_type);
 
-      void unserialize(MGMTFormatExtractor& extractor) override;
       void unserialize(HCIFormatExtractor& extractor) override;
 
       std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
@@ -36,8 +35,6 @@ namespace Packet {
       const std::string stringify() const override;
 
     private:
-      std::array<uint8_t, 6> m_address{};
-      uint8_t m_address_type;
       uint8_t m_raw_reason;
       std::string m_reason;
     };

@@ -10,13 +10,13 @@ namespace Packet {
 
   namespace Meta {
 
-    ProbeServices::ProbeServices(Packet::Type initial_type, Packet::Type translated_type)
-        : AbstractPacket(initial_type, translated_type) {
+    ProbeServices::ProbeServices(Packet::Type initial_type, Packet::Type final_type)
+        : AbstractPacket(initial_type, final_type) {
       m_id = Packet::Id::ProbeServices;
       m_packet_code = packet_code(m_current_type);
 
       m_waiting_services = true;
-      m_read_by_type_group_request_packet = make_shared<Packet::Commands::ReadByGroupTypeRequest>(translated_type, translated_type);
+      m_read_by_type_group_request_packet = make_shared<Packet::Commands::ReadByGroupTypeRequest>(final_type, final_type);
     }
 
     void ProbeServices::unserialize(FlatbuffersFormatExtractor& extractor) {
@@ -75,7 +75,7 @@ namespace Packet {
     void ProbeServices::before_sent(const std::shared_ptr<PacketRouter>& router) {
       // We want to keep the same Packet::Type to resend command until we probed all the services
       if (m_waiting_services) {
-        m_current_type = m_translated_type;
+        m_current_type = m_final_type;
 
         PacketUuid response_uuid = m_read_by_type_group_request_packet->get_response_uuid();
         auto response_callback =

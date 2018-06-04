@@ -26,7 +26,7 @@ namespace Packet {
         }
       };
 
-      CommandComplete(Packet::Type initial_type, Packet::Type translated_type);
+      CommandComplete(Packet::Type initial_type, Packet::Type final_type);
 
       void unserialize(HCIFormatExtractor& extractor) override;
 

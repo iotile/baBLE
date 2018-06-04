@@ -1,6 +1,5 @@
 namespace BaBLE;
 
 table Disconnect {
-  address:string;
-  address_type:uint8 = 2;  // LE Random
+  connection_handle:uint16;
 }

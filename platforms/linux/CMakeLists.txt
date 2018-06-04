@@ -18,9 +18,7 @@ set(SOURCES_FILES
         src/Application/Packets/Commands/RequestPacket.hpp
         src/Application/Packets/Commands/ResponsePacket.hpp
         src/Application/Packets/Commands/GetMGMTInfo/GetMGMTInfoRequest.cpp
-        src/Application/Packets/Commands/AddDevice/AddDeviceRequest.cpp
-        src/Application/Packets/Commands/RemoveDevice/RemoveDeviceRequest.cpp
-        src/Application/Packets/Commands/Disconnect/DisconnectRequest.cpp
+        src/Application/Packets/Commands/Disconnect/Disconnect.cpp
         src/Application/Packets/Commands/SetPowered/SetPoweredRequest.cpp
         src/Application/Packets/Commands/SetDiscoverable/SetDiscoverableRequest.cpp
         src/Application/Packets/Commands/SetConnectable/SetConnectableRequest.cpp
@@ -37,8 +35,6 @@ set(SOURCES_FILES
         src/Application/Packets/Events/DeviceDisconnected/DeviceDisconnected.cpp
         src/Application/Packets/Events/ControllerAdded/ControllerAdded.cpp
         src/Application/Packets/Events/ControllerRemoved/ControllerRemoved.cpp
-        src/Application/Packets/Events/DeviceAdded/DeviceAdded.cpp
-        src/Application/Packets/Events/DeviceRemoved/DeviceRemoved.cpp
         src/Application/Packets/Events/AdvertisingReport/AdvertisingReport.cpp
         src/Application/Packets/Errors/BaBLEError/BaBLEError.cpp
         src/Application/Packets/Meta/GetControllersList/GetControllersList.cpp
@@ -78,14 +74,11 @@ set(SOURCES_FILES
         src/Application/Packets/Commands/ReadByType/ReadByTypeResponse.cpp
         src/Application/Packets/Commands/ReadByGroupType/ReadByGroupTypeRequest.cpp
         src/Application/Packets/Commands/ReadByGroupType/ReadByGroupTypeResponse.cpp
-        src/Application/Packets/Commands/AddDevice/AddDeviceResponse.cpp
-        src/Application/Packets/Commands/Disconnect/DisconnectResponse.cpp
         src/Application/Packets/Commands/GetConnectedDevices/GetConnectedDevicesResponse.cpp
         src/Application/Packets/Commands/GetControllerInfo/GetControllerInfoResponse.cpp
         src/Application/Packets/Commands/GetControllersIds/GetControllersIdsResponse.cpp
         src/Application/Packets/Commands/GetMGMTInfo/GetMGMTInfoResponse.cpp
         src/Application/Packets/Commands/Read/ReadResponse.cpp
-        src/Application/Packets/Commands/RemoveDevice/RemoveDeviceResponse.cpp
         src/Application/Packets/Commands/SetConnectable/SetConnectableResponse.cpp
         src/Application/Packets/Commands/SetDiscoverable/SetDiscoverableResponse.cpp
         src/Application/Packets/Commands/SetPowered/SetPoweredResponse.cpp
@@ -96,7 +89,7 @@ set(SOURCES_FILES
         src/Application/Packets/Commands/SetScanParameters/SetScanParameters.cpp
         src/Application/Packets/Commands/SetScanEnable/SetScanEnable.cpp
         src/Application/Packets/Meta/StartScan/StartScan.cpp
-        src/utils/string_formats.hpp)
+        src/utils/string_formats.hpp src/Application/Packets/Commands/CreateConnection/CreateConnection.cpp src/Application/Packets/Commands/CreateConnection/CreateConnection.hpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies

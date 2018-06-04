@@ -6,8 +6,8 @@ namespace Packet {
 
   namespace Events {
 
-    ControllerRemoved::ControllerRemoved(Packet::Type initial_type, Packet::Type translated_type)
-        : EventPacket(initial_type, translated_type) {
+    ControllerRemoved::ControllerRemoved(Packet::Type initial_type, Packet::Type final_type)
+        : EventPacket(initial_type, final_type) {
       m_id = Packet::Id::ControllerRemoved;
     }
 

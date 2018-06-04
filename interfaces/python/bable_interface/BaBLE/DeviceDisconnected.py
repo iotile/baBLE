@@ -26,29 +26,13 @@ class DeviceDisconnected(object):
         return 0
 
     # DeviceDisconnected
-    def Address(self):
+    def Reason(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         if o != 0:
             return self._tab.String(o + self._tab.Pos)
         return None
 
-    # DeviceDisconnected
-    def AddressType(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
-        if o != 0:
-            return self._tab.Get(flatbuffers.number_types.Uint8Flags, o + self._tab.Pos)
-        return 0
-
-    # DeviceDisconnected
-    def Reason(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
-        if o != 0:
-            return self._tab.String(o + self._tab.Pos)
-        return None
-
-def DeviceDisconnectedStart(builder): builder.StartObject(4)
+def DeviceDisconnectedStart(builder): builder.StartObject(2)
 def DeviceDisconnectedAddConnectionHandle(builder, connectionHandle): builder.PrependUint16Slot(0, connectionHandle, 0)
-def DeviceDisconnectedAddAddress(builder, address): builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(address), 0)
-def DeviceDisconnectedAddAddressType(builder, addressType): builder.PrependUint8Slot(2, addressType, 0)
-def DeviceDisconnectedAddReason(builder, reason): builder.PrependUOffsetTRelativeSlot(3, flatbuffers.number_types.UOffsetTFlags.py_type(reason), 0)
+def DeviceDisconnectedAddReason(builder, reason): builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(reason), 0)
 def DeviceDisconnectedEnd(builder): return builder.EndObject()

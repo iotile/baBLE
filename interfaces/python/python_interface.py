@@ -2,11 +2,11 @@ import subprocess
 import time
 import flatbuffers
 
-from bable_interface.BaBLE import Packet, Payload, GetMGMTInfo, StartScan, StopScan, Discovering, DeviceFound, BaBLEError, StatusCode, \
-    AddDevice, DeviceConnected, RemoveDevice, Disconnect, DeviceDisconnected, SetPowered, \
+from bable_interface.BaBLE import Packet, Payload, GetMGMTInfo, StartScan, StopScan, Discovering, DeviceFound, \
+    BaBLEError, StatusCode, Connect, DeviceConnected, Disconnect, DeviceDisconnected, SetPowered, \
     SetDiscoverable, SetConnectable, GetControllersList, ControllerAdded, ControllerRemoved, \
     GetControllerInfo, GetConnectedDevices, GetControllersIds, Read, Write, NotificationReceived, \
-    ProbeServices, ProbeCharacteristics, WriteWithoutResponse, Ready, Exit, DeviceAdded, DeviceRemoved, ErrorResponse
+    ProbeServices, ProbeCharacteristics, WriteWithoutResponse, Ready, Exit, ErrorResponse
 
 
 def status_code_to_string(status_code):
@@ -73,40 +73,25 @@ def fb_stop_scan(uuid, controller_id):
     return build_packet(builder, uuid, payload, Payload.Payload.StopScan, controller_id)
 
 
-## AddDevice
-def fb_add_device(uuid, controller_id, address_device):
+## Connect
+def fb_connect(uuid, controller_id, address_device):
     builder = flatbuffers.Builder(0)
     address = builder.CreateString(address_device)
 
-    AddDevice.AddDeviceStart(builder)
-    AddDevice.AddDeviceAddAddress(builder, address)
-    AddDevice.AddDeviceAddAddressType(builder, 2)
-    payload = AddDevice.AddDeviceEnd(builder)
+    Connect.ConnectStart(builder)
+    Connect.ConnectAddAddress(builder, address)
+    Connect.ConnectAddAddressType(builder, 1)
+    payload = Connect.ConnectEnd(builder)
 
-    return build_packet(builder, uuid, payload, Payload.Payload.AddDevice, controller_id)
-
-
-## RemoveDevice
-def fb_remove_device(uuid, controller_id, address_device):
-    builder = flatbuffers.Builder(0)
-    address = builder.CreateString(address_device)
-
-    RemoveDevice.RemoveDeviceStart(builder)
-    RemoveDevice.RemoveDeviceAddAddress(builder, address)
-    RemoveDevice.RemoveDeviceAddAddressType(builder, 2)
-    payload = RemoveDevice.RemoveDeviceEnd(builder)
-
-    return build_packet(builder, uuid, payload, Payload.Payload.RemoveDevice, controller_id)
+    return build_packet(builder, uuid, payload, Payload.Payload.Connect, controller_id)
 
 
 ## Disconnect
-def fb_disconnect(uuid, controller_id, address_device):
+def fb_disconnect(uuid, controller_id, connection_handle):
     builder = flatbuffers.Builder(0)
-    address = builder.CreateString(address_device)
 
     Disconnect.DisconnectStart(builder)
-    Disconnect.DisconnectAddAddress(builder, address)
-    Disconnect.DisconnectAddAddressType(builder, 2)
+    Disconnect.DisconnectAddConnectionHandle(builder, connection_handle)
     payload = Disconnect.DisconnectEnd(builder)
 
     return build_packet(builder, uuid, payload, Payload.Payload.Disconnect, controller_id)
@@ -285,6 +270,7 @@ def build_packet(builder, uuid, payload, payload_type, controller_id = None):
 
 address_device = [0xC4, 0xF0, 0xA5, 0xE6, 0x8A, 0x91]
 address_device_str = "C4:F0:A5:E6:8A:91"
+device_connection_handle = 0x0040
 
 header_length = 4
 exitted = False
@@ -352,28 +338,7 @@ try:
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id)
-        elif packet.PayloadType() == Payload.Payload().AddDevice:
-            add_device = AddDevice.AddDevice()
-            add_device.Init(packet.Payload().Bytes, packet.Payload().Pos)
-            address_type = add_device.AddressType()
-            address = add_device.Address()
 
-            print("AddDevice",
-                  "UUID:", uuid,
-                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
-                  "Controller ID:", controller_id, "Address type:", address_type, "Address:", address)
-        elif packet.PayloadType() == Payload.Payload().RemoveDevice:
-            remove_device = RemoveDevice.RemoveDevice()
-            remove_device.Init(packet.Payload().Bytes, packet.Payload().Pos)
-            address_type = remove_device.AddressType()
-            address = remove_device.Address()
-
-            print("RemoveDevice",
-                  "UUID:", uuid,
-                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
-                  "Controller ID:", controller_id, "Address type:", address_type, "Address:", address)
-
-            process.stdin.write(fb_disconnect("disconnect", 0, address_device_str))
         elif packet.PayloadType() == Payload.Payload().Discovering:
             discovering = Discovering.Discovering()
             discovering.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -391,7 +356,7 @@ try:
         elif packet.PayloadType() == Payload.Payload().DeviceFound:
             devicefound = DeviceFound.DeviceFound()
             devicefound.Init(packet.Payload().Bytes, packet.Payload().Pos)
-            type = devicefound.Type()
+            advertisement_type = devicefound.Type()
             address_type = devicefound.AddressType()
             address = devicefound.Address()
             rssi = devicefound.Rssi()
@@ -404,10 +369,8 @@ try:
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id, "Address type:", address_type, "Address:", address,
-                  "RSSI:", rssi, "Type:", type, "Device UUID:", device_uuid, "Company id:", company_id,
+                  "RSSI:", rssi, "Type:", advertisement_type, "Device UUID:", device_uuid, "Company id:", company_id,
                   "Manufacturer data:", manufacturer_data, "Device name:", device_name)
-
-            # process.stdin.write(fb_stop_scan("0002", 0))
 
         elif packet.PayloadType() == Payload.Payload().DeviceConnected:
             device_connected = DeviceConnected.DeviceConnected()
@@ -415,52 +378,33 @@ try:
             address_type = device_connected.AddressType()
             address = device_connected.Address()
             connection_handle = device_connected.ConnectionHandle()
-            flags = device_connected.FlagsAsNumpy()
-            device_uuid = device_connected.Uuid()
-            company_id = device_connected.CompanyId()
-            device_name = device_connected.DeviceName()
 
             print("DeviceConnected",
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Connection handle:", connection_handle,
-                  "Controller ID:", controller_id, "Address type:", address_type, "Address:", address,
-                  "Flags:", flags, "Device UUID:", device_uuid, "Company id:", company_id, "Device name:", device_name)
+                  "Controller ID:", controller_id, "Address type:", address_type, "Address:", address)
 
-            # process.stdin.write(fb_write_without_response("0002", 0, 0x0040, 0x0003, "Alex"))
+            # process.stdin.write(fb_write_without_response("0002", 0, device_connection_handle, 0x0003, "Alex"))
             # time.sleep(2)
-            # process.stdin.write(fb_read("0002", 0, 0x0040, 0x0003))
+            # process.stdin.write(fb_read("0002", 0, device_connection_handle, 0x0003))
 
-            process.stdin.write(fb_probe_characteristics("12356789", 0, 0x0040))
-            # process.stdin.write(fb_probe_services("12356789", 0, 0x0040))
-            # process.stdin.write(fb_remove_device("remove", 0, address_device_str))
+            process.stdin.write(fb_probe_characteristics("12356789", 0, device_connection_handle))
+            # process.stdin.write(fb_probe_services("12356789", 0, device_connection_handle))
         elif packet.PayloadType() == Payload.Payload().DeviceDisconnected:
             device_disconnected = DeviceDisconnected.DeviceDisconnected()
             device_disconnected.Init(packet.Payload().Bytes, packet.Payload().Pos)
             connection_handle = device_disconnected.ConnectionHandle()
-            address_type = device_disconnected.AddressType()
-            address = device_disconnected.Address()
             reason = device_disconnected.Reason()
 
             print("DeviceDisconnected",
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Connection handle:", connection_handle,
-                  "Controller ID:", controller_id, "Address type:", address_type, "Address:", address,
-                  "Reason:", reason)
+                  "Controller ID:", controller_id, "Reason:", reason)
 
             process.stdin.write(fb_exit())
 
-        elif packet.PayloadType() == Payload.Payload().Disconnect:
-            disconnect = Disconnect.Disconnect()
-            disconnect.Init(packet.Payload().Bytes, packet.Payload().Pos)
-            address_type = disconnect.AddressType()
-            address = disconnect.Address()
-
-            print("Disconnect",
-                  "UUID:", uuid,
-                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
-                  "Controller ID:", controller_id, "Address type:", address_type, "Address:", address)
         elif packet.PayloadType() == Payload.Payload().SetPowered:
             set_powered = SetPowered.SetPowered()
             set_powered.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -536,26 +480,6 @@ try:
                   "UUID:", uuid,
                   "Status:", status, "Native class:", native_class, "Native status:", native_status,
                   "Controller ID:", controller_id)
-        elif packet.PayloadType() == Payload.Payload().DeviceAdded:
-            device_added = DeviceAdded.DeviceAdded()
-            device_added.Init(packet.Payload().Bytes, packet.Payload().Pos)
-            address = device_added.Address()
-            address_type = device_added.AddressType()
-
-            print("DeviceAdded",
-                  "UUID:", uuid,
-                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
-                  "Controller ID:", controller_id, "Address:", address, "Address type:", address_type)
-        elif packet.PayloadType() == Payload.Payload().DeviceRemoved:
-            device_removed = DeviceRemoved.DeviceRemoved()
-            device_removed.Init(packet.Payload().Bytes, packet.Payload().Pos)
-            address = device_removed.Address()
-            address_type = device_removed.AddressType()
-
-            print("DeviceRemoved",
-                  "UUID:", uuid,
-                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
-                  "Controller ID:", controller_id, "Address:", address, "Address type:", address_type)
         elif packet.PayloadType() == Payload.Payload().GetControllerInfo:
             controller_info = GetControllerInfo.GetControllerInfo()
             controller_info.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -593,7 +517,6 @@ try:
                   "Controller ID:", controller_id, "Connection handle:", connection_handle,
                   "Attribute handle:", attribute_handle, "Data:", data_read)
 
-            process.stdin.write(fb_remove_device("0003", 0, address_device_str))
             process.stdin.write(fb_disconnect("0004", 0, address_device_str))
         elif packet.PayloadType() == Payload.Payload().Write:
             write = Write.Write()
@@ -650,8 +573,7 @@ try:
                 print("\tHandle:", service.Handle(), "Group end handle:", service.GroupEndHandle(),
                       "UUID:", service.Uuid())
 
-            process.stdin.write(fb_remove_device("0003", 0, address_device_str))
-            process.stdin.write(fb_disconnect("0004", 0, address_device_str))
+            process.stdin.write(fb_disconnect("0004", 0, device_connection_handle))
         elif packet.PayloadType() == Payload.Payload().ProbeCharacteristics:
             probe_characteristics = ProbeCharacteristics.ProbeCharacteristics()
             probe_characteristics.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -672,19 +594,18 @@ try:
                       "Notify:", characteristic.Notify(), "Read:", characteristic.Read(),
                       "Write:", characteristic.Write(), "Broadcast:", characteristic.Broadcast())
 
-            process.stdin.write(fb_remove_device("0003", 0, address_device_str))
-            process.stdin.write(fb_disconnect("0004", 0, address_device_str))
+            process.stdin.write(fb_disconnect("0004", 0, device_connection_handle))
         elif packet.PayloadType() == Payload.Payload().Ready:
             ready = Ready.Ready()
             ready.Init(packet.Payload().Bytes, packet.Payload().Pos)
 
             print("ReadyPacket")
 
-            # process.stdin.write(fb_add_device("0001", 0, address_device_str))
-            # process.stdin.write(fb_probe_characteristics("0001", 0, 0x0040))
-            process.stdin.write(fb_start_scan("0001", 0))
-            time.sleep(3)
-            process.stdin.write(fb_stop_scan("0002", 0))
+            process.stdin.write(fb_connect("0001", 0, address_device_str))
+            # process.stdin.write(fb_probe_characteristics("0001", 0, device_connection_handle))
+            # process.stdin.write(fb_start_scan("0001", 0))
+            # time.sleep(3)
+            # process.stdin.write(fb_stop_scan("0002", 0))
             # process.stdin.write(fb_get_controllers_ids("0001"))
             # process.stdin.write(fb_set_powered("0001", 0, True))
             # process.stdin.write(fb_get_controllers_list("list"))

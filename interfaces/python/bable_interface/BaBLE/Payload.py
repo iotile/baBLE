@@ -4,7 +4,7 @@
 
 class Payload(object):
     NONE = 0
-    AddDevice = 1
+    Connect = 1
     Disconnect = 2
     GetConnectedDevices = 3
     GetControllersIds = 4
@@ -14,25 +14,22 @@ class Payload(object):
     ProbeCharacteristics = 8
     ProbeServices = 9
     Read = 10
-    RemoveDevice = 11
-    SetConnectable = 12
-    SetDiscoverable = 13
-    SetPowered = 14
-    StartScan = 15
-    StopScan = 16
-    Write = 17
-    WriteWithoutResponse = 18
-    ControllerAdded = 19
-    ControllerRemoved = 20
-    DeviceAdded = 21
-    DeviceRemoved = 22
-    DeviceConnected = 23
-    DeviceDisconnected = 24
-    DeviceFound = 25
-    Discovering = 26
-    NotificationReceived = 27
-    BaBLEError = 28
-    ErrorResponse = 29
-    Exit = 30
-    Ready = 31
+    SetConnectable = 11
+    SetDiscoverable = 12
+    SetPowered = 13
+    StartScan = 14
+    StopScan = 15
+    Write = 16
+    WriteWithoutResponse = 17
+    ControllerAdded = 18
+    ControllerRemoved = 19
+    DeviceConnected = 20
+    DeviceDisconnected = 21
+    DeviceFound = 22
+    Discovering = 23
+    NotificationReceived = 24
+    BaBLEError = 25
+    ErrorResponse = 26
+    Exit = 27
+    Ready = 28
 

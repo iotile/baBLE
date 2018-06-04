@@ -1,0 +1,6 @@
+namespace BaBLE;
+
+table Connect {
+  address:string;
+  address_type:uint8 = 0x01;  // Random
+}

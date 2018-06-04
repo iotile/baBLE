@@ -82,7 +82,7 @@ namespace Packet {
   }
 
   void AbstractPacket::before_sent(const shared_ptr<PacketRouter>& router) {
-    m_current_type = m_current_type == m_initial_type ? m_translated_type : m_initial_type;
+    m_current_type = m_current_type == m_initial_type ? m_final_type : m_initial_type;
   }
 
   const string AbstractPacket::stringify() const {
@@ -100,10 +100,10 @@ namespace Packet {
     return result.str();
   }
 
-  AbstractPacket::AbstractPacket(Packet::Type initial_type, Packet::Type translated_type) {
+  AbstractPacket::AbstractPacket(Packet::Type initial_type, Packet::Type final_type) {
     m_id = Packet::Id::None;
     m_initial_type = initial_type;
-    m_translated_type = translated_type;
+    m_final_type = final_type;
     m_current_type = m_initial_type;
     m_controller_id = NON_CONTROLLER_ID;
     m_connection_id = 0;

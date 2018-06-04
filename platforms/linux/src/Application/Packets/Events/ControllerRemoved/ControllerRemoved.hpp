@@ -26,7 +26,7 @@ namespace Packet {
         }
       };
 
-      ControllerRemoved(Packet::Type initial_type, Packet::Type translated_type);
+      ControllerRemoved(Packet::Type initial_type, Packet::Type final_type);
 
       void unserialize(MGMTFormatExtractor& extractor) override;
 

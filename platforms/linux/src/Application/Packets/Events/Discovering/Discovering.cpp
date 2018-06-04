@@ -6,8 +6,8 @@ namespace Packet {
 
   namespace Events {
 
-    Discovering::Discovering(Packet::Type initial_type, Packet::Type translated_type)
-        : EventPacket(initial_type, translated_type) {
+    Discovering::Discovering(Packet::Type initial_type, Packet::Type final_type)
+        : EventPacket(initial_type, final_type) {
       m_id = Packet::Id::Discovering;
       m_address_type = 0;
       m_discovering = false;

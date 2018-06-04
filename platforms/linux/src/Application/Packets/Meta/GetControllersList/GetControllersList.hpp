@@ -28,7 +28,7 @@ namespace Packet {
         }
       };
 
-      GetControllersList(Packet::Type initial_type, Packet::Type translated_type);
+      GetControllersList(Packet::Type initial_type, Packet::Type final_type);
 
       void unserialize(FlatbuffersFormatExtractor& extractor) override;
 

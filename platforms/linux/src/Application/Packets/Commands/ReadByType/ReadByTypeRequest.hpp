@@ -26,7 +26,7 @@ namespace Packet {
         }
       };
 
-      ReadByTypeRequest(Packet::Type initial_type, Packet::Type translated_type);
+      ReadByTypeRequest(Packet::Type initial_type, Packet::Type final_type);
 
       std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
 

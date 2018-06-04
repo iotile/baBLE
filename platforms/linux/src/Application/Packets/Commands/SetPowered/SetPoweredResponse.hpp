@@ -26,7 +26,7 @@ namespace Packet {
         }
       };
 
-      SetPoweredResponse(Packet::Type initial_type, Packet::Type translated_type);
+      SetPoweredResponse(Packet::Type initial_type, Packet::Type final_type);
 
       void unserialize(MGMTFormatExtractor& extractor) override;
 

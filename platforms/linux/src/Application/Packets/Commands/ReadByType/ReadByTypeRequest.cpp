@@ -7,8 +7,8 @@ namespace Packet {
 
   namespace Commands {
 
-    ReadByTypeRequest::ReadByTypeRequest(Packet::Type initial_type, Packet::Type translated_type)
-        : RequestPacket(initial_type, translated_type) {
+    ReadByTypeRequest::ReadByTypeRequest(Packet::Type initial_type, Packet::Type final_type)
+        : RequestPacket(initial_type, final_type) {
       m_id = Packet::Id::ReadByTypeRequest;
       m_response_packet_code = Format::HCI::AttributeCode::ReadByTypeResponse;
 

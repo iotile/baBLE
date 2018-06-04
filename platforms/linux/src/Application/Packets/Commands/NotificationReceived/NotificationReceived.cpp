@@ -7,8 +7,8 @@ namespace Packet {
 
   namespace Commands {
 
-    NotificationReceived::NotificationReceived(Packet::Type initial_type, Packet::Type translated_type)
-        : ResponsePacket(initial_type, translated_type) {
+    NotificationReceived::NotificationReceived(Packet::Type initial_type, Packet::Type final_type)
+        : ResponsePacket(initial_type, final_type) {
       m_id = Packet::Id::NotificationReceived;
       m_attribute_handle = 0;
     }

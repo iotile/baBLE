@@ -7,8 +7,8 @@ namespace Packet {
 
   namespace Commands {
 
-    GetControllerInfoResponse::GetControllerInfoResponse(Packet::Type initial_type, Packet::Type translated_type)
-        : ResponsePacket(initial_type, translated_type) {
+    GetControllerInfoResponse::GetControllerInfoResponse(Packet::Type initial_type, Packet::Type final_type)
+        : ResponsePacket(initial_type, final_type) {
       m_id = Packet::Id::GetControllerInfoResponse;
     }
 

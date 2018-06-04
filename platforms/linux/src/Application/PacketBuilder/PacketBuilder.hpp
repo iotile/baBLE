@@ -57,16 +57,16 @@ PacketBuilder& PacketBuilder::register_command() {
     throw std::invalid_argument("Packet already registered");
   }
 
-  Packet::Type translated_type;
+  Packet::Type final_type;
 
   if (m_output_format == nullptr) {
-    translated_type = Packet::Type::NONE;
+    final_type = Packet::Type::NONE;
   } else {
-    translated_type = m_output_format->get_packet_type();
+    final_type = m_output_format->get_packet_type();
   }
 
-  m_commands.emplace(command_code, [initial_type, translated_type](){
-    return std::make_shared<T>(initial_type, translated_type);
+  m_commands.emplace(command_code, [initial_type, final_type](){
+    return std::make_shared<T>(initial_type, final_type);
   });
 
   return *this;
@@ -82,16 +82,16 @@ PacketBuilder& PacketBuilder::register_event() {
     throw std::invalid_argument("Packet already registered");
   }
 
-  Packet::Type translated_type;
+  Packet::Type final_type;
 
   if (m_output_format == nullptr) {
-    translated_type = Packet::Type::NONE;
+    final_type = Packet::Type::NONE;
   } else {
-    translated_type = m_output_format->get_packet_type();
+    final_type = m_output_format->get_packet_type();
   }
 
-  m_events.emplace(event_code, [initial_type, translated_type](){
-    return std::make_shared<T>(initial_type, translated_type);
+  m_events.emplace(event_code, [initial_type, final_type](){
+    return std::make_shared<T>(initial_type, final_type);
   });
 
   return *this;

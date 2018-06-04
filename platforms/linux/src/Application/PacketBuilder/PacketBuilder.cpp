@@ -45,11 +45,11 @@ shared_ptr<Packet::AbstractPacket> PacketBuilder::build_command(std::shared_ptr<
     if (m_ignored_packets.find(command_code) == m_ignored_packets.end()) {
       LOG.critical("Event code not found in PacketBuilder registry: " + to_string(command_code), "PacketBuilder");
       LOG.debug(extractor->get_raw_data(), "PacketBuilder");
-      return nullptr;
-
     } else {
       LOG.debug("Command packet, in ignored list, has been ignored (" + to_string(command_code) + ")");
     }
+
+    return nullptr;
   }
 
   PacketConstructor fn = command_it->second;
@@ -67,11 +67,11 @@ shared_ptr<Packet::AbstractPacket> PacketBuilder::build_event(std::shared_ptr<Ab
     if (m_ignored_packets.find(event_code) == m_ignored_packets.end()) {
       LOG.critical("Event code not found in PacketBuilder registry: " + to_string(event_code), "PacketBuilder");
       LOG.debug(extractor->get_raw_data(), "PacketBuilder");
-      return nullptr;
-
     } else {
       LOG.debug("Event packet, in ignored list, has been ignored (" + to_string(event_code) + ")");
     }
+
+    return nullptr;
   }
 
   PacketConstructor fn = event_it->second;

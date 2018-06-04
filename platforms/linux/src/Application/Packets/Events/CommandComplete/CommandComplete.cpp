@@ -7,8 +7,8 @@ namespace Packet {
 
   namespace Events {
 
-    CommandComplete::CommandComplete(Packet::Type initial_type, Packet::Type translated_type)
-        : EventPacket(initial_type, translated_type) {
+    CommandComplete::CommandComplete(Packet::Type initial_type, Packet::Type final_type)
+        : EventPacket(initial_type, final_type) {
       m_id = Packet::Id::CommandComplete;
       m_opcode = 0;
     }

@@ -8,28 +8,10 @@ namespace Packet {
 
   namespace Events {
 
-    DeviceConnected::DeviceConnected(Packet::Type initial_type, Packet::Type translated_type)
-        : EventPacket(initial_type, translated_type) {
+    DeviceConnected::DeviceConnected(Packet::Type initial_type, Packet::Type final_type)
+        : EventPacket(initial_type, final_type) {
       m_id = Packet::Id::DeviceConnected;
-      m_address_type = 0;
-      m_eir_data_length = 0;
-    }
-
-    void DeviceConnected::unserialize(MGMTFormatExtractor& extractor) {
-      m_address = extractor.get_array<uint8_t, 6>();
-      m_address_type = extractor.get_value<uint8_t>();
-      m_flags = extractor.get_array<uint8_t, 4>();
-      m_eir_data_length = extractor.get_value<uint16_t>();
-
-      if (m_eir_data_length > 0) {
-        m_eir_data = extractor.get_vector<uint8_t>(m_eir_data_length);
-
-        try {
-          m_eir = extractor.parse_eir(m_eir_data);
-        } catch (invalid_argument& err) {
-          LOG.error("Can't parse EIR", "DeviceConnected");
-        }
-      }
+      m_address_type = 0x00;
     }
 
     void DeviceConnected::unserialize(HCIFormatExtractor& extractor) {
@@ -37,28 +19,19 @@ namespace Packet {
       m_connection_id = extractor.get_value<uint16_t>();
       auto role = extractor.get_value<uint8_t>();
       m_address_type = static_cast<uint8_t>(extractor.get_value<uint8_t>() + 1);
-      m_address = extractor.get_array<uint8_t, 6>();
+      m_raw_address = extractor.get_array<uint8_t, 6>();
+
+      m_address = Utils::format_bd_address(m_raw_address);
     }
 
     vector<uint8_t> DeviceConnected::serialize(FlatbuffersFormatBuilder& builder) const {
-      vector<uint8_t> flags_vector(m_flags.begin(), m_flags.end());
-
-      auto address = builder.CreateString(Utils::format_bd_address(m_address));
-      auto flags = builder.CreateVector(flags_vector);
-      auto uuid = builder.CreateString(Utils::format_uuid(m_eir.uuid));
-      auto device_name = builder.CreateString(Utils::bytes_to_string(m_eir.device_name));
-      auto manufacturer_data = builder.CreateVector(m_eir.manufacturer_data);
+      auto address = builder.CreateString(m_address);
 
       auto payload = BaBLE::CreateDeviceConnected(
           builder,
           m_connection_id,
           address,
-          m_address_type,
-          flags,
-          uuid,
-          m_eir.company_id,
-          manufacturer_data,
-          device_name
+          m_address_type
       );
 
       return builder.build(payload, BaBLE::Payload::DeviceConnected);
@@ -69,18 +42,8 @@ namespace Packet {
 
       result << "<DeviceConnected> "
              << AbstractPacket::stringify() << ", "
-             << "Address: " << Utils::format_bd_address(m_address) << ", "
-             << "Address type: " << to_string(m_address_type) << ", "
-             << "Flags: [" << to_string(m_flags[0]) << ", "
-                           << to_string(m_flags[1]) << ", "
-                           << to_string(m_flags[2]) << ", "
-                           << to_string(m_flags[3]) << "], "
-             << "EIR data length: " << to_string(m_eir_data_length) << ", "
-             << "EIR flags: " << to_string(m_eir.flags) << ", "
-             << "EIR UUID: " << Utils::format_uuid(m_eir.uuid) << ", "
-             << "EIR company ID: " << to_string(m_eir.company_id) << ", "
-             << "EIR manufacturer data: " << Utils::format_bytes_array(m_eir.manufacturer_data) << ", "
-             << "EIR device name: " << Utils::bytes_to_string(m_eir.device_name);
+             << "Address: " << m_address << ", "
+             << "Address type: " << to_string(m_address_type);
 
       return result.str();
     }

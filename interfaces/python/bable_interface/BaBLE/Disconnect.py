@@ -19,20 +19,12 @@ class Disconnect(object):
         self._tab = flatbuffers.table.Table(buf, pos)
 
     # Disconnect
-    def Address(self):
+    def ConnectionHandle(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         if o != 0:
-            return self._tab.String(o + self._tab.Pos)
-        return None
+            return self._tab.Get(flatbuffers.number_types.Uint16Flags, o + self._tab.Pos)
+        return 0
 
-    # Disconnect
-    def AddressType(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
-        if o != 0:
-            return self._tab.Get(flatbuffers.number_types.Uint8Flags, o + self._tab.Pos)
-        return 2
-
-def DisconnectStart(builder): builder.StartObject(2)
-def DisconnectAddAddress(builder, address): builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(address), 0)
-def DisconnectAddAddressType(builder, addressType): builder.PrependUint8Slot(1, addressType, 2)
+def DisconnectStart(builder): builder.StartObject(1)
+def DisconnectAddConnectionHandle(builder, connectionHandle): builder.PrependUint16Slot(0, connectionHandle, 0)
 def DisconnectEnd(builder): return builder.EndObject()

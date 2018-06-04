@@ -82,7 +82,7 @@ namespace Packet {
     const std::string stringify() const override;
 
   protected:
-    AbstractPacket(Packet::Type initial_type, Packet::Type translated_type);
+    AbstractPacket(Packet::Type initial_type, Packet::Type final_type);
 
     void set_status(uint8_t native_status, bool compute_status = true);
     void import_status(const AbstractPacket& packet);
@@ -96,7 +96,7 @@ namespace Packet {
     Packet::Id m_id;
 
     Packet::Type m_initial_type;
-    Packet::Type m_translated_type;
+    Packet::Type m_final_type;
     Packet::Type m_current_type;
 
     uint16_t m_controller_id;

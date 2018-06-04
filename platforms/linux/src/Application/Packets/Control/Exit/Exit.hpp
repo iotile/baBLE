@@ -26,7 +26,7 @@ namespace Packet {
         }
       };
 
-      Exit(Packet::Type initial_type, Packet::Type translated_type);
+      Exit(Packet::Type initial_type, Packet::Type final_type);
 
       void unserialize(FlatbuffersFormatExtractor& extractor) override;
 

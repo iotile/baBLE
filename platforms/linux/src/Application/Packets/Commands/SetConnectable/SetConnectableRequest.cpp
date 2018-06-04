@@ -7,8 +7,8 @@ namespace Packet {
 
   namespace Commands {
 
-    SetConnectableRequest::SetConnectableRequest(Packet::Type initial_type, Packet::Type translated_type)
-        : RequestPacket(initial_type, translated_type) {
+    SetConnectableRequest::SetConnectableRequest(Packet::Type initial_type, Packet::Type final_type)
+        : RequestPacket(initial_type, final_type) {
       m_id = Packet::Id::SetConnectableRequest;
       m_state = false;
     }

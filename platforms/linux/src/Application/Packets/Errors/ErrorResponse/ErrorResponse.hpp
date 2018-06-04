@@ -26,7 +26,7 @@ namespace Packet {
         }
       };
 
-      ErrorResponse(Packet::Type initial_type, Packet::Type translated_type);
+      ErrorResponse(Packet::Type initial_type, Packet::Type final_type);
 
       void unserialize(HCIFormatExtractor& extractor) override;
 

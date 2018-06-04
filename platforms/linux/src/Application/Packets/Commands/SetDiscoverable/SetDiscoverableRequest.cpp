@@ -7,8 +7,8 @@ namespace Packet {
 
   namespace Commands {
 
-    SetDiscoverableRequest::SetDiscoverableRequest(Packet::Type initial_type, Packet::Type translated_type)
-        : RequestPacket(initial_type, translated_type) {
+    SetDiscoverableRequest::SetDiscoverableRequest(Packet::Type initial_type, Packet::Type final_type)
+        : RequestPacket(initial_type, final_type) {
       m_id = Packet::Id::SetDiscoverableRequest;
       m_state = 0;
       m_timeout = 0;

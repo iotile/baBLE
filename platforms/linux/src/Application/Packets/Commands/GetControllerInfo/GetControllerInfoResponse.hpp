@@ -26,7 +26,7 @@ namespace Packet {
         }
       };
 
-      GetControllerInfoResponse(Packet::Type initial_type, Packet::Type translated_type);
+      GetControllerInfoResponse(Packet::Type initial_type, Packet::Type final_type);
 
       Format::MGMT::Controller get_controller_info() const {
         return m_controller_info;
