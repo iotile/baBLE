@@ -1,4 +1,5 @@
 #include "DisconnectResponse.hpp"
+#include "../../../../utils/string_formats.hpp"
 
 using namespace std;
 
@@ -17,19 +18,9 @@ namespace Packet {
 
       if (m_status == BaBLE::StatusCode::Success) {
         m_raw_address = extractor.get_array<uint8_t, 6>();
-        m_address = AsciiFormat::format_bd_address(m_raw_address);
+        m_address = Utils::format_bd_address(m_raw_address);
         m_address_type = extractor.get_value<uint8_t>();
       }
-    }
-
-    vector<uint8_t> DisconnectResponse::serialize(AsciiFormatBuilder& builder) const {
-      ResponsePacket::serialize(builder);
-      builder
-          .set_name("Disconnect")
-          .add("Address type", m_address_type)
-          .add("Address", m_address);
-
-      return builder.build();
     }
 
     vector<uint8_t> DisconnectResponse::serialize(FlatbuffersFormatBuilder& builder) const {
@@ -38,6 +29,17 @@ namespace Packet {
       auto payload = BaBLE::CreateDisconnect(builder, address, m_address_type);
 
       return builder.build(payload, BaBLE::Payload::Disconnect);
+    }
+
+    const std::string DisconnectResponse::stringify() const {
+      stringstream result;
+
+      result << "<DisconnectResponse> "
+             << AbstractPacket::stringify() << ", "
+             << "Address type: " << to_string(m_address_type) << ", "
+             << "Address: " << m_address;
+
+      return result.str();
     }
 
   }

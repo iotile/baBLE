@@ -38,19 +38,15 @@
 #include "Application/Packets/Events/DeviceConnected/DeviceConnected.hpp"
 #include "Application/Packets/Events/DeviceDisconnected/DeviceDisconnected.hpp"
 #include "Application/Packets/Events/Discovering/Discovering.hpp"
-#include "Application/Packets/Events/ClassOfDeviceChanged/ClassOfDeviceChanged.hpp"
-#include "Application/Packets/Events/NewSettings/NewSettings.hpp"
 #include "Application/Packets/Events/ControllerAdded/ControllerAdded.hpp"
 #include "Application/Packets/Events/ControllerRemoved/ControllerRemoved.hpp"
 #include "Application/Packets/Events/DeviceAdded/DeviceAdded.hpp"
 #include "Application/Packets/Events/DeviceRemoved/DeviceRemoved.hpp"
 #include "Application/Packets/Events/AdvertisingReport/AdvertisingReport.hpp"
-#include "Application/Packets/Events/ReadRemoteUsedFeaturesComplete/ReadRemoteUsedFeaturesComplete.hpp"
 #include "Application/Packets/Meta/GetControllersList/GetControllersList.hpp"
 #include "Application/Packets/Meta/ProbeServices/ProbeServices.hpp"
 #include "Application/Packets/Meta/ProbeCharacteristics/ProbeCharacteristics.hpp"
 #include "Application/Packets/Events/CommandComplete/CommandComplete.hpp"
-#include "Application/Packets/Events/LocalNameChanged/LocalNameChanged.hpp"
 
 using namespace std;
 using Packet::Meta::GetControllersList;
@@ -79,9 +75,11 @@ namespace Bootstrap {
       .set_output_format(nullptr)
         .register_event<Packet::Events::DeviceConnected>()
         .register_event<Packet::Events::DeviceDisconnected>()
-        .register_event<Packet::Events::ClassOfDeviceChanged>()
-        .register_event<Packet::Events::LocalNameChanged>()
-        .register_event<Packet::Events::NewSettings>();
+      .set_ignored_packets({
+        Format::MGMT::EventCode::ClassOfDeviceChanged,
+        Format::MGMT::EventCode::LocalNameChanged,
+        Format::MGMT::EventCode::NewSettings
+      });
   }
 
   // HCI
@@ -101,7 +99,9 @@ namespace Bootstrap {
         .register_command<Packet::Commands::ReadRequest>()
         .register_command<Packet::Commands::ReadByGroupTypeRequest>()
         .register_event<Packet::Events::CommandComplete>()
-        .register_event<Packet::Events::ReadRemoteUsedFeaturesComplete>();
+      .set_ignored_packets({
+        Format::HCI::SubEventCode::LEReadRemoteUsedFeaturesComplete
+      });
   }
 
   // Stdio

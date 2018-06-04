@@ -11,20 +11,20 @@ namespace Packet {
       m_id = Packet::Id::GetConnectedDevicesRequest;
     }
 
-    void GetConnectedDevicesRequest::unserialize(AsciiFormatExtractor& extractor) {}
-
     void GetConnectedDevicesRequest::unserialize(FlatbuffersFormatExtractor& extractor) {}
-
-    vector<uint8_t> GetConnectedDevicesRequest::serialize(AsciiFormatBuilder& builder) const {
-      RequestPacket::serialize(builder);
-      builder.set_name("GetConnectedDevices");
-
-      return builder.build();
-    }
 
     vector<uint8_t> GetConnectedDevicesRequest::serialize(MGMTFormatBuilder& builder) const {
       RequestPacket::serialize(builder);
       return builder.build();
+    }
+
+    const std::string GetConnectedDevicesRequest::stringify() const {
+      stringstream result;
+
+      result << "<GetConnectedDevicesRequest> "
+             << AbstractPacket::stringify();
+
+      return result.str();
     }
 
   }

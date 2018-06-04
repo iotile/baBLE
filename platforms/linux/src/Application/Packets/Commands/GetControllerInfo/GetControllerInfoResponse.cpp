@@ -1,4 +1,5 @@
 #include "GetControllerInfoResponse.hpp"
+#include "../../../../utils/string_formats.hpp"
 
 using namespace std;
 
@@ -24,34 +25,17 @@ namespace Packet {
         m_controller_info.class_of_device = extractor.get_array<uint8_t, 3>();
 
         std::array<uint8_t, 249> name_array = extractor.get_array<uint8_t, 249>();
-        m_controller_info.name = AsciiFormat::bytes_to_string(name_array);
+        m_controller_info.name = Utils::bytes_to_string(name_array);
 
         std::array<uint8_t, 11> short_name_array = extractor.get_array<uint8_t, 11>();
         if (short_name_array[0] != 0) {
-          m_controller_info.short_name = AsciiFormat::bytes_to_string(short_name_array);
+          m_controller_info.short_name = Utils::bytes_to_string(short_name_array);
         }
       }
     }
 
-    vector<uint8_t> GetControllerInfoResponse::serialize(AsciiFormatBuilder& builder) const {
-      ResponsePacket::serialize(builder);
-      builder
-          .set_name("GetControllerInfo")
-          .add("Controller ID", m_controller_info.id)
-          .add("Address", AsciiFormat::format_bd_address(m_controller_info.address))
-          .add("Bluetooth version", m_controller_info.bluetooth_version)
-          .add("Manufacturer", m_controller_info.manufacturer)
-          .add("Supported settings", m_controller_info.supported_settings)
-          .add("Current settings", m_controller_info.current_settings)
-          .add("Class of device", m_controller_info.class_of_device)
-          .add("Name", m_controller_info.name)
-          .add("Short name", m_controller_info.short_name);
-
-      return builder.build();
-    }
-
     vector<uint8_t> GetControllerInfoResponse::serialize(FlatbuffersFormatBuilder& builder) const {
-      auto address = builder.CreateString(AsciiFormat::format_bd_address(m_controller_info.address));
+      auto address = builder.CreateString(Utils::format_bd_address(m_controller_info.address));
       auto name = builder.CreateString(m_controller_info.name);
 
       bool powered = (m_controller_info.current_settings & 1) > 0;
@@ -73,6 +57,26 @@ namespace Packet {
       auto payload = BaBLE::CreateGetControllerInfo(builder, controller);
 
       return builder.build(payload, BaBLE::Payload::GetControllerInfo);
+    }
+
+    const std::string GetControllerInfoResponse::stringify() const {
+      stringstream result;
+
+      result << "<GetControllerInfoResponse> "
+             << AbstractPacket::stringify() << ", "
+             << "Controller ID: " << to_string(m_controller_info.id) << ", "
+             << "Address: " << Utils::format_bd_address(m_controller_info.address) << ", "
+             << "Bluetooth version: " << to_string(m_controller_info.bluetooth_version) << ", "
+             << "Manufacturer: " << to_string(m_controller_info.manufacturer) << ", "
+             << "Supported settings: " << to_string(m_controller_info.supported_settings) << ", "
+             << "Current settings: " << to_string(m_controller_info.current_settings) << ", "
+             << "Class of device: (" << m_controller_info.class_of_device[0] << ", "
+                                     << m_controller_info.class_of_device[1] << ", "
+                                     << m_controller_info.class_of_device[2] << "), "
+             << "Name: " << m_controller_info.name << ", "
+             << "Short name: " << m_controller_info.short_name;
+
+      return result.str();
     }
 
   }

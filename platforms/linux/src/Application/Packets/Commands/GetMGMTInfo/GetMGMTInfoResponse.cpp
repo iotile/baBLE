@@ -22,20 +22,20 @@ namespace Packet {
       }
     }
 
-    vector<uint8_t> GetMGMTInfoResponse::serialize(AsciiFormatBuilder& builder) const {
-      ResponsePacket::serialize(builder);
-      builder
-          .set_name("GetMGMTInfo")
-          .add("Version", m_version)
-          .add("Revision", m_revision);
-
-      return builder.build();
-    }
-
     vector<uint8_t> GetMGMTInfoResponse::serialize(FlatbuffersFormatBuilder& builder) const {
       auto payload = BaBLE::CreateGetMGMTInfo(builder, m_version, m_revision);
 
       return builder.build(payload, BaBLE::Payload::GetMGMTInfo);
+    }
+
+    const std::string GetMGMTInfoResponse::stringify() const {
+      stringstream result;
+
+      result << "<GetMGMTInfoResponse> "
+             << AbstractPacket::stringify() << ", "
+             << "Version: " << to_string(m_version) << "." << to_string(m_revision);
+
+      return result.str();
     }
 
   }

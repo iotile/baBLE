@@ -1,5 +1,6 @@
 #include "AdvertisingReport.hpp"
 #include "../../../../Log/Log.hpp"
+#include "../../../../utils/string_formats.hpp"
 
 using namespace std;
 
@@ -43,29 +44,10 @@ namespace Packet {
       m_rssi = extractor.get_value<int8_t>();
     }
 
-    vector<uint8_t> AdvertisingReport::serialize(AsciiFormatBuilder& builder) const {
-      EventPacket::serialize(builder);
-
-      builder
-          .set_name("AdvertisingReport")
-          .add("Type", m_type)
-          .add("Address", AsciiFormat::format_bd_address(m_address))
-          .add("Address type", m_address_type)
-          .add("RSSI (dB)", m_rssi)
-          .add("EIR data length: ", m_eir_data_length)
-          .add("EIR flags: ", m_eir.flags)
-          .add("EIR UUID: ", AsciiFormat::format_uuid(m_eir.uuid))
-          .add("EIR company ID: ", m_eir.company_id)
-          .add("EIR manufacturer data", m_eir.manufacturer_data)
-          .add("EIR device name", AsciiFormat::bytes_to_string(m_eir.device_name));
-
-      return builder.build();
-    }
-
     vector<uint8_t> AdvertisingReport::serialize(FlatbuffersFormatBuilder& builder) const {
-      auto address = builder.CreateString(AsciiFormat::format_bd_address(m_address));
-      auto uuid = builder.CreateString(AsciiFormat::format_uuid(m_eir.uuid));
-      auto device_name = builder.CreateString(AsciiFormat::bytes_to_string(m_eir.device_name));
+      auto address = builder.CreateString(Utils::format_bd_address(m_address));
+      auto uuid = builder.CreateString(Utils::format_uuid(m_eir.uuid));
+      auto device_name = builder.CreateString(Utils::bytes_to_string(m_eir.device_name));
       auto manufacturer_data = builder.CreateVector(m_eir.manufacturer_data);
 
       auto payload = BaBLE::CreateDeviceFound(
@@ -81,6 +63,25 @@ namespace Packet {
       );
 
       return builder.build(payload, BaBLE::Payload::DeviceFound);
+    }
+
+    const std::string AdvertisingReport::stringify() const {
+      stringstream result;
+
+      result << "<AdvertisingReport> "
+             << AbstractPacket::stringify() << ", "
+             << "Type: " << to_string(m_type) << ", "
+             << "Address: " << Utils::format_bd_address(m_address) << ", "
+             << "Address type: " << to_string(m_address_type) << ", "
+             << "RSSI (dB): " << to_string(m_rssi) << ", "
+             << "EIR data length: " << to_string(m_eir_data_length) << ", "
+             << "EIR flags: " << to_string(m_eir.flags) << ", "
+             << "EIR UUID: " << Utils::format_uuid(m_eir.uuid) << ", "
+             << "EIR company ID: " << to_string(m_eir.company_id) << ", "
+             << "EIR manufacturer data: " << Utils::format_bytes_array(m_eir.manufacturer_data) << ", "
+             << "EIR device name: " << Utils::bytes_to_string(m_eir.device_name);
+
+      return result.str();
     }
 
   }

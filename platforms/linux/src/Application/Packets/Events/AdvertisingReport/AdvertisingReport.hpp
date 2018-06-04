@@ -18,9 +18,6 @@ namespace Packet {
           case Packet::Type::HCI:
             return Format::HCI::SubEventCode::LEAdvertisingReport;
 
-          case Packet::Type::ASCII:
-            return Format::Ascii::EventCode::AdvertisingReport;
-
           case Packet::Type::FLATBUFFERS:
             return static_cast<uint16_t>(BaBLE::Payload::DeviceFound);
 
@@ -33,8 +30,9 @@ namespace Packet {
 
       void unserialize(HCIFormatExtractor& extractor) override;
 
-      std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
       std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
+
+      const std::string stringify() const override;
 
     private:
       Format::HCI::AdvertisingReportType m_type;

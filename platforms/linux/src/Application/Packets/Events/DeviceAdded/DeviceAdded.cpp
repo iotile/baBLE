@@ -1,4 +1,5 @@
 #include "DeviceAdded.hpp"
+#include "../../../../utils/string_formats.hpp"
 
 using namespace std;
 
@@ -19,24 +20,24 @@ namespace Packet {
       m_action = extractor.get_value<uint8_t>();
     };
 
-    vector<uint8_t> DeviceAdded::serialize(AsciiFormatBuilder& builder) const {
-      EventPacket::serialize(builder);
-
-      builder
-          .set_name("DeviceAdded")
-          .add("Address", AsciiFormat::format_bd_address(m_address))
-          .add("Address type", m_address_type)
-          .add("Action", m_action);
-
-      return builder.build();
-    };
-
     vector<uint8_t> DeviceAdded::serialize(FlatbuffersFormatBuilder& builder) const {
-      auto address = builder.CreateString(AsciiFormat::format_bd_address(m_address));
+      auto address = builder.CreateString(Utils::format_bd_address(m_address));
 
       auto payload = BaBLE::CreateDeviceAdded(builder, address, m_address_type);
 
       return builder.build(payload, BaBLE::Payload::DeviceAdded);
+    }
+
+    const std::string DeviceAdded::stringify() const {
+      stringstream result;
+
+      result << "<DeviceAdded> "
+             << AbstractPacket::stringify() << ", "
+             << "Address: " << Utils::format_bd_address(m_address) << ", "
+             << "Address type: " << to_string(m_address_type) << ", "
+             << "Action: " << to_string(m_action);
+
+      return result.str();
     }
 
   }

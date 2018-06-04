@@ -18,9 +18,6 @@ namespace Packet {
           case Packet::Type::HCI:
             return Format::HCI::EventCode::DisconnectComplete;
 
-          case Packet::Type::ASCII:
-            return Format::Ascii::EventCode::DeviceDisconnected;
-
           case Packet::Type::FLATBUFFERS:
             return static_cast<uint16_t>(BaBLE::Payload::DeviceDisconnected);
 
@@ -34,8 +31,9 @@ namespace Packet {
       void unserialize(MGMTFormatExtractor& extractor) override;
       void unserialize(HCIFormatExtractor& extractor) override;
 
-      std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
       std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
+
+      const std::string stringify() const override;
 
     private:
       std::array<uint8_t, 6> m_address{};

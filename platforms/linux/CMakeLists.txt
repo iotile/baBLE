@@ -35,14 +35,11 @@ set(SOURCES_FILES
         src/Application/Packets/Events/Discovering/Discovering.cpp
         src/Application/Packets/Events/DeviceConnected/DeviceConnected.cpp
         src/Application/Packets/Events/DeviceDisconnected/DeviceDisconnected.cpp
-        src/Application/Packets/Events/ClassOfDeviceChanged/ClassOfDeviceChanged.cpp
-        src/Application/Packets/Events/NewSettings/NewSettings.cpp
         src/Application/Packets/Events/ControllerAdded/ControllerAdded.cpp
         src/Application/Packets/Events/ControllerRemoved/ControllerRemoved.cpp
         src/Application/Packets/Events/DeviceAdded/DeviceAdded.cpp
         src/Application/Packets/Events/DeviceRemoved/DeviceRemoved.cpp
         src/Application/Packets/Events/AdvertisingReport/AdvertisingReport.cpp
-        src/Application/Packets/Events/ReadRemoteUsedFeaturesComplete/ReadRemoteUsedFeaturesComplete.cpp
         src/Application/Packets/Errors/BaBLEError/BaBLEError.cpp
         src/Application/Packets/Meta/GetControllersList/GetControllersList.cpp
         src/Application/Packets/Meta/ProbeServices/ProbeServices.cpp
@@ -58,10 +55,6 @@ set(SOURCES_FILES
         src/Format/Flatbuffers/FlatbuffersFormat.hpp
         src/Format/Flatbuffers/FlatbuffersFormatBuilder.cpp
         src/Format/Flatbuffers/FlatbuffersFormatExtractor.cpp
-        src/Format/Ascii/constants.hpp
-        src/Format/Ascii/AsciiFormat.hpp
-        src/Format/Ascii/AsciiFormatBuilder.cpp
-        src/Format/Ascii/AsciiFormatExtractor.cpp
         src/Format/HCI/constants.hpp
         src/Format/HCI/HCIFormat.hpp
         src/Format/HCI/HCIFormatBuilder.cpp
@@ -102,7 +95,8 @@ set(SOURCES_FILES
         src/Format/AbstractExtractor.cpp
         src/Application/Packets/Commands/SetScanParameters/SetScanParameters.cpp
         src/Application/Packets/Commands/SetScanEnable/SetScanEnable.cpp
-        src/Application/Packets/Meta/StartScan/StartScan.cpp src/Application/Packets/Events/LocalNameChanged/LocalNameChanged.cpp src/Application/Packets/Events/LocalNameChanged/LocalNameChanged.hpp)
+        src/Application/Packets/Meta/StartScan/StartScan.cpp
+        src/utils/string_formats.hpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies

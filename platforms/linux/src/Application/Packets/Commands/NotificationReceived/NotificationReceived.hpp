@@ -19,9 +19,6 @@ namespace Packet {
           case Packet::Type::HCI:
             return Format::HCI::AttributeCode::HandleValueNotification;
 
-          case Packet::Type::ASCII:
-            return Format::Ascii::CommandCode::NotificationReceived;
-
           case Packet::Type::FLATBUFFERS:
             return static_cast<uint16_t>(BaBLE::Payload::NotificationReceived);
 
@@ -34,8 +31,9 @@ namespace Packet {
 
       void unserialize(HCIFormatExtractor& extractor) override;
 
-      std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
       std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
+
+      const std::string stringify() const override;
 
     private:
       uint16_t m_attribute_handle;

@@ -1,4 +1,5 @@
 #include "ReadByGroupTypeResponse.hpp"
+#include "../../../../utils/string_formats.hpp"
 
 using namespace std;
 
@@ -40,20 +41,23 @@ namespace Packet {
       }
     }
 
-    vector<uint8_t> ReadByGroupTypeResponse::serialize(AsciiFormatBuilder& builder) const {
-      ResponsePacket::serialize(builder);
-      builder
-          .set_name("ReadByGroupType")
-          .add("Last group end handle", m_last_group_end_handle);
+    const std::string ReadByGroupTypeResponse::stringify() const {
+      stringstream result;
 
-      for (auto& service : m_services) {
-        builder
-            .add("Handle", service.handle)
-            .add("Group end handle", service.group_end_handle)
-            .add("UUID", service.uuid);
+      result << "<ReadByGroupTypeResponse> "
+             << AbstractPacket::stringify() << ", "
+             << "Last group end handle: " << to_string(m_last_group_end_handle) << ", ";
+
+      for (auto it = m_services.begin(); it != m_services.end(); ++it) {
+        result << "{ Handle: " << to_string(it->handle) << ", "
+               << "Group end handle" << to_string(it->group_end_handle) << ", "
+               << "UUID" << Utils::format_uuid(it->uuid) << "}";
+        if (next(it) != m_services.end()) {
+          result << ", ";
+        }
       }
 
-      return builder.build();
+      return result.str();
     }
 
   }

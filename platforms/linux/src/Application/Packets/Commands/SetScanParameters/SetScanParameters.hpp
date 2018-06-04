@@ -18,9 +18,6 @@ namespace Packet {
           case Packet::Type::HCI:
             return Format::HCI::CommandCode::SetScanParameters;
 
-          case Packet::Type::ASCII:
-            return Format::Ascii::CommandCode::SetScanParameters;
-
           case Packet::Type::FLATBUFFERS:
             throw std::invalid_argument("'SetScanParameters' packet is not compatible with Flatbuffers protocol.");
 
@@ -31,10 +28,9 @@ namespace Packet {
 
       SetScanParameters(Packet::Type initial_type, Packet::Type translated_type);
 
-      void unserialize(AsciiFormatExtractor& extractor) override;
-
-      std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
       std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
+
+      const std::string stringify() const override;
 
       std::shared_ptr<Packet::AbstractPacket> on_response_received(const std::shared_ptr<PacketRouter>& router,
                                                                    const std::shared_ptr<AbstractPacket>& packet) override;

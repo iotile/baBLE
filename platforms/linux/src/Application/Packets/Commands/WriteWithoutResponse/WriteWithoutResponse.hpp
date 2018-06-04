@@ -18,9 +18,6 @@ namespace Packet {
           case Packet::Type::HCI:
             return Format::HCI::AttributeCode::WriteCommand;
 
-          case Packet::Type::ASCII:
-            return Format::Ascii::CommandCode::WriteWithoutResponse;
-
           case Packet::Type::FLATBUFFERS:
             return static_cast<uint16_t>(BaBLE::Payload::WriteWithoutResponse);
 
@@ -31,12 +28,11 @@ namespace Packet {
 
       WriteWithoutResponse(Packet::Type initial_type, Packet::Type translated_type);
 
-      void unserialize(AsciiFormatExtractor& extractor) override;
       void unserialize(FlatbuffersFormatExtractor& extractor) override;
-      void unserialize(HCIFormatExtractor& extractor) override;
 
-      std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
       std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
+
+      const std::string stringify() const override;
 
       void before_sent(const std::shared_ptr<PacketRouter>& router) override;
 

@@ -13,8 +13,9 @@ namespace Packet {
     public:
       explicit BaBLEError(Packet::Type output_type);
 
-      std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
       std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
+
+      const std::string stringify() const override;
 
       void from_exception(const Exceptions::AbstractException& exception);
 

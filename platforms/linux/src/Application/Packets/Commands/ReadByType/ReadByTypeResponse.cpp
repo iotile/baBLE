@@ -1,4 +1,5 @@
 #include "ReadByTypeResponse.hpp"
+#include "../../../../utils/string_formats.hpp"
 
 using namespace std;
 
@@ -42,21 +43,24 @@ namespace Packet {
       }
     }
 
-    vector<uint8_t> ReadByTypeResponse::serialize(AsciiFormatBuilder& builder) const {
-      ResponsePacket::serialize(builder);
-      builder
-          .set_name("ReadByType")
-          .add("Last ending handle", m_last_ending_handle);
+    const std::string ReadByTypeResponse::stringify() const {
+      stringstream result;
 
-      for (auto& characteristic : m_characteristics) {
-        builder
-            .add("Handle", characteristic.handle)
-            .add("Properties", characteristic.properties)
-            .add("Value handle", characteristic.value_handle)
-            .add("UUID", characteristic.uuid);
+      result << "<ReadByTypeResponse> "
+             << AbstractPacket::stringify() << ", "
+             << "Last ending handle: " << to_string(m_last_ending_handle) << ", ";
+
+      for (auto it = m_characteristics.begin(); it != m_characteristics.end(); ++it) {
+        result << "{ Handle: " << to_string(it->handle) << ", "
+               << "Properties" << to_string(it->properties) << ", "
+               << "Value handle" << to_string(it->value_handle) << ", "
+               << "UUID" << Utils::format_uuid(it->uuid) << "}";
+        if (next(it) != m_characteristics.end()) {
+          result << ", ";
+        }
       }
 
-      return builder.build();
+      return result.str();
     }
 
   }

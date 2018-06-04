@@ -20,21 +20,31 @@ namespace Packet {
       }
     }
 
-    vector<uint8_t> GetControllersIdsResponse::serialize(AsciiFormatBuilder& builder) const {
-      ResponsePacket::serialize(builder);
-      builder
-          .set_name("GetControllersIds")
-          .add("Num. of controllers", m_controllers_ids.size())
-          .add("Controllers ID", m_controllers_ids);
-
-      return builder.build();
-    }
-
     vector<uint8_t> GetControllersIdsResponse::serialize(FlatbuffersFormatBuilder& builder) const {
       auto controllers_ids = builder.CreateVector(m_controllers_ids);
       auto payload = BaBLE::CreateGetControllersIds(builder, controllers_ids);
 
       return builder.build(payload, BaBLE::Payload::GetControllersIds);
+    }
+
+    const std::string GetControllersIdsResponse::stringify() const {
+      stringstream result;
+
+      result << "<GetControllersIdsResponse> "
+             << AbstractPacket::stringify() << ", "
+             << "Number of controllers: " << to_string(m_controllers_ids.size()) << ", "
+             << "Controllers Id: [";
+
+      for (auto it = m_controllers_ids.begin(); it != m_controllers_ids.end(); ++it) {
+        result << to_string(*it);
+        if (next(it) != m_controllers_ids.end()) {
+          result << ", ";
+        }
+      }
+
+      result << "]";
+
+      return result.str();
     }
 
   }

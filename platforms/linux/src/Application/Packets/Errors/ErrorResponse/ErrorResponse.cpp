@@ -59,22 +59,24 @@ namespace Packet {
       }
     }
 
-    vector<uint8_t> ErrorResponse::serialize(AsciiFormatBuilder& builder) const {
-      builder
-          .set_name("ErrorResponse")
-          .add("Request opcode in error", m_opcode)
-          .add("Handle in error", m_handle)
-          .add("Error code", m_error_code);
-
-      return builder.build();
-    }
-
     vector<uint8_t> ErrorResponse::serialize(FlatbuffersFormatBuilder& builder) const {
       auto payload = BaBLE::CreateErrorResponse(builder, m_opcode, m_handle);
 
       return builder
           .set_status(m_status)
           .build(payload, BaBLE::Payload::ErrorResponse);
+    }
+
+    const std::string ErrorResponse::stringify() const {
+      stringstream result;
+
+      result << "<ErrorResponse> "
+             << AbstractPacket::stringify() << ", "
+             << "Request opcode in error: " << to_string(m_opcode) << ", "
+             << "Handle in error: " << to_string(m_handle) << ", "
+             << "Error code: " << to_string(m_error_code);
+
+      return result.str();
     }
 
   }

@@ -20,9 +20,6 @@ namespace Packet {
           case Packet::Type::HCI:
             throw std::invalid_argument("'StartScan' packet is a meta packet, can't be a HCI packet.");
 
-          case Packet::Type::ASCII:
-            return Format::Ascii::CommandCode::StartScan;
-
           case Packet::Type::FLATBUFFERS:
             return static_cast<uint16_t>(BaBLE::Payload::StartScan);
 
@@ -33,12 +30,12 @@ namespace Packet {
 
       StartScan(Packet::Type initial_type, Packet::Type translated_type);
 
-      void unserialize(AsciiFormatExtractor& extractor) override;
       void unserialize(FlatbuffersFormatExtractor& extractor) override;
 
-      std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
       std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
       std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
+
+      const std::string stringify() const override;
 
       void before_sent(const std::shared_ptr<PacketRouter>& router) override;
       std::shared_ptr<AbstractPacket> on_set_scan_params_response_received(const std::shared_ptr<PacketRouter>& router,

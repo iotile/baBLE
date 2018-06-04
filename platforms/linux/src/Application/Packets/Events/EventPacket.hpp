@@ -16,12 +16,6 @@ namespace Packet {
         m_packet_code = T::packet_code(m_current_type);
       };
 
-      std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override {
-        builder.add("Type", "Event");
-
-        return {};
-      }
-
     };
 
   }

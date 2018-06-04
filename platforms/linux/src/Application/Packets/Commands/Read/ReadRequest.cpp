@@ -17,36 +17,11 @@ namespace Packet {
       m_attribute_handle = 0;
     }
 
-    void ReadRequest::unserialize(AsciiFormatExtractor& extractor) {
-      try {
-        m_connection_id = AsciiFormat::string_to_number<uint16_t>(extractor.get_string());
-        m_attribute_handle = AsciiFormat::string_to_number<uint16_t>(extractor.get_string());
-
-      } catch (const Exceptions::WrongFormatException& err) {
-        throw Exceptions::InvalidCommandException("Invalid arguments for 'Read' packet."
-                                                  "Usage: <uuid>,<command_code>,<controller_id>,"
-                                                  "<connection_handle>,<attribute_handle>", m_uuid_request);
-      }
-    }
-
     void ReadRequest::unserialize(FlatbuffersFormatExtractor& extractor) {
       auto payload = extractor.get_payload<const BaBLE::Read*>();
 
       m_connection_id = payload->connection_handle();
       m_attribute_handle = payload->attribute_handle();
-    }
-
-    void ReadRequest::unserialize(HCIFormatExtractor& extractor) {
-      m_attribute_handle = extractor.get_value<uint16_t>();
-    }
-
-    vector<uint8_t> ReadRequest::serialize(AsciiFormatBuilder& builder) const {
-      RequestPacket::serialize(builder);
-      builder
-          .set_name("Read")
-          .add("Attribute handle", m_attribute_handle);
-
-      return builder.build();
     }
 
     vector<uint8_t> ReadRequest::serialize(HCIFormatBuilder& builder) const {
@@ -55,6 +30,16 @@ namespace Packet {
       builder.add(m_attribute_handle);
 
       return builder.build(Format::HCI::Type::AsyncData);
+    }
+
+    const std::string ReadRequest::stringify() const {
+      stringstream result;
+
+      result << "<ReadRequest> "
+             << AbstractPacket::stringify() << ", "
+             << "Attribute handle: " << to_string(m_attribute_handle);
+
+      return result.str();
     }
 
     void ReadRequest::before_sent(const std::shared_ptr<PacketRouter>& router) {

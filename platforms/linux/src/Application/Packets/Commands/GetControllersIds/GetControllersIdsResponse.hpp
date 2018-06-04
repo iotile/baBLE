@@ -18,9 +18,6 @@ namespace Packet {
           case Packet::Type::HCI:
             throw std::invalid_argument("'GetControllersIds' packet is not compatible with HCI protocol.");
 
-          case Packet::Type::ASCII:
-            return Format::Ascii::CommandCode::GetControllersIds;
-
           case Packet::Type::FLATBUFFERS:
             return static_cast<uint16_t>(BaBLE::Payload::GetControllersIds);
 
@@ -33,8 +30,9 @@ namespace Packet {
 
       void unserialize(MGMTFormatExtractor& extractor) override;
 
-      std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
       std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
+
+      const std::string stringify() const override;
 
       inline const std::vector<uint16_t>& get_controllers_ids() const {
         return m_controllers_ids;

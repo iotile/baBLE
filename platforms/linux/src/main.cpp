@@ -4,7 +4,6 @@
 #include "Log/Log.hpp"
 #include "Application/PacketBuilder/PacketBuilder.hpp"
 #include "Application/PacketRouter/PacketRouter.hpp"
-#include "Format/Ascii/AsciiFormat.hpp"
 #include "Format/Flatbuffers/FlatbuffersFormat.hpp"
 #include "Transport/Socket/MGMT/MGMTSocket.hpp"
 #include "Transport/Socket/HCI/HCISocket.hpp"
@@ -20,6 +19,8 @@
 
 using namespace std;
 using namespace uvw;
+
+// TODO: work on Python part to make it work with new system using Python3 and Python2, in a cleaner way (split class in files, ...)
 
 // Function used to call all handlers closing callbacks before stopping the loop
 void cleanly_stop_loop(Loop& loop) {
@@ -70,7 +71,6 @@ int main(int argc, char* argv[]) {
   shared_ptr<HCIFormat> hci_format = make_shared<HCIFormat>();
   shared_ptr<MGMTFormat> mgmt_format = make_shared<MGMTFormat>();
   shared_ptr<FlatbuffersFormat> fb_format = make_shared<FlatbuffersFormat>();
-  shared_ptr<AsciiFormat> ascii_format = make_shared<AsciiFormat>();
 
   // Sockets
   LOG.info("Creating sockets...");
@@ -120,6 +120,9 @@ int main(int argc, char* argv[]) {
       shared_ptr<AbstractExtractor> extractor = format->create_extractor(received_data);
 
       std::shared_ptr<Packet::AbstractPacket> packet = mgmt_packet_builder.build(extractor);
+      if (packet == nullptr) {
+        return;
+      }
       LOG.debug("Packet built", "MGMT poller");
 
       packet = packet_router->route(packet_router, packet);
@@ -144,6 +147,9 @@ int main(int argc, char* argv[]) {
 
         // Build packet
         std::shared_ptr<Packet::AbstractPacket> packet = hci_packet_builder.build(extractor);
+        if (packet == nullptr) {
+          return;
+        }
         LOG.debug("Packet built", "HCI poller");
 
         // This part is needed due to a bug since Linux Kernel v4 : we have to create manually the L2CAP socket, else
@@ -190,6 +196,9 @@ int main(int argc, char* argv[]) {
       shared_ptr<AbstractExtractor> extractor = format->create_extractor(received_data);
 
       std::shared_ptr<Packet::AbstractPacket> packet = stdio_packet_builder.build(extractor);
+      if (packet == nullptr) {
+        return;
+      }
       LOG.debug("Packet built", "BABLE poller");
 
       LOG.debug(*packet, "BaBLE poller");

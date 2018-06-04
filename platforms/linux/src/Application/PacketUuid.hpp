@@ -27,17 +27,11 @@ namespace Packet {
       : PacketUuid(_packet_type, _controller_id, _connection_id, _response_packet_code, _response_packet_code){};
 
     bool operator==(const PacketUuid& other) const {
-      LOG.critical("type=" + std::to_string(static_cast<uint16_t>(other.packet_type)) +
-          ", controller=" + std::to_string(other.controller_id) +
-          ", connection=" + std::to_string(other.connection_id) +
-          ", request_packet=" + std::to_string(other.request_packet_code) +
-          ", response_packet=" + std::to_string(other.response_packet_code), "OTHER");
-
-      LOG.critical("type=" + std::to_string(static_cast<uint16_t>(other.packet_type)) +
-          ", controller=" + std::to_string(other.controller_id) +
-          ", connection=" + std::to_string(other.connection_id) +
-          ", request_packet=" + std::to_string(other.request_packet_code) +
-          ", response_packet=" + std::to_string(other.response_packet_code), "ME");
+//      LOG.critical("type=" + std::to_string(static_cast<uint16_t>(other.packet_type)) +
+//          ", controller=" + std::to_string(other.controller_id) +
+//          ", connection=" + std::to_string(other.connection_id) +
+//          ", request_packet=" + std::to_string(other.request_packet_code) +
+//          ", response_packet=" + std::to_string(other.response_packet_code), "OTHER");
 
       if (packet_type != other.packet_type
           || controller_id != other.controller_id
@@ -69,12 +63,6 @@ namespace std {
   {
     std::size_t operator()(const Packet::PacketUuid& response_id) const
     {
-      LOG.critical("type=" + std::to_string(static_cast<uint16_t>(response_id.packet_type)) +
-          ", controller=" + std::to_string(response_id.controller_id) +
-          ", connection=" + std::to_string(response_id.connection_id) +
-          ", request_packet=" + std::to_string(response_id.request_packet_code) +
-          ", response_packet=" + std::to_string(response_id.response_packet_code), "OTHER HASH");
-
       return static_cast<size_t>(response_id.packet_type) << 48
           | static_cast<size_t>(response_id.controller_id) << 32
           | static_cast<size_t>(response_id.connection_id) << 16

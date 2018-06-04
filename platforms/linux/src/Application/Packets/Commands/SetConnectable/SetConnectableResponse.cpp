@@ -21,19 +21,20 @@ namespace Packet {
       }
     }
 
-    vector<uint8_t> SetConnectableResponse::serialize(AsciiFormatBuilder& builder) const {
-      ResponsePacket::serialize(builder);
-      builder
-          .set_name("SetConnectable")
-          .add("State", m_state);
-
-      return builder.build();
-    }
-
     vector<uint8_t> SetConnectableResponse::serialize(FlatbuffersFormatBuilder& builder) const {
       auto payload = BaBLE::CreateSetConnectable(builder, m_state);
 
       return builder.build(payload, BaBLE::Payload::SetConnectable);
+    }
+
+    const std::string SetConnectableResponse::stringify() const {
+      stringstream result;
+
+      result << "<SetConnectableResponse> "
+             << AbstractPacket::stringify() << ", "
+             << "State: " << to_string(m_state);
+
+      return result.str();
     }
 
   }

@@ -2,7 +2,6 @@
 #define BABLE_LINUX_ABSTRACTPACKET_HPP
 
 #include "PacketUuid.hpp"
-#include "../Format/Ascii/AsciiFormat.hpp"
 #include "../Format/HCI/HCIFormat.hpp"
 #include "../Format/MGMT/MGMTFormat.hpp"
 #include "../Format/Flatbuffers/FlatbuffersFormat.hpp"
@@ -26,9 +25,6 @@ namespace Packet {
     virtual std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const {
       throw std::runtime_error("serialize(HCIFormatBuilder&) not defined.");
     };
-    virtual std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const {
-      throw std::runtime_error("serialize(AsciiFormatBuilder&) not defined.");
-    };
     virtual std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const {
       throw std::runtime_error("serialize(FlatbuffersFormatBuilder&) not defined.");
     };
@@ -39,9 +35,6 @@ namespace Packet {
     };
     virtual void unserialize(HCIFormatExtractor& extractor) {
       throw std::runtime_error("unserialize() not defined for HCIFormatExtractor.");
-    };
-    virtual void unserialize(AsciiFormatExtractor& extractor) {
-      throw std::runtime_error("unserialize() not defined for AsciiFormatExtractor.");
     };
     virtual void unserialize(FlatbuffersFormatExtractor& extractor) {
       throw std::runtime_error("unserialize() not defined for FlatbuffersFormatExtractor.");

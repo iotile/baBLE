@@ -11,20 +11,20 @@ namespace Packet {
       m_id = Packet::Id::GetControllerInfoRequest;
     }
 
-    void GetControllerInfoRequest::unserialize(AsciiFormatExtractor& extractor) {}
-
     void GetControllerInfoRequest::unserialize(FlatbuffersFormatExtractor& extractor) {}
-
-    vector<uint8_t> GetControllerInfoRequest::serialize(AsciiFormatBuilder& builder) const {
-      RequestPacket::serialize(builder);
-      builder.set_name("GetControllerInfo");
-
-      return builder.build();
-    }
 
     vector<uint8_t> GetControllerInfoRequest::serialize(MGMTFormatBuilder& builder) const {
       RequestPacket::serialize(builder);
       return builder.build();
+    }
+
+    const std::string GetControllerInfoRequest::stringify() const {
+      stringstream result;
+
+      result << "<GetControllerInfoRequest> "
+             << AbstractPacket::stringify();
+
+      return result.str();
     }
 
   }

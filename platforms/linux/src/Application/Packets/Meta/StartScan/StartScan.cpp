@@ -23,21 +23,6 @@ namespace Packet {
       m_active_scan = true;
     }
 
-    void StartScan::unserialize(AsciiFormatExtractor& extractor) {
-      try {
-        m_active_scan = AsciiFormat::string_to_number<bool>(extractor.get_string());
-
-      } catch (const Exceptions::WrongFormatException& err) {
-        throw Exceptions::InvalidCommandException("Invalid arguments for 'StartScan' packet."
-                                                  "Usage: <uuid>,<command_code>,<controller_id>,"
-                                                  "<active_scan>", m_uuid_request);
-      }
-
-      m_set_scan_params_packet->set_scan_type(m_active_scan);
-      m_set_scan_params_packet->set_controller_id(m_controller_id);
-      m_set_scan_enable_packet->set_controller_id(m_controller_id);
-    }
-
     void StartScan::unserialize(FlatbuffersFormatExtractor& extractor) {
       auto payload = extractor.get_payload<const BaBLE::StartScan*>();
 
@@ -46,15 +31,6 @@ namespace Packet {
       m_set_scan_params_packet->set_scan_type(m_active_scan);
       m_set_scan_params_packet->set_controller_id(m_controller_id);
       m_set_scan_enable_packet->set_controller_id(m_controller_id);
-    }
-
-    vector<uint8_t> StartScan::serialize(AsciiFormatBuilder& builder) const {
-      builder
-          .set_name("StartScan")
-          .add("Type", "Meta")
-          .add("Active", m_active_scan);
-
-      return builder.build();
     }
 
     vector<uint8_t> StartScan::serialize(FlatbuffersFormatBuilder& builder) const {
@@ -74,6 +50,16 @@ namespace Packet {
         case SubPacket::None:
           throw std::runtime_error("Can't serialize 'StartScan' to HCI.");
       }
+    }
+
+    const std::string StartScan::stringify() const {
+      stringstream result;
+
+      result << "<StartScan> "
+             << AbstractPacket::stringify() << ", "
+             << "Active: " << to_string(m_active_scan);
+
+      return result.str();
     }
 
     void StartScan::before_sent(const std::shared_ptr<PacketRouter>& router) {

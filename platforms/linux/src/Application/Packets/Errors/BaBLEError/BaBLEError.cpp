@@ -15,14 +15,6 @@ namespace Packet {
       m_native_class = "BaBLE";
     }
 
-    vector<uint8_t> BaBLEError::serialize(AsciiFormatBuilder& builder) const {
-      builder
-          .set_name("BaBLEError")
-          .add("Type", m_name)
-          .add("Message", m_message);
-      return {};
-    };
-
     vector<uint8_t> BaBLEError::serialize(FlatbuffersFormatBuilder& builder) const {
       auto name = builder.CreateString(m_name);
       auto message = builder.CreateString(m_message);
@@ -30,7 +22,18 @@ namespace Packet {
       auto payload = BaBLE::CreateBaBLEError(builder, name, message);
 
       return builder.build(payload, BaBLE::Payload::BaBLEError);
-    };
+    }
+
+    const std::string BaBLEError::stringify() const {
+      stringstream result;
+
+      result << "<BaBLEError> "
+             << AbstractPacket::stringify() << ", "
+             << "Type: " << m_name << ", "
+             << "Message: " << m_message;
+
+      return result.str();
+    }
 
     void BaBLEError::from_exception(const Exceptions::AbstractException& exception) {
       m_type = exception.get_type();
@@ -62,7 +65,7 @@ namespace Packet {
         case Exceptions::Type::RuntimeError:
           m_status = BaBLE::StatusCode::Failed;
       }
-    };
+    }
 
   }
 

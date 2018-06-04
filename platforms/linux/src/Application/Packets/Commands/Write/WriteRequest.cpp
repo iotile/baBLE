@@ -2,6 +2,7 @@
 #include "./WriteResponse.hpp"
 #include "../../../../Exceptions/RuntimeError/RuntimeErrorException.hpp"
 #include "../../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
+#include "../../../../utils/string_formats.hpp"
 
 using namespace std;
 
@@ -17,19 +18,6 @@ namespace Packet {
       m_attribute_handle = 0;
     }
 
-    void WriteRequest::unserialize(AsciiFormatExtractor& extractor) {
-      try {
-        m_connection_id = AsciiFormat::string_to_number<uint16_t>(extractor.get_string());
-        m_attribute_handle = AsciiFormat::string_to_number<uint16_t>(extractor.get_string());
-        m_data_to_write = extractor.get_vector<uint8_t>();
-
-      } catch (const Exceptions::WrongFormatException& err) {
-        throw Exceptions::InvalidCommandException("Invalid arguments for 'Write' packet."
-                                                  "Usage: <uuid>,<command_code>,<controller_id>,"
-                                                  "<connection_handle>,<attribute_handle>,<data>", m_uuid_request);
-      }
-    }
-
     void WriteRequest::unserialize(FlatbuffersFormatExtractor& extractor) {
       auto payload = extractor.get_payload<const BaBLE::Write*>();
 
@@ -37,21 +25,6 @@ namespace Packet {
       m_attribute_handle = payload->attribute_handle();
       auto raw_data_to_write = payload->value();
       m_data_to_write.assign(raw_data_to_write->begin(), raw_data_to_write->end());
-    }
-
-    void WriteRequest::unserialize(HCIFormatExtractor& extractor) {
-      m_attribute_handle = extractor.get_value<uint16_t>();
-      m_data_to_write = extractor.get_vector<uint8_t>();
-    }
-
-    vector<uint8_t> WriteRequest::serialize(AsciiFormatBuilder& builder) const {
-      RequestPacket::serialize(builder);
-      builder
-          .set_name("Write")
-          .add("Attribute handle", m_attribute_handle)
-          .add("Data to write", m_data_to_write);
-
-      return builder.build();
     }
 
     vector<uint8_t> WriteRequest::serialize(HCIFormatBuilder& builder) const {
@@ -62,6 +35,17 @@ namespace Packet {
           .add(m_data_to_write);
 
       return builder.build(Format::HCI::Type::AsyncData);
+    }
+
+    const std::string WriteRequest::stringify() const {
+      stringstream result;
+
+      result << "<WriteRequest> "
+             << AbstractPacket::stringify() << ", "
+             << "Attribute handle: " << to_string(m_attribute_handle) << ", "
+             << "Data to write: " << Utils::format_bytes_array(m_data_to_write);
+
+      return result.str();
     }
 
     void WriteRequest::before_sent(const std::shared_ptr<PacketRouter>& router) {

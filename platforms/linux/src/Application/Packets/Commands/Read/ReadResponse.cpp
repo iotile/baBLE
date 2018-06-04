@@ -1,4 +1,5 @@
 #include "ReadResponse.hpp"
+#include "../../../../utils/string_formats.hpp"
 
 using namespace std;
 
@@ -17,16 +18,6 @@ namespace Packet {
       m_data_read = extractor.get_vector<uint8_t>(data_length);
     }
 
-    vector<uint8_t> ReadResponse::serialize(AsciiFormatBuilder& builder) const {
-      ResponsePacket::serialize(builder);
-      builder
-          .set_name("Read")
-          .add("Attribute handle", m_attribute_handle)
-          .add("Data", m_data_read);
-
-      return builder.build();
-    }
-
     vector<uint8_t> ReadResponse::serialize(FlatbuffersFormatBuilder& builder) const {
       auto data_read = builder.CreateVector(m_data_read);
       auto payload = BaBLE::CreateRead(
@@ -37,6 +28,17 @@ namespace Packet {
       );
 
       return builder.build(payload, BaBLE::Payload::Read);
+    }
+
+    const std::string ReadResponse::stringify() const {
+      stringstream result;
+
+      result << "<ReadResponse> "
+             << AbstractPacket::stringify() << ", "
+             << "Attribute handle: " << to_string(m_attribute_handle) << ", "
+             << "Data: " << Utils::format_bytes_array(m_data_read);
+
+      return result.str();
     }
 
   }

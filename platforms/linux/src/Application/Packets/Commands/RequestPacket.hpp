@@ -40,12 +40,6 @@ namespace Packet {
         }
       };
 
-      std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override {
-        builder.add("Type", "Request");
-
-        return {};
-      };
-
       std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override {
         builder.set_opcode(m_packet_code);
 

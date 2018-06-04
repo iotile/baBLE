@@ -2,6 +2,7 @@
 #include "../../Commands/GetControllersIds/GetControllersIdsResponse.hpp"
 #include "../../Commands/GetControllerInfo/GetControllerInfoResponse.hpp"
 #include "../../../../Exceptions/RuntimeError/RuntimeErrorException.hpp"
+#include "../../../../utils/string_formats.hpp"
 
 using namespace std;
 
@@ -23,40 +24,14 @@ namespace Packet {
       m_current_index = 0;
     }
 
-    void GetControllersList::unserialize(AsciiFormatExtractor& extractor) {}
-
     void GetControllersList::unserialize(FlatbuffersFormatExtractor& extractor) {}
-
-    vector<uint8_t> GetControllersList::serialize(AsciiFormatBuilder& builder) const {
-      builder
-          .set_name("GetControllersList")
-          .add("Type", "Meta")
-          .add("Num. of controllers", m_controllers.size());
-
-      size_t i = 0;
-      for (auto& controller : m_controllers) {
-        builder
-            .add("Controller ID", controller.id)
-            .add("Address", AsciiFormat::format_bd_address(controller.address))
-            .add("Bluetooth version", controller.bluetooth_version)
-            .add("Manufacturer", controller.manufacturer)
-            .add("Supported settings", controller.supported_settings)
-            .add("Current settings", controller.current_settings)
-            .add("Class of device", controller.class_of_device)
-            .add("Name", controller.name)
-            .add("Short name", controller.short_name);
-        i++;
-      }
-
-      return builder.build();
-    }
 
     vector<uint8_t> GetControllersList::serialize(FlatbuffersFormatBuilder& builder) const {
       std::vector<flatbuffers::Offset<BaBLE::Controller>> controllers;
       controllers.reserve(m_controllers.size());
 
       for (auto& controller : m_controllers) {
-        auto address = builder.CreateString(AsciiFormat::format_bd_address(controller.address));
+        auto address = builder.CreateString(Utils::format_bd_address(controller.address));
         auto name = builder.CreateString(controller.name);
 
         bool powered = (controller.current_settings & 1) > 0;
@@ -95,6 +70,33 @@ namespace Packet {
         case SubPacket::None:
           throw std::runtime_error("Can't serialize 'GetControllersList' to MGMT.");
       }
+    }
+
+    const std::string GetControllersList::stringify() const {
+      stringstream result;
+
+      result << "<GetControllersList> "
+             << AbstractPacket::stringify() << ", "
+             << "Number of controllers: " << to_string(m_controllers.size()) << ", ";
+
+      for (auto it = m_controllers.begin(); it != m_controllers.end(); ++it) {
+        result << "{ Controller Id: " << to_string(it->id) << ", "
+               << "Address: " << Utils::format_bd_address(it->address) << ", "
+               << "Bluetooth version: " << to_string(it->bluetooth_version) << ", "
+               << "Manufacturer: " << to_string(it->manufacturer) << ", "
+               << "Supported settings: " << to_string(it->supported_settings) << ", "
+               << "Current settings: " << to_string(it->current_settings) << ", "
+               << "Class of device: (" << to_string(it->class_of_device[0]) << ", "
+                                       << to_string(it->class_of_device[1]) << ", "
+                                       << to_string(it->class_of_device[2]) << "), "
+               << "Name: " << it->name << ", "
+               << "Short name: " << it->short_name << "} ";
+        if (next(it) != m_controllers.end()) {
+          result << ", ";
+        }
+      }
+
+      return result.str();
     }
 
     void GetControllersList::before_sent(const std::shared_ptr<PacketRouter>& router) {

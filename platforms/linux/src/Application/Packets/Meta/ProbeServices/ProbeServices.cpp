@@ -2,6 +2,7 @@
 #include "../../Commands/ReadByGroupType/ReadByGroupTypeResponse.hpp"
 #include "../../../../Exceptions/RuntimeError/RuntimeErrorException.hpp"
 #include "../../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
+#include "../../../../utils/string_formats.hpp"
 
 using namespace std;
 
@@ -18,20 +19,6 @@ namespace Packet {
       m_read_by_type_group_request_packet = make_shared<Packet::Commands::ReadByGroupTypeRequest>(translated_type, translated_type);
     }
 
-    void ProbeServices::unserialize(AsciiFormatExtractor& extractor) {
-      try {
-        m_connection_id = AsciiFormat::string_to_number<uint16_t>(extractor.get_string());
-
-      } catch (const Exceptions::WrongFormatException& err) {
-        throw Exceptions::InvalidCommandException("Invalid arguments for 'ProbeServices' packet."
-                                                  "Usage: <uuid>,<command_code>,<controller_id>,<connection_handle>",
-                                                  m_uuid_request);
-      }
-
-      m_read_by_type_group_request_packet->set_controller_id(m_controller_id);
-      m_read_by_type_group_request_packet->set_connection_id(m_connection_id);
-    }
-
     void ProbeServices::unserialize(FlatbuffersFormatExtractor& extractor) {
       auto payload = extractor.get_payload<const BaBLE::ProbeServices*>();
 
@@ -41,28 +28,12 @@ namespace Packet {
       m_read_by_type_group_request_packet->set_connection_id(m_connection_id);
     }
 
-    vector<uint8_t> ProbeServices::serialize(AsciiFormatBuilder& builder) const {
-      builder
-          .set_name("ProbeServices")
-          .add("Type", "Meta")
-          .add("Connection id", m_connection_id);
-
-      for (auto& service : m_services) {
-        builder
-            .add("Handle", service.handle)
-            .add("Group end handle", service.group_end_handle)
-            .add("UUID", service.uuid);
-      }
-
-      return builder.build();
-    }
-
     vector<uint8_t> ProbeServices::serialize(FlatbuffersFormatBuilder& builder) const {
       std::vector<flatbuffers::Offset<BaBLE::Service>> services;
       services.reserve(m_services.size());
 
       for (auto& service : m_services) {
-        auto uuid = builder.CreateString(AsciiFormat::format_uuid(service.uuid));
+        auto uuid = builder.CreateString(Utils::format_uuid(service.uuid));
 
         auto service_offset = BaBLE::CreateService(
             builder,
@@ -81,6 +52,24 @@ namespace Packet {
 
     vector<uint8_t> ProbeServices::serialize(HCIFormatBuilder& builder) const {
       return m_read_by_type_group_request_packet->serialize(builder);
+    }
+
+    const std::string ProbeServices::stringify() const {
+      stringstream result;
+
+      result << "<ProbeServices> "
+             << AbstractPacket::stringify() << ", ";
+
+      for (auto it = m_services.begin(); it != m_services.end(); ++it) {
+        result << "{ Handle: " << to_string(it->handle) << ", "
+               << "Group end handle: " << to_string(it->group_end_handle) << ", "
+               << "UUID: " << Utils::format_uuid(it->uuid) << "} ";
+        if (next(it) != m_services.end()) {
+          result << ", ";
+        }
+      }
+
+      return result.str();
     }
 
     void ProbeServices::before_sent(const std::shared_ptr<PacketRouter>& router) {

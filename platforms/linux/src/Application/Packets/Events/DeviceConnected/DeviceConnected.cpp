@@ -1,5 +1,6 @@
 #include "DeviceConnected.hpp"
 #include "../../../../Log/Log.hpp"
+#include "../../../../utils/string_formats.hpp"
 
 using namespace std;
 
@@ -39,31 +40,13 @@ namespace Packet {
       m_address = extractor.get_array<uint8_t, 6>();
     }
 
-    vector<uint8_t> DeviceConnected::serialize(AsciiFormatBuilder& builder) const {
-      EventPacket::serialize(builder);
-
-      builder
-          .set_name("DeviceConnected")
-          .add("Address", AsciiFormat::format_bd_address(m_address))
-          .add("Address type", m_address_type)
-          .add("Flags", m_flags)
-          .add("EIR data length: ", m_eir_data_length)
-          .add("EIR flags: ", m_eir.flags)
-          .add("EIR UUID: ", AsciiFormat::format_uuid(m_eir.uuid))
-          .add("EIR company ID: ", m_eir.company_id)
-          .add("EIR manufacturer data: ", m_eir.manufacturer_data)
-          .add("EIR device name", AsciiFormat::bytes_to_string(m_eir.device_name));
-
-      return builder.build();
-    }
-
     vector<uint8_t> DeviceConnected::serialize(FlatbuffersFormatBuilder& builder) const {
       vector<uint8_t> flags_vector(m_flags.begin(), m_flags.end());
 
-      auto address = builder.CreateString(AsciiFormat::format_bd_address(m_address));
+      auto address = builder.CreateString(Utils::format_bd_address(m_address));
       auto flags = builder.CreateVector(flags_vector);
-      auto uuid = builder.CreateString(AsciiFormat::format_uuid(m_eir.uuid));
-      auto device_name = builder.CreateString(AsciiFormat::bytes_to_string(m_eir.device_name));
+      auto uuid = builder.CreateString(Utils::format_uuid(m_eir.uuid));
+      auto device_name = builder.CreateString(Utils::bytes_to_string(m_eir.device_name));
       auto manufacturer_data = builder.CreateVector(m_eir.manufacturer_data);
 
       auto payload = BaBLE::CreateDeviceConnected(
@@ -79,6 +62,27 @@ namespace Packet {
       );
 
       return builder.build(payload, BaBLE::Payload::DeviceConnected);
+    }
+
+    const std::string DeviceConnected::stringify() const {
+      stringstream result;
+
+      result << "<DeviceConnected> "
+             << AbstractPacket::stringify() << ", "
+             << "Address: " << Utils::format_bd_address(m_address) << ", "
+             << "Address type: " << to_string(m_address_type) << ", "
+             << "Flags: [" << to_string(m_flags[0]) << ", "
+                           << to_string(m_flags[1]) << ", "
+                           << to_string(m_flags[2]) << ", "
+                           << to_string(m_flags[3]) << "], "
+             << "EIR data length: " << to_string(m_eir_data_length) << ", "
+             << "EIR flags: " << to_string(m_eir.flags) << ", "
+             << "EIR UUID: " << Utils::format_uuid(m_eir.uuid) << ", "
+             << "EIR company ID: " << to_string(m_eir.company_id) << ", "
+             << "EIR manufacturer data: " << Utils::format_bytes_array(m_eir.manufacturer_data) << ", "
+             << "EIR device name: " << Utils::bytes_to_string(m_eir.device_name);
+
+      return result.str();
     }
 
   }

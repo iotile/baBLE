@@ -18,9 +18,6 @@ namespace Packet {
           case Packet::Type::HCI:
             throw std::invalid_argument("'SetConnectable' packet is not compatible with HCI protocol.");
 
-          case Packet::Type::ASCII:
-            return Format::Ascii::CommandCode::SetConnectable;
-
           case Packet::Type::FLATBUFFERS:
             return static_cast<uint16_t>(BaBLE::Payload::SetConnectable);
 
@@ -31,11 +28,11 @@ namespace Packet {
 
       SetConnectableRequest(Packet::Type initial_type, Packet::Type translated_type);
 
-      void unserialize(AsciiFormatExtractor& extractor) override;
       void unserialize(FlatbuffersFormatExtractor& extractor) override;
 
-      std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
       std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override;
+
+      const std::string stringify() const override;
 
     private:
       bool m_state;

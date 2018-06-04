@@ -22,38 +22,6 @@ namespace Packet {
       m_ending_handle = ending_handle;
     }
 
-    void ReadByTypeRequest::unserialize(AsciiFormatExtractor& extractor) {
-      try {
-        m_connection_id = AsciiFormat::string_to_number<uint16_t>(extractor.get_string());
-        m_starting_handle = AsciiFormat::string_to_number<uint16_t>(extractor.get_string());
-        m_ending_handle = AsciiFormat::string_to_number<uint16_t>(extractor.get_string());
-        m_uuid = AsciiFormat::string_to_number<uint16_t>(extractor.get_string());
-
-      } catch (const Exceptions::WrongFormatException& err) {
-        throw Exceptions::InvalidCommandException("Invalid arguments for 'ReadByTypeRequest' packet."
-                                                  "Usage: <uuid>,<command_code>,<controller_id>,"
-                                                  "<connection_handle>,<starting_handle>,<ending_handle>,<gatt_uuid>",
-                                                  m_uuid_request);
-      }
-    }
-
-    void ReadByTypeRequest::unserialize(HCIFormatExtractor& extractor) {
-      m_starting_handle = extractor.get_value<uint16_t>();
-      m_ending_handle = extractor.get_value<uint16_t>();
-      m_uuid = extractor.get_value<uint16_t>();
-    }
-
-    vector<uint8_t> ReadByTypeRequest::serialize(AsciiFormatBuilder& builder) const {
-      RequestPacket::serialize(builder);
-      builder
-          .set_name("ReadByType")
-          .add("Starting handle", m_starting_handle)
-          .add("Ending handle", m_ending_handle)
-          .add("GATT UUID", m_uuid);
-
-      return builder.build();
-    }
-
     vector<uint8_t> ReadByTypeRequest::serialize(HCIFormatBuilder& builder) const {
       RequestPacket::serialize(builder);
 
@@ -63,6 +31,18 @@ namespace Packet {
           .add(m_uuid);
 
       return builder.build(Format::HCI::Type::AsyncData);
+    }
+
+    const std::string ReadByTypeRequest::stringify() const {
+      stringstream result;
+
+      result << "<ReadByTypeRequest> "
+             << AbstractPacket::stringify() << ", "
+             << "Starting handle: " << to_string(m_starting_handle) << ", "
+             << "Ending handle: " << to_string(m_ending_handle) << ", "
+             << "GATT UUID: " <<  to_string(m_uuid);
+
+      return result.str();
     }
 
     void ReadByTypeRequest::before_sent(const std::shared_ptr<PacketRouter>& router) {

@@ -1,15 +1,14 @@
-#ifndef BABLE_LINUX_ASCIIFORMAT_HPP
-#define BABLE_LINUX_ASCIIFORMAT_HPP
+#ifndef BABLE_LINUX_STRING_FORMATS_HPP
+#define BABLE_LINUX_STRING_FORMATS_HPP
 
-#include "constants.hpp"
-#include "../AbstractFormat.hpp"
-#include "AsciiFormatBuilder.hpp"
-#include "AsciiFormatExtractor.hpp"
-#include "../../utils/stream_formats.hpp"
+#include <array>
+#include <sstream>
+#include <vector>
+#include "./stream_formats.hpp"
+#include "../Exceptions/WrongFormat/WrongFormatException.hpp"
 
-class AsciiFormat : public AbstractFormat {
+namespace Utils {
 
-public:
   static std::string format_bd_address(const std::array<uint8_t, 6>& bd_address_array) {
     std::stringstream bd_address;
 
@@ -31,6 +30,23 @@ public:
     }
 
     return uuid.str();
+  };
+
+  template<typename T>
+  static std::string format_bytes_array(const T& bytes) {
+    std::stringstream stream;
+
+    typename T::const_iterator it;
+    stream << "[";
+    for(it = bytes.begin(); it != bytes.end(); ++it) {
+      stream << HEX(*it);
+      if (std::next(it) != bytes.end()) {
+        stream << ", ";
+      }
+    }
+    stream << "]";
+
+    return stream.str();
   };
 
   template<typename T>
@@ -64,30 +80,6 @@ public:
     }
   };
 
-  const Packet::Type get_packet_type() const override {
-    return Packet::Type::ASCII;
-  };
+}
 
-  const size_t get_header_length(uint16_t type_code) const override {
-    return 0;
-  };
-
-  bool is_command(uint16_t type_code) override {
-    return true;
-  };
-
-  bool is_event(uint16_t type_code) override {
-    return false;
-  };
-
-  uint16_t extract_payload_length(const std::vector<uint8_t>& data) override {
-    return AsciiFormatExtractor::extract_payload_length(data);
-  };
-
-  std::shared_ptr<AbstractExtractor> create_extractor(const std::vector<uint8_t>& data) override {
-    return std::make_shared<AsciiFormatExtractor>(data);
-  };
-
-};
-
-#endif //BABLE_LINUX_ASCIIFORMAT_HPP
+#endif //BABLE_LINUX_STRING_FORMATS_HPP

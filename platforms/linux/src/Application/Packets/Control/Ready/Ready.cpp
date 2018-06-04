@@ -13,15 +13,19 @@ namespace Packet {
       m_native_class = "BaBLE";
     }
 
-    vector<uint8_t> Ready::serialize(AsciiFormatBuilder& builder) const {
-      builder.set_name("Ready");
-      return {};
-    }
-
     vector<uint8_t> Ready::serialize(FlatbuffersFormatBuilder& builder) const {
       auto payload = BaBLE::CreateReady(builder);
 
       return builder.build(payload, BaBLE::Payload::Ready);
+    }
+
+    const std::string Ready::stringify() const {
+      stringstream result;
+
+      result << "<Ready> "
+             << AbstractPacket::stringify();
+
+      return result.str();
     }
 
   }

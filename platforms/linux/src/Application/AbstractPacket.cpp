@@ -23,21 +23,6 @@ namespace Packet {
         return serialize(builder);
       }
 
-      case Packet::Type::ASCII:
-      {
-        string status_name = BaBLE::EnumNameStatusCode(m_status);
-
-        AsciiFormatBuilder builder;
-        builder
-            .add("Controller ID", m_controller_id)
-            .add("Connection ID", m_connection_id)
-            .add("UUID request", m_uuid_request)
-            .add("Status", status_name)
-            .add("Native class", m_native_class)
-            .add("Native status", m_native_status);
-        return serialize(builder);
-      }
-
       case Packet::Type::FLATBUFFERS:
       {
         FlatbuffersFormatBuilder builder(m_controller_id, m_uuid_request, m_native_class);
@@ -76,17 +61,6 @@ namespace Packet {
           return unserialize(*hci_extractor);
         }
 
-        case Packet::Type::ASCII:
-        {
-          auto ascii_extractor = dynamic_pointer_cast<AsciiFormatExtractor>(extractor);
-          if(ascii_extractor == nullptr) {
-            throw Exceptions::RuntimeErrorException("Can't import data into packet: wrong extractor provided.");
-          }
-          m_uuid_request = ascii_extractor->get_uuid_request();
-          m_native_class = "ASCII";
-          return unserialize(*ascii_extractor);
-        }
-
         case Packet::Type::FLATBUFFERS:
         {
           auto fb_extractor = dynamic_pointer_cast<FlatbuffersFormatExtractor>(extractor);
@@ -114,18 +88,16 @@ namespace Packet {
   const string AbstractPacket::stringify() const {
     string status_name = BaBLE::EnumNameStatusCode(m_status);
 
-    AsciiFormatBuilder builder;
-    builder
-        .add("Controller ID", m_controller_id)
-        .add("UUID request", m_uuid_request)
-        .add("Packet code", m_packet_code)
-        .add("Connection ID", m_connection_id)
-        .add("Status", status_name)
-        .add("Native class", m_native_class)
-        .add("Native status", m_native_status);
+    stringstream result;
+    result << "Controller ID: " << to_string(m_controller_id) << ", "
+           << "UUID request: " <<  m_uuid_request << ", "
+           << "Packet code: " <<  HEX(m_packet_code) << ", "
+           << "Connection ID: " <<  HEX(m_connection_id) << ", "
+           << "Status: " << status_name << ", "
+           << "Native class: " <<  m_native_class << ", "
+           << "Native status: " <<  HEX(m_native_status);
 
-    vector<uint8_t> data = serialize(builder);
-    return AsciiFormat::bytes_to_string(data);
+    return result.str();
   }
 
   AbstractPacket::AbstractPacket(Packet::Type initial_type, Packet::Type translated_type) {

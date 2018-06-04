@@ -3,6 +3,7 @@
 
 #include "../AbstractPacket.hpp"
 #include "../../Format/AbstractFormat.hpp"
+#include <unordered_set>
 
 // Used to register all the packets on startup and then build them from received raw bytes.
 class PacketBuilder : public Loggable {
@@ -16,6 +17,7 @@ public:
 
   // Setters
   PacketBuilder& set_output_format(std::shared_ptr<AbstractFormat> output_format);
+  PacketBuilder& set_ignored_packets(std::unordered_set<uint16_t> ignored_packets);
 
   // To register packets
   template<class T>
@@ -40,6 +42,8 @@ private:
   // Commands and events are splitted to prevent command_code == event_code issues
   std::unordered_map<uint16_t, PacketConstructor> m_commands{};
   std::unordered_map<uint16_t, PacketConstructor> m_events{};
+
+  std::unordered_set<uint16_t> m_ignored_packets{};
 
 };
 

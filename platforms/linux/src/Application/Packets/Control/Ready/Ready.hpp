@@ -12,8 +12,9 @@ namespace Packet {
     public:
       explicit Ready(Packet::Type output_type);
 
-      std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
       std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
+
+      const std::string stringify() const override;
 
     };
 

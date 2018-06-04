@@ -1,5 +1,6 @@
 #include "WriteWithoutResponse.hpp"
 #include "../../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
+#include "../../../../utils/string_formats.hpp"
 
 using namespace std;
 
@@ -12,19 +13,6 @@ namespace Packet {
       m_id = Packet::Id::WriteWithoutResponse;
     }
 
-    void WriteWithoutResponse::unserialize(AsciiFormatExtractor& extractor) {
-      try {
-        m_connection_id = AsciiFormat::string_to_number<uint16_t>(extractor.get_string());
-        m_attribute_handle = AsciiFormat::string_to_number<uint16_t>(extractor.get_string());
-        m_data_to_write = extractor.get_vector<uint8_t>();
-
-      } catch (const Exceptions::WrongFormatException& err) {
-        throw Exceptions::InvalidCommandException("Invalid arguments for 'WriteWithoutResponse' packet."
-                                                  "Usage: <uuid>,<command_code>,<controller_id>,"
-                                                  "<connection_handle>,<attribute_handle>,<data>", m_uuid_request);
-      }
-    }
-
     void WriteWithoutResponse::unserialize(FlatbuffersFormatExtractor& extractor) {
       auto payload = extractor.get_payload<const BaBLE::WriteWithoutResponse*>();
 
@@ -32,21 +20,6 @@ namespace Packet {
       m_attribute_handle = payload->attribute_handle();
       auto raw_data_to_write = payload->value();
       m_data_to_write.assign(raw_data_to_write->begin(), raw_data_to_write->end());
-    }
-
-    void WriteWithoutResponse::unserialize(HCIFormatExtractor& extractor) {
-      m_attribute_handle = extractor.get_value<uint16_t>();
-      m_data_to_write = extractor.get_vector<uint8_t>();
-    }
-
-    vector<uint8_t> WriteWithoutResponse::serialize(AsciiFormatBuilder& builder) const {
-      RequestPacket::serialize(builder);
-      builder
-          .set_name("WriteWithoutResponse")
-          .add("Attribute handle", m_attribute_handle)
-          .add("Data to write", m_data_to_write);
-
-      return builder.build();
     }
 
     vector<uint8_t> WriteWithoutResponse::serialize(HCIFormatBuilder& builder) const {
@@ -57,6 +30,17 @@ namespace Packet {
           .add(m_data_to_write);
 
       return builder.build(Format::HCI::Type::AsyncData);
+    }
+
+    const std::string WriteWithoutResponse::stringify() const {
+      stringstream result;
+
+      result << "<WriteWithoutResponse> "
+             << AbstractPacket::stringify() << ", "
+             << "Attribute handle: " << to_string(m_attribute_handle) << ", "
+             << "Data to write: " << Utils::format_bytes_array(m_data_to_write);
+
+      return result.str();
     }
 
     void WriteWithoutResponse::before_sent(const std::shared_ptr<PacketRouter>& router) {

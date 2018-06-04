@@ -1,4 +1,5 @@
 #include "GetConnectedDevicesResponse.hpp"
+#include "../../../../utils/string_formats.hpp"
 
 using namespace std;
 
@@ -23,21 +24,11 @@ namespace Packet {
 
         for (size_t i = 0; i < m_num_connections; i++) {
           current_address = extractor.get_array<uint8_t, 6>();
-          m_devices.push_back(AsciiFormat::format_bd_address(current_address));
+          m_devices.push_back(Utils::format_bd_address(current_address));
 
           current_address_type = extractor.get_value<uint8_t>();
         }
       }
-    }
-
-    vector<uint8_t> GetConnectedDevicesResponse::serialize(AsciiFormatBuilder& builder) const {
-      ResponsePacket::serialize(builder);
-      builder
-          .set_name("GetConnectedDevices")
-          .add("Num. of connections", m_devices.size())
-          .add("Devices", m_devices);
-
-      return builder.build();
     }
 
     vector<uint8_t> GetConnectedDevicesResponse::serialize(FlatbuffersFormatBuilder& builder) const {
@@ -51,6 +42,26 @@ namespace Packet {
       auto payload = BaBLE::CreateGetConnectedDevices(builder, devices);
 
       return builder.build(payload, BaBLE::Payload::GetConnectedDevices);
+    }
+
+    const std::string GetConnectedDevicesResponse::stringify() const {
+      stringstream result;
+
+      result << "<GetConnectedDevicesRequest> "
+             << AbstractPacket::stringify() << ", "
+             << "Number of connections: " << to_string(m_devices.size()) << ", "
+             << "Devices: [";
+
+      for (auto it = m_devices.begin(); it != m_devices.end(); ++it) {
+        result << *it;
+        if (next(it) != m_devices.end()) {
+          result << ", ";
+        }
+      }
+
+      result << "]";
+
+      return result.str();
     }
 
   }

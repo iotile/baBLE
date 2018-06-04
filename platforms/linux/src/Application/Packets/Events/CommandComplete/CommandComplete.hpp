@@ -18,9 +18,6 @@ namespace Packet {
           case Packet::Type::HCI:
             return Format::HCI::EventCode::CommandComplete;
 
-          case Packet::Type::ASCII:
-            return Format::Ascii::EventCode::CommandComplete;
-
           case Packet::Type::FLATBUFFERS:
             throw std::invalid_argument("'CommandComplete' event has no event code for Flatbuffers.");
 
@@ -33,7 +30,7 @@ namespace Packet {
 
       void unserialize(HCIFormatExtractor& extractor) override;
 
-      std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
+      const std::string stringify() const override;
 
       const PacketUuid get_uuid() const override {
         return PacketUuid{

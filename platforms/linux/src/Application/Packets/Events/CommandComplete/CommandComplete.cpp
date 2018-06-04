@@ -1,4 +1,5 @@
 #include "CommandComplete.hpp"
+#include "../../../../utils/string_formats.hpp"
 
 using namespace std;
 
@@ -16,15 +17,18 @@ namespace Packet {
       auto number_allowed_command_packets = extractor.get_value<uint8_t>();
       m_opcode = extractor.get_value<uint16_t>();
       m_returned_params = extractor.get_vector<uint8_t>();
-    };
+    }
 
-    vector<uint8_t> CommandComplete::serialize(AsciiFormatBuilder& builder) const {
-      EventPacket::serialize(builder);
+    const std::string CommandComplete::stringify() const {
+      stringstream result;
 
-      builder.set_name("CommandComplete");
+      result << "<CommandComplete> "
+             << AbstractPacket::stringify() << ", "
+             << "Opcode: " << to_string(m_opcode) << ", "
+             << "Returned parameters: " << Utils::format_bytes_array(m_returned_params);
 
-      return builder.build();
-    };
+      return result.str();
+    }
 
   }
 

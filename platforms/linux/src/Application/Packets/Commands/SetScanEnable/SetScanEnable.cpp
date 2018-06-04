@@ -22,30 +22,8 @@ namespace Packet {
       m_state = state;
     }
 
-    void SetScanEnable::unserialize(AsciiFormatExtractor& extractor) {
-      try {
-        m_state = AsciiFormat::string_to_number<bool>(extractor.get_string());
-        m_filter_duplicates = AsciiFormat::string_to_number<bool>(extractor.get_string());
-
-      } catch (const Exceptions::WrongFormatException& err) {
-        throw Exceptions::InvalidCommandException("Invalid arguments for 'SetScanEnable' packet."
-                                                  "Usage: <uuid>,<command_code>,<controller_id>,"
-                                                  "<state>,<filter_duplicates>", m_uuid_request);
-      }
-    }
-
     void SetScanEnable::unserialize(FlatbuffersFormatExtractor& extractor) {
       m_state = false;
-    }
-
-    vector<uint8_t> SetScanEnable::serialize(AsciiFormatBuilder& builder) const {
-      RequestPacket::serialize(builder);
-      builder
-          .set_name("SetScanEnable")
-          .add("State", m_state)
-          .add("Filter duplicates", m_filter_duplicates);
-
-      return builder.build();
     }
 
     vector<uint8_t> SetScanEnable::serialize(HCIFormatBuilder& builder) const {
@@ -62,6 +40,17 @@ namespace Packet {
       auto payload = BaBLE::CreateStopScan(builder);
 
       return builder.build(payload, BaBLE::Payload::StopScan);
+    }
+
+    const std::string SetScanEnable::stringify() const {
+      stringstream result;
+
+      result << "<SetScanEnable> "
+             << AbstractPacket::stringify() << ", "
+             << "State: " << to_string(m_state) << ", "
+             << "Filter duplicates: " << to_string(m_filter_duplicates);
+
+      return result.str();
     }
 
     shared_ptr<Packet::AbstractPacket> SetScanEnable::on_response_received(const std::shared_ptr<PacketRouter>& router,

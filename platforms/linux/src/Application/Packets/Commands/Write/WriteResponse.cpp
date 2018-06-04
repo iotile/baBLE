@@ -13,15 +13,6 @@ namespace Packet {
 
     void WriteResponse::unserialize(HCIFormatExtractor& extractor) {}
 
-    vector<uint8_t> WriteResponse::serialize(AsciiFormatBuilder& builder) const {
-      ResponsePacket::serialize(builder);
-      builder
-          .set_name("Write")
-          .add("Attribute handle", m_attribute_handle);
-
-      return builder.build();
-    };
-
     vector<uint8_t> WriteResponse::serialize(FlatbuffersFormatBuilder& builder) const {
       auto payload = BaBLE::CreateWrite(
           builder,
@@ -30,6 +21,16 @@ namespace Packet {
       );
 
       return builder.build(payload, BaBLE::Payload::Write);
+    }
+
+    const std::string WriteResponse::stringify() const {
+      stringstream result;
+
+      result << "<WriteResponse> "
+             << AbstractPacket::stringify() << ", "
+             << "Attribute handle: " << to_string(m_attribute_handle);
+
+      return result.str();
     }
 
   }

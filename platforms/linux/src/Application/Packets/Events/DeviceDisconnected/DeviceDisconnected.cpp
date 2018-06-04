@@ -1,4 +1,5 @@
 #include "DeviceDisconnected.hpp"
+#include "../../../../utils/string_formats.hpp"
 
 using namespace std;
 
@@ -52,20 +53,8 @@ namespace Packet {
       }
     }
 
-    vector<uint8_t> DeviceDisconnected::serialize(AsciiFormatBuilder& builder) const {
-      EventPacket::serialize(builder);
-
-      builder
-          .set_name("DeviceDisconnected")
-          .add("Address", AsciiFormat::format_bd_address(m_address))
-          .add("Address type", m_address_type)
-          .add("Reason", m_reason);
-
-      return builder.build();
-    }
-
     vector<uint8_t> DeviceDisconnected::serialize(FlatbuffersFormatBuilder& builder) const {
-      auto address = builder.CreateString(AsciiFormat::format_bd_address(m_address));
+      auto address = builder.CreateString(Utils::format_bd_address(m_address));
       auto reason = builder.CreateString(m_reason);
 
       auto payload = BaBLE::CreateDeviceDisconnected(
@@ -77,6 +66,18 @@ namespace Packet {
       );
 
       return builder.build(payload, BaBLE::Payload::DeviceDisconnected);
+    }
+
+    const std::string DeviceDisconnected::stringify() const {
+      stringstream result;
+
+      result << "<DeviceDisconnected> "
+             << AbstractPacket::stringify() << ", "
+             << "Address: " << Utils::format_bd_address(m_address) << ", "
+             << "Address type: " << to_string(m_address_type) << ", "
+             << "Reason: " << m_reason;
+
+      return result.str();
     }
 
   }

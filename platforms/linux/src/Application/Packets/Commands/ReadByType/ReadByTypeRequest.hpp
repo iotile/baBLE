@@ -18,9 +18,6 @@ namespace Packet {
           case Packet::Type::HCI:
             return Format::HCI::AttributeCode::ReadByTypeRequest;
 
-          case Packet::Type::ASCII:
-            return Format::Ascii::CommandCode::ReadByTypeRequest;
-
           case Packet::Type::FLATBUFFERS:
             throw std::invalid_argument("'ReadByTypeRequest' packet is not compatible with Flatbuffers protocol.");
 
@@ -30,19 +27,18 @@ namespace Packet {
       };
 
       ReadByTypeRequest(Packet::Type initial_type, Packet::Type translated_type);
-      void set_handles(uint16_t starting_handle, uint16_t ending_handle);
-
-      void unserialize(AsciiFormatExtractor& extractor) override;
-      void unserialize(HCIFormatExtractor& extractor) override;
 
       std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
-      std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
+
+      const std::string stringify() const override;
 
       void before_sent(const std::shared_ptr<PacketRouter>& router) override;
       std::shared_ptr<Packet::AbstractPacket> on_response_received(const std::shared_ptr<PacketRouter>& router,
                                                                    const std::shared_ptr<AbstractPacket>& packet) override;
       std::shared_ptr<Packet::AbstractPacket> on_error_response_received(const std::shared_ptr<PacketRouter>& router,
                                                                          const std::shared_ptr<AbstractPacket>& packet);
+
+      void set_handles(uint16_t starting_handle, uint16_t ending_handle);
 
     private:
       uint16_t m_starting_handle;

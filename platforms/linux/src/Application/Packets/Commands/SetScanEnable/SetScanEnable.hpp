@@ -18,9 +18,6 @@ namespace Packet {
           case Packet::Type::HCI:
             return Format::HCI::CommandCode::SetScanEnable;
 
-          case Packet::Type::ASCII:
-            return Format::Ascii::CommandCode::SetScanEnable;
-
           case Packet::Type::FLATBUFFERS:
             return static_cast<uint16_t>(BaBLE::Payload::StopScan);
 
@@ -31,12 +28,12 @@ namespace Packet {
 
       SetScanEnable(Packet::Type initial_type, Packet::Type translated_type);
 
-      void unserialize(AsciiFormatExtractor& extractor) override;
       void unserialize(FlatbuffersFormatExtractor& extractor) override;
 
-      std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
       std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
       std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
+
+      const std::string stringify() const override;
 
       std::shared_ptr<Packet::AbstractPacket> on_response_received(const std::shared_ptr<PacketRouter>& router,
                                                                    const std::shared_ptr<AbstractPacket>& packet) override;

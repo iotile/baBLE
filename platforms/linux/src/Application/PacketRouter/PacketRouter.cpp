@@ -117,9 +117,6 @@ const string PacketRouter::stringify() const {
       case Packet::Type::HCI:
         result << "HCI";
         break;
-      case Packet::Type::ASCII:
-        result << "ASCII";
-        break;
       case Packet::Type::FLATBUFFERS:
         result << "FLATBUFFERS";
         break;

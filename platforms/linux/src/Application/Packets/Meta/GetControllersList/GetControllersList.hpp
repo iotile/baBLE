@@ -20,9 +20,6 @@ namespace Packet {
           case Packet::Type::HCI:
             throw std::invalid_argument("'GetControllersList' packet is a meta packet, can't be a HCI packet.");
 
-          case Packet::Type::ASCII:
-            return Format::Ascii::CommandCode::GetControllersList;
-
           case Packet::Type::FLATBUFFERS:
             return static_cast<uint16_t>(BaBLE::Payload::GetControllersList);
 
@@ -33,12 +30,12 @@ namespace Packet {
 
       GetControllersList(Packet::Type initial_type, Packet::Type translated_type);
 
-      void unserialize(AsciiFormatExtractor& extractor) override;
       void unserialize(FlatbuffersFormatExtractor& extractor) override;
 
-      std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
       std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
       std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override;
+
+      const std::string stringify() const override;
 
       void before_sent(const std::shared_ptr<PacketRouter>& router) override;
       std::shared_ptr<AbstractPacket> on_controllers_ids_response_received(const std::shared_ptr<PacketRouter>& router,

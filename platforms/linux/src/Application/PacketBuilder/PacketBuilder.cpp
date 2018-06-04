@@ -16,6 +16,12 @@ PacketBuilder& PacketBuilder::set_output_format(shared_ptr<AbstractFormat> outpu
   return *this;
 }
 
+PacketBuilder& PacketBuilder::set_ignored_packets(std::unordered_set<uint16_t> ignored_packets) {
+  m_ignored_packets = move(ignored_packets);
+
+  return *this;
+}
+
 // To build packets
 shared_ptr<Packet::AbstractPacket> PacketBuilder::build(std::shared_ptr<AbstractExtractor> extractor) {
   uint16_t type_code = extractor->get_type_code();
@@ -31,14 +37,19 @@ shared_ptr<Packet::AbstractPacket> PacketBuilder::build(std::shared_ptr<Abstract
 
 shared_ptr<Packet::AbstractPacket> PacketBuilder::build_command(std::shared_ptr<AbstractExtractor> extractor) {
   // Extract packet_code from data
-  Packet::Type packet_type = m_building_format->get_packet_type();
   uint16_t command_code = extractor->get_packet_code();
 
   // Get command from packet_code
   auto command_it = m_commands.find(command_code);
   if (command_it == m_commands.end()) {
-    LOG.debug(extractor->get_raw_data(), "PacketBuilder");
-    throw Exceptions::NotFoundException("Command code not found in PacketBuilder registry: " + to_string(command_code));
+    if (m_ignored_packets.find(command_code) == m_ignored_packets.end()) {
+      LOG.critical("Event code not found in PacketBuilder registry: " + to_string(command_code), "PacketBuilder");
+      LOG.debug(extractor->get_raw_data(), "PacketBuilder");
+      return nullptr;
+
+    } else {
+      LOG.debug("Command packet, in ignored list, has been ignored (" + to_string(command_code) + ")");
+    }
   }
 
   PacketConstructor fn = command_it->second;
@@ -53,8 +64,14 @@ shared_ptr<Packet::AbstractPacket> PacketBuilder::build_event(std::shared_ptr<Ab
   // Get event from event_code
   auto event_it = m_events.find(event_code);
   if (event_it == m_events.end()) {
-    LOG.debug(extractor->get_raw_data(), "PacketBuilder");
-    throw Exceptions::NotFoundException("Event code not found in PacketBuilder registry: " + to_string(event_code));
+    if (m_ignored_packets.find(event_code) == m_ignored_packets.end()) {
+      LOG.critical("Event code not found in PacketBuilder registry: " + to_string(event_code), "PacketBuilder");
+      LOG.debug(extractor->get_raw_data(), "PacketBuilder");
+      return nullptr;
+
+    } else {
+      LOG.debug("Event packet, in ignored list, has been ignored (" + to_string(event_code) + ")");
+    }
   }
 
   PacketConstructor fn = event_it->second;

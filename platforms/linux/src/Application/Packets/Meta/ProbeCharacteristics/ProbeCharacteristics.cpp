@@ -3,6 +3,7 @@
 #include "../../Errors/ErrorResponse/ErrorResponse.hpp"
 #include "../../../../Exceptions/RuntimeError/RuntimeErrorException.hpp"
 #include "../../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
+#include "../../../../utils/string_formats.hpp"
 
 using namespace std;
 
@@ -19,20 +20,6 @@ namespace Packet {
       m_read_by_type_request_packet = make_shared<Packet::Commands::ReadByTypeRequest>(translated_type, translated_type);
     }
 
-    void ProbeCharacteristics::unserialize(AsciiFormatExtractor& extractor) {
-      try {
-        m_connection_id = AsciiFormat::string_to_number<uint16_t>(extractor.get_string());
-
-      } catch (const Exceptions::WrongFormatException& err) {
-        throw Exceptions::InvalidCommandException("Invalid arguments for 'ProbeCharacteristics' packet."
-                                                  "Usage: <uuid>,<command_code>,<controller_id>,<connection_handle>",
-                                                  m_uuid_request);
-      }
-
-      m_read_by_type_request_packet->set_controller_id(m_controller_id);
-      m_read_by_type_request_packet->set_connection_id(m_connection_id);
-    }
-
     void ProbeCharacteristics::unserialize(FlatbuffersFormatExtractor& extractor) {
       auto payload = extractor.get_payload<const BaBLE::ProbeCharacteristics*>();
 
@@ -42,29 +29,12 @@ namespace Packet {
       m_read_by_type_request_packet->set_connection_id(m_connection_id);
     }
 
-    vector<uint8_t> ProbeCharacteristics::serialize(AsciiFormatBuilder& builder) const {
-      builder
-          .set_name("ProbeCharacteristics")
-          .add("Type", "Meta")
-          .add("Connection id", m_connection_id);
-
-      for (auto& characteristic : m_characteristics) {
-        builder
-            .add("Handle", characteristic.handle)
-            .add("Properties", characteristic.properties)
-            .add("Value handle", characteristic.value_handle)
-            .add("UUID", characteristic.uuid);
-      }
-
-      return builder.build();
-    }
-
     vector<uint8_t> ProbeCharacteristics::serialize(FlatbuffersFormatBuilder& builder) const {
       vector<flatbuffers::Offset<BaBLE::Characteristic>> characteristics;
       characteristics.reserve(m_characteristics.size());
 
       for (auto& characteristic : m_characteristics) {
-        auto uuid = builder.CreateString(AsciiFormat::format_uuid(characteristic.uuid));
+        auto uuid = builder.CreateString(Utils::format_uuid(characteristic.uuid));
 
         bool indicate = (characteristic.properties & 1 << 5) > 0;
         bool notify = (characteristic.properties & 1 << 4) > 0;
@@ -94,6 +64,25 @@ namespace Packet {
 
     vector<uint8_t> ProbeCharacteristics::serialize(HCIFormatBuilder& builder) const {
       return m_read_by_type_request_packet->serialize(builder);
+    }
+
+    const std::string ProbeCharacteristics::stringify() const {
+      stringstream result;
+
+      result << "<ProbeCharacteristics> "
+             << AbstractPacket::stringify() << ", ";
+
+      for (auto it = m_characteristics.begin(); it != m_characteristics.end(); ++it) {
+        result << "{ Handle: " << to_string(it->handle) << ", "
+               << "Properties: " << to_string(it->properties) << ", "
+               << "Value handle: " << to_string(it->value_handle) << ", "
+               << "UUID: " << Utils::format_uuid(it->uuid) << "} ";
+        if (next(it) != m_characteristics.end()) {
+          result << ", ";
+        }
+      }
+
+      return result.str();
     }
 
     void ProbeCharacteristics::before_sent(const std::shared_ptr<PacketRouter>& router) {

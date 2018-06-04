@@ -1,4 +1,5 @@
 #include "NotificationReceived.hpp"
+#include "../../../../utils/string_formats.hpp"
 
 using namespace std;
 
@@ -19,17 +20,6 @@ namespace Packet {
       m_value = extractor.get_vector<uint8_t>(value_length);
     }
 
-    vector<uint8_t> NotificationReceived::serialize(AsciiFormatBuilder& builder) const {
-      ResponsePacket::serialize(builder);
-
-      builder
-          .set_name("NotificationReceived")
-          .add("Attribute handle", m_attribute_handle)
-          .add("Data", m_value);
-
-      return builder.build();
-    }
-
     vector<uint8_t> NotificationReceived::serialize(FlatbuffersFormatBuilder& builder) const {
       auto value = builder.CreateVector(m_value);
 
@@ -41,6 +31,17 @@ namespace Packet {
       );
 
       return builder.build(payload, BaBLE::Payload::NotificationReceived);
+    }
+
+    const std::string NotificationReceived::stringify() const {
+      stringstream result;
+
+      result << "<NotificationReceived> "
+             << AbstractPacket::stringify() << ", "
+             << "Attribute handle: " << to_string(m_attribute_handle) << ", "
+             << "Data: " << Utils::format_bytes_array(m_value);
+
+      return result.str();
     }
 
   }

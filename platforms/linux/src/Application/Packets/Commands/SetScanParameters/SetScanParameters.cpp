@@ -29,34 +29,6 @@ namespace Packet {
       }
     }
 
-    void SetScanParameters::unserialize(AsciiFormatExtractor& extractor) {
-      try {
-        m_scan_type = AsciiFormat::string_to_number<uint8_t>(extractor.get_string());
-        m_scan_interval = AsciiFormat::string_to_number<uint16_t>(extractor.get_string());
-        m_scan_window = AsciiFormat::string_to_number<uint16_t>(extractor.get_string());
-        m_address_type = AsciiFormat::string_to_number<uint8_t>(extractor.get_string());
-        m_policy = AsciiFormat::string_to_number<uint8_t>(extractor.get_string());
-
-      } catch (const Exceptions::WrongFormatException& err) {
-        throw Exceptions::InvalidCommandException("Invalid arguments for 'SetScanParameters' packet."
-                                                  "Usage: <uuid>,<command_code>,<controller_id>,"
-                                                  "<scan_type>,<scan_interval>,<scan_window>,<address_type>,<policy>", m_uuid_request);
-      }
-    }
-
-    vector<uint8_t> SetScanParameters::serialize(AsciiFormatBuilder& builder) const {
-      RequestPacket::serialize(builder);
-      builder
-          .set_name("SetScanParameters")
-          .add("Scan type", m_scan_type)
-          .add("Scan interval", m_scan_interval)
-          .add("Scan window", m_scan_window)
-          .add("Address type", m_address_type)
-          .add("Policy", m_policy);
-
-      return builder.build();
-    }
-
     vector<uint8_t> SetScanParameters::serialize(HCIFormatBuilder& builder) const {
       RequestPacket::serialize(builder);
 
@@ -68,6 +40,20 @@ namespace Packet {
           .add(m_policy);
 
       return builder.build(Format::HCI::Type::Command);
+    }
+
+    const std::string SetScanParameters::stringify() const {
+      stringstream result;
+
+      result << "<SetScanParameters> "
+             << AbstractPacket::stringify() << ", "
+             << "Scan type: " << to_string(m_scan_type) << ", "
+             << "Scan interval: " << to_string(m_scan_interval) << ", "
+             << "Scan window: " << to_string(m_scan_window) << ", "
+             << "Address type: " << to_string(m_address_type) << ", "
+             << "Policy: " << to_string(m_policy);
+
+      return result.str();
     }
 
     shared_ptr<Packet::AbstractPacket> SetScanParameters::on_response_received(const std::shared_ptr<PacketRouter>& router,

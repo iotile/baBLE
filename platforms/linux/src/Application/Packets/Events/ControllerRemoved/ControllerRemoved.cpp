@@ -11,20 +11,21 @@ namespace Packet {
       m_id = Packet::Id::ControllerRemoved;
     }
 
-    void ControllerRemoved::unserialize(MGMTFormatExtractor& extractor) {};
-
-    vector<uint8_t> ControllerRemoved::serialize(AsciiFormatBuilder& builder) const {
-      EventPacket::serialize(builder);
-
-      builder.set_name("ControllerRemoved");
-
-      return builder.build();
-    };
+    void ControllerRemoved::unserialize(MGMTFormatExtractor& extractor) {}
 
     vector<uint8_t> ControllerRemoved::serialize(FlatbuffersFormatBuilder& builder) const {
       auto payload = BaBLE::CreateControllerRemoved(builder);
 
       return builder.build(payload, BaBLE::Payload::ControllerRemoved);
+    }
+
+    const std::string ControllerRemoved::stringify() const {
+      stringstream result;
+
+      result << "<ControllerRemoved> "
+             << AbstractPacket::stringify();
+
+      return result.str();
     }
 
   }

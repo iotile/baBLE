@@ -18,9 +18,6 @@ namespace Packet {
           case Packet::Type::HCI:
             return Format::HCI::AttributeCode::ReadByTypeResponse;
 
-          case Packet::Type::ASCII:
-            return Format::Ascii::CommandCode::ReadByTypeResponse;
-
           case Packet::Type::FLATBUFFERS:
             throw std::invalid_argument("'ReadByTypeResponse' packet is not compatible with Flatbuffers protocol.");
 
@@ -33,7 +30,7 @@ namespace Packet {
 
       void unserialize(HCIFormatExtractor& extractor) override;
 
-      std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
+      const std::string stringify() const override;
 
       inline std::vector<Format::HCI::Characteristic> get_characteristics() const {
         return m_characteristics;
