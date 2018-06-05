@@ -7,9 +7,8 @@ namespace Packet {
 
   namespace Events {
 
-    CommandComplete::CommandComplete(Packet::Type initial_type, Packet::Type final_type)
-        : EventPacket(initial_type, final_type) {
-      m_id = Packet::Id::CommandComplete;
+    CommandComplete::CommandComplete()
+        : ControllerToHostPacket(Packet::Id::CommandComplete, initial_type(), initial_packet_code(), final_packet_code(), true) {
       m_opcode = 0;
     }
 
@@ -28,6 +27,16 @@ namespace Packet {
              << "Returned parameters: " << Utils::format_bytes_array(m_returned_params);
 
       return result.str();
+    }
+
+    const PacketUuid CommandComplete::get_uuid() const {
+        return PacketUuid{
+        m_current_type,
+        m_controller_id,
+        m_connection_id,
+        m_packet_code,
+        get_opcode()
+      };
     }
 
   }

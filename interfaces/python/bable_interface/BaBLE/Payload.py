@@ -26,10 +26,8 @@ class Payload(object):
     DeviceConnected = 20
     DeviceDisconnected = 21
     DeviceFound = 22
-    Discovering = 23
-    NotificationReceived = 24
-    BaBLEError = 25
-    ErrorResponse = 26
-    Exit = 27
-    Ready = 28
+    NotificationReceived = 23
+    BaBLEError = 24
+    Exit = 25
+    Ready = 26
 

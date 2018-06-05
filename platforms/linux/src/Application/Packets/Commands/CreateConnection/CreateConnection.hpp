@@ -1,40 +1,33 @@
 #ifndef BABLE_LINUX_CREATECONNECTION_HPP
 #define BABLE_LINUX_CREATECONNECTION_HPP
 
-#include "../RequestPacket.hpp"
+#include "../../Base/HostToControllerPacket.hpp"
 
 namespace Packet {
 
   namespace Commands {
 
-    class CreateConnection : public RequestPacket<CreateConnection> {
+    class CreateConnection : public HostToControllerPacket {
 
     public:
-      static const uint16_t packet_code(Packet::Type type) {
-        switch (type) {
-          case Packet::Type::MGMT:
-            throw std::invalid_argument("'CreateConnection' packet is not compatible with MGMT protocol.");
-
-          case Packet::Type::HCI:
-            return Format::HCI::CommandCode::LECreateConnection;
-
-          case Packet::Type::FLATBUFFERS:
-            return static_cast<uint16_t>(BaBLE::Payload::Connect);
-
-          case Packet::Type::NONE:
-            return 0;
-        }
+      static const Packet::Type final_type() {
+        return Packet::Type::HCI;
       };
 
-      CreateConnection(Packet::Type initial_type, Packet::Type final_type);
+      static const uint16_t initial_packet_code() {
+        return static_cast<uint16_t>(BaBLE::Payload::Connect);
+      };
+
+      static const uint16_t final_packet_code() {
+        return Format::HCI::CommandCode::LECreateConnection;
+      };
+
+      explicit CreateConnection(const std::string& address = "", uint8_t address_type = 0x01); // Random address type
 
       void unserialize(FlatbuffersFormatExtractor& extractor) override;
-
       std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
 
       const std::string stringify() const override;
-
-      void before_sent(const std::shared_ptr<PacketRouter>& router) override;
 
     private:
       uint16_t m_scan_interval;

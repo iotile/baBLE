@@ -54,8 +54,6 @@ struct DeviceDisconnected;
 
 struct DeviceFound;
 
-struct Discovering;
-
 struct ControllerAdded;
 
 struct ControllerRemoved;
@@ -63,8 +61,6 @@ struct ControllerRemoved;
 struct NotificationReceived;
 
 struct BaBLEError;
-
-struct ErrorResponse;
 
 struct Ready;
 
@@ -96,17 +92,15 @@ enum class Payload : uint8_t {
   DeviceConnected = 20,
   DeviceDisconnected = 21,
   DeviceFound = 22,
-  Discovering = 23,
-  NotificationReceived = 24,
-  BaBLEError = 25,
-  ErrorResponse = 26,
-  Exit = 27,
-  Ready = 28,
+  NotificationReceived = 23,
+  BaBLEError = 24,
+  Exit = 25,
+  Ready = 26,
   MIN = NONE,
   MAX = Ready
 };
 
-inline const Payload (&EnumValuesPayload())[29] {
+inline const Payload (&EnumValuesPayload())[27] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::Connect,
@@ -131,10 +125,8 @@ inline const Payload (&EnumValuesPayload())[29] {
     Payload::DeviceConnected,
     Payload::DeviceDisconnected,
     Payload::DeviceFound,
-    Payload::Discovering,
     Payload::NotificationReceived,
     Payload::BaBLEError,
-    Payload::ErrorResponse,
     Payload::Exit,
     Payload::Ready
   };
@@ -166,10 +158,8 @@ inline const char * const *EnumNamesPayload() {
     "DeviceConnected",
     "DeviceDisconnected",
     "DeviceFound",
-    "Discovering",
     "NotificationReceived",
     "BaBLEError",
-    "ErrorResponse",
     "Exit",
     "Ready",
     nullptr
@@ -274,20 +264,12 @@ template<> struct PayloadTraits<DeviceFound> {
   static const Payload enum_value = Payload::DeviceFound;
 };
 
-template<> struct PayloadTraits<Discovering> {
-  static const Payload enum_value = Payload::Discovering;
-};
-
 template<> struct PayloadTraits<NotificationReceived> {
   static const Payload enum_value = Payload::NotificationReceived;
 };
 
 template<> struct PayloadTraits<BaBLEError> {
   static const Payload enum_value = Payload::BaBLEError;
-};
-
-template<> struct PayloadTraits<ErrorResponse> {
-  static const Payload enum_value = Payload::ErrorResponse;
 };
 
 template<> struct PayloadTraits<Exit> {
@@ -1852,56 +1834,6 @@ inline flatbuffers::Offset<DeviceFound> CreateDeviceFoundDirect(
       device_name ? _fbb.CreateString(device_name) : 0);
 }
 
-struct Discovering FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
-    VT_ADDRESS_TYPE = 4,
-    VT_STATE = 6
-  };
-  uint8_t address_type() const {
-    return GetField<uint8_t>(VT_ADDRESS_TYPE, 0);
-  }
-  bool state() const {
-    return GetField<uint8_t>(VT_STATE, 0) != 0;
-  }
-  bool Verify(flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<uint8_t>(verifier, VT_ADDRESS_TYPE) &&
-           VerifyField<uint8_t>(verifier, VT_STATE) &&
-           verifier.EndTable();
-  }
-};
-
-struct DiscoveringBuilder {
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_address_type(uint8_t address_type) {
-    fbb_.AddElement<uint8_t>(Discovering::VT_ADDRESS_TYPE, address_type, 0);
-  }
-  void add_state(bool state) {
-    fbb_.AddElement<uint8_t>(Discovering::VT_STATE, static_cast<uint8_t>(state), 0);
-  }
-  explicit DiscoveringBuilder(flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  DiscoveringBuilder &operator=(const DiscoveringBuilder &);
-  flatbuffers::Offset<Discovering> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<Discovering>(end);
-    return o;
-  }
-};
-
-inline flatbuffers::Offset<Discovering> CreateDiscovering(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    uint8_t address_type = 0,
-    bool state = false) {
-  DiscoveringBuilder builder_(_fbb);
-  builder_.add_state(state);
-  builder_.add_address_type(address_type);
-  return builder_.Finish();
-}
-
 struct ControllerAdded FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -2094,56 +2026,6 @@ inline flatbuffers::Offset<BaBLEError> CreateBaBLEErrorDirect(
       message ? _fbb.CreateString(message) : 0);
 }
 
-struct ErrorResponse FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
-    VT_OPCODE = 4,
-    VT_HANDLE = 6
-  };
-  uint8_t opcode() const {
-    return GetField<uint8_t>(VT_OPCODE, 0);
-  }
-  uint16_t handle() const {
-    return GetField<uint16_t>(VT_HANDLE, 0);
-  }
-  bool Verify(flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<uint8_t>(verifier, VT_OPCODE) &&
-           VerifyField<uint16_t>(verifier, VT_HANDLE) &&
-           verifier.EndTable();
-  }
-};
-
-struct ErrorResponseBuilder {
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_opcode(uint8_t opcode) {
-    fbb_.AddElement<uint8_t>(ErrorResponse::VT_OPCODE, opcode, 0);
-  }
-  void add_handle(uint16_t handle) {
-    fbb_.AddElement<uint16_t>(ErrorResponse::VT_HANDLE, handle, 0);
-  }
-  explicit ErrorResponseBuilder(flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ErrorResponseBuilder &operator=(const ErrorResponseBuilder &);
-  flatbuffers::Offset<ErrorResponse> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<ErrorResponse>(end);
-    return o;
-  }
-};
-
-inline flatbuffers::Offset<ErrorResponse> CreateErrorResponse(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    uint8_t opcode = 0,
-    uint16_t handle = 0) {
-  ErrorResponseBuilder builder_(_fbb);
-  builder_.add_handle(handle);
-  builder_.add_opcode(opcode);
-  return builder_.Finish();
-}
-
 struct Ready FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -2286,17 +2168,11 @@ struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const DeviceFound *payload_as_DeviceFound() const {
     return payload_type() == Payload::DeviceFound ? static_cast<const DeviceFound *>(payload()) : nullptr;
   }
-  const Discovering *payload_as_Discovering() const {
-    return payload_type() == Payload::Discovering ? static_cast<const Discovering *>(payload()) : nullptr;
-  }
   const NotificationReceived *payload_as_NotificationReceived() const {
     return payload_type() == Payload::NotificationReceived ? static_cast<const NotificationReceived *>(payload()) : nullptr;
   }
   const BaBLEError *payload_as_BaBLEError() const {
     return payload_type() == Payload::BaBLEError ? static_cast<const BaBLEError *>(payload()) : nullptr;
-  }
-  const ErrorResponse *payload_as_ErrorResponse() const {
-    return payload_type() == Payload::ErrorResponse ? static_cast<const ErrorResponse *>(payload()) : nullptr;
   }
   const Exit *payload_as_Exit() const {
     return payload_type() == Payload::Exit ? static_cast<const Exit *>(payload()) : nullptr;
@@ -2420,20 +2296,12 @@ template<> inline const DeviceFound *Packet::payload_as<DeviceFound>() const {
   return payload_as_DeviceFound();
 }
 
-template<> inline const Discovering *Packet::payload_as<Discovering>() const {
-  return payload_as_Discovering();
-}
-
 template<> inline const NotificationReceived *Packet::payload_as<NotificationReceived>() const {
   return payload_as_NotificationReceived();
 }
 
 template<> inline const BaBLEError *Packet::payload_as<BaBLEError>() const {
   return payload_as_BaBLEError();
-}
-
-template<> inline const ErrorResponse *Packet::payload_as<ErrorResponse>() const {
-  return payload_as_ErrorResponse();
 }
 
 template<> inline const Exit *Packet::payload_as<Exit>() const {
@@ -2613,20 +2481,12 @@ inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *obj, Payl
       auto ptr = reinterpret_cast<const DeviceFound *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case Payload::Discovering: {
-      auto ptr = reinterpret_cast<const Discovering *>(obj);
-      return verifier.VerifyTable(ptr);
-    }
     case Payload::NotificationReceived: {
       auto ptr = reinterpret_cast<const NotificationReceived *>(obj);
       return verifier.VerifyTable(ptr);
     }
     case Payload::BaBLEError: {
       auto ptr = reinterpret_cast<const BaBLEError *>(obj);
-      return verifier.VerifyTable(ptr);
-    }
-    case Payload::ErrorResponse: {
-      auto ptr = reinterpret_cast<const ErrorResponse *>(obj);
       return verifier.VerifyTable(ptr);
     }
     case Payload::Exit: {

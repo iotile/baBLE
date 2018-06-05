@@ -1,32 +1,28 @@
 #ifndef BABLE_LINUX_SETDISCOVERABLEREQUEST_HPP
 #define BABLE_LINUX_SETDISCOVERABLEREQUEST_HPP
 
-#include "../RequestPacket.hpp"
+#include "../../Base/HostToControllerPacket.hpp"
 
 namespace Packet {
 
   namespace Commands {
 
-    class SetDiscoverableRequest : public RequestPacket<SetDiscoverableRequest> {
+    class SetDiscoverableRequest : public HostToControllerPacket {
 
     public:
-      static const uint16_t packet_code(Packet::Type type) {
-        switch (type) {
-          case Packet::Type::MGMT:
-            return Format::MGMT::CommandCode::SetDiscoverable;
-
-          case Packet::Type::HCI:
-            throw std::invalid_argument("'SetDiscoverable' packet is not compatible with HCI protocol.");
-
-          case Packet::Type::FLATBUFFERS:
-            return static_cast<uint16_t>(BaBLE::Payload::SetDiscoverable);
-
-          case Packet::Type::NONE:
-            return 0;
-        }
+      static const Packet::Type final_type() {
+        return Packet::Type::MGMT;
       };
 
-      SetDiscoverableRequest(Packet::Type initial_type, Packet::Type final_type);
+      static const uint16_t initial_packet_code() {
+        return static_cast<uint16_t>(BaBLE::Payload::SetDiscoverable);
+      };
+
+      static const uint16_t final_packet_code() {
+        return Format::MGMT::CommandCode::SetDiscoverable;
+      };
+
+      explicit SetDiscoverableRequest(bool state = false, uint16_t timeout = 0);
 
       void unserialize(FlatbuffersFormatExtractor& extractor) override;
 
@@ -35,7 +31,7 @@ namespace Packet {
       const std::string stringify() const override;
 
     private:
-      uint8_t m_state;
+      bool m_state;
       uint16_t m_timeout;
 
     };

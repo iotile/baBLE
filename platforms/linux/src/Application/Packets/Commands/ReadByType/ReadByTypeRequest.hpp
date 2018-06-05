@@ -1,38 +1,36 @@
 #ifndef BABLE_LINUX_READBYTYPEREQUEST_HPP
 #define BABLE_LINUX_READBYTYPEREQUEST_HPP
 
-#include "../RequestPacket.hpp"
+#include "../../Base/HostToControllerPacket.hpp"
 
 namespace Packet {
 
   namespace Commands {
 
-    class ReadByTypeRequest : public RequestPacket<ReadByTypeRequest> {
+    class ReadByTypeRequest : public HostToControllerPacket {
 
     public:
-      static const uint16_t packet_code(Packet::Type type) {
-        switch (type) {
-          case Packet::Type::MGMT:
-            throw std::invalid_argument("'ReadByTypeRequest' packet is not compatible with MGMT protocol.");
-
-          case Packet::Type::HCI:
-            return Format::HCI::AttributeCode::ReadByTypeRequest;
-
-          case Packet::Type::FLATBUFFERS:
-            throw std::invalid_argument("'ReadByTypeRequest' packet is not compatible with Flatbuffers protocol.");
-
-          case Packet::Type::NONE:
-            return 0;
-        }
+      static const Packet::Type final_type() {
+        return Packet::Type::HCI;
       };
 
-      ReadByTypeRequest(Packet::Type initial_type, Packet::Type final_type);
+      static const uint16_t initial_packet_code() {
+        throw std::runtime_error("'ReadByTypeRequest' has no initial packet code (can't be registered).");
+      };
+
+      static const uint16_t final_packet_code() {
+        return Format::HCI::AttributeCode::ReadByTypeRequest;
+      };
+
+      explicit ReadByTypeRequest(uint16_t starting_handle = 0x0001,
+                                 uint16_t ending_handle = 0xFFFF,
+                                 uint16_t uuid = Format::HCI::UUID::GattCharacteristicDeclaration);
 
       std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
 
       const std::string stringify() const override;
 
-      void before_sent(const std::shared_ptr<PacketRouter>& router) override;
+      void prepare(const std::shared_ptr<PacketRouter>& router) override;
       std::shared_ptr<Packet::AbstractPacket> on_response_received(const std::shared_ptr<PacketRouter>& router,
                                                                    const std::shared_ptr<AbstractPacket>& packet) override;
       std::shared_ptr<Packet::AbstractPacket> on_error_response_received(const std::shared_ptr<PacketRouter>& router,

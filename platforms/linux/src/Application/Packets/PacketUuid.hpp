@@ -1,9 +1,9 @@
 #ifndef BABLE_LINUX_PACKETUUID_HPP
 #define BABLE_LINUX_PACKETUUID_HPP
 
-#include "../Format/HCI/constants.hpp"
-#include "Packets/constants.hpp"
-#include "../Log/Log.hpp"
+#include "../../Format/HCI/constants.hpp"
+#include "./constants.hpp"
+#include "../../Log/Log.hpp"
 
 namespace Packet {
 
@@ -32,6 +32,12 @@ namespace Packet {
 //          ", connection=" + std::to_string(other.connection_id) +
 //          ", request_packet=" + std::to_string(other.request_packet_code) +
 //          ", response_packet=" + std::to_string(other.response_packet_code), "OTHER");
+//
+//      LOG.critical("type=" + std::to_string(static_cast<uint16_t>(packet_type)) +
+//          ", controller=" + std::to_string(controller_id) +
+//          ", connection=" + std::to_string(connection_id) +
+//          ", request_packet=" + std::to_string(request_packet_code) +
+//          ", response_packet=" + std::to_string(response_packet_code), "ME");
 
       if (packet_type != other.packet_type
           || controller_id != other.controller_id
@@ -63,6 +69,12 @@ namespace std {
   {
     std::size_t operator()(const Packet::PacketUuid& response_id) const
     {
+//      LOG.critical("type=" + std::to_string(static_cast<uint16_t>(response_id.packet_type)) +
+//          ", controller=" + std::to_string(response_id.controller_id) +
+//          ", connection=" + std::to_string(response_id.connection_id) +
+//          ", request_packet=" + std::to_string(response_id.request_packet_code) +
+//          ", response_packet=" + std::to_string(response_id.response_packet_code), "OTHER HASH");
+
       return static_cast<size_t>(response_id.packet_type) << 48
           | static_cast<size_t>(response_id.controller_id) << 32
           | static_cast<size_t>(response_id.connection_id) << 16

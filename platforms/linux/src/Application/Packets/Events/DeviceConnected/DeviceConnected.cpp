@@ -1,5 +1,4 @@
 #include "DeviceConnected.hpp"
-#include "../../../../Log/Log.hpp"
 #include "../../../../utils/string_formats.hpp"
 
 using namespace std;
@@ -8,9 +7,8 @@ namespace Packet {
 
   namespace Events {
 
-    DeviceConnected::DeviceConnected(Packet::Type initial_type, Packet::Type final_type)
-        : EventPacket(initial_type, final_type) {
-      m_id = Packet::Id::DeviceConnected;
+    DeviceConnected::DeviceConnected()
+        : ControllerToHostPacket(Packet::Id::DeviceConnected, initial_type(), initial_packet_code(), final_packet_code()) {
       m_address_type = 0x00;
     }
 
@@ -37,7 +35,7 @@ namespace Packet {
       return builder.build(payload, BaBLE::Payload::DeviceConnected);
     }
 
-    const std::string DeviceConnected::stringify() const {
+    const string DeviceConnected::stringify() const {
       stringstream result;
 
       result << "<DeviceConnected> "

@@ -1,7 +1,8 @@
 #include "./AbstractPacket.hpp"
-#include "./PacketRouter/PacketRouter.hpp"
-#include "../Exceptions/RuntimeError/RuntimeErrorException.hpp"
-#include "../Exceptions/InvalidCommand/InvalidCommandException.hpp"
+#include "../PacketRouter/PacketRouter.hpp"
+#include "../../Exceptions/RuntimeError/RuntimeErrorException.hpp"
+#include "../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
+#include "../../utils/stream_formats.hpp"
 
 using namespace std;
 
@@ -81,8 +82,8 @@ namespace Packet {
     }
   }
 
-  void AbstractPacket::before_sent(const shared_ptr<PacketRouter>& router) {
-    m_current_type = m_current_type == m_initial_type ? m_final_type : m_initial_type;
+  void AbstractPacket::translate() {
+    m_current_type = m_final_type;
   }
 
   const string AbstractPacket::stringify() const {
@@ -100,16 +101,25 @@ namespace Packet {
     return result.str();
   }
 
-  AbstractPacket::AbstractPacket(Packet::Type initial_type, Packet::Type final_type) {
-    m_id = Packet::Id::None;
-    m_initial_type = initial_type;
+  AbstractPacket::AbstractPacket(Packet::Id id, Packet::Type initial_type, Packet::Type final_type, uint16_t packet_code) {
+    m_id = id;
+    m_current_type = initial_type;
     m_final_type = final_type;
-    m_current_type = m_initial_type;
+    m_packet_code = packet_code;
+
     m_controller_id = NON_CONTROLLER_ID;
     m_connection_id = 0;
-    m_packet_code = 0;
     m_status = BaBLE::StatusCode::Success;
     m_native_status = 0x00;
+  };
+
+  const PacketUuid AbstractPacket::get_uuid() const {
+    return PacketUuid{
+        m_current_type,
+        m_controller_id,
+        m_connection_id,
+        m_packet_code
+    };
   };
 
   void AbstractPacket::set_status(uint8_t native_status, bool compute_status) {

@@ -10,24 +10,19 @@ namespace Packet {
 
   namespace Meta {
 
-    GetControllersList::GetControllersList(Packet::Type initial_type, Packet::Type final_type)
-        : AbstractPacket(initial_type, final_type) {
-      m_id = Packet::Id::GetControllersList;
-      m_packet_code = packet_code(m_current_type);
+    GetControllersList::GetControllersList()
+        : HostOnlyPacket(Packet::Id::GetControllersList, initial_packet_code()) {
+      m_controller_info_request_packet = make_shared<Packet::Commands::GetControllerInfoRequest>();
+      m_controllers_ids_request_packet = make_shared<Packet::Commands::GetControllersIdsRequest>();
 
-      m_controller_info_request_packet =
-          std::make_shared<Packet::Commands::GetControllerInfoRequest>(final_type, final_type);
-      m_controllers_ids_request_packet =
-          std::make_shared<Packet::Commands::GetControllersIdsRequest>(final_type, final_type);
-
-      m_waiting_response = SubPacket::GetControllersIds;
+      m_waiting_response = Packet::Id::GetControllersIdsResponse;
       m_current_index = 0;
     }
 
     void GetControllersList::unserialize(FlatbuffersFormatExtractor& extractor) {}
 
     vector<uint8_t> GetControllersList::serialize(FlatbuffersFormatBuilder& builder) const {
-      std::vector<flatbuffers::Offset<BaBLE::Controller>> controllers;
+      vector<flatbuffers::Offset<BaBLE::Controller>> controllers;
       controllers.reserve(m_controllers.size());
 
       for (auto& controller : m_controllers) {
@@ -61,18 +56,18 @@ namespace Packet {
 
     vector<uint8_t> GetControllersList::serialize(MGMTFormatBuilder& builder) const {
       switch (m_waiting_response) {
-        case SubPacket::GetControllersIds:
+        case Packet::Id::GetControllersIdsResponse:
           return m_controllers_ids_request_packet->serialize(builder);
 
-        case SubPacket::GetControllerInfo:
+        case Packet::Id::GetControllerInfoResponse:
           return m_controller_info_request_packet->serialize(builder);
 
-        case SubPacket::None:
-          throw std::runtime_error("Can't serialize 'GetControllersList' to MGMT.");
+        default:
+          throw runtime_error("Can't serialize 'GetControllersList' to MGMT.");
       }
     }
 
-    const std::string GetControllersList::stringify() const {
+    const string GetControllersList::stringify() const {
       stringstream result;
 
       result << "<GetControllersList> "
@@ -99,43 +94,45 @@ namespace Packet {
       return result.str();
     }
 
-    void GetControllersList::before_sent(const std::shared_ptr<PacketRouter>& router) {
+    void GetControllersList::prepare(const shared_ptr<PacketRouter>& router) {
       switch (m_waiting_response) {
-        case GetControllersIds: {
-          m_current_type = m_final_type;
+        case Packet::Id::GetControllersIdsResponse: {
+          m_controllers_ids_request_packet->translate();
+          m_current_type = m_controllers_ids_request_packet->get_type();
           set_controller_id(NON_CONTROLLER_ID);
-          m_controller_info_request_packet->set_controller_id(NON_CONTROLLER_ID);
+          m_controllers_ids_request_packet->set_controller_id(NON_CONTROLLER_ID);
 
           PacketUuid uuid = m_controllers_ids_request_packet->get_response_uuid();
           auto callback =
-              [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {
+              [this](const shared_ptr<PacketRouter>& router, shared_ptr<Packet::AbstractPacket> packet) {
                 return on_controllers_ids_response_received(router, packet);
               };
           router->add_callback(uuid, shared_from(this), callback);
           break;
         }
 
-        case GetControllerInfo: {
-          m_current_type = m_final_type;
+        case Packet::Id::GetControllerInfoResponse: {
+          m_controller_info_request_packet->translate();
+          m_current_type = m_controller_info_request_packet->get_type();
           set_controller_id(m_controllers_ids.at(m_current_index));
           m_controller_info_request_packet->set_controller_id(m_controllers_ids.at(m_current_index));
 
           PacketUuid uuid = m_controller_info_request_packet->get_response_uuid();
           auto callback =
-              [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {
+              [this](const shared_ptr<PacketRouter>& router, shared_ptr<Packet::AbstractPacket> packet) {
                 return on_controller_info_response_received(router, packet);
               };
           router->add_callback(uuid, shared_from(this), callback);
           break;
         }
 
-        case None:
-          m_current_type = m_initial_type;
+        default:
+          m_current_type = final_type();
           break;
       }
     }
 
-    shared_ptr<AbstractPacket> GetControllersList::on_controllers_ids_response_received(const std::shared_ptr<PacketRouter>& router,
+    shared_ptr<AbstractPacket> GetControllersList::on_controllers_ids_response_received(const shared_ptr<PacketRouter>& router,
                                                                                         const shared_ptr<AbstractPacket>& packet) {
       LOG.debug("Controllers ids response received", "GetControllersList");
 
@@ -147,25 +144,25 @@ namespace Packet {
       import_status(*controllers_ids_response_packet);
 
       if (m_status != BaBLE::StatusCode::Success) {
-        m_waiting_response = SubPacket::None;
+        m_waiting_response = Packet::Id::None;
       } else {
         m_controllers_ids = controllers_ids_response_packet->get_controllers_ids();
 
         if (m_controllers_ids.empty()) {
-          m_waiting_response = SubPacket::None;
+          m_waiting_response = Packet::Id::None;
         } else {
           m_controllers.reserve(m_controllers_ids.size());
           m_current_index = 0;
           // Now we want to get the first controller information
-          m_waiting_response = SubPacket::GetControllerInfo;
+          m_waiting_response = Packet::Id::GetControllerInfoResponse;
         }
       }
 
       return shared_from(this);
     }
 
-    shared_ptr<AbstractPacket> GetControllersList::on_controller_info_response_received(const std::shared_ptr<PacketRouter>& router,
-                                                                                        const std::shared_ptr<AbstractPacket>& packet) {
+    shared_ptr<AbstractPacket> GetControllersList::on_controller_info_response_received(const shared_ptr<PacketRouter>& router,
+                                                                                        const shared_ptr<AbstractPacket>& packet) {
       LOG.debug("Controller info response received", "GetControllersList");
 
       auto controller_info_response_packet = dynamic_pointer_cast<Packet::Commands::GetControllerInfoResponse>(packet);
@@ -176,15 +173,15 @@ namespace Packet {
       import_status(*controller_info_response_packet);
 
       if (m_status != BaBLE::StatusCode::Success) {
-        m_waiting_response = SubPacket::None;
+        m_waiting_response = Packet::Id::None;
       } else {
         m_controllers.push_back(controller_info_response_packet->get_controller_info());
 
         if (m_controllers.size() >= m_controllers_ids.size()) {
           // We get all the controllers information: we have finished
-          m_waiting_response = SubPacket::None;
+          m_waiting_response = Packet::Id::None;
         } else {
-          m_waiting_response = SubPacket::GetControllerInfo;
+          m_waiting_response = Packet::Id::GetControllerInfoResponse;
           m_current_index++;
         }
       }

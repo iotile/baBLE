@@ -1,36 +1,31 @@
 #ifndef BABLE_LINUX_NOTIFICATIONRECEIVED_HPP
 #define BABLE_LINUX_NOTIFICATIONRECEIVED_HPP
 
-#include "../ResponsePacket.hpp"
+#include "../../Base/ControllerToHostPacket.hpp"
 
 namespace Packet {
 
   namespace Commands {
 
     // Is a response because type_code == Format::HCI::AsyncData, but is considered as an event afterward
-    class NotificationReceived : public ResponsePacket<NotificationReceived> {
+    class NotificationReceived : public ControllerToHostPacket {
 
     public:
-      static const uint16_t packet_code(Packet::Type type) {
-        switch (type) {
-          case Packet::Type::MGMT:
-            throw std::invalid_argument("'NotificationReceived' packet is not compatible with MGMT protocol.");
-
-          case Packet::Type::HCI:
-            return Format::HCI::AttributeCode::HandleValueNotification;
-
-          case Packet::Type::FLATBUFFERS:
-            return static_cast<uint16_t>(BaBLE::Payload::NotificationReceived);
-
-          case Packet::Type::NONE:
-            return 0;
-        }
+      static const Packet::Type initial_type() {
+        return Packet::Type::HCI;
       };
 
-      NotificationReceived(Packet::Type initial_type, Packet::Type final_type);
+      static const uint16_t initial_packet_code() {
+        return Format::HCI::AttributeCode::HandleValueNotification;
+      };
+
+      static const uint16_t final_packet_code() {
+        return static_cast<uint16_t>(BaBLE::Payload::NotificationReceived);
+      };
+
+      NotificationReceived();
 
       void unserialize(HCIFormatExtractor& extractor) override;
-
       std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
 
       const std::string stringify() const override;

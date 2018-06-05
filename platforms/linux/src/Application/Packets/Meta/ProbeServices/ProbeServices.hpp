@@ -1,32 +1,21 @@
 #ifndef BABLE_LINUX_PROBESERVICES_HPP
 #define BABLE_LINUX_PROBESERVICES_HPP
 
+#include "../../Base/HostOnlyPacket.hpp"
 #include "../../Commands/ReadByGroupType/ReadByGroupTypeRequest.hpp"
 
 namespace Packet {
 
   namespace Meta {
 
-    class ProbeServices : public AbstractPacket {
+    class ProbeServices : public HostOnlyPacket {
 
     public:
-      static const uint16_t packet_code(Packet::Type type) {
-        switch (type) {
-          case Packet::Type::MGMT:
-            throw std::invalid_argument("'ProbeServices' packet is not compatible with MGMT protocol.");
-
-          case Packet::Type::HCI:
-            throw std::invalid_argument("'ProbeServices' packet is not compatible with HCI protocol.");
-
-          case Packet::Type::FLATBUFFERS:
-            return static_cast<uint16_t>(BaBLE::Payload::ProbeServices);
-
-          case Packet::Type::NONE:
-            return 0;
-        }
+      static const uint16_t initial_packet_code() {
+        return static_cast<uint16_t>(BaBLE::Payload::ProbeServices);
       };
 
-      ProbeServices(Packet::Type initial_type, Packet::Type final_type);
+      ProbeServices();
 
       void unserialize(FlatbuffersFormatExtractor& extractor) override;
 
@@ -35,7 +24,7 @@ namespace Packet {
 
       const std::string stringify() const override;
 
-      void before_sent(const std::shared_ptr<PacketRouter>& router) override;
+      void prepare(const std::shared_ptr<PacketRouter>& router) override;
       std::shared_ptr<AbstractPacket> on_read_by_group_type_response_received(const std::shared_ptr<PacketRouter>& router,
                                                                               const std::shared_ptr<AbstractPacket>& packet);
       std::shared_ptr<AbstractPacket> on_error_response_received(const std::shared_ptr<PacketRouter>& router,

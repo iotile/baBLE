@@ -55,10 +55,10 @@ vector<uint8_t> HCIFormatBuilder::generate_header(Format::HCI::Type type) {
       return generate_async_data_header();
 
     case Format::HCI::SyncData:
-      throw std::invalid_argument("Header generation for SyncData packet is not implemented.");
+      throw invalid_argument("Header generation for SyncData packet is not implemented.");
 
     case Format::HCI::Event:
-      throw std::invalid_argument("Can't build Event packet.");
+      throw invalid_argument("Can't build Event packet.");
   }
 };
 

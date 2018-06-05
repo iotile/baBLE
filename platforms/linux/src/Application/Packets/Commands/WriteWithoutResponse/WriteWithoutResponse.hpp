@@ -1,40 +1,33 @@
 #ifndef BABLE_LINUX_WRITEWITHOUTRESPONSE_HPP
 #define BABLE_LINUX_WRITEWITHOUTRESPONSE_HPP
 
-#include "../RequestPacket.hpp"
+#include "../../Base/HostToControllerPacket.hpp"
 
 namespace Packet {
 
   namespace Commands {
 
-    class WriteWithoutResponse : public RequestPacket<WriteWithoutResponse> {
+    class WriteWithoutResponse : public HostToControllerPacket {
 
     public:
-      static const uint16_t packet_code(Packet::Type type) {
-        switch (type) {
-          case Packet::Type::MGMT:
-            throw std::invalid_argument("'WriteWithoutResponse' packet is not compatible with MGMT protocol.");
-
-          case Packet::Type::HCI:
-            return Format::HCI::AttributeCode::WriteCommand;
-
-          case Packet::Type::FLATBUFFERS:
-            return static_cast<uint16_t>(BaBLE::Payload::WriteWithoutResponse);
-
-          case Packet::Type::NONE:
-            return 0;
-        }
+      static const Packet::Type final_type() {
+        return Packet::Type::HCI;
       };
 
-      WriteWithoutResponse(Packet::Type initial_type, Packet::Type final_type);
+      static const uint16_t initial_packet_code() {
+        return static_cast<uint16_t>(BaBLE::Payload::WriteWithoutResponse);
+      };
+
+      static const uint16_t final_packet_code() {
+        return Format::HCI::AttributeCode::WriteCommand;
+      };
+
+      explicit WriteWithoutResponse(uint16_t attribute_handle = 0, std::vector<uint8_t> data = {});
 
       void unserialize(FlatbuffersFormatExtractor& extractor) override;
-
       std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
 
       const std::string stringify() const override;
-
-      void before_sent(const std::shared_ptr<PacketRouter>& router) override;
 
     private:
       uint16_t m_attribute_handle;

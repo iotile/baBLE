@@ -7,9 +7,8 @@ namespace Packet {
 
   namespace Commands {
 
-    ReadResponse::ReadResponse(Packet::Type initial_type, Packet::Type final_type)
-        : ResponsePacket(initial_type, final_type) {
-      m_id = Packet::Id::ReadResponse;
+    ReadResponse::ReadResponse()
+        : ControllerToHostPacket(Packet::Id::ReadResponse, initial_type(), initial_packet_code(), final_packet_code()) {
       m_attribute_handle = 0;
     }
 

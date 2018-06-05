@@ -1,6 +1,5 @@
 #include "SetScanParameters.hpp"
 #include "../../../../Exceptions/RuntimeError/RuntimeErrorException.hpp"
-#include "../../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 #include "../../Events/CommandComplete/CommandComplete.hpp"
 
 using namespace std;
@@ -9,31 +8,32 @@ namespace Packet {
 
   namespace Commands {
 
-    SetScanParameters::SetScanParameters(Packet::Type initial_type, Packet::Type final_type)
-        : RequestPacket(initial_type, final_type) {
-      m_id = Packet::Id::SetScanParameters;
+    SetScanParameters::SetScanParameters(bool active_scan, uint16_t scan_interval, uint16_t scan_window,
+                                         uint8_t address_type, uint8_t policy)
+        : HostToControllerPacket(Packet::Id::SetScanParameters, final_type(), final_packet_code()) {
       m_response_packet_code = Format::HCI::EventCode::CommandComplete;
 
-      m_scan_type = 0x01; // Active
-      m_scan_interval = 0x0012; // 11.25msec
-      m_scan_window = 0x0012; // 11.25 msec
-      m_address_type = 0x01; // Random
-      m_policy = 0x00; // Accept all advertisements. Ignore directed advertisements not addressed to this device.
+      m_active_scan = active_scan;
+      m_scan_interval = scan_interval;
+      m_scan_window = scan_window;
+      m_address_type = address_type;
+      m_policy = policy;
     }
 
-    void SetScanParameters::set_scan_type(bool active) {
-      if (active) {
-        m_scan_type = 0x01;
-      } else {
-        m_scan_type = 0x00;
-      }
+    void SetScanParameters::set_scan_type(bool active_scan) {
+      m_active_scan = active_scan;
     }
 
     vector<uint8_t> SetScanParameters::serialize(HCIFormatBuilder& builder) const {
-      RequestPacket::serialize(builder);
+      HostToControllerPacket::serialize(builder);
+
+      uint8_t scan_type = 0x00;
+      if (m_active_scan) {
+        scan_type = 0x01;
+      }
 
       builder
-          .add(m_scan_type)
+          .add(scan_type)
           .add(m_scan_interval)
           .add(m_scan_window)
           .add(m_address_type)
@@ -47,7 +47,7 @@ namespace Packet {
 
       result << "<SetScanParameters> "
              << AbstractPacket::stringify() << ", "
-             << "Scan type: " << to_string(m_scan_type) << ", "
+             << "Active scan: " << to_string(m_active_scan) << ", "
              << "Scan interval: " << to_string(m_scan_interval) << ", "
              << "Scan window: " << to_string(m_scan_window) << ", "
              << "Address type: " << to_string(m_address_type) << ", "

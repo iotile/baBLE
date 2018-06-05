@@ -1,7 +1,6 @@
 #include "WriteRequest.hpp"
 #include "./WriteResponse.hpp"
 #include "../../../../Exceptions/RuntimeError/RuntimeErrorException.hpp"
-#include "../../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 #include "../../../../utils/string_formats.hpp"
 
 using namespace std;
@@ -10,12 +9,12 @@ namespace Packet {
 
   namespace Commands {
 
-    WriteRequest::WriteRequest(Packet::Type initial_type, Packet::Type final_type)
-        : RequestPacket(initial_type, final_type) {
-      m_id = Packet::Id::WriteRequest;
+    WriteRequest::WriteRequest(uint16_t attribute_handle, vector<uint8_t> data)
+        : HostToControllerPacket(Packet::Id::WriteRequest, final_type(), final_packet_code()) {
       m_response_packet_code = Format::HCI::AttributeCode::WriteResponse;
 
-      m_attribute_handle = 0;
+      m_attribute_handle = attribute_handle;
+      m_data_to_write = move(data);
     }
 
     void WriteRequest::unserialize(FlatbuffersFormatExtractor& extractor) {
@@ -28,7 +27,7 @@ namespace Packet {
     }
 
     vector<uint8_t> WriteRequest::serialize(HCIFormatBuilder& builder) const {
-      RequestPacket::serialize(builder);
+      HostToControllerPacket::serialize(builder);
 
       builder
           .add(m_attribute_handle)
@@ -37,7 +36,7 @@ namespace Packet {
       return builder.build(Format::HCI::Type::AsyncData);
     }
 
-    const std::string WriteRequest::stringify() const {
+    const string WriteRequest::stringify() const {
       stringstream result;
 
       result << "<WriteRequest> "
@@ -48,19 +47,19 @@ namespace Packet {
       return result.str();
     }
 
-    void WriteRequest::before_sent(const std::shared_ptr<PacketRouter>& router) {
-      RequestPacket::before_sent(router);
+    void WriteRequest::prepare(const shared_ptr<PacketRouter>& router) {
+      HostToControllerPacket::prepare(router);
 
       PacketUuid error_uuid = get_uuid();
       error_uuid.response_packet_code = Format::HCI::AttributeCode::ErrorResponse;
       auto error_callback =
-          [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {
+          [this](const shared_ptr<PacketRouter>& router, shared_ptr<Packet::AbstractPacket> packet) {
             return on_error_response_received(router, packet);
           };
       router->add_callback(error_uuid, shared_from(this), error_callback);
     }
 
-    shared_ptr<Packet::AbstractPacket> WriteRequest::on_response_received(const std::shared_ptr<PacketRouter>& router,
+    shared_ptr<Packet::AbstractPacket> WriteRequest::on_response_received(const shared_ptr<PacketRouter>& router,
                                                                           const shared_ptr<Packet::AbstractPacket>& packet) {
       LOG.debug("Response received", "WriteRequest");
       PacketUuid error_uuid = get_uuid();
@@ -78,7 +77,7 @@ namespace Packet {
       return write_response_packet;
     }
 
-    shared_ptr<Packet::AbstractPacket> WriteRequest::on_error_response_received(const std::shared_ptr<PacketRouter>& router,
+    shared_ptr<Packet::AbstractPacket> WriteRequest::on_error_response_received(const shared_ptr<PacketRouter>& router,
                                                                                 const shared_ptr<AbstractPacket>& packet) {
       LOG.debug("ErrorResponse received", "WriteRequest");
       PacketUuid response_uuid = get_response_uuid();

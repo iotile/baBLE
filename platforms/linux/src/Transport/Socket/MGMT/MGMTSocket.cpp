@@ -12,7 +12,7 @@ using namespace uvw;
 Flags<PollHandle::Event> MGMTSocket::readable_flag = Flags<PollHandle::Event>(PollHandle::Event::READABLE);
 Flags<PollHandle::Event> MGMTSocket::writable_flag = Flags<PollHandle::Event>(PollHandle::Event::WRITABLE);
 
-MGMTSocket::MGMTSocket(shared_ptr<MGMTFormat> format)
+MGMTSocket::MGMTSocket(shared_ptr<uvw::Loop>& loop, shared_ptr<MGMTFormat> format)
     : AbstractSocket(move(format)) {
   m_header_length = m_format->get_header_length(0);
   m_writable = true;
@@ -25,6 +25,8 @@ MGMTSocket::MGMTSocket(shared_ptr<MGMTFormat> format)
   if(!bind_socket()) {
     throw Exceptions::SocketException("Error while binding the MGMT socket.");
   }
+
+  m_poller = loop->resource<PollHandle>(m_socket);
 }
 
 bool MGMTSocket::bind_socket() {
@@ -122,9 +124,7 @@ vector<uint8_t> MGMTSocket::receive() {
   return result;
 }
 
-void MGMTSocket::poll(shared_ptr<Loop> loop, OnReceivedCallback on_received, OnErrorCallback on_error) {
-  m_poller = loop->resource<PollHandle>(m_socket);
-
+void MGMTSocket::poll(OnReceivedCallback on_received, OnErrorCallback on_error) {
   m_poller->on<PollEvent>([this, on_received, on_error](const PollEvent& event, const PollHandle& handle){
     try {
       if (event.flags & PollHandle::Event::READABLE) {

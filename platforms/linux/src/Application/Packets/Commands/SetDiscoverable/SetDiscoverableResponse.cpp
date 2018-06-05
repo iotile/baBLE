@@ -1,3 +1,4 @@
+#include <sstream>
 #include "SetDiscoverableResponse.hpp"
 
 using namespace std;
@@ -6,18 +7,17 @@ namespace Packet {
 
   namespace Commands {
 
-    SetDiscoverableResponse::SetDiscoverableResponse(Packet::Type initial_type, Packet::Type final_type)
-        : ResponsePacket(initial_type, final_type) {
-      m_id = Packet::Id::SetDiscoverableResponse;
-      m_state = 0;
+    SetDiscoverableResponse::SetDiscoverableResponse()
+        : ControllerToHostPacket(Packet::Id::SetDiscoverableResponse, initial_type(), initial_packet_code(), final_packet_code()) {
+      m_state = false;
     }
 
     void SetDiscoverableResponse::unserialize(MGMTFormatExtractor& extractor) {
-      ResponsePacket::unserialize(extractor);
+      set_status(extractor.get_value<uint8_t>());
 
       if (m_status == BaBLE::StatusCode::Success) {
         auto m_current_settings = extractor.get_value<uint32_t>();
-        m_state = static_cast<uint8_t>((m_current_settings & 1 << 3) > 0);
+        m_state = (m_current_settings & 1 << 3) > 0;
       }
     }
 

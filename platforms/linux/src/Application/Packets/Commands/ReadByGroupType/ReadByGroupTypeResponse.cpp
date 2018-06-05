@@ -7,9 +7,8 @@ namespace Packet {
 
   namespace Commands {
 
-    ReadByGroupTypeResponse::ReadByGroupTypeResponse(Packet::Type initial_type, Packet::Type final_type)
-        : ResponsePacket(initial_type, final_type) {
-      m_id = Packet::Id::ReadByGroupTypeResponse;
+    ReadByGroupTypeResponse::ReadByGroupTypeResponse()
+        : ControllerToHostPacket(Packet::Id::ReadByGroupTypeResponse, initial_type(), initial_packet_code(), final_packet_code(), true) {
       m_last_group_end_handle = 0;
     }
 
@@ -41,7 +40,7 @@ namespace Packet {
       }
     }
 
-    const std::string ReadByGroupTypeResponse::stringify() const {
+    const string ReadByGroupTypeResponse::stringify() const {
       stringstream result;
 
       result << "<ReadByGroupTypeResponse> "

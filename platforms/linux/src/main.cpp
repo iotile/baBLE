@@ -20,8 +20,6 @@
 using namespace std;
 using namespace uvw;
 
-// TODO: work on Python part to make it work with new system using Python3 and Python2, in a cleaner way (split class in files, ...)
-
 // Function used to call all handlers closing callbacks before stopping the loop
 void cleanly_stop_loop(Loop& loop) {
   loop.walk([](BaseHandle &handle){
@@ -74,13 +72,13 @@ int main(int argc, char* argv[]) {
 
   // Sockets
   LOG.info("Creating sockets...");
-  shared_ptr<MGMTSocket> mgmt_socket = make_shared<MGMTSocket>(mgmt_format);
-  shared_ptr<StdIOSocket> stdio_socket = make_shared<StdIOSocket>(fb_format);
-  vector<shared_ptr<HCISocket>> hci_sockets = HCISocket::create_all(hci_format);
+  shared_ptr<MGMTSocket> mgmt_socket = make_shared<MGMTSocket>(loop, mgmt_format);
+  shared_ptr<StdIOSocket> stdio_socket = make_shared<StdIOSocket>(loop, fb_format);
+  vector<shared_ptr<HCISocket>> hci_sockets = HCISocket::create_all(loop, hci_format);
 
   // Socket container
   LOG.info("Registering sockets into socket container...");
-  SocketContainer socket_container;
+  SocketContainer socket_container{};
   socket_container
       .register_socket(mgmt_socket)
       .register_socket(stdio_socket);
@@ -94,32 +92,28 @@ int main(int argc, char* argv[]) {
   // PacketBuilder
   LOG.info("Registering packets into packet builder...");
   PacketBuilder mgmt_packet_builder(mgmt_format);
-  Bootstrap::register_mgmt_packets(mgmt_packet_builder, stdio_socket->format());
+  Bootstrap::register_mgmt_packets(mgmt_packet_builder);
 
   PacketBuilder hci_packet_builder(hci_format);
-  Bootstrap::register_hci_packets(hci_packet_builder, stdio_socket->format());
+  Bootstrap::register_hci_packets(hci_packet_builder);
 
-  PacketBuilder stdio_packet_builder(stdio_socket->format());
-  Bootstrap::register_stdio_packets(stdio_packet_builder, mgmt_format, hci_format);
+  PacketBuilder stdio_packet_builder(fb_format);
+  Bootstrap::register_stdio_packets(stdio_packet_builder);
 
   // Poll sockets
   LOG.info("Creating socket pollers...");
 
   auto on_error = [&stdio_socket, &socket_container](const Exceptions::AbstractException& err) {
     LOG.error(err.stringify(), "Error");
-    std::shared_ptr<Packet::Errors::BaBLEError> error_packet = make_shared<Packet::Errors::BaBLEError>(
-        stdio_socket->format()->get_packet_type()
-    );
-    error_packet->from_exception(err);
+    shared_ptr<Packet::Errors::BaBLEError> error_packet = make_shared<Packet::Errors::BaBLEError>(err);
     socket_container.send(error_packet);
   };
 
   mgmt_socket->poll(
-    loop,
-    [&mgmt_packet_builder, &packet_router, &socket_container](const std::vector<uint8_t>& received_data, const std::shared_ptr<AbstractFormat>& format) {
+    [&mgmt_packet_builder, &packet_router, &socket_container](const vector<uint8_t>& received_data, const shared_ptr<AbstractFormat>& format) {
       shared_ptr<AbstractExtractor> extractor = format->create_extractor(received_data);
 
-      std::shared_ptr<Packet::AbstractPacket> packet = mgmt_packet_builder.build(extractor);
+      shared_ptr<Packet::AbstractPacket> packet = mgmt_packet_builder.build(extractor);
       if (packet == nullptr) {
         return;
       }
@@ -128,7 +122,7 @@ int main(int argc, char* argv[]) {
       packet = packet_router->route(packet_router, packet);
       LOG.debug("Packet routed", "MGMT poller");
 
-      packet->before_sent(packet_router);
+      packet->prepare(packet_router);
       LOG.debug("Packet prepared to be sent", "MGMT poller");
 
       socket_container.send(packet);
@@ -139,14 +133,13 @@ int main(int argc, char* argv[]) {
 
   for (auto& hci_socket : hci_sockets) {
     hci_socket->poll(
-      loop,
-      [&hci_socket, &hci_packet_builder, &packet_router, &socket_container](const std::vector<uint8_t>& received_data, const std::shared_ptr<AbstractFormat>& format) {
+      [&hci_socket, &hci_packet_builder, &packet_router, &socket_container](const vector<uint8_t>& received_data, const shared_ptr<AbstractFormat>& format) {
         // Create extractor from raw bytes received
         shared_ptr<AbstractExtractor> extractor = format->create_extractor(received_data);
         extractor->set_controller_id(hci_socket->get_controller_id());
 
         // Build packet
-        std::shared_ptr<Packet::AbstractPacket> packet = hci_packet_builder.build(extractor);
+        shared_ptr<Packet::AbstractPacket> packet = hci_packet_builder.build(extractor);
         if (packet == nullptr) {
           return;
         }
@@ -155,24 +148,24 @@ int main(int argc, char* argv[]) {
         // This part is needed due to a bug since Linux Kernel v4 : we have to create manually the L2CAP socket, else
         // we'll be disconnected after sending one packet.
         if (packet->get_id() == Packet::Id::DeviceConnected) {
-          auto device_connected_packet = std::dynamic_pointer_cast<Packet::Events::DeviceConnected>(packet);
+          auto device_connected_packet = dynamic_pointer_cast<Packet::Events::DeviceConnected>(packet);
           if (device_connected_packet == nullptr) {
             throw Exceptions::RuntimeErrorException("Can't downcast packet to DeviceConnected packet");
           }
 
-          LOG.debug(*device_connected_packet, "HCI poller - DeviceConnected");
+          LOG.debug("DeviceConnected", "HCI poller");
           hci_socket->connect_l2cap_socket(
               device_connected_packet->get_connection_id(),
               device_connected_packet->get_raw_device_address(),
               device_connected_packet->get_device_address_type()
           );
         } else if (packet->get_id() == Packet::Id::DeviceDisconnected) {
-          auto device_disconnected_packet = std::dynamic_pointer_cast<Packet::Events::DeviceDisconnected>(packet);
+          auto device_disconnected_packet = dynamic_pointer_cast<Packet::Events::DeviceDisconnected>(packet);
           if (device_disconnected_packet == nullptr) {
             throw Exceptions::RuntimeErrorException("Can't downcast packet to DeviceDisconnected packet");
           }
-          LOG.debug(*device_disconnected_packet, "HCI poller - DeviceDisconnected");
 
+          LOG.debug("DeviceDisconnected", "HCI poller");
           hci_socket->disconnect_l2cap_socket(device_disconnected_packet->get_connection_id());
         }
 
@@ -180,7 +173,7 @@ int main(int argc, char* argv[]) {
         packet = packet_router->route(packet_router, packet);
         LOG.debug("Packet routed", "HCI poller");
 
-        packet->before_sent(packet_router);
+        packet->prepare(packet_router);
         LOG.debug("Packet prepared to be sent", "HCI poller");
 
         socket_container.send(packet);
@@ -191,19 +184,16 @@ int main(int argc, char* argv[]) {
   }
 
   stdio_socket->poll(
-    loop,
-    [&stdio_packet_builder, &packet_router, &socket_container, &loop](const std::vector<uint8_t>& received_data, const std::shared_ptr<AbstractFormat>& format) {
+    [&stdio_packet_builder, &packet_router, &socket_container, &loop](const vector<uint8_t>& received_data, const shared_ptr<AbstractFormat>& format) {
       shared_ptr<AbstractExtractor> extractor = format->create_extractor(received_data);
 
-      std::shared_ptr<Packet::AbstractPacket> packet = stdio_packet_builder.build(extractor);
+      shared_ptr<Packet::AbstractPacket> packet = stdio_packet_builder.build(extractor);
       if (packet == nullptr) {
         return;
       }
       LOG.debug("Packet built", "BABLE poller");
 
-      LOG.debug(*packet, "BaBLE poller");
-
-      packet->before_sent(packet_router);
+      packet->prepare(packet_router);
       LOG.debug("Packet prepared to be sent", "BABLE poller");
 
       socket_container.send(packet);
@@ -212,11 +202,13 @@ int main(int argc, char* argv[]) {
       if (packet->get_id() == Packet::Id::Exit) {
         LOG.debug("Received Exit packet. Cleanly stopping loop...");
         cleanly_stop_loop(*loop);
-        return;
       }
     },
     on_error
   );
+  stdio_socket->on_close([&loop]() {
+    cleanly_stop_loop(*loop);
+  });
 
   // Removed all expired waiting response
   LOG.info("Creating expiration timer...");
@@ -224,7 +216,7 @@ int main(int argc, char* argv[]) {
 
   // Send Ready packet to indicate that BaBLE has started and is ready to receive commands
   LOG.info("Sending Ready packet...");
-  std::shared_ptr<Packet::Control::Ready> ready_packet = make_shared<Packet::Control::Ready>(stdio_socket->format()->get_packet_type());
+  shared_ptr<Packet::Control::Ready> ready_packet = make_shared<Packet::Control::Ready>();
   socket_container.send(ready_packet);
 
   // Start the loop

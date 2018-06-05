@@ -13,7 +13,7 @@ void FlatbuffersFormatExtractor::verify(const vector<uint8_t> & data) {
 }
 
 uint16_t FlatbuffersFormatExtractor::extract_payload_length(const vector<uint8_t>& data) {
-  throw std::runtime_error("Flatbuffers format can't extract payload length: this information is not included in the format.");
+  throw runtime_error("Flatbuffers format can't extract payload length: this information is not included in the format.");
 }
 
 // Constructors

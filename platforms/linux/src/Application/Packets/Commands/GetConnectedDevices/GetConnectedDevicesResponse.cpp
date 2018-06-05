@@ -7,19 +7,17 @@ namespace Packet {
 
   namespace Commands {
 
-    GetConnectedDevicesResponse::GetConnectedDevicesResponse(Packet::Type initial_type, Packet::Type final_type)
-        : ResponsePacket(initial_type, final_type) {
-      m_id = Packet::Id::GetConnectedDevicesResponse;
-    }
+    GetConnectedDevicesResponse::GetConnectedDevicesResponse()
+        : ControllerToHostPacket(Packet::Id::GetConnectedDevicesResponse, initial_type(), initial_packet_code(), final_packet_code()) {}
 
     void GetConnectedDevicesResponse::unserialize(MGMTFormatExtractor& extractor) {
-      ResponsePacket::unserialize(extractor);
+      set_status(extractor.get_value<uint8_t>());
 
       if (m_status == BaBLE::StatusCode::Success) {
         auto m_num_connections = extractor.get_value<uint16_t>();
         m_devices.reserve(m_num_connections);
 
-        std::array<uint8_t, 6> current_address{};
+        array<uint8_t, 6> current_address{};
         uint8_t current_address_type;
 
         for (size_t i = 0; i < m_num_connections; i++) {
@@ -32,7 +30,7 @@ namespace Packet {
     }
 
     vector<uint8_t> GetConnectedDevicesResponse::serialize(FlatbuffersFormatBuilder& builder) const {
-      std::vector<flatbuffers::Offset<flatbuffers::String>> devices_fb_string;
+      vector<flatbuffers::Offset<flatbuffers::String>> devices_fb_string;
       devices_fb_string.reserve(m_devices.size());
       for (auto& value : m_devices) {
         devices_fb_string.push_back(builder.CreateString(value));
@@ -44,7 +42,7 @@ namespace Packet {
       return builder.build(payload, BaBLE::Payload::GetConnectedDevices);
     }
 
-    const std::string GetConnectedDevicesResponse::stringify() const {
+    const string GetConnectedDevicesResponse::stringify() const {
       stringstream result;
 
       result << "<GetConnectedDevicesRequest> "

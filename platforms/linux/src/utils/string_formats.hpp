@@ -80,6 +80,25 @@ namespace Utils {
     }
   };
 
+  static std::array<uint8_t, 6> extract_bd_address(const std::string& bd_address) {
+    std::array<uint8_t, 6> bd_address_array{};
+
+    if (bd_address.empty()) {
+      return bd_address_array;
+    }
+
+    std::string item;
+    std::istringstream address_stream(bd_address);
+    for (auto it = bd_address_array.rbegin(); it != bd_address_array.rend(); ++it) {
+      if (!getline(address_stream, item, ':')) {
+        throw Exceptions::WrongFormatException("Can't parse Bluetooth device MAC address.");
+      }
+      *it = string_to_number<uint8_t>(item, 16);
+    }
+
+    return bd_address_array;
+  };
+
 }
 
 #endif //BABLE_LINUX_STRING_FORMATS_HPP

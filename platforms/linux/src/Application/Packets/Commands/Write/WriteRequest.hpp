@@ -1,40 +1,35 @@
 #ifndef BABLE_LINUX_WRITEREQUEST_HPP
 #define BABLE_LINUX_WRITEREQUEST_HPP
 
-#include "../RequestPacket.hpp"
+#include "../../Base/HostToControllerPacket.hpp"
 
 namespace Packet {
 
   namespace Commands {
 
-    class WriteRequest : public RequestPacket<WriteRequest> {
+    class WriteRequest : public HostToControllerPacket {
 
     public:
-      static const uint16_t packet_code(Packet::Type type) {
-        switch (type) {
-          case Packet::Type::MGMT:
-            throw std::invalid_argument("'Write' packet is not compatible with MGMT protocol.");
-
-          case Packet::Type::HCI:
-            return Format::HCI::AttributeCode::WriteRequest;
-
-          case Packet::Type::FLATBUFFERS:
-            return static_cast<uint16_t>(BaBLE::Payload::Write);
-
-          case Packet::Type::NONE:
-            return 0;
-        }
+      static const Packet::Type final_type() {
+        return Packet::Type::HCI;
       };
 
-      WriteRequest(Packet::Type initial_type, Packet::Type final_type);
+      static const uint16_t initial_packet_code() {
+        return static_cast<uint16_t>(BaBLE::Payload::Write);
+      };
+
+      static const uint16_t final_packet_code() {
+        return Format::HCI::AttributeCode::WriteRequest;
+      };
+
+      explicit WriteRequest(uint16_t attribute_handle = 0, std::vector<uint8_t> data = {});
 
       void unserialize(FlatbuffersFormatExtractor& extractor) override;
-
       std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
 
       const std::string stringify() const override;
 
-      void before_sent(const std::shared_ptr<PacketRouter>& router) override;
+      void prepare(const std::shared_ptr<PacketRouter>& router) override;
       std::shared_ptr<Packet::AbstractPacket> on_response_received(const std::shared_ptr<PacketRouter>& router,
                                                                    const std::shared_ptr<AbstractPacket>& packet) override;
       std::shared_ptr<Packet::AbstractPacket> on_error_response_received(const std::shared_ptr<PacketRouter>& router,

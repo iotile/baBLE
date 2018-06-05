@@ -6,19 +6,17 @@ namespace Packet {
 
   namespace Commands {
 
-    GetControllersIdsRequest::GetControllersIdsRequest(Packet::Type initial_type, Packet::Type final_type)
-        : RequestPacket(initial_type, final_type) {
-      m_id = Packet::Id::GetControllersIdsRequest;
-    }
+    GetControllersIdsRequest::GetControllersIdsRequest()
+        : HostToControllerPacket(Packet::Id::GetControllersIdsRequest, final_type(), final_packet_code()) {}
 
     void GetControllersIdsRequest::unserialize(FlatbuffersFormatExtractor& extractor) {}
 
     vector<uint8_t> GetControllersIdsRequest::serialize(MGMTFormatBuilder& builder) const {
-      RequestPacket::serialize(builder);
+      HostToControllerPacket::serialize(builder);
       return builder.build();
     }
 
-    const std::string GetControllersIdsRequest::stringify() const {
+    const string GetControllersIdsRequest::stringify() const {
       stringstream result;
 
       result << "<GetControllersIdsRequest> "

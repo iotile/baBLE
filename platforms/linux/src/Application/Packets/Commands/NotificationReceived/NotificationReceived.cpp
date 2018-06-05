@@ -7,9 +7,8 @@ namespace Packet {
 
   namespace Commands {
 
-    NotificationReceived::NotificationReceived(Packet::Type initial_type, Packet::Type final_type)
-        : ResponsePacket(initial_type, final_type) {
-      m_id = Packet::Id::NotificationReceived;
+    NotificationReceived::NotificationReceived()
+        : ControllerToHostPacket(Packet::Id::NotificationReceived, initial_type(), initial_packet_code(), final_packet_code()) {
       m_attribute_handle = 0;
     }
 
@@ -33,7 +32,7 @@ namespace Packet {
       return builder.build(payload, BaBLE::Payload::NotificationReceived);
     }
 
-    const std::string NotificationReceived::stringify() const {
+    const string NotificationReceived::stringify() const {
       stringstream result;
 
       result << "<NotificationReceived> "

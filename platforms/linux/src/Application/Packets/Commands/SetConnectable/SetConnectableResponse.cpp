@@ -1,3 +1,4 @@
+#include <sstream>
 #include "SetConnectableResponse.hpp"
 
 using namespace std;
@@ -6,14 +7,13 @@ namespace Packet {
 
   namespace Commands {
 
-    SetConnectableResponse::SetConnectableResponse(Packet::Type initial_type, Packet::Type final_type)
-        : ResponsePacket(initial_type, final_type) {
-      m_id = Packet::Id::SetConnectableResponse;
+    SetConnectableResponse::SetConnectableResponse()
+        : ControllerToHostPacket(Packet::Id::SetConnectableResponse, initial_type(), initial_packet_code(), final_packet_code()) {
       m_state = false;
     }
 
     void SetConnectableResponse::unserialize(MGMTFormatExtractor& extractor) {
-      ResponsePacket::unserialize(extractor);
+      set_status(extractor.get_value<uint8_t>());
 
       if (m_status == BaBLE::StatusCode::Success) {
         auto m_current_settings = extractor.get_value<uint32_t>();

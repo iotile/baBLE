@@ -1,35 +1,30 @@
 #ifndef BABLE_LINUX_READRESPONSE_HPP
 #define BABLE_LINUX_READRESPONSE_HPP
 
-#include "../ResponsePacket.hpp"
+#include "../../Base/ControllerToHostPacket.hpp"
 
 namespace Packet {
 
   namespace Commands {
 
-    class ReadResponse : public ResponsePacket<ReadResponse> {
+    class ReadResponse : public ControllerToHostPacket {
 
     public:
-      static const uint16_t packet_code(Packet::Type type) {
-        switch (type) {
-          case Packet::Type::MGMT:
-            throw std::invalid_argument("'Read' packet is not compatible with MGMT protocol.");
-
-          case Packet::Type::HCI:
-            return Format::HCI::AttributeCode::ReadResponse;
-
-          case Packet::Type::FLATBUFFERS:
-            return static_cast<uint16_t>(BaBLE::Payload::Read);
-
-          case Packet::Type::NONE:
-            return 0;
-        }
+      static const Packet::Type initial_type() {
+        return Packet::Type::HCI;
       };
 
-      ReadResponse(Packet::Type initial_type, Packet::Type final_type);
+      static const uint16_t initial_packet_code() {
+        return Format::HCI::AttributeCode::ReadResponse;
+      };
+
+      static const uint16_t final_packet_code() {
+        return static_cast<uint16_t>(BaBLE::Payload::Read);
+      };
+
+      ReadResponse();
 
       void unserialize(HCIFormatExtractor& extractor) override;
-
       std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
 
       const std::string stringify() const override;

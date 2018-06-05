@@ -3,7 +3,7 @@
 
 #include <map>
 #include "../AbstractSocket.hpp"
-#include "../../Application/AbstractPacket.hpp"
+#include "../../Application/Packets/AbstractPacket.hpp"
 
 class SocketContainer {
 

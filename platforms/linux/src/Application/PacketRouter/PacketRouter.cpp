@@ -34,7 +34,7 @@ void PacketRouter::remove_callback(Packet::PacketUuid uuid) {
   m_callbacks.erase(uuid);
 }
 
-shared_ptr<Packet::AbstractPacket> PacketRouter::route(const std::shared_ptr<PacketRouter>& router, shared_ptr<Packet::AbstractPacket> received_packet) {
+shared_ptr<Packet::AbstractPacket> PacketRouter::route(const shared_ptr<PacketRouter>& router, shared_ptr<Packet::AbstractPacket> received_packet) {
   Packet::PacketUuid key = received_packet->get_uuid();
 
   auto callback_it = router->m_callbacks.find(key);
@@ -47,7 +47,7 @@ shared_ptr<Packet::AbstractPacket> PacketRouter::route(const std::shared_ptr<Pac
 
       return packet_routed;
 
-    } catch (const std::exception& err) {
+    } catch (const exception& err) {
       router->remove_callback(key);
       throw;
     }

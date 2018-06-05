@@ -12,11 +12,10 @@ set(SOURCES_FILES
         src/Log/Log.cpp
         src/Log/Loggable.hpp
         src/Application/Packets/constants.hpp
-        src/Application/AbstractPacket.hpp
-        src/Application/PacketUuid.hpp
+        src/Application/Packets/PacketUuid.hpp
         src/Application/PacketBuilder/PacketBuilder.cpp
-        src/Application/Packets/Commands/RequestPacket.hpp
-        src/Application/Packets/Commands/ResponsePacket.hpp
+        src/Application/Packets/Base/HostToControllerPacket.hpp
+        src/Application/Packets/Base/ControllerToHostPacket.hpp
         src/Application/Packets/Commands/GetMGMTInfo/GetMGMTInfoRequest.cpp
         src/Application/Packets/Commands/Disconnect/Disconnect.cpp
         src/Application/Packets/Commands/SetPowered/SetPoweredRequest.cpp
@@ -29,8 +28,6 @@ set(SOURCES_FILES
         src/Application/Packets/Commands/GetControllersIds/GetControllersIdsRequest.cpp
         src/Application/Packets/Commands/GetControllerInfo/GetControllerInfoRequest.cpp
         src/Application/Packets/Commands/GetConnectedDevices/GetConnectedDevicesRequest.cpp
-        src/Application/Packets/Events/EventPacket.hpp
-        src/Application/Packets/Events/Discovering/Discovering.cpp
         src/Application/Packets/Events/DeviceConnected/DeviceConnected.cpp
         src/Application/Packets/Events/DeviceDisconnected/DeviceDisconnected.cpp
         src/Application/Packets/Events/ControllerAdded/ControllerAdded.cpp
@@ -83,13 +80,17 @@ set(SOURCES_FILES
         src/Application/Packets/Commands/SetDiscoverable/SetDiscoverableResponse.cpp
         src/Application/Packets/Commands/SetPowered/SetPoweredResponse.cpp
         src/Application/Packets/Commands/Write/WriteResponse.cpp
-        src/Application/AbstractPacket.cpp
+        src/Application/Packets/AbstractPacket.cpp
         src/Application/Packets/Events/CommandComplete/CommandComplete.cpp
         src/Format/AbstractExtractor.cpp
         src/Application/Packets/Commands/SetScanParameters/SetScanParameters.cpp
         src/Application/Packets/Commands/SetScanEnable/SetScanEnable.cpp
         src/Application/Packets/Meta/StartScan/StartScan.cpp
-        src/utils/string_formats.hpp src/Application/Packets/Commands/CreateConnection/CreateConnection.cpp src/Application/Packets/Commands/CreateConnection/CreateConnection.hpp)
+        src/utils/string_formats.hpp
+        src/Application/Packets/Commands/CreateConnection/CreateConnection.cpp
+        src/Application/Packets/Commands/CreateConnection/CreateConnection.hpp
+        src/Application/Packets/Base/HostToControllerPacket.cpp
+        src/Application/Packets/Base/ControllerToHostPacket.cpp src/Application/Packets/Base/HostOnlyPacket.cpp src/Application/Packets/Base/HostOnlyPacket.hpp src/Application/Packets/Meta/StopScan/StopScan.cpp src/Application/Packets/Meta/StopScan/StopScan.hpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies

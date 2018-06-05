@@ -1,6 +1,5 @@
 #include "SetScanEnable.hpp"
 #include "../../../../Exceptions/RuntimeError/RuntimeErrorException.hpp"
-#include "../../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 #include "../../Events/CommandComplete/CommandComplete.hpp"
 
 using namespace std;
@@ -9,37 +8,22 @@ namespace Packet {
 
   namespace Commands {
 
-    SetScanEnable::SetScanEnable(Packet::Type initial_type, Packet::Type final_type)
-        : RequestPacket(initial_type, final_type) {
-      m_id = Packet::Id::SetScanEnable;
+    SetScanEnable::SetScanEnable(bool state, bool filter_duplicates)
+        : HostToControllerPacket(Packet::Id::SetScanEnable, final_type(), final_packet_code()) {
       m_response_packet_code = Format::HCI::EventCode::CommandComplete;
 
-      m_state = false;
-      m_filter_duplicates = true;
-    }
-
-    void SetScanEnable::set_state(bool state) {
       m_state = state;
-    }
-
-    void SetScanEnable::unserialize(FlatbuffersFormatExtractor& extractor) {
-      m_state = false;
+      m_filter_duplicates = filter_duplicates;
     }
 
     vector<uint8_t> SetScanEnable::serialize(HCIFormatBuilder& builder) const {
-      RequestPacket::serialize(builder);
+      HostToControllerPacket::serialize(builder);
 
       builder
           .add(m_state)
           .add(m_filter_duplicates);
 
       return builder.build(Format::HCI::Type::Command);
-    }
-
-    vector<uint8_t> SetScanEnable::serialize(FlatbuffersFormatBuilder& builder) const {
-      auto payload = BaBLE::CreateStopScan(builder);
-
-      return builder.build(payload, BaBLE::Payload::StopScan);
     }
 
     const std::string SetScanEnable::stringify() const {

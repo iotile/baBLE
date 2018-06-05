@@ -1,35 +1,30 @@
 #ifndef BABLE_LINUX_GETCONNECTEDDEVICESREQUEST_HPP
 #define BABLE_LINUX_GETCONNECTEDDEVICESREQUEST_HPP
 
-#include "../RequestPacket.hpp"
+#include "../../Base/HostToControllerPacket.hpp"
 
 namespace Packet {
 
   namespace Commands {
 
-    class GetConnectedDevicesRequest : public RequestPacket<GetConnectedDevicesRequest> {
+    class GetConnectedDevicesRequest : public HostToControllerPacket {
 
     public:
-      static const uint16_t packet_code(Packet::Type type) {
-        switch (type) {
-          case Packet::Type::MGMT:
-            return Format::MGMT::CommandCode::GetConnections;
-
-          case Packet::Type::HCI:
-            throw std::invalid_argument("'GetConnectedDevices' packet is not compatible with HCI protocol.");
-
-          case Packet::Type::FLATBUFFERS:
-            return static_cast<uint16_t>(BaBLE::Payload::GetConnectedDevices);
-
-          case Packet::Type::NONE:
-            return 0;
-        }
+      static const Packet::Type final_type() {
+        return Packet::Type::MGMT;
       };
 
-      GetConnectedDevicesRequest(Packet::Type initial_type, Packet::Type final_type);
+      static const uint16_t initial_packet_code() {
+        return static_cast<uint16_t>(BaBLE::Payload::GetConnectedDevices);
+      };
+
+      static const uint16_t final_packet_code() {
+        return Format::MGMT::CommandCode::GetConnections;
+      };
+
+      GetConnectedDevicesRequest();
 
       void unserialize(FlatbuffersFormatExtractor& extractor) override;
-
       std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override;
 
       const std::string stringify() const override;

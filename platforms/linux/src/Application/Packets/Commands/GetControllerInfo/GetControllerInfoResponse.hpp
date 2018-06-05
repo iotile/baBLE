@@ -1,39 +1,34 @@
 #ifndef BABLE_LINUX_GETCONTROLLERINFORESPONSE_HPP
 #define BABLE_LINUX_GETCONTROLLERINFORESPONSE_HPP
 
-#include "../ResponsePacket.hpp"
+#include "../../Base/ControllerToHostPacket.hpp"
 
 namespace Packet {
 
   namespace Commands {
 
-    class GetControllerInfoResponse : public ResponsePacket<GetControllerInfoResponse> {
+    class GetControllerInfoResponse : public ControllerToHostPacket {
 
     public:
-      static const uint16_t packet_code(Packet::Type type) {
-        switch (type) {
-          case Packet::Type::MGMT:
-            return Format::MGMT::CommandCode::GetControllerInfo;
-
-          case Packet::Type::HCI:
-            throw std::invalid_argument("'GetControllerInfo' packet is not compatible with HCI protocol.");
-
-          case Packet::Type::FLATBUFFERS:
-            return static_cast<uint16_t>(BaBLE::Payload::GetControllerInfo);
-
-          case Packet::Type::NONE:
-            return 0;
-        }
+      static const Packet::Type initial_type() {
+        return Packet::Type::MGMT;
       };
 
-      GetControllerInfoResponse(Packet::Type initial_type, Packet::Type final_type);
+      static const uint16_t initial_packet_code() {
+        return Format::MGMT::CommandCode::GetControllerInfo;
+      };
+
+      static const uint16_t final_packet_code() {
+        return static_cast<uint16_t>(BaBLE::Payload::GetControllerInfo);
+      };
+
+      GetControllerInfoResponse();
 
       Format::MGMT::Controller get_controller_info() const {
         return m_controller_info;
       }
 
       void unserialize(MGMTFormatExtractor& extractor) override;
-
       std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
 
       const std::string stringify() const override;

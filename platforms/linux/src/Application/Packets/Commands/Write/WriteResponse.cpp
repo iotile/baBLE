@@ -1,3 +1,4 @@
+#include <sstream>
 #include "WriteResponse.hpp"
 
 using namespace std;
@@ -6,10 +7,8 @@ namespace Packet {
 
   namespace Commands {
 
-    WriteResponse::WriteResponse(Packet::Type initial_type, Packet::Type final_type)
-        : ResponsePacket(initial_type, final_type) {
-      m_id = Packet::Id::WriteResponse;
-    }
+    WriteResponse::WriteResponse()
+        : ControllerToHostPacket(Packet::Id::WriteResponse, initial_type(), initial_packet_code(), final_packet_code()) {}
 
     void WriteResponse::unserialize(HCIFormatExtractor& extractor) {}
 
@@ -23,7 +22,7 @@ namespace Packet {
       return builder.build(payload, BaBLE::Payload::Write);
     }
 
-    const std::string WriteResponse::stringify() const {
+    const string WriteResponse::stringify() const {
       stringstream result;
 
       result << "<WriteResponse> "

@@ -3,7 +3,7 @@
 
 #include <map>
 #include <uvw.hpp>
-#include "../AbstractPacket.hpp"
+#include "../Packets/AbstractPacket.hpp"
 #include "../../Log/Loggable.hpp"
 
 class PacketRouter : public Loggable {

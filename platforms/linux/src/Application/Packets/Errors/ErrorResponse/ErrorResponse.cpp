@@ -1,3 +1,4 @@
+#include <sstream>
 #include "ErrorResponse.hpp"
 
 using namespace std;
@@ -6,10 +7,8 @@ namespace Packet {
 
   namespace Errors {
 
-    ErrorResponse::ErrorResponse(Packet::Type initial_type, Packet::Type final_type)
-        : AbstractPacket(initial_type, final_type) {
-      m_id = Packet::Id::ErrorResponse;
-      m_packet_code = packet_code(m_current_type);
+    ErrorResponse::ErrorResponse()
+        : ControllerToHostPacket(Packet::Id::ErrorResponse, initial_type(), initial_packet_code(), final_packet_code(), true) {
       m_opcode = 0;
       m_handle = 0;
       m_error_code = Format::HCI::AttributeErrorCode::None;
@@ -22,7 +21,7 @@ namespace Packet {
       try {
         m_error_code = static_cast<Format::HCI::AttributeErrorCode>(extractor.get_value<uint8_t>());
 
-      } catch (const std::bad_cast& err) {
+      } catch (const bad_cast& err) {
         throw Exceptions::WrongFormatException("Unknown error code received in ErrorResponse", m_uuid_request);
       }
 
@@ -59,14 +58,6 @@ namespace Packet {
       }
     }
 
-    vector<uint8_t> ErrorResponse::serialize(FlatbuffersFormatBuilder& builder) const {
-      auto payload = BaBLE::CreateErrorResponse(builder, m_opcode, m_handle);
-
-      return builder
-          .set_status(m_status)
-          .build(payload, BaBLE::Payload::ErrorResponse);
-    }
-
     const std::string ErrorResponse::stringify() const {
       stringstream result;
 
@@ -77,6 +68,16 @@ namespace Packet {
              << "Error code: " << to_string(m_error_code);
 
       return result.str();
+    }
+
+    const PacketUuid ErrorResponse::get_uuid() const {
+      return PacketUuid{
+          m_current_type,
+          m_controller_id,
+          m_connection_id,
+          m_packet_code,
+          get_opcode()
+      };
     }
 
   }

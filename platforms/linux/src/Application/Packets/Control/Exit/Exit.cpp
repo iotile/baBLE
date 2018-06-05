@@ -1,3 +1,4 @@
+#include <sstream>
 #include "Exit.hpp"
 
 using namespace std;
@@ -6,10 +7,9 @@ namespace Packet {
 
   namespace Control {
 
-    Exit::Exit(Packet::Type initial_type, Packet::Type final_type)
-        : AbstractPacket(initial_type, final_type) {
-      m_id = Packet::Id::Exit;
-      m_packet_code = packet_code(m_current_type);
+    Exit::Exit()
+        : HostOnlyPacket(Packet::Id::Exit, initial_packet_code()) {
+      m_native_class = "BaBLE";
     }
 
     void Exit::unserialize(FlatbuffersFormatExtractor& extractor) {}
@@ -20,7 +20,7 @@ namespace Packet {
       return builder.build(payload, BaBLE::Payload::Exit);
     }
 
-    const std::string Exit::stringify() const {
+    const string Exit::stringify() const {
       stringstream result;
 
       result << "<Exit> "

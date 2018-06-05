@@ -7,9 +7,8 @@ namespace Packet {
 
   namespace Commands {
 
-    ReadByTypeRequest::ReadByTypeRequest(Packet::Type initial_type, Packet::Type final_type)
-        : RequestPacket(initial_type, final_type) {
-      m_id = Packet::Id::ReadByTypeRequest;
+    ReadByTypeRequest::ReadByTypeRequest(uint16_t starting_handle, uint16_t ending_handle, uint16_t uuid)
+        : HostToControllerPacket(Packet::Id::ReadByTypeRequest, final_type(), final_packet_code()) {
       m_response_packet_code = Format::HCI::AttributeCode::ReadByTypeResponse;
 
       m_starting_handle = 0x0001;
@@ -23,7 +22,7 @@ namespace Packet {
     }
 
     vector<uint8_t> ReadByTypeRequest::serialize(HCIFormatBuilder& builder) const {
-      RequestPacket::serialize(builder);
+      HostToControllerPacket::serialize(builder);
 
       builder
           .add(m_starting_handle)
@@ -33,7 +32,7 @@ namespace Packet {
       return builder.build(Format::HCI::Type::AsyncData);
     }
 
-    const std::string ReadByTypeRequest::stringify() const {
+    const string ReadByTypeRequest::stringify() const {
       stringstream result;
 
       result << "<ReadByTypeRequest> "
@@ -45,29 +44,29 @@ namespace Packet {
       return result.str();
     }
 
-    void ReadByTypeRequest::before_sent(const std::shared_ptr<PacketRouter>& router) {
-      RequestPacket::before_sent(router);
+    void ReadByTypeRequest::prepare(const shared_ptr<PacketRouter>& router) {
+      HostToControllerPacket::prepare(router);
 
       PacketUuid error_uuid = get_uuid();
       error_uuid.response_packet_code = Format::HCI::AttributeCode::ErrorResponse;
       auto error_callback =
-          [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {
+          [this](const shared_ptr<PacketRouter>& router, shared_ptr<Packet::AbstractPacket> packet) {
             return on_error_response_received(router, packet);
           };
       router->add_callback(error_uuid, shared_from(this), error_callback);
     }
 
-    shared_ptr<Packet::AbstractPacket> ReadByTypeRequest::on_response_received(const std::shared_ptr<PacketRouter>& router,
+    shared_ptr<Packet::AbstractPacket> ReadByTypeRequest::on_response_received(const shared_ptr<PacketRouter>& router,
                                                                                const shared_ptr<Packet::AbstractPacket>& packet) {
       LOG.debug("Response received", "ReadByTypeRequest");
       PacketUuid error_uuid = get_uuid();
       error_uuid.response_packet_code = Format::HCI::AttributeCode::ErrorResponse;
       router->remove_callback(error_uuid);
 
-      return RequestPacket::on_response_received(router, packet);
+      return HostToControllerPacket::on_response_received(router, packet);
     }
 
-    shared_ptr<Packet::AbstractPacket> ReadByTypeRequest::on_error_response_received(const std::shared_ptr<PacketRouter>& router,
+    shared_ptr<Packet::AbstractPacket> ReadByTypeRequest::on_error_response_received(const shared_ptr<PacketRouter>& router,
                                                                                      const shared_ptr<AbstractPacket>& packet) {
       LOG.debug("ErrorResponse received", "ReadByTypeRequest");
       PacketUuid response_uuid = get_response_uuid();

@@ -7,9 +7,8 @@ namespace Packet {
 
   namespace Commands {
 
-    ReadByTypeResponse::ReadByTypeResponse(Packet::Type initial_type, Packet::Type final_type)
-        : ResponsePacket(initial_type, final_type) {
-      m_id = Packet::Id::ReadByTypeResponse;
+    ReadByTypeResponse::ReadByTypeResponse()
+        : ControllerToHostPacket(Packet::Id::ReadByTypeResponse, initial_type(), initial_packet_code(), final_packet_code(), true) {
       m_last_ending_handle = 0;
     }
 
@@ -43,7 +42,7 @@ namespace Packet {
       }
     }
 
-    const std::string ReadByTypeResponse::stringify() const {
+    const string ReadByTypeResponse::stringify() const {
       stringstream result;
 
       result << "<ReadByTypeResponse> "

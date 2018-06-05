@@ -8,9 +8,8 @@ namespace Packet {
 
   namespace Events {
 
-    AdvertisingReport::AdvertisingReport(Packet::Type initial_type, Packet::Type final_type)
-        : EventPacket(initial_type, final_type) {
-      m_id = Packet::Id::AdvertisingReport;
+    AdvertisingReport::AdvertisingReport()
+        : ControllerToHostPacket(Packet::Id::AdvertisingReport, initial_type(), initial_packet_code(), final_packet_code()) {
       m_address_type = 0;
       m_eir_data_length = 0;
       m_rssi = 0;
@@ -65,7 +64,7 @@ namespace Packet {
       return builder.build(payload, BaBLE::Payload::DeviceFound);
     }
 
-    const std::string AdvertisingReport::stringify() const {
+    const string AdvertisingReport::stringify() const {
       stringstream result;
 
       result << "<AdvertisingReport> "

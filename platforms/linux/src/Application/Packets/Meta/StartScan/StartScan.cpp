@@ -1,6 +1,5 @@
 #include "StartScan.hpp"
 #include "../../../../Exceptions/RuntimeError/RuntimeErrorException.hpp"
-#include "../../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 
 using namespace std;
 
@@ -8,19 +7,14 @@ namespace Packet {
 
   namespace Meta {
 
-    StartScan::StartScan(Packet::Type initial_type, Packet::Type final_type)
-        : AbstractPacket(initial_type, final_type) {
-      m_id = Packet::Id::StartScan;
-      m_packet_code = packet_code(m_current_type);
+    StartScan::StartScan(bool active_scan)
+        : HostOnlyPacket(Packet::Id::StartScan, initial_packet_code()) {
+      m_set_scan_params_packet = std::make_shared<Packet::Commands::SetScanParameters>(active_scan);
+      m_set_scan_enable_packet = std::make_shared<Packet::Commands::SetScanEnable>(true);
 
-      m_set_scan_params_packet = std::make_shared<Packet::Commands::SetScanParameters>(final_type, final_type);
-      m_set_scan_enable_packet = std::make_shared<Packet::Commands::SetScanEnable>(final_type, final_type);
-      m_set_scan_enable_packet->set_state(true);
+      m_waiting_response = Packet::Id::SetScanParameters;
 
-      m_waiting_response = SubPacket::SetScanParameters;
-      m_current_index = 0;
-
-      m_active_scan = true;
+      m_active_scan = active_scan;
     }
 
     void StartScan::unserialize(FlatbuffersFormatExtractor& extractor) {
@@ -41,13 +35,13 @@ namespace Packet {
 
     vector<uint8_t> StartScan::serialize(HCIFormatBuilder& builder) const {
       switch (m_waiting_response) {
-        case SubPacket::SetScanParameters:
+        case Packet::Id::SetScanParameters:
           return m_set_scan_params_packet->serialize(builder);
 
-        case SubPacket::SetScanEnable:
+        case Packet::Id::SetScanEnable:
           return m_set_scan_enable_packet->serialize(builder);
 
-        case SubPacket::None:
+        default:
           throw std::runtime_error("Can't serialize 'StartScan' to HCI.");
       }
     }
@@ -57,15 +51,16 @@ namespace Packet {
 
       result << "<StartScan> "
              << AbstractPacket::stringify() << ", "
-             << "Active: " << to_string(m_active_scan);
+             << "Active scan: " << to_string(m_active_scan);
 
       return result.str();
     }
 
-    void StartScan::before_sent(const std::shared_ptr<PacketRouter>& router) {
+    void StartScan::prepare(const std::shared_ptr<PacketRouter>& router) {
       switch (m_waiting_response) {
-        case SetScanParameters: {
-          m_current_type = m_final_type;
+        case Packet::Id::SetScanParameters: {
+          m_set_scan_params_packet->translate();
+          m_current_type = m_set_scan_params_packet->get_type();
 
           PacketUuid uuid = m_set_scan_params_packet->get_response_uuid();
           auto callback =
@@ -76,8 +71,9 @@ namespace Packet {
           break;
         }
 
-        case SetScanEnable: {
-          m_current_type = m_final_type;
+        case Packet::Id::SetScanEnable: {
+          m_set_scan_enable_packet->translate();
+          m_current_type = m_set_scan_enable_packet->get_type();
 
           PacketUuid uuid = m_set_scan_enable_packet->get_response_uuid();
           auto callback =
@@ -88,8 +84,8 @@ namespace Packet {
           break;
         }
 
-        case None:
-          m_current_type = m_initial_type;
+        default:
+          m_current_type = final_type();
           break;
       }
     }
@@ -107,9 +103,9 @@ namespace Packet {
 
       if (m_set_scan_params_packet->get_status() != BaBLE::StatusCode::Success) {
         import_status(*m_set_scan_params_packet);
-        m_waiting_response = SubPacket::None;
+        m_waiting_response = Packet::Id::None;
       } else {
-        m_waiting_response = SubPacket::SetScanEnable;
+        m_waiting_response = Packet::Id::SetScanEnable;
       }
 
       return shared_from(this);
@@ -126,7 +122,7 @@ namespace Packet {
       }
 
       import_status(*m_set_scan_params_packet);
-      m_waiting_response = SubPacket::None;
+      m_waiting_response = Packet::Id::None;
 
       return shared_from(this);
     }

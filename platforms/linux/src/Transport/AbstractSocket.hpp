@@ -25,7 +25,7 @@ public:
   };
 
   virtual bool send(const std::vector<uint8_t>& data) = 0;
-  virtual void poll(std::shared_ptr<uvw::Loop> loop, OnReceivedCallback on_received, OnErrorCallback on_error) = 0;
+  virtual void poll(OnReceivedCallback on_received, OnErrorCallback on_error) = 0;
 
   virtual ~AbstractSocket() = default;
 

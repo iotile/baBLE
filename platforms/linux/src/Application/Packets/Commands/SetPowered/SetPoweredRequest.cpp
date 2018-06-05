@@ -1,5 +1,4 @@
 #include "SetPoweredRequest.hpp"
-#include "../../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 
 using namespace std;
 
@@ -7,10 +6,9 @@ namespace Packet {
 
   namespace Commands {
 
-    SetPoweredRequest::SetPoweredRequest(Packet::Type initial_type, Packet::Type final_type)
-        : RequestPacket(initial_type, final_type) {
-      m_id = Packet::Id::SetPoweredRequest;
-      m_state = false;
+    SetPoweredRequest::SetPoweredRequest(bool state)
+        : HostToControllerPacket(Packet::Id::SetPoweredRequest, final_type(), final_packet_code()) {
+      m_state = state;
     }
 
     void SetPoweredRequest::unserialize(FlatbuffersFormatExtractor& extractor) {
@@ -20,13 +18,13 @@ namespace Packet {
     }
 
     vector<uint8_t> SetPoweredRequest::serialize(MGMTFormatBuilder& builder) const {
-      RequestPacket::serialize(builder);
+      HostToControllerPacket::serialize(builder);
       builder.add(m_state);
 
       return builder.build();
     }
 
-    const std::string SetPoweredRequest::stringify() const {
+    const string SetPoweredRequest::stringify() const {
       stringstream result;
 
       result << "<SetPoweredRequest> "

@@ -1,35 +1,30 @@
 #ifndef BABLE_LINUX_GETMGMTINFORESPONSE_HPP
 #define BABLE_LINUX_GETMGMTINFORESPONSE_HPP
 
-#include "../ResponsePacket.hpp"
+#include "../../Base/ControllerToHostPacket.hpp"
 
 namespace Packet {
 
   namespace Commands {
 
-    class GetMGMTInfoResponse : public ResponsePacket<GetMGMTInfoResponse> {
+    class GetMGMTInfoResponse : public ControllerToHostPacket {
 
     public:
-      static const uint16_t packet_code(Packet::Type type) {
-        switch (type) {
-          case Packet::Type::MGMT:
-            return Format::MGMT::CommandCode::GetMGMTInfo;
-
-          case Packet::Type::HCI:
-            throw std::invalid_argument("'GetMGMTInfo' packet is not compatible with HCI protocol.");
-
-          case Packet::Type::FLATBUFFERS:
-            return static_cast<uint16_t>(BaBLE::Payload::GetMGMTInfo);
-
-          case Packet::Type::NONE:
-            return 0;
-        }
+      static const Packet::Type initial_type() {
+        return Packet::Type::MGMT;
       };
 
-      GetMGMTInfoResponse(Packet::Type initial_type, Packet::Type final_type);
+      static const uint16_t initial_packet_code() {
+        return Format::MGMT::CommandCode::GetMGMTInfo;
+      };
+
+      static const uint16_t final_packet_code() {
+        return static_cast<uint16_t>(BaBLE::Payload::GetMGMTInfo);
+      };
+
+      GetMGMTInfoResponse();
 
       void unserialize(MGMTFormatExtractor& extractor) override;
-
       std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
 
       const std::string stringify() const override;

@@ -1,3 +1,4 @@
+#include <sstream>
 #include "GetControllersIdsResponse.hpp"
 
 using namespace std;
@@ -6,13 +7,11 @@ namespace Packet {
 
   namespace Commands {
 
-    GetControllersIdsResponse::GetControllersIdsResponse(Packet::Type initial_type, Packet::Type final_type)
-        : ResponsePacket(initial_type, final_type) {
-      m_id = Packet::Id::GetControllersIdsResponse;
-    }
+    GetControllersIdsResponse::GetControllersIdsResponse()
+        : ControllerToHostPacket(Packet::Id::GetControllersIdsResponse, initial_type(), initial_packet_code(), final_packet_code()) {}
 
     void GetControllersIdsResponse::unserialize(MGMTFormatExtractor& extractor) {
-      ResponsePacket::unserialize(extractor);
+      set_status(extractor.get_value<uint8_t>());
 
       if (m_status == BaBLE::StatusCode::Success) {
         auto m_num_controllers = extractor.get_value<uint16_t>();

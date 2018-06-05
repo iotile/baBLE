@@ -7,9 +7,8 @@ namespace Packet {
 
   namespace Events {
 
-    DeviceDisconnected::DeviceDisconnected(Packet::Type initial_type, Packet::Type final_type)
-        : EventPacket(initial_type, final_type) {
-      m_id = Packet::Id::DeviceDisconnected;
+    DeviceDisconnected::DeviceDisconnected()
+        : ControllerToHostPacket(Packet::Id::DeviceDisconnected, initial_type(), initial_packet_code(), final_packet_code()) {
       m_raw_reason = 0;
     }
 
@@ -56,7 +55,7 @@ namespace Packet {
       return builder.build(payload, BaBLE::Payload::DeviceDisconnected);
     }
 
-    const std::string DeviceDisconnected::stringify() const {
+    const string DeviceDisconnected::stringify() const {
       stringstream result;
 
       result << "<DeviceDisconnected> "

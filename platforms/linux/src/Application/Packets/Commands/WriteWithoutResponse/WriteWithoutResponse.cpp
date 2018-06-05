@@ -1,5 +1,4 @@
 #include "WriteWithoutResponse.hpp"
-#include "../../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 #include "../../../../utils/string_formats.hpp"
 
 using namespace std;
@@ -8,9 +7,10 @@ namespace Packet {
 
   namespace Commands {
 
-    WriteWithoutResponse::WriteWithoutResponse(Packet::Type initial_type, Packet::Type final_type)
-        : RequestPacket(initial_type, final_type) {
-      m_id = Packet::Id::WriteWithoutResponse;
+    WriteWithoutResponse::WriteWithoutResponse(uint16_t attribute_handle, vector<uint8_t> data)
+        : HostToControllerPacket(Packet::Id::WriteWithoutResponse, final_type(), final_packet_code(), false) {
+      m_attribute_handle = attribute_handle;
+      m_data_to_write = move(data);
     }
 
     void WriteWithoutResponse::unserialize(FlatbuffersFormatExtractor& extractor) {
@@ -23,7 +23,7 @@ namespace Packet {
     }
 
     vector<uint8_t> WriteWithoutResponse::serialize(HCIFormatBuilder& builder) const {
-      RequestPacket::serialize(builder);
+      HostToControllerPacket::serialize(builder);
 
       builder
           .add(m_attribute_handle)
@@ -32,7 +32,7 @@ namespace Packet {
       return builder.build(Format::HCI::Type::AsyncData);
     }
 
-    const std::string WriteWithoutResponse::stringify() const {
+    const string WriteWithoutResponse::stringify() const {
       stringstream result;
 
       result << "<WriteWithoutResponse> "
@@ -41,11 +41,6 @@ namespace Packet {
              << "Data to write: " << Utils::format_bytes_array(m_data_to_write);
 
       return result.str();
-    }
-
-    void WriteWithoutResponse::before_sent(const std::shared_ptr<PacketRouter>& router) {
-      AbstractPacket::before_sent(router);
-      m_packet_code = packet_code(m_current_type);
     }
 
   }

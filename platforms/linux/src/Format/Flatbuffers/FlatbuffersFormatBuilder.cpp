@@ -1,6 +1,8 @@
 #include "FlatbuffersFormatBuilder.hpp"
 
-FlatbuffersFormatBuilder::FlatbuffersFormatBuilder(uint16_t controller_id, const std::string& uuid_request, const std::string& native_class)
+using namespace std;
+
+FlatbuffersFormatBuilder::FlatbuffersFormatBuilder(uint16_t controller_id, const string& uuid_request, const string& native_class)
   : flatbuffers::FlatBufferBuilder::FlatBufferBuilder(0) {
   m_controller_id = controller_id;
   m_native_class = native_class;

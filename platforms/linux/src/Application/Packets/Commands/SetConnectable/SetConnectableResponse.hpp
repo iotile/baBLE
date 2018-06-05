@@ -1,35 +1,30 @@
 #ifndef BABLE_LINUX_SETCONNECTABLERESPONSE_HPP
 #define BABLE_LINUX_SETCONNECTABLERESPONSE_HPP
 
-#include "../ResponsePacket.hpp"
+#include "../../Base/ControllerToHostPacket.hpp"
 
 namespace Packet {
 
   namespace Commands {
 
-    class SetConnectableResponse : public ResponsePacket<SetConnectableResponse> {
+    class SetConnectableResponse : public ControllerToHostPacket {
 
     public:
-      static const uint16_t packet_code(Packet::Type type) {
-        switch (type) {
-          case Packet::Type::MGMT:
-            return Format::MGMT::CommandCode::SetConnectable;
-
-          case Packet::Type::HCI:
-            throw std::invalid_argument("'SetConnectable' packet is not compatible with HCI protocol.");
-
-          case Packet::Type::FLATBUFFERS:
-            return static_cast<uint16_t>(BaBLE::Payload::SetConnectable);
-
-          case Packet::Type::NONE:
-            return 0;
-        }
+      static const Packet::Type initial_type() {
+        return Packet::Type::MGMT;
       };
 
-      SetConnectableResponse(Packet::Type initial_type, Packet::Type final_type);
+      static const uint16_t initial_packet_code() {
+        return Format::MGMT::CommandCode::SetConnectable;
+      };
+
+      static const uint16_t final_packet_code() {
+        return static_cast<uint16_t>(BaBLE::Payload::SetConnectable);
+      };
+
+      SetConnectableResponse();
 
       void unserialize(MGMTFormatExtractor& extractor) override;
-
       std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
 
       const std::string stringify() const override;

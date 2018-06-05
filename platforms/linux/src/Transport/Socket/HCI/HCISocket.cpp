@@ -5,6 +5,7 @@
 #include "HCISocket.hpp"
 #include "../../../Exceptions/Socket/SocketException.hpp"
 #include "../../../Log/Log.hpp"
+#include "../../../utils/string_formats.hpp"
 
 using namespace std;
 using namespace uvw;
@@ -13,7 +14,7 @@ Flags<PollHandle::Event> HCISocket::readable_flag = Flags<PollHandle::Event>(Pol
 Flags<PollHandle::Event> HCISocket::writable_flag = Flags<PollHandle::Event>(PollHandle::Event::WRITABLE);
 
 // Create one HCI socket per Bluetooth controller
-vector<shared_ptr<HCISocket>> HCISocket::create_all(shared_ptr<HCIFormat> hci_format) {
+vector<shared_ptr<HCISocket>> HCISocket::create_all(shared_ptr<uvw::Loop>& loop, shared_ptr<HCIFormat> hci_format) {
   vector<shared_ptr<HCISocket>> hci_sockets;
 
   int sock = socket(AF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC, BTPROTO_HCI);
@@ -31,7 +32,7 @@ vector<shared_ptr<HCISocket>> HCISocket::create_all(shared_ptr<HCIFormat> hci_fo
   }
 
   for (int i = 0; i < dl->dev_num; i++, dr++) {
-    shared_ptr<HCISocket> hci_socket = make_shared<HCISocket>(hci_format, dr->dev_id);
+    shared_ptr<HCISocket> hci_socket = make_shared<HCISocket>(loop, hci_format, dr->dev_id);
     hci_sockets.push_back(hci_socket);
   }
 
@@ -40,7 +41,7 @@ vector<shared_ptr<HCISocket>> HCISocket::create_all(shared_ptr<HCIFormat> hci_fo
   return hci_sockets;
 }
 
-HCISocket::HCISocket(shared_ptr<HCIFormat> format, uint16_t controller_id)
+HCISocket::HCISocket(shared_ptr<uvw::Loop>& loop, shared_ptr<HCIFormat> format, uint16_t controller_id)
     : AbstractSocket(move(format)) {
   m_controller_id = controller_id;
   m_writable = true;
@@ -62,7 +63,9 @@ HCISocket::HCISocket(shared_ptr<HCIFormat> format, uint16_t controller_id)
     throw Exceptions::SocketException("Error while retrieving the Bluetooth controller address: " + string(strerror(errno)));
   }
 
-  LOG.debug(m_controller_address, "HCI socket");
+  LOG.debug("HCI socket created on " + Utils::format_bd_address(m_controller_address), "HCI socket");
+
+  m_poller = loop->resource<uvw::PollHandle>(m_hci_socket);
 }
 
 bool HCISocket::bind_hci_socket() {
@@ -84,7 +87,7 @@ bool HCISocket::get_controller_address() {
     return false;
   }
 
-  copy(std::begin(di.bdaddr.b), std::end(di.bdaddr.b), m_controller_address.begin());
+  copy(begin(di.bdaddr.b), end(di.bdaddr.b), m_controller_address.begin());
   return true;
 }
 
@@ -100,7 +103,7 @@ bool HCISocket::set_filter() {
   return setsockopt(m_hci_socket, SOL_HCI, HCI_FILTER, &filter, sizeof(filter)) == 0;
 }
 
-void HCISocket::connect_l2cap_socket(uint16_t connection_handle, const std::array<uint8_t, 6>& device_address, uint8_t device_address_type) {
+void HCISocket::connect_l2cap_socket(uint16_t connection_handle, const array<uint8_t, 6>& device_address, uint8_t device_address_type) {
   OSSocketHandle::Type l2cap_socket = socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP);
   if (l2cap_socket < 0) {
     throw Exceptions::SocketException("Error while creating the L2CAP socket: " + string(strerror(errno)));
@@ -108,7 +111,7 @@ void HCISocket::connect_l2cap_socket(uint16_t connection_handle, const std::arra
 
   struct Format::HCI::sockaddr_l2 addr{};
   addr.l2_family = AF_BLUETOOTH;
-  copy(m_controller_address.begin(), m_controller_address.end(), std::begin(addr.l2_bdaddr.b));
+  copy(m_controller_address.begin(), m_controller_address.end(), begin(addr.l2_bdaddr.b));
   addr.l2_cid = ATT_CID;
   addr.l2_bdaddr_type = 0x01;
 
@@ -117,7 +120,7 @@ void HCISocket::connect_l2cap_socket(uint16_t connection_handle, const std::arra
   }
 
   addr.l2_family = AF_BLUETOOTH;
-  copy(device_address.begin(), device_address.end(), std::begin(addr.l2_bdaddr.b));
+  copy(device_address.begin(), device_address.end(), begin(addr.l2_bdaddr.b));
   addr.l2_cid = ATT_CID;
   addr.l2_bdaddr_type = device_address_type;
 
@@ -195,9 +198,7 @@ vector<uint8_t> HCISocket::receive() {
   return result;
 }
 
-void HCISocket::poll(shared_ptr<uvw::Loop> loop, OnReceivedCallback on_received, OnErrorCallback on_error) {
-  m_poller = loop->resource<uvw::PollHandle>(m_hci_socket);
-
+void HCISocket::poll(OnReceivedCallback on_received, OnErrorCallback on_error) {
   m_poller->on<uvw::PollEvent>([this, on_received, on_error](const uvw::PollEvent& event, const uvw::PollHandle& handle){
     try {
       if (event.flags & uvw::PollHandle::Event::READABLE) {

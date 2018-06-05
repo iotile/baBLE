@@ -1,48 +1,34 @@
 #ifndef BABLE_LINUX_ERRORRESPONSE_HPP
 #define BABLE_LINUX_ERRORRESPONSE_HPP
 
-#include "../../../AbstractPacket.hpp"
+#include "../../Base/ControllerToHostPacket.hpp"
 
 namespace Packet {
 
   namespace Errors {
 
-    class ErrorResponse : public AbstractPacket {
+    class ErrorResponse : public ControllerToHostPacket {
 
     public:
-      static const uint16_t packet_code(Packet::Type type) {
-        switch (type) {
-          case Packet::Type::MGMT:
-            throw std::invalid_argument("'ErrorResponse' packet is not compatible with MGMT protocol.");
-
-          case Packet::Type::HCI:
-            return Format::HCI::AttributeCode::ErrorResponse;
-
-          case Packet::Type::FLATBUFFERS:
-            return static_cast<uint16_t>(BaBLE::Payload::ErrorResponse);
-
-          case Packet::Type::NONE:
-            return 0;
-        }
+      static const Packet::Type initial_type() {
+        return Packet::Type::HCI;
       };
 
-      ErrorResponse(Packet::Type initial_type, Packet::Type final_type);
+      static const uint16_t initial_packet_code() {
+        return Format::HCI::AttributeCode::ErrorResponse;
+      };
+
+      static const uint16_t final_packet_code() {
+        return initial_packet_code();
+      };
+
+      ErrorResponse();
 
       void unserialize(HCIFormatExtractor& extractor) override;
 
-      std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
-
       const std::string stringify() const override;
 
-      const PacketUuid get_uuid() const override {
-        return PacketUuid{
-            m_current_type,
-            m_controller_id,
-            m_connection_id,
-            m_packet_code,
-            get_opcode()
-        };
-      }
+      const PacketUuid get_uuid() const override;
 
       inline uint8_t get_opcode() const {
         return m_opcode;

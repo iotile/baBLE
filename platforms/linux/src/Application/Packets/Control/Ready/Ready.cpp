@@ -1,3 +1,4 @@
+#include <sstream>
 #include "Ready.hpp"
 
 using namespace std;
@@ -6,10 +7,8 @@ namespace Packet {
 
   namespace Control {
 
-    Ready::Ready(Packet::Type output_type)
-        : AbstractPacket(output_type, output_type) {
-      m_id = Packet::Id::Ready;
-      m_packet_code = static_cast<uint16_t>(BaBLE::Payload::Ready);
+    Ready::Ready()
+        : HostOnlyPacket(Packet::Id::Ready, initial_packet_code()) {
       m_native_class = "BaBLE";
     }
 
@@ -19,7 +18,7 @@ namespace Packet {
       return builder.build(payload, BaBLE::Payload::Ready);
     }
 
-    const std::string Ready::stringify() const {
+    const string Ready::stringify() const {
       stringstream result;
 
       result << "<Ready> "

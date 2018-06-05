@@ -10,13 +10,13 @@
 class HCISocket : public AbstractSocket {
 
 public:
-  static std::vector<std::shared_ptr<HCISocket>> create_all(std::shared_ptr<HCIFormat> hci_format);
+  static std::vector<std::shared_ptr<HCISocket>> create_all(std::shared_ptr<uvw::Loop>& loop, std::shared_ptr<HCIFormat> hci_format);
 
   // TODO: keep bindings connection_handle <=> device_address (in main.cpp) ?
-  explicit HCISocket(std::shared_ptr<HCIFormat> format, uint16_t controller_id);
+  explicit HCISocket(std::shared_ptr<uvw::Loop>& loop, std::shared_ptr<HCIFormat> format, uint16_t controller_id);
 
   bool send(const std::vector<uint8_t>& data) override;
-  void poll(std::shared_ptr<uvw::Loop> loop, OnReceivedCallback on_received, OnErrorCallback on_error) override;
+  void poll(OnReceivedCallback on_received, OnErrorCallback on_error) override;
 
   void set_writable(bool is_writable);
   std::vector<uint8_t> receive();

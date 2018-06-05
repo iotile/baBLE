@@ -1,6 +1,0 @@
-namespace BaBLE;
-
-table Discovering {
-  address_type:uint8;
-  state:bool;
-}

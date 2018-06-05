@@ -1,7 +1,7 @@
 #ifndef BABLE_LINUX_GETCONTROLLERSLIST_HPP
 #define BABLE_LINUX_GETCONTROLLERSLIST_HPP
 
-#include "../../../AbstractPacket.hpp"
+#include "../../Base/HostOnlyPacket.hpp"
 #include "../../Commands/GetControllersIds/GetControllersIdsRequest.hpp"
 #include "../../Commands/GetControllerInfo/GetControllerInfoRequest.hpp"
 
@@ -9,26 +9,14 @@ namespace Packet {
 
   namespace Meta {
 
-    class GetControllersList : public AbstractPacket {
+    class GetControllersList : public HostOnlyPacket {
 
     public:
-      static const uint16_t packet_code(Packet::Type type) {
-        switch (type) {
-          case Packet::Type::MGMT:
-            throw std::invalid_argument("'GetControllersList' packet is a meta packet, can't be a MGMT packet.");
-
-          case Packet::Type::HCI:
-            throw std::invalid_argument("'GetControllersList' packet is a meta packet, can't be a HCI packet.");
-
-          case Packet::Type::FLATBUFFERS:
-            return static_cast<uint16_t>(BaBLE::Payload::GetControllersList);
-
-          case Packet::Type::NONE:
-            return 0;
-        }
+      static const uint16_t initial_packet_code() {
+        return static_cast<uint16_t>(BaBLE::Payload::GetControllersList);
       };
 
-      GetControllersList(Packet::Type initial_type, Packet::Type final_type);
+      GetControllersList();
 
       void unserialize(FlatbuffersFormatExtractor& extractor) override;
 
@@ -37,7 +25,7 @@ namespace Packet {
 
       const std::string stringify() const override;
 
-      void before_sent(const std::shared_ptr<PacketRouter>& router) override;
+      void prepare(const std::shared_ptr<PacketRouter>& router) override;
       std::shared_ptr<AbstractPacket> on_controllers_ids_response_received(const std::shared_ptr<PacketRouter>& router,
                                                                            const std::shared_ptr<AbstractPacket>& packet);
       std::shared_ptr<AbstractPacket> on_controller_info_response_received(const std::shared_ptr<PacketRouter>& router,
@@ -48,13 +36,7 @@ namespace Packet {
       }
 
     private:
-      enum SubPacket {
-        GetControllersIds,
-        GetControllerInfo,
-        None
-      };
-
-      SubPacket m_waiting_response;
+      Packet::Id m_waiting_response;
       uint16_t m_current_index;
 
       std::shared_ptr<Packet::Commands::GetControllerInfoRequest> m_controller_info_request_packet;

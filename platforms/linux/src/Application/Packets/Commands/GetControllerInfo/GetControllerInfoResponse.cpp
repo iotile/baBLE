@@ -7,13 +7,11 @@ namespace Packet {
 
   namespace Commands {
 
-    GetControllerInfoResponse::GetControllerInfoResponse(Packet::Type initial_type, Packet::Type final_type)
-        : ResponsePacket(initial_type, final_type) {
-      m_id = Packet::Id::GetControllerInfoResponse;
-    }
+    GetControllerInfoResponse::GetControllerInfoResponse()
+        : ControllerToHostPacket(Packet::Id::GetControllerInfoResponse, initial_type(), initial_packet_code(), final_packet_code()) {}
 
     void GetControllerInfoResponse::unserialize(MGMTFormatExtractor& extractor) {
-      ResponsePacket::unserialize(extractor);
+      set_status(extractor.get_value<uint8_t>());
 
       if (m_status == BaBLE::StatusCode::Success) {
         m_controller_info.id = m_controller_id;
@@ -24,10 +22,10 @@ namespace Packet {
         m_controller_info.current_settings = extractor.get_value<uint32_t>();
         m_controller_info.class_of_device = extractor.get_array<uint8_t, 3>();
 
-        std::array<uint8_t, 249> name_array = extractor.get_array<uint8_t, 249>();
+        array<uint8_t, 249> name_array = extractor.get_array<uint8_t, 249>();
         m_controller_info.name = Utils::bytes_to_string(name_array);
 
-        std::array<uint8_t, 11> short_name_array = extractor.get_array<uint8_t, 11>();
+        array<uint8_t, 11> short_name_array = extractor.get_array<uint8_t, 11>();
         if (short_name_array[0] != 0) {
           m_controller_info.short_name = Utils::bytes_to_string(short_name_array);
         }
@@ -59,7 +57,7 @@ namespace Packet {
       return builder.build(payload, BaBLE::Payload::GetControllerInfo);
     }
 
-    const std::string GetControllerInfoResponse::stringify() const {
+    const string GetControllerInfoResponse::stringify() const {
       stringstream result;
 
       result << "<GetControllerInfoResponse> "

@@ -1,3 +1,4 @@
+#include <sstream>
 #include "GetMGMTInfoResponse.hpp"
 
 using namespace std;
@@ -6,15 +7,14 @@ namespace Packet {
 
   namespace Commands {
 
-    GetMGMTInfoResponse::GetMGMTInfoResponse(Packet::Type initial_type, Packet::Type final_type)
-        : ResponsePacket(initial_type, final_type) {
-      m_id = Packet::Id::GetMGMTInfoResponse;
+    GetMGMTInfoResponse::GetMGMTInfoResponse()
+        : ControllerToHostPacket(Packet::Id::GetMGMTInfoResponse, initial_type(), initial_packet_code(), final_packet_code()) {
       m_version = 0;
       m_revision = 0;
     }
 
     void GetMGMTInfoResponse::unserialize(MGMTFormatExtractor& extractor) {
-      ResponsePacket::unserialize(extractor);
+      set_status(extractor.get_value<uint8_t>());
 
       if (m_status == BaBLE::StatusCode::Success) {
         m_version = extractor.get_value<uint8_t>();

@@ -1,3 +1,4 @@
+#include <sstream>
 #include "ControllerRemoved.hpp"
 
 using namespace std;
@@ -6,9 +7,8 @@ namespace Packet {
 
   namespace Events {
 
-    ControllerRemoved::ControllerRemoved(Packet::Type initial_type, Packet::Type final_type)
-        : EventPacket(initial_type, final_type) {
-      m_id = Packet::Id::ControllerRemoved;
+    ControllerRemoved::ControllerRemoved()
+        : ControllerToHostPacket(Packet::Id::ControllerRemoved, initial_type(), initial_packet_code(), final_packet_code()) {
     }
 
     void ControllerRemoved::unserialize(MGMTFormatExtractor& extractor) {}
@@ -19,7 +19,7 @@ namespace Packet {
       return builder.build(payload, BaBLE::Payload::ControllerRemoved);
     }
 
-    const std::string ControllerRemoved::stringify() const {
+    const string ControllerRemoved::stringify() const {
       stringstream result;
 
       result << "<ControllerRemoved> "

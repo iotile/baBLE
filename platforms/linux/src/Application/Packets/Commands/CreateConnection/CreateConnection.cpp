@@ -8,14 +8,13 @@ namespace Packet {
 
   namespace Commands {
 
-    CreateConnection::CreateConnection(Packet::Type initial_type, Packet::Type final_type)
-        : RequestPacket(initial_type, final_type) {
-      m_id = Packet::Id::CreateConnection;
-
+    CreateConnection::CreateConnection(const std::string& address, uint8_t address_type)
+        : HostToControllerPacket(Packet::Id::CreateConnection, final_type(), final_packet_code(), false) {
       m_scan_interval = 0x0060; // 60ms
       m_scan_window = 0x0060; // 60ms;
       m_policy = 0x00; // Use peer address
-      m_peer_address_type = 0x01; // Random address type
+      m_peer_address_type = address_type;
+      m_address = address;
       m_own_address_type = 0x00; // Public address type
       m_connection_interval_min = 0x0018; // 30ms
       m_connection_interval_max = 0x0028; // 50ms
@@ -23,6 +22,8 @@ namespace Packet {
       m_supervision_timeout = 0x002A; // 0.42s
       m_min_ce_length = 0x0000;
       m_max_ce_length = 0x0000;
+
+      m_raw_address = Utils::extract_bd_address(m_address);
     }
 
     void CreateConnection::unserialize(FlatbuffersFormatExtractor& extractor) {
@@ -31,18 +32,16 @@ namespace Packet {
       m_peer_address_type = payload->address_type();
       m_address = payload->address()->str();
 
-      string item;
-      istringstream address_stream(m_address);
-      for (auto it = m_raw_address.rbegin(); it != m_raw_address.rend(); ++it) {
-        if (!getline(address_stream, item, ':')) {
-          throw Exceptions::InvalidCommandException("Can't parse 'address' argument for 'Connect' packet.", m_uuid_request);
-        }
-        *it = Utils::string_to_number<uint8_t>(item, 16);
+      try {
+        m_raw_address = Utils::extract_bd_address(m_address);
+
+      } catch (const Exceptions::WrongFormatException& err) {
+        throw Exceptions::InvalidCommandException("Wrong MAC address given.", m_uuid_request);
       }
     }
 
     vector<uint8_t> CreateConnection::serialize(HCIFormatBuilder& builder) const {
-      RequestPacket::serialize(builder);
+      HostToControllerPacket::serialize(builder);
 
       builder
           .add(m_scan_interval)
@@ -80,11 +79,6 @@ namespace Packet {
                                << to_string(m_max_ce_length) << "]";
 
       return result.str();
-    }
-
-    void CreateConnection::before_sent(const std::shared_ptr<PacketRouter>& router) {
-      AbstractPacket::before_sent(router);
-      m_packet_code = packet_code(m_current_type);
     }
 
   }

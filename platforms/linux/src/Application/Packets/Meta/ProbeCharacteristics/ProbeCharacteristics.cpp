@@ -2,7 +2,6 @@
 #include "../../Commands/ReadByType/ReadByTypeResponse.hpp"
 #include "../../Errors/ErrorResponse/ErrorResponse.hpp"
 #include "../../../../Exceptions/RuntimeError/RuntimeErrorException.hpp"
-#include "../../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 #include "../../../../utils/string_formats.hpp"
 
 using namespace std;
@@ -11,13 +10,11 @@ namespace Packet {
 
   namespace Meta {
 
-    ProbeCharacteristics::ProbeCharacteristics(Packet::Type initial_type, Packet::Type final_type)
-        : AbstractPacket(initial_type, final_type) {
-      m_id = Packet::Id::ProbeCharacteristics;
-      m_packet_code = packet_code(m_current_type);
-
+    ProbeCharacteristics::ProbeCharacteristics()
+        : HostOnlyPacket(Packet::Id::ProbeCharacteristics, initial_packet_code()) {
       m_waiting_characteristics = true;
-      m_read_by_type_request_packet = make_shared<Packet::Commands::ReadByTypeRequest>(final_type, final_type);
+
+      m_read_by_type_request_packet = make_shared<Packet::Commands::ReadByTypeRequest>();
     }
 
     void ProbeCharacteristics::unserialize(FlatbuffersFormatExtractor& extractor) {
@@ -66,7 +63,7 @@ namespace Packet {
       return m_read_by_type_request_packet->serialize(builder);
     }
 
-    const std::string ProbeCharacteristics::stringify() const {
+    const string ProbeCharacteristics::stringify() const {
       stringstream result;
 
       result << "<ProbeCharacteristics> "
@@ -85,33 +82,33 @@ namespace Packet {
       return result.str();
     }
 
-    void ProbeCharacteristics::before_sent(const std::shared_ptr<PacketRouter>& router) {
+    void ProbeCharacteristics::prepare(const shared_ptr<PacketRouter>& router) {
       // We want to keep the same Packet::Type to resend command until we probed all the characteristics
       if (m_waiting_characteristics) {
-        m_current_type = m_final_type;
+        m_read_by_type_request_packet->translate();
+        m_current_type = m_read_by_type_request_packet->get_type();
 
         PacketUuid response_uuid = m_read_by_type_request_packet->get_response_uuid();
         auto response_callback =
-            [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {
+            [this](const shared_ptr<PacketRouter>& router, shared_ptr<Packet::AbstractPacket> packet) {
               return on_read_by_type_response_received(router, packet);
             };
 
         PacketUuid error_uuid = m_read_by_type_request_packet->get_response_uuid();
         error_uuid.response_packet_code = Format::HCI::AttributeCode::ErrorResponse;
         auto error_callback =
-            [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {
+            [this](const shared_ptr<PacketRouter>& router, shared_ptr<Packet::AbstractPacket> packet) {
               return on_error_response_received(router, packet);
             };
 
         router->add_callback(response_uuid, shared_from(this), response_callback);
         router->add_callback(error_uuid, shared_from(this), error_callback);
       } else {
-        m_current_type = m_initial_type;
-        m_packet_code = packet_code(m_current_type);
+        m_current_type = final_type();
       }
     }
 
-    shared_ptr<AbstractPacket> ProbeCharacteristics::on_read_by_type_response_received(const std::shared_ptr<PacketRouter>& router,
+    shared_ptr<AbstractPacket> ProbeCharacteristics::on_read_by_type_response_received(const shared_ptr<PacketRouter>& router,
                                                                                        const shared_ptr<AbstractPacket>& packet) {
       LOG.debug("Response received", "ProbeCharacteristics");
       PacketUuid error_uuid = m_read_by_type_request_packet->get_response_uuid();
@@ -138,7 +135,7 @@ namespace Packet {
       return shared_from(this);
     }
 
-    shared_ptr<AbstractPacket> ProbeCharacteristics::on_error_response_received(const std::shared_ptr<PacketRouter>& router,
+    shared_ptr<AbstractPacket> ProbeCharacteristics::on_error_response_received(const shared_ptr<PacketRouter>& router,
                                                                                 const shared_ptr<AbstractPacket>& packet) {
       LOG.debug("Error received (could be normal)", "ProbeCharacteristics");
       PacketUuid response_uuid = m_read_by_type_request_packet->get_response_uuid();

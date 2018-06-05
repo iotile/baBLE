@@ -10,10 +10,10 @@
 class MGMTSocket : public AbstractSocket {
 
 public:
-  explicit MGMTSocket(std::shared_ptr<MGMTFormat> format);
+  explicit MGMTSocket(std::shared_ptr<uvw::Loop>& loop, std::shared_ptr<MGMTFormat> format);
 
   bool send(const std::vector<uint8_t>& data) override;
-  void poll(std::shared_ptr<uvw::Loop> loop, OnReceivedCallback on_received, OnErrorCallback on_error) override;
+  void poll(OnReceivedCallback on_received, OnErrorCallback on_error) override;
 
   void sync_send(const std::vector<uint8_t>& data);
   std::vector<uint8_t> sync_receive();
