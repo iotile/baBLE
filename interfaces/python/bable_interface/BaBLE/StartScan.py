@@ -26,5 +26,5 @@ class StartScan(object):
         return False
 
 def StartScanStart(builder): builder.StartObject(1)
-def StartScanAddActiveScan(builder, activeScan): builder.PrependBoolSlot(0, activeScan, 1)
+def StartScanAddActiveScan(builder, activeScan): builder.PrependBoolSlot(0, activeScan, 0)
 def StartScanEnd(builder): return builder.EndObject()

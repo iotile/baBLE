@@ -730,7 +730,7 @@ struct StartScan FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_ACTIVE_SCAN = 4
   };
   bool active_scan() const {
-    return GetField<uint8_t>(VT_ACTIVE_SCAN, 1) != 0;
+    return GetField<uint8_t>(VT_ACTIVE_SCAN, 0) != 0;
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -743,7 +743,7 @@ struct StartScanBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
   void add_active_scan(bool active_scan) {
-    fbb_.AddElement<uint8_t>(StartScan::VT_ACTIVE_SCAN, static_cast<uint8_t>(active_scan), 1);
+    fbb_.AddElement<uint8_t>(StartScan::VT_ACTIVE_SCAN, static_cast<uint8_t>(active_scan), 0);
   }
   explicit StartScanBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -759,7 +759,7 @@ struct StartScanBuilder {
 
 inline flatbuffers::Offset<StartScan> CreateStartScan(
     flatbuffers::FlatBufferBuilder &_fbb,
-    bool active_scan = true) {
+    bool active_scan = false) {
   StartScanBuilder builder_(_fbb);
   builder_.add_active_scan(active_scan);
   return builder_.Finish();
