@@ -17,8 +17,7 @@ namespace Packet {
     };
 
   protected:
-    HostOnlyPacket(Packet::Id id, uint16_t packet_code)
-        : AbstractPacket(id, initial_type(), final_type(), packet_code) {};
+    HostOnlyPacket(Packet::Id id, uint16_t packet_code) : AbstractPacket(id, initial_type(), final_type(), packet_code) {};
 
     void prepare(const std::shared_ptr<PacketRouter>& router) override {};
 

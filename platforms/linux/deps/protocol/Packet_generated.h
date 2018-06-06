@@ -26,6 +26,8 @@ struct StopScan;
 
 struct Connect;
 
+struct CancelConnection;
+
 struct Disconnect;
 
 struct SetPowered;
@@ -70,39 +72,41 @@ struct Packet;
 
 enum class Payload : uint8_t {
   NONE = 0,
-  Connect = 1,
-  Disconnect = 2,
-  GetConnectedDevices = 3,
-  GetControllersIds = 4,
-  GetControllerInfo = 5,
-  GetControllersList = 6,
-  GetMGMTInfo = 7,
-  ProbeCharacteristics = 8,
-  ProbeServices = 9,
-  Read = 10,
-  SetConnectable = 11,
-  SetDiscoverable = 12,
-  SetPowered = 13,
-  StartScan = 14,
-  StopScan = 15,
-  Write = 16,
-  WriteWithoutResponse = 17,
-  ControllerAdded = 18,
-  ControllerRemoved = 19,
-  DeviceConnected = 20,
-  DeviceDisconnected = 21,
-  DeviceFound = 22,
-  NotificationReceived = 23,
-  BaBLEError = 24,
-  Exit = 25,
-  Ready = 26,
+  CancelConnection = 1,
+  Connect = 2,
+  Disconnect = 3,
+  GetConnectedDevices = 4,
+  GetControllersIds = 5,
+  GetControllerInfo = 6,
+  GetControllersList = 7,
+  GetMGMTInfo = 8,
+  ProbeCharacteristics = 9,
+  ProbeServices = 10,
+  Read = 11,
+  SetConnectable = 12,
+  SetDiscoverable = 13,
+  SetPowered = 14,
+  StartScan = 15,
+  StopScan = 16,
+  Write = 17,
+  WriteWithoutResponse = 18,
+  ControllerAdded = 19,
+  ControllerRemoved = 20,
+  DeviceConnected = 21,
+  DeviceDisconnected = 22,
+  DeviceFound = 23,
+  NotificationReceived = 24,
+  BaBLEError = 25,
+  Exit = 26,
+  Ready = 27,
   MIN = NONE,
   MAX = Ready
 };
 
-inline const Payload (&EnumValuesPayload())[27] {
+inline const Payload (&EnumValuesPayload())[28] {
   static const Payload values[] = {
     Payload::NONE,
+    Payload::CancelConnection,
     Payload::Connect,
     Payload::Disconnect,
     Payload::GetConnectedDevices,
@@ -136,6 +140,7 @@ inline const Payload (&EnumValuesPayload())[27] {
 inline const char * const *EnumNamesPayload() {
   static const char * const names[] = {
     "NONE",
+    "CancelConnection",
     "Connect",
     "Disconnect",
     "GetConnectedDevices",
@@ -174,6 +179,10 @@ inline const char *EnumNamePayload(Payload e) {
 
 template<typename T> struct PayloadTraits {
   static const Payload enum_value = Payload::NONE;
+};
+
+template<> struct PayloadTraits<CancelConnection> {
+  static const Payload enum_value = Payload::CancelConnection;
 };
 
 template<> struct PayloadTraits<Connect> {
@@ -843,6 +852,34 @@ inline flatbuffers::Offset<Connect> CreateConnectDirect(
       _fbb,
       address ? _fbb.CreateString(address) : 0,
       address_type);
+}
+
+struct CancelConnection FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           verifier.EndTable();
+  }
+};
+
+struct CancelConnectionBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  explicit CancelConnectionBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  CancelConnectionBuilder &operator=(const CancelConnectionBuilder &);
+  flatbuffers::Offset<CancelConnection> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<CancelConnection>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<CancelConnection> CreateCancelConnection(
+    flatbuffers::FlatBufferBuilder &_fbb) {
+  CancelConnectionBuilder builder_(_fbb);
+  return builder_.Finish();
 }
 
 struct Disconnect FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
@@ -2102,6 +2139,9 @@ struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     return GetPointer<const void *>(VT_PAYLOAD);
   }
   template<typename T> const T *payload_as() const;
+  const CancelConnection *payload_as_CancelConnection() const {
+    return payload_type() == Payload::CancelConnection ? static_cast<const CancelConnection *>(payload()) : nullptr;
+  }
   const Connect *payload_as_Connect() const {
     return payload_type() == Payload::Connect ? static_cast<const Connect *>(payload()) : nullptr;
   }
@@ -2207,6 +2247,10 @@ struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            verifier.EndTable();
   }
 };
+
+template<> inline const CancelConnection *Packet::payload_as<CancelConnection>() const {
+  return payload_as_CancelConnection();
+}
 
 template<> inline const Connect *Packet::payload_as<Connect>() const {
   return payload_as_Connect();
@@ -2392,6 +2436,10 @@ inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *obj, Payl
   switch (type) {
     case Payload::NONE: {
       return true;
+    }
+    case Payload::CancelConnection: {
+      auto ptr = reinterpret_cast<const CancelConnection *>(obj);
+      return verifier.VerifyTable(ptr);
     }
     case Payload::Connect: {
       auto ptr = reinterpret_cast<const Connect *>(obj);

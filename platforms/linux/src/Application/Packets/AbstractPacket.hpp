@@ -65,17 +65,17 @@ namespace Packet {
     void set_uuid_request(const std::string& uuid_request);
     void set_controller_id(uint16_t controller_id);
     void set_connection_id(uint16_t connection_id);
+    void set_status(uint8_t native_status, bool compute_status = true, const std::string& native_class = "");
 
     void translate();
     virtual void prepare(const std::shared_ptr<PacketRouter>& router) = 0;
+
+    void import_status(const std::shared_ptr<AbstractPacket>& packet);
 
     const std::string stringify() const override;
 
   protected:
     AbstractPacket(Packet::Id id, Packet::Type initial_type, Packet::Type final_type, uint16_t packet_code);
-
-    void set_status(uint8_t native_status, bool compute_status = true);
-    void import_status(const AbstractPacket& packet);
 
     template <class T>
     inline std::shared_ptr<T> shared_from(T* that) {

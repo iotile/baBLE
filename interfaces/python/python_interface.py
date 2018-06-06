@@ -6,7 +6,7 @@ from bable_interface.BaBLE import Packet, Payload, GetMGMTInfo, StartScan, StopS
     BaBLEError, StatusCode, Connect, DeviceConnected, Disconnect, DeviceDisconnected, SetPowered, \
     SetDiscoverable, SetConnectable, GetControllersList, ControllerAdded, ControllerRemoved, \
     GetControllerInfo, GetConnectedDevices, GetControllersIds, Read, Write, NotificationReceived, \
-    ProbeServices, ProbeCharacteristics, WriteWithoutResponse, Ready, Exit
+    ProbeServices, ProbeCharacteristics, WriteWithoutResponse, Ready, Exit, CancelConnection
 
 
 def status_code_to_string(status_code):
@@ -75,6 +75,16 @@ def fb_connect(uuid, controller_id, address_device):
     payload = Connect.ConnectEnd(builder)
 
     return build_packet(builder, uuid, payload, Payload.Payload.Connect, controller_id)
+
+
+## CancelConnection
+def fb_cancel_connection(uuid, controller_id):
+    builder = flatbuffers.Builder(0)
+
+    CancelConnection.CancelConnectionStart(builder)
+    payload = CancelConnection.CancelConnectionEnd(builder)
+
+    return build_packet(builder, uuid, payload, Payload.Payload.CancelConnection, controller_id)
 
 
 ## Disconnect
@@ -573,13 +583,23 @@ try:
                       "Write:", characteristic.Write(), "Broadcast:", characteristic.Broadcast())
 
             process.stdin.write(fb_disconnect("0004", 0, device_connection_handle))
+        elif packet.PayloadType() == Payload.Payload().CancelConnection:
+            cancel_connection = CancelConnection.CancelConnection()
+            cancel_connection.Init(packet.Payload().Bytes, packet.Payload().Pos)
+
+            print("CancelConnection",
+                  "UUID:", uuid,
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Controller ID:", controller_id)
+
         elif packet.PayloadType() == Payload.Payload().Ready:
             ready = Ready.Ready()
             ready.Init(packet.Payload().Bytes, packet.Payload().Pos)
 
             print("ReadyPacket")
 
-            process.stdin.write(fb_connect("0001", 0, address_device_str))
+            # process.stdin.write(fb_connect("0001", 0, "C4:F0:A5:E6:8A:01"))
+            process.stdin.write(fb_cancel_connection("0002", 0))
             # process.stdin.write(fb_probe_characteristics("0001", 0, device_connection_handle))
             # process.stdin.write(fb_start_scan("0001", 0))
             # time.sleep(1)

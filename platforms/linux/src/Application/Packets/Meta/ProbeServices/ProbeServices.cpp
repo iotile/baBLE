@@ -129,7 +129,7 @@ namespace Packet {
       response_uuid.response_packet_code = Format::HCI::AttributeCode::ReadByGroupTypeResponse;
       router->remove_callback(response_uuid);
 
-      import_status(*packet);
+      import_status(packet);
 
       return shared_from(this);
     }

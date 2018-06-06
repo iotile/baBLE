@@ -67,7 +67,7 @@ namespace Packet {
         throw Exceptions::RuntimeErrorException("Can't cast AbstractPacket to SetScanEnable packet");
       }
 
-      import_status(*m_set_scan_enable_packet);
+      import_status(m_set_scan_enable_packet);
       m_waiting_response = false;
 
       return shared_from(this);

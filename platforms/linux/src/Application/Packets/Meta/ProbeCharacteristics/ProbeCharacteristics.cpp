@@ -150,7 +150,7 @@ namespace Packet {
       Format::HCI::AttributeErrorCode error_code = error_packet->get_error_code();
 
       if (error_code != Format::HCI::AttributeErrorCode::AttributeNotFound) {
-        import_status(*error_packet);
+        import_status(error_packet);
       }
 
       m_waiting_characteristics = false;

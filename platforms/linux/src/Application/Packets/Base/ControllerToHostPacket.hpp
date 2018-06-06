@@ -13,19 +13,10 @@ namespace Packet {
     };
 
   protected:
-    ControllerToHostPacket(Packet::Id id, Packet::Type type, uint16_t initial_packet_code, uint16_t final_packet_code, bool ignore = false)
-        : AbstractPacket(id, type, final_type(), initial_packet_code) {
-      m_final_packet_code = final_packet_code;
+    ControllerToHostPacket(Packet::Id id, Packet::Type type, uint16_t initial_packet_code,
+                           uint16_t final_packet_code, bool ignore = false);
 
-      if (ignore) {
-        m_final_type = Packet::Type::NONE;
-      }
-    };
-
-    void prepare(const std::shared_ptr<PacketRouter>& router) override {
-      AbstractPacket::translate();
-      m_packet_code = m_final_packet_code;
-    };
+    void prepare(const std::shared_ptr<PacketRouter>& router) override;
 
   private:
     uint16_t m_final_packet_code;

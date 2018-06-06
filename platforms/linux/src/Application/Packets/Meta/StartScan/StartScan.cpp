@@ -102,7 +102,7 @@ namespace Packet {
       }
 
       if (m_set_scan_params_packet->get_status() != BaBLE::StatusCode::Success) {
-        import_status(*m_set_scan_params_packet);
+        import_status(m_set_scan_params_packet);
         m_waiting_response = Packet::Id::None;
       } else {
         m_waiting_response = Packet::Id::SetScanEnable;
@@ -121,7 +121,7 @@ namespace Packet {
         throw Exceptions::RuntimeErrorException("Can't cast AbstractPacket to SetScanEnable packet");
       }
 
-      import_status(*m_set_scan_params_packet);
+      import_status(m_set_scan_params_packet);
       m_waiting_response = Packet::Id::None;
 
       return shared_from(this);

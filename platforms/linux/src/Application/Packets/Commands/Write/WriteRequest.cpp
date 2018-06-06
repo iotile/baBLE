@@ -83,9 +83,12 @@ namespace Packet {
       PacketUuid response_uuid = get_response_uuid();
       router->remove_callback(response_uuid);
 
-      import_status(*packet);
+      shared_ptr<Packet::Commands::WriteResponse> write_response_packet = make_shared<Packet::Commands::WriteResponse>();
+      write_response_packet->import_status(packet);
+      write_response_packet->set_uuid_request(m_uuid_request);
+      write_response_packet->set_attribute_handle(m_attribute_handle);
 
-      return shared_from(this);
+      return write_response_packet;
     }
 
   }

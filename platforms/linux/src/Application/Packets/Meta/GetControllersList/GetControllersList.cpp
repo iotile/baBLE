@@ -141,7 +141,7 @@ namespace Packet {
         throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to GetControllersIds packet.");
       }
 
-      import_status(*controllers_ids_response_packet);
+      import_status(controllers_ids_response_packet);
 
       if (m_status != BaBLE::StatusCode::Success) {
         m_waiting_response = Packet::Id::None;
@@ -170,7 +170,7 @@ namespace Packet {
         throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to GetControllerInfo packet.");
       }
 
-      import_status(*controller_info_response_packet);
+      import_status(controller_info_response_packet);
 
       if (m_status != BaBLE::StatusCode::Success) {
         m_waiting_response = Packet::Id::None;

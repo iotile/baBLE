@@ -1,5 +1,6 @@
 #include "ReadByTypeRequest.hpp"
 #include "../../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
+#include "ReadByTypeResponse.hpp"
 
 using namespace std;
 
@@ -72,9 +73,11 @@ namespace Packet {
       PacketUuid response_uuid = get_response_uuid();
       router->remove_callback(response_uuid);
 
-      import_status(*packet);
+      shared_ptr<Packet::Commands::ReadByTypeResponse> response_packet = make_shared<Packet::Commands::ReadByTypeResponse>();
+      response_packet->import_status(packet);
+      response_packet->set_uuid_request(m_uuid_request);
 
-      return shared_from(this);
+      return response_packet;
     }
 
   }

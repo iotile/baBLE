@@ -6,16 +6,31 @@ def on_device_found(device):
     print("ON DEVICE FOUND", device)
 
 
+def on_connected(device):
+    print("ON CONNECTED", device)
+
+
+def on_error():
+    print("ERROR")
+
+
+def on_disconnected(connection_handle):
+    print("ON DISCONNECTED", connection_handle)
+
+
 bable = bable_interface.BaBLE()
 bable.start()
-bable.connect("00:11:22:33:44:55")
-print("CONNECTED")
 # bable.start_scan(on_device_found)
 # print("SCAN STARTED IN TEST.PY")
 # time.sleep(2)
 # bable.stop_scan()
 # print("SCAN STOPPED IN TEST.PY")
-time.sleep(2)
+# time.sleep(2)
+bable.connect("C4:F0:A5:E6:8A:91", "random", on_connected, on_error)
+print("CONNECTED IN TEST.PY")
+time.sleep(20)
+# bable.disconnect(0x0040, on_disconnected)
+# print("DISCONNECTED IN TEST.PY")
 bable.stop()
 print("DONE")
 

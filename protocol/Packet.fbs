@@ -6,6 +6,7 @@ include "./Commands/GetConnectedDevices.fbs";
 include "./Commands/StartScan.fbs";
 include "./Commands/StopScan.fbs";
 include "./Commands/Connect.fbs";
+include "./Commands/CancelConnection.fbs";
 include "./Commands/Disconnect.fbs";
 include "./Commands/SetPowered.fbs";
 include "./Commands/SetDiscoverable.fbs";
@@ -28,6 +29,7 @@ namespace BaBLE;
 
 union Payload {
   // Commands
+  CancelConnection,
   Connect,
   Disconnect,
   GetConnectedDevices,

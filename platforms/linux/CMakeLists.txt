@@ -14,8 +14,6 @@ set(SOURCES_FILES
         src/Application/Packets/constants.hpp
         src/Application/Packets/PacketUuid.hpp
         src/Application/PacketBuilder/PacketBuilder.cpp
-        src/Application/Packets/Base/HostToControllerPacket.hpp
-        src/Application/Packets/Base/ControllerToHostPacket.hpp
         src/Application/Packets/Commands/GetMGMTInfo/GetMGMTInfoRequest.cpp
         src/Application/Packets/Commands/Disconnect/Disconnect.cpp
         src/Application/Packets/Commands/SetPowered/SetPoweredRequest.cpp
@@ -88,9 +86,11 @@ set(SOURCES_FILES
         src/Application/Packets/Meta/StartScan/StartScan.cpp
         src/utils/string_formats.hpp
         src/Application/Packets/Commands/CreateConnection/CreateConnection.cpp
-        src/Application/Packets/Commands/CreateConnection/CreateConnection.hpp
         src/Application/Packets/Base/HostToControllerPacket.cpp
-        src/Application/Packets/Base/ControllerToHostPacket.cpp src/Application/Packets/Base/HostOnlyPacket.cpp src/Application/Packets/Base/HostOnlyPacket.hpp src/Application/Packets/Meta/StopScan/StopScan.cpp src/Application/Packets/Meta/StopScan/StopScan.hpp)
+        src/Application/Packets/Base/ControllerToHostPacket.cpp
+        src/Application/Packets/Base/HostOnlyPacket.hpp
+        src/Application/Packets/Meta/StopScan/StopScan.cpp
+        src/Application/Packets/Commands/CancelConnection/CancelConnectionRequest.cpp src/Application/Packets/Commands/CancelConnection/CancelConnectionResponse.cpp src/Application/Packets/Commands/CancelConnection/CancelConnectionResponse.hpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies

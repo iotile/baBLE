@@ -27,6 +27,7 @@
 #include "Application/Packets/Commands/GetConnectedDevices/GetConnectedDevicesRequest.hpp"
 #include "Application/Packets/Commands/GetConnectedDevices/GetConnectedDevicesResponse.hpp"
 #include "Application/Packets/Commands/CreateConnection/CreateConnection.hpp"
+#include "Application/Packets/Commands/CancelConnection/CancelConnectionRequest.hpp"
 #include "Application/Packets/Events/DeviceConnected/DeviceConnected.hpp"
 #include "Application/Packets/Events/DeviceDisconnected/DeviceDisconnected.hpp"
 #include "Application/Packets/Events/ControllerAdded/ControllerAdded.hpp"
@@ -99,6 +100,7 @@ namespace Bootstrap {
       .register_command<Packet::Commands::SetDiscoverableRequest>()
       .register_command<Packet::Commands::SetConnectableRequest>()
       .register_command<Packet::Commands::CreateConnection>()
+      .register_command<Packet::Commands::CancelConnectionRequest>()
       .register_command<Packet::Commands::Disconnect>()
       .register_command<Packet::Commands::ReadRequest>()
       .register_command<Packet::Commands::WriteRequest>()

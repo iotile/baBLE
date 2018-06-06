@@ -148,6 +148,11 @@ int main(int argc, char* argv[]) {
         // This part is needed due to a bug since Linux Kernel v4 : we have to create manually the L2CAP socket, else
         // we'll be disconnected after sending one packet.
         if (packet->get_id() == Packet::Id::DeviceConnected) {
+          if (packet->get_status() != BaBLE::StatusCode::Success) {
+            LOG.debug("Unsuccessful DeviceConnected event ignored (because the device is not connected...)", "HCI poller");
+            return;
+          }
+
           auto device_connected_packet = dynamic_pointer_cast<Packet::Events::DeviceConnected>(packet);
           if (device_connected_packet == nullptr) {
             throw Exceptions::RuntimeErrorException("Can't downcast packet to DeviceConnected packet");
@@ -160,6 +165,11 @@ int main(int argc, char* argv[]) {
               device_connected_packet->get_device_address_type()
           );
         } else if (packet->get_id() == Packet::Id::DeviceDisconnected) {
+          if (packet->get_status() != BaBLE::StatusCode::Success) {
+            LOG.debug("Unsuccessful DeviceDisconnected event ignored (because the device is not disconnected...)", "HCI poller");
+            return;
+          }
+
           auto device_disconnected_packet = dynamic_pointer_cast<Packet::Events::DeviceDisconnected>(packet);
           if (device_disconnected_packet == nullptr) {
             throw Exceptions::RuntimeErrorException("Can't downcast packet to DeviceDisconnected packet");

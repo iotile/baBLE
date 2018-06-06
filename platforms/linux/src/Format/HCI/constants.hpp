@@ -162,9 +162,10 @@ namespace Format {
     };
 
     enum CommandCode {
-      SetScanParameters = 0x200b,
-      SetScanEnable = 0x200c,
-      LECreateConnection = 0x200d,
+      SetScanParameters = 0x200B,
+      SetScanEnable = 0x200C,
+      LECreateConnection = 0x200D,
+      LECreateConnectionCancel = 0x200E,
       Disconnect = 0x0406
     };
 

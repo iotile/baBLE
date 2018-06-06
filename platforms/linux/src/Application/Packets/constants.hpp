@@ -13,6 +13,8 @@ namespace Packet {
   enum class Id {
     None,
     BaBLEError,
+    CancelConnectionRequest,
+    CancelConnectionResponse,
     CommandComplete,
     ControllerAdded,
     ControllerRemoved,

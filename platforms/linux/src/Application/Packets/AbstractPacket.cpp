@@ -122,10 +122,15 @@ namespace Packet {
     };
   };
 
-  void AbstractPacket::set_status(uint8_t native_status, bool compute_status) {
+  void AbstractPacket::set_status(uint8_t native_status, bool compute_status, const std::string& native_class) {
     m_native_status = native_status;
+
     if (compute_status) {
       compute_bable_status();
+    }
+
+    if (!native_class.empty()) {
+      m_native_class = native_class;
     }
   }
 
@@ -141,10 +146,10 @@ namespace Packet {
     m_connection_id = connection_id;
   }
 
-  void AbstractPacket::import_status(const AbstractPacket& packet) {
-    m_status = packet.m_status;
-    m_native_class = packet.m_native_class;
-    m_native_status = packet.m_native_status;
+  void AbstractPacket::import_status(const shared_ptr<AbstractPacket>& packet) {
+    m_status = packet->m_status;
+    m_native_class = packet->m_native_class;
+    m_native_status = packet->m_native_status;
   }
 
   void AbstractPacket::compute_bable_status() {

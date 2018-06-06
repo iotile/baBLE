@@ -1,156 +1,233 @@
-import flatbuffers
-import functools
 import threading
 import sys
 import subprocess
-import struct
 import time
 
-from .BaBLE import Packet, Payload, Discovering, StartScan, DeviceFound, Exit, StopScan
+from .BaBLE import Payload, StartScan, DeviceConnected, DeviceFound, StopScan, ProbeServices, \
+    ProbeCharacteristics, DeviceDisconnected
+from .flatbuffers_packets import fb_start_scan, fb_stop_scan, fb_probe_characteristics, fb_probe_services, \
+    fb_disconnect, fb_connect, fb_exit
+from .working_thread import WorkingThread
+from .receiving_thread import ReceivingThread
 
 PYTHON_2 = sys.version_info[0] < 3
 
 if PYTHON_2:
     import trollius as asyncio
     from trollius import Future
-
-    from .commands_py2 import connect
-
-    def to_bytes(value, length, byteorder='big'):
-        struct_str = '>' if byteorder == 'big' else '<'
-        if value < 0:
-            raise ValueError("Can't convert negative values to bytes.")
-
-        if length == 1:
-            struct_str += 'B'
-        elif length == 2:
-            struct_str += 'H'
-        elif length == 4:
-            struct_str += 'I'
-        elif length == 8:
-            struct_str += 'Q'
-        else:
-            raise ValueError("Invalid length.")
-
-        return struct.pack(struct_str, value)
-
 else:
     import asyncio
-    from concurrent.futures import Future
-    from .commands_py3 import connect
-
-    def to_bytes(value, length, byteorder='big'):
-        return value.to_bytes(length, byteorder=byteorder)
-
-
-def build_packet(builder, uuid, payload, payload_type, controller_id=None):
-    uuid_request = builder.CreateString(uuid)
-
-    Packet.PacketStart(builder)
-    Packet.PacketAddUuid(builder, uuid_request)
-    if controller_id is not None:
-        Packet.PacketAddControllerId(builder, controller_id)
-    Packet.PacketAddPayloadType(builder, payload_type)
-    Packet.PacketAddPayload(builder, payload)
-    packet = Packet.PacketEnd(builder)
-
-    builder.Finish(packet)
-
-    buf = builder.Output()
-    buf = b'\xCA\xFE' + to_bytes(len(buf), 2, byteorder='little') + buf
-    return buf
-
-
-## Exit
-def fb_exit():
-    builder = flatbuffers.Builder(0)
-    Exit.ExitStart(builder)
-    payload = Exit.ExitEnd(builder)
-
-    return build_packet(builder, "", payload, Payload.Payload.Exit)
-
-
-def fb_start_scan(uuid, controller_id):
-    builder = flatbuffers.Builder(0)
-
-    StartScan.StartScanStart(builder)
-    StartScan.StartScanAddAddressType(builder, 0x07)
-    payload = StartScan.StartScanEnd(builder)
-
-    return build_packet(builder, uuid, payload, Payload.Payload.StartScan, controller_id)
-
-
-def fb_stop_scan(uuid, controller_id):
-    builder = flatbuffers.Builder(0)
-    StopScan.StopScanStart(builder)
-    StopScan.StopScanAddAddressType(builder, 0x07)
-    payload = StopScan.StopScanEnd(builder)
-
-    return build_packet(builder, uuid, payload, Payload.Payload.StopScan, controller_id)
+    from asyncio import Future
 
 
 @asyncio.coroutine
-def start_scan(on_discovered):
+def start_scan(controller_id, on_device_found):
     # Registering callback on DeviceFound event
+    @asyncio.coroutine
     def on_device_found_event(packet):
-        devicefound = DeviceFound.DeviceFound()
-        devicefound.Init(packet.Payload().Bytes, packet.Payload().Pos)
+        response = DeviceFound.DeviceFound()
+        response.Init(packet.Payload().Bytes, packet.Payload().Pos)
         result = {
-            "address_type": devicefound.AddressType(),
-            "address": devicefound.Address(),
-            "rssi": devicefound.Rssi(),
-            "flags": devicefound.FlagsAsNumpy(),
-            "device_uuid": devicefound.Uuid(),
-            "company_id": devicefound.CompanyId(),
-            "manufacturer_data_advertised": devicefound.ManufacturerDataAdvertisedAsNumpy(),
-            "manufacturer_data_scanned": devicefound.ManufacturerDataScannedAsNumpy(),
-            "device_name": devicefound.DeviceName()
+            "type": response.Type(),
+            "address_type": response.AddressType(),
+            "address": response.Address(),
+            "rssi": response.Rssi(),
+            "device_uuid": response.Uuid(),
+            "company_id": response.CompanyId(),
+            "manufacturer_data": response.ManufacturerDataAsNumpy(),
+            "device_name": response.DeviceName()
         }
-        on_discovered(result)
+        on_device_found(result)
 
-    waiting_scan_started = threading.Event()
+    @asyncio.coroutine
+    def on_start_scan_response(fut, packet):
+        print("ON START SCAN RESPONSE", packet.Status())
+        response = StartScan.StartScan()
+        response.Init(packet.Payload().Bytes, packet.Payload().Pos)
+        del BaBLE.callbacks[(Payload.Payload().StartScan, packet.ControllerId())]
+        fut.set_result(None)
 
-    def on_discovering(packet):
-        discovering = Discovering.Discovering()
-        discovering.Init(packet.Payload().Bytes, packet.Payload().Pos)
-        state = discovering.State()
-        print("ON DISCOVERING", state)
-        if state is True:
-            waiting_scan_started.set()
-            del BaBLE.callbacks[Payload.Payload().Discovering]
+    fut = Future()
 
-    BaBLE.callbacks[Payload.Payload().DeviceFound] = on_device_found_event
-    BaBLE.callbacks[Payload.Payload().Discovering] = on_discovering
+    BaBLE.callbacks[(Payload.Payload().DeviceFound, controller_id)] = on_device_found_event
+    BaBLE.callbacks[(Payload.Payload().StartScan, controller_id)] = (on_start_scan_response, fut)
 
     # Send command to BaBLE
-    BaBLE.subprocess.stdin.write(fb_start_scan("0001", 0))
+    BaBLE.subprocess.stdin.write(fb_start_scan("0001", controller_id, True))
 
     # wait for discovering = True
     print("Waiting for scan to start...")
-    waiting_scan_started.wait()
+    yield from asyncio.wait_for(fut, 15.0)
 
 
 @asyncio.coroutine
-def stop_scan():
-    waiting_scan_stopped = threading.Event()
+def stop_scan(controller_id):
 
-    def on_discovering(packet):
-        discovering = Discovering.Discovering()
-        discovering.Init(packet.Payload().Bytes, packet.Payload().Pos)
-        state = discovering.State()
-        print("ON DISCOVERING", state)
-        if state is False:
-            waiting_scan_stopped.set()
-            del BaBLE.callbacks[Payload.Payload().Discovering]
+    @asyncio.coroutine
+    def on_stop_scan_response(fut, packet):
+        print("ON STOP SCAN RESPONSE", packet.Status())
+        response = StopScan.StopScan()
+        response.Init(packet.Payload().Bytes, packet.Payload().Pos)
+        del BaBLE.callbacks[(Payload.Payload().StopScan, packet.ControllerId())]
+        del BaBLE.callbacks[(Payload.Payload().DeviceFound, packet.ControllerId())]
+        fut.set_result(None)
 
-    BaBLE.callbacks[Payload.Payload().Discovering] = on_discovering
+    fut = Future()
+
+    BaBLE.callbacks[(Payload.Payload().StopScan, controller_id)] = (on_stop_scan_response, fut)
 
     # Send command to BaBLE
-    BaBLE.subprocess.stdin.write(fb_stop_scan("0001", 0))
+    BaBLE.subprocess.stdin.write(fb_stop_scan("0001", controller_id))
 
     # wait for discovering = True
     print("Waiting for scan to stop...")
-    waiting_scan_stopped.wait()
+    yield from asyncio.wait_for(fut, 15.0)
+
+
+@asyncio.coroutine
+def probe_services(controller_id, connection_handle):
+
+    @asyncio.coroutine
+    def on_services_probed(fut, packet):
+        print("ON PROBE SERVICES RESPONSE", packet.Status())
+        response = ProbeServices.ProbeServices()
+        response.Init(packet.Payload().Bytes, packet.Payload().Pos)
+        num_services = response.ServicesLength()
+        services = []
+
+        for i in range(num_services):
+            service = response.Services(i)
+            services.append({
+                "handle": service.Handle(),
+                "group_end_handle": service.GroupEndHandle(),
+                "uuid": service.Uuid()
+            })
+
+        del BaBLE.callbacks[(Payload.Payload().ProbeServices, controller_id)]
+        fut.set_result(services)
+
+    fut = Future()
+
+    BaBLE.callbacks[
+        (Payload.Payload().ProbeServices, controller_id)
+    ] = (on_services_probed, fut)
+
+    # Send command to BaBLE
+    BaBLE.subprocess.stdin.write(fb_probe_services("0002", controller_id, connection_handle))
+
+    # wait for services
+    print("Waiting for services...")
+    services = yield from asyncio.wait_for(fut, 15.0)
+
+    return services
+
+
+@asyncio.coroutine
+def probe_characteristics(controller_id, connection_handle):
+
+    @asyncio.coroutine
+    def on_characteristics_probed(fut, packet):
+        print("ON PROBE CHARACTERISTICS RESPONSE", packet.Status())
+        response = ProbeCharacteristics.ProbeCharacteristics()
+        response.Init(packet.Payload().Bytes, packet.Payload().Pos)
+        num_characteristics = response.CharacteristicsLength()
+        characteristics = []
+        for i in range(num_characteristics):
+            characteristic = response.Characteristics(i)
+            characteristics.append({
+                "handle": characteristic.Handle(),
+                "value_handle": characteristic.ValueHandle(),
+                "uuid": characteristic.Uuid(),
+                "indicate": characteristic.Indicate(),
+                "notify": characteristic.Notify(),
+                "read": characteristic.Read(),
+                "write": characteristic.Write(),
+                "broadcast": characteristic.Broadcast()
+            })
+
+        del BaBLE.callbacks[(Payload.Payload().ProbeCharacteristics, controller_id)]
+        fut.set_result(characteristics)
+
+    fut = Future()
+
+    BaBLE.callbacks[
+        (Payload.Payload().ProbeCharacteristics, controller_id)
+    ] = (on_characteristics_probed, fut)
+
+    # Send command to BaBLE
+    BaBLE.subprocess.stdin.write(fb_probe_characteristics("0003", controller_id, connection_handle))
+
+    # wait for services
+    print("Waiting for characteristics...")
+    characteristics = yield from asyncio.wait_for(fut, 15.0)
+
+    return characteristics
+
+
+@asyncio.coroutine
+def connect(controller_id, address, address_type, on_connected_with_info, on_error):
+    device = {}
+
+    @asyncio.coroutine
+    def on_connected(fut, packet):
+        print("ON DEVICE CONNECTED", packet.Status())
+
+        response = DeviceConnected.DeviceConnected()
+        response.Init(packet.Payload().Bytes, packet.Payload().Pos)
+
+        device["controller_id"] = packet.ControllerId()
+        device["connection_handle"] = response.ConnectionHandle()
+        device["address"] = response.Address()
+        device["address_type"] = response.AddressType()
+
+        fut.set_result(None)
+        del BaBLE.callbacks[(Payload.Payload().DeviceConnected, device["controller_id"])]  # TODO: Add address
+
+        device["services"] = yield from probe_services(device["controller_id"], device["connection_handle"])
+        device["characteristics"] = yield from probe_characteristics(
+            device["controller_id"],
+            device["connection_handle"]
+        )
+
+        on_connected_with_info(device)
+
+    fut = Future()
+
+    BaBLE.callbacks[(Payload.Payload().DeviceConnected, controller_id)] = (on_connected, fut)
+
+    # Send command to BaBLE
+    BaBLE.subprocess.stdin.write(fb_connect("0001", controller_id, address, address_type))
+    print("Connecting...")
+
+    # TODO: add timeout connection
+    try:
+        yield from asyncio.wait_for(fut, 5.0)
+    except asyncio.TimeoutError:
+        print("CONNECTION TIMEOUT")
+        del BaBLE.callbacks[(Payload.Payload().DeviceConnected, controller_id)]
+        on_error()
+
+
+@asyncio.coroutine
+def disconnect(controller_id, connection_handle, on_disconnected):
+
+    @asyncio.coroutine
+    def on_device_disconnected(packet):
+        print("ON DEVICE DISCONNECTED", packet.Status())
+        response = DeviceDisconnected.DeviceDisconnected()
+        response.Init(packet.Payload().Bytes, packet.Payload().Pos)
+        del BaBLE.callbacks[(Payload.Payload().DeviceDisconnected, packet.ControllerId())]
+
+        on_disconnected(connection_handle)
+
+    # TODO: add connection_handle to id callback
+    BaBLE.callbacks[(Payload.Payload().DeviceDisconnected, controller_id)] = on_device_disconnected
+
+    # Send command to BaBLE
+    BaBLE.subprocess.stdin.write(fb_disconnect("0001", controller_id, connection_handle))
+
+    # wait for discovering = True
+    print("Disconnecting...")
 
 
 class BaBLE(object):
@@ -170,7 +247,7 @@ class BaBLE(object):
     def start(self):
         self.working_thread.start()
         self.working_ready_event.wait()
-        BaBLE.subprocess = subprocess.Popen(["../../platforms/linux/build/baBLE_linux"],
+        BaBLE.subprocess = subprocess.Popen(["../../platforms/linux/build/debug/baBLE_linux", "--logging", "info"],
                                             stdout=subprocess.PIPE, stdin=subprocess.PIPE,
                                             bufsize=0,
                                             universal_newlines=False)
@@ -199,103 +276,36 @@ class BaBLE(object):
         if packet.PayloadType() == Payload.Payload().Ready:
             self.subprocess_ready_event.set()
         else:
-            if packet.PayloadType() in BaBLE.callbacks:
-                BaBLE.callbacks[packet.PayloadType()](packet)
+            key = (packet.PayloadType(), packet.ControllerId())
+            if key in BaBLE.callbacks:
+                val = BaBLE.callbacks[key]
+                if isinstance(val, tuple):
+                    self.working_thread.add_task(val[0](val[1], packet))
+                else:
+                    self.working_thread.add_task(val(packet))
             else:
-                print("Unexpected packet received:", packet.PayloadType())
+                print("Unexpected packet received:", key)
 
-    def start_scan(self, on_device_found):
+    def start_scan(self, on_device_found, controller_id=0):
         calldone = threading.Event()
 
         def scan_started(fut):
             calldone.set()
 
-        self.working_thread.add_task(start_scan(on_device_found), scan_started)
+        self.working_thread.add_task(start_scan(controller_id, on_device_found), scan_started)
         calldone.wait()
 
-    def stop_scan(self):
+    def stop_scan(self, controller_id=0):
         calldone = threading.Event()
 
         def scan_stopped(fut):
             calldone.set()
 
-        self.working_thread.add_task(stop_scan(), scan_stopped)
+        self.working_thread.add_task(stop_scan(controller_id), scan_stopped)
         calldone.wait()
 
-    def connect(self, address):
-        self.working_thread.add_task(connect(address))
+    def connect(self, address, address_type, on_connected, on_error, controller_id=0):
+        self.working_thread.add_task(connect(controller_id, address, address_type, on_connected, on_error))
 
-
-class WorkingThread(threading.Thread):
-
-    def __init__(self, ready_event):
-        super(WorkingThread, self).__init__()
-        self.loop = asyncio.get_event_loop()
-        self.thread_id = None
-        self.ready_event = ready_event
-
-    def run(self):
-        self.loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self.loop)
-        self.thread_id = threading.current_thread()
-        self.loop.call_soon(self.ready_event.set)
-        self.loop.run_forever()
-
-    def stop(self):
-        self.loop.call_soon_threadsafe(self.loop.stop)
-
-    def add_task(self, task, callback=None):
-        def _async_add(func):
-            try:
-                result = func()
-                if callback is not None:
-                    result.add_done_callback(callback)
-            except Exception as e:
-                print(e)
-
-        func = functools.partial(asyncio.ensure_future, task, loop=self.loop)
-        if threading.current_thread() == self.thread_id:
-            result = func()  # We can call directly if we're not going between threads.
-            if callback is not None:
-                result.add_done_callback(callback)
-        else:
-            self.loop.call_soon_threadsafe(_async_add, func)
-
-    def cancel_task(self, task):
-        self.loop.call_soon_threadsafe(task.cancel)
-
-
-class ReceivingThread(threading.Thread):
-
-    def __init__(self, stop_event, on_receive, file):
-        super(ReceivingThread, self).__init__()
-        self.stop_event = stop_event
-        self.on_receive = on_receive
-        self.file = file
-
-    def run(self):
-        try:
-            while True:
-                header = bytearray()
-                while len(header) < 4:
-                    header += self.file.read(1)
-
-                if header[:2] != b'\xCA\xFE':
-                    print('ERROR')
-                    print(header[:2])
-                    continue
-
-                length = (header[3] << 8) | header[2]  # depends on ENDIANNESS
-
-                # Needs timeout
-                payload = bytearray()
-                while len(payload) < length:
-                    payload += self.file.read(1)
-
-                packet = Packet.Packet.GetRootAsPacket(payload, 0)
-                if packet.PayloadType() == Payload.Payload().Exit:
-                    break
-
-                self.on_receive(packet)
-        except Exception as e:
-            print(e)
+    def disconnect(self, connection_handle, on_disconnected, controller_id=0):
+        self.working_thread.add_task(disconnect(controller_id, connection_handle, on_disconnected))

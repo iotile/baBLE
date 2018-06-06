@@ -70,6 +70,8 @@ namespace Packet {
       }
 
       set_status(result.at(0));
+      set_waiting_response(false);
+      m_final_type = Packet::Type::NONE;
 
       return shared_from(this);
     }
