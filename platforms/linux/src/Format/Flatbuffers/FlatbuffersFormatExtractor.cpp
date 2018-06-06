@@ -18,6 +18,7 @@ uint16_t FlatbuffersFormatExtractor::extract_payload_length(const vector<uint8_t
 
 // Constructors
 FlatbuffersFormatExtractor::FlatbuffersFormatExtractor(const vector<uint8_t> & data) : AbstractExtractor(data) {
+  verify(data);
   m_packet = BaBLE::GetPacket(data.data());
   m_packet_code = static_cast<uint16_t>(m_packet->payload_type());
   m_controller_id = m_packet->controller_id();
