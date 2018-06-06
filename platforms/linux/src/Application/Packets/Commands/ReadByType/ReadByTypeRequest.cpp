@@ -76,6 +76,8 @@ namespace Packet {
       shared_ptr<Packet::Commands::ReadByTypeResponse> response_packet = make_shared<Packet::Commands::ReadByTypeResponse>();
       response_packet->import_status(packet);
       response_packet->set_uuid_request(m_uuid_request);
+      response_packet->set_controller_id(m_controller_id);
+      response_packet->set_connection_id(m_connection_id);
 
       return response_packet;
     }

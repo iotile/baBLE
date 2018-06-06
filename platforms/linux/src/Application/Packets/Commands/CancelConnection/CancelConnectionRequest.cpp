@@ -47,6 +47,7 @@ namespace Packet {
       shared_ptr<Packet::Commands::CancelConnectionResponse> response_packet = make_shared<Packet::Commands::CancelConnectionResponse>();
       response_packet->set_status(result.at(0), true, "HCI");
       response_packet->set_uuid_request(m_uuid_request);
+      response_packet->set_controller_id(m_controller_id);
 
       return response_packet;
     }
