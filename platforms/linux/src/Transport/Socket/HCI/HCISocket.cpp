@@ -1,4 +1,11 @@
+#include <cerrno>
+#include <cstring>
+#include <sys/ioctl.h>
+#include <unistd.h>
 #include "HCISocket.hpp"
+#include "../../../Exceptions/Socket/SocketException.hpp"
+#include "../../../Log/Log.hpp"
+#include "../../../utils/string_formats.hpp"
 
 using namespace std;
 using namespace uvw;
@@ -6,10 +13,37 @@ using namespace uvw;
 Flags<PollHandle::Event> HCISocket::readable_flag = Flags<PollHandle::Event>(PollHandle::Event::READABLE);
 Flags<PollHandle::Event> HCISocket::writable_flag = Flags<PollHandle::Event>(PollHandle::Event::WRITABLE);
 
-HCISocket::HCISocket(shared_ptr<HCIFormat> format, uint16_t controller_id, const std::array<uint8_t, 6>& controller_address)
+// Create one HCI socket per Bluetooth controller
+vector<shared_ptr<HCISocket>> HCISocket::create_all(shared_ptr<uvw::Loop>& loop, shared_ptr<HCIFormat> hci_format) {
+  vector<shared_ptr<HCISocket>> hci_sockets;
+
+  int sock = socket(AF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC, BTPROTO_HCI);
+
+  struct Format::HCI::hci_dev_list_req* dl;
+  struct Format::HCI::hci_dev_req* dr;
+
+  dl = (Format::HCI::hci_dev_list_req*)calloc(HCI_MAX_DEV * sizeof(*dr) + sizeof(*dl), 1);
+  dr = dl->dev_req;
+
+  dl->dev_num = HCI_MAX_DEV;
+
+  if (ioctl(sock, HCIGETDEVLIST, dl) < 0) {
+    throw runtime_error("Can't get controllers list (using ioctl): " + string(strerror(errno)));
+  }
+
+  for (int i = 0; i < dl->dev_num; i++, dr++) {
+    shared_ptr<HCISocket> hci_socket = make_shared<HCISocket>(loop, hci_format, dr->dev_id);
+    hci_sockets.push_back(hci_socket);
+  }
+
+  free(dl);
+
+  return hci_sockets;
+}
+
+HCISocket::HCISocket(shared_ptr<uvw::Loop>& loop, shared_ptr<HCIFormat> format, uint16_t controller_id)
     : AbstractSocket(move(format)) {
   m_controller_id = controller_id;
-  m_controller_address = controller_address;
   m_writable = true;
 
   m_hci_socket = socket(AF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC | SOCK_NONBLOCK, BTPROTO_HCI);
@@ -24,6 +58,14 @@ HCISocket::HCISocket(shared_ptr<HCIFormat> format, uint16_t controller_id, const
   if(!bind_hci_socket()) {
     throw Exceptions::SocketException("Error while binding the HCI socket: " + string(strerror(errno)));
   }
+
+  if (!get_controller_address()) {
+    throw Exceptions::SocketException("Error while retrieving the Bluetooth controller address: " + string(strerror(errno)));
+  }
+
+  LOG.debug("HCI socket created on " + Utils::format_bd_address(m_controller_address), "HCI socket");
+
+  m_poller = loop->resource<uvw::PollHandle>(m_hci_socket);
 }
 
 bool HCISocket::bind_hci_socket() {
@@ -36,11 +78,24 @@ bool HCISocket::bind_hci_socket() {
   return bind(m_hci_socket, (struct sockaddr*) &addr, sizeof(addr)) == 0;
 }
 
+bool HCISocket::get_controller_address() {
+  struct Format::HCI::hci_dev_info di{};
+  di.dev_id = m_controller_id;
+
+  // TO GET THE ADDRESS OF THE CONTROLLER
+  if (ioctl(m_hci_socket, HCIGETDEVINFO, (void *)&di) < 0) {
+    return false;
+  }
+
+  copy(begin(di.bdaddr.b), end(di.bdaddr.b), m_controller_address.begin());
+  return true;
+}
+
 bool HCISocket::set_filter() {
   // IMPORTANT: without these filters, nothing will be received on the HCI socket...
   struct Format::HCI::hci_filter filter {
     (1 << Format::HCI::Type::Event) | (1 << Format::HCI::Type::AsyncData),
-    (1 << Format::HCI::EventCode::DisconnectComplete),
+    (1 << Format::HCI::EventCode::DisconnectComplete) | (1 << Format::HCI::EventCode::CommandComplete),
     (1 << Format::HCI::EventCode::LEMeta - 32),
     0
   };
@@ -48,7 +103,7 @@ bool HCISocket::set_filter() {
   return setsockopt(m_hci_socket, SOL_HCI, HCI_FILTER, &filter, sizeof(filter)) == 0;
 }
 
-void HCISocket::connect_l2cap_socket(uint16_t connection_handle, const std::array<uint8_t, 6>& device_address, uint8_t device_address_type) {
+void HCISocket::connect_l2cap_socket(uint16_t connection_handle, const array<uint8_t, 6>& device_address, uint8_t device_address_type) {
   OSSocketHandle::Type l2cap_socket = socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP);
   if (l2cap_socket < 0) {
     throw Exceptions::SocketException("Error while creating the L2CAP socket: " + string(strerror(errno)));
@@ -56,7 +111,7 @@ void HCISocket::connect_l2cap_socket(uint16_t connection_handle, const std::arra
 
   struct Format::HCI::sockaddr_l2 addr{};
   addr.l2_family = AF_BLUETOOTH;
-  copy(m_controller_address.begin(), m_controller_address.end(), std::begin(addr.l2_bdaddr.b));
+  copy(m_controller_address.begin(), m_controller_address.end(), begin(addr.l2_bdaddr.b));
   addr.l2_cid = ATT_CID;
   addr.l2_bdaddr_type = 0x01;
 
@@ -65,7 +120,7 @@ void HCISocket::connect_l2cap_socket(uint16_t connection_handle, const std::arra
   }
 
   addr.l2_family = AF_BLUETOOTH;
-  copy(device_address.begin(), device_address.end(), std::begin(addr.l2_bdaddr.b));
+  copy(device_address.begin(), device_address.end(), begin(addr.l2_bdaddr.b));
   addr.l2_cid = ATT_CID;
   addr.l2_bdaddr_type = device_address_type;
 
@@ -96,7 +151,7 @@ bool HCISocket::send(const vector<uint8_t>& data) {
   } else {
     set_writable(false);
 
-    LOG.info("Sending data...", "HCI socket");
+    LOG.debug("Sending data...", "HCI socket");
     LOG.debug(data, "HCI socket");
     if (write(m_hci_socket, data.data(), data.size()) < 0) {
       LOG.error("Error while sending a message to HCI socket: " + string(strerror(errno)), "HCISocket");
@@ -143,13 +198,11 @@ vector<uint8_t> HCISocket::receive() {
   return result;
 }
 
-void HCISocket::poll(shared_ptr<uvw::Loop> loop, OnReceivedCallback on_received, OnErrorCallback on_error) {
-  m_poller = loop->resource<uvw::PollHandle>(m_hci_socket);
-
+void HCISocket::poll(OnReceivedCallback on_received, OnErrorCallback on_error) {
   m_poller->on<uvw::PollEvent>([this, on_received, on_error](const uvw::PollEvent& event, const uvw::PollHandle& handle){
     try {
       if (event.flags & uvw::PollHandle::Event::READABLE) {
-        LOG.info("Reading data...", "HCISocket");
+        LOG.debug("Reading data...", "HCISocket");
         vector<uint8_t> received_payload = receive();
 
         on_received(received_payload, m_format);
@@ -193,4 +246,4 @@ HCISocket::~HCISocket() {
 
   close(m_hci_socket);
   LOG.debug("HCI socket closed", "HCI socket");
-};
+}

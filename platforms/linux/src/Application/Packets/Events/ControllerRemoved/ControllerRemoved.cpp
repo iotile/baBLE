@@ -1,32 +1,33 @@
+#include <sstream>
 #include "ControllerRemoved.hpp"
 
 using namespace std;
 
-namespace Packet::Events {
+namespace Packet {
 
-  ControllerRemoved::ControllerRemoved(Packet::Type initial_type, Packet::Type translated_type)
-      : EventPacket(initial_type, translated_type) {
-    m_id = BaBLE::Payload::ControllerRemoved;
-  }
+  namespace Events {
 
-  void ControllerRemoved::unserialize(MGMTFormatExtractor& extractor) {
-    EventPacket::unserialize(extractor);
-  };
+    ControllerRemoved::ControllerRemoved()
+        : ControllerToHostPacket(Packet::Id::ControllerRemoved, initial_type(), initial_packet_code(), final_packet_code()) {
+    }
 
-  vector<uint8_t> ControllerRemoved::serialize(AsciiFormatBuilder& builder) const {
-    EventPacket::serialize(builder);
+    void ControllerRemoved::unserialize(MGMTFormatExtractor& extractor) {}
 
-    builder.set_name("ControllerRemoved");
+    vector<uint8_t> ControllerRemoved::serialize(FlatbuffersFormatBuilder& builder) const {
+      auto payload = BaBLE::CreateControllerRemoved(builder);
 
-    return builder.build();
-  };
+      return builder.build(payload, BaBLE::Payload::ControllerRemoved);
+    }
 
-  vector<uint8_t> ControllerRemoved::serialize(FlatbuffersFormatBuilder& builder) const {
-    EventPacket::serialize(builder);
+    const string ControllerRemoved::stringify() const {
+      stringstream result;
 
-    auto payload = BaBLE::CreateControllerRemoved(builder);
+      result << "<ControllerRemoved> "
+             << AbstractPacket::stringify();
 
-    return builder.build(payload, BaBLE::Payload::ControllerRemoved);
+      return result.str();
+    }
+
   }
 
 }

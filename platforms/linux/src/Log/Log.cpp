@@ -1,3 +1,4 @@
+#include <iostream>
 #include "Log.hpp"
 
 using namespace std;
@@ -34,6 +35,24 @@ Log::Log() {
 
 void Log::set_level(const Level& level) {
   m_log_level = level;
+}
+
+void Log::set_level(const string& str_level) {
+  if (str_level == "debug") {
+    m_log_level = Level::DEBUG;
+  } else if (str_level == "info") {
+    m_log_level = Level::INFO;
+  } else if (str_level == "warning") {
+    m_log_level = Level::WARNING;
+  } else if (str_level == "error") {
+    m_log_level = Level::ERROR;
+  } else if (str_level == "critical") {
+    m_log_level = Level::CRITICAL;
+  } else if (str_level == "disabled") {
+    m_log_level = Level::DISABLED;
+  } else {
+    throw invalid_argument("Wrong log level.");
+  }
 }
 
 string Log::build_prefix(const string &name, const Level& level) {
@@ -77,4 +96,14 @@ void Log::debug(const string& message, const string& name) {
 
 void Log::debug(const Loggable& object, const string& name) {
   debug(object.stringify(), name);
+}
+
+void Log::debug(vector<uint8_t> bytes, const string &name) {
+  stringstream message_stream;
+  message_stream << "[ ";
+  for(uint8_t& value : bytes) {
+    message_stream << HEX(value) << " ";
+  }
+  message_stream << "]";
+  debug(message_stream.str(), name);
 }

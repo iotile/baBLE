@@ -1,146 +1,116 @@
 #ifndef BABLE_LINUX_BOOTSTRAP_CPP
 #define BABLE_LINUX_BOOTSTRAP_CPP
 
-#include <memory>
 #include "Format/AbstractFormat.hpp"
-#include "Application/PacketContainer/PacketContainer.hpp"
-#include "Application/Packets/Commands/GetMGMTInfo/GetMGMTInfo.hpp"
-#include "Application/Packets/Commands/Scan/StartScan.hpp"
-#include "Application/Packets/Commands/Scan/StopScan.hpp"
-#include "Application/Packets/Commands/AddDevice/AddDevice.hpp"
-#include "Application/Packets/Commands/RemoveDevice/RemoveDevice.hpp"
+#include "Application/PacketBuilder/PacketBuilder.hpp"
+#include "Application/Packets/Commands/GetMGMTInfo/GetMGMTInfoRequest.hpp"
+#include "Application/Packets/Commands/GetMGMTInfo/GetMGMTInfoResponse.hpp"
 #include "Application/Packets/Commands/Disconnect/Disconnect.hpp"
-#include "Application/Packets/Commands/SetPowered/SetPowered.hpp"
-#include "Application/Packets/Commands/SetDiscoverable/SetDiscoverable.hpp"
-#include "Application/Packets/Commands/SetConnectable/SetConnectable.hpp"
-#include "Application/Packets/Commands/GetControllersIds/GetControllersIds.hpp"
-#include "Application/Packets/Commands/GetControllerInfo/GetControllerInfo.hpp"
-#include "Application/Packets/Commands/Read/Read.hpp"
-#include "Application/Packets/Commands/Write/Write.hpp"
+#include "Application/Packets/Commands/SetPowered/SetPoweredRequest.hpp"
+#include "Application/Packets/Commands/SetPowered/SetPoweredResponse.hpp"
+#include "Application/Packets/Commands/SetDiscoverable/SetDiscoverableRequest.hpp"
+#include "Application/Packets/Commands/SetDiscoverable/SetDiscoverableResponse.hpp"
+#include "Application/Packets/Commands/SetConnectable/SetConnectableRequest.hpp"
+#include "Application/Packets/Commands/SetConnectable/SetConnectableResponse.hpp"
+#include "Application/Packets/Commands/GetControllersIds/GetControllersIdsRequest.hpp"
+#include "Application/Packets/Commands/GetControllersIds/GetControllersIdsResponse.hpp"
+#include "Application/Packets/Commands/GetControllerInfo/GetControllerInfoRequest.hpp"
+#include "Application/Packets/Commands/GetControllerInfo/GetControllerInfoResponse.hpp"
+#include "Application/Packets/Commands/ReadByGroupType/ReadByGroupTypeResponse.hpp"
+#include "Application/Packets/Commands/ReadByType/ReadByTypeResponse.hpp"
+#include "Application/Packets/Commands/Read/ReadRequest.hpp"
+#include "Application/Packets/Commands/Read/ReadResponse.hpp"
+#include "Application/Packets/Commands/Write/WriteRequest.hpp"
+#include "Application/Packets/Commands/Write/WriteResponse.hpp"
 #include "Application/Packets/Commands/NotificationReceived/NotificationReceived.hpp"
-#include "Application/Packets/Commands/ProbeServices/ProbeServices.hpp"
-#include "Application/Packets/Commands/ProbeCharacteristics/ProbeCharacteristics.hpp"
 #include "Application/Packets/Commands/WriteWithoutResponse/WriteWithoutResponse.hpp"
-#include "Application/Packets/Commands/GetConnectedDevices/GetConnectedDevices.hpp"
+#include "Application/Packets/Commands/GetConnectedDevices/GetConnectedDevicesRequest.hpp"
+#include "Application/Packets/Commands/GetConnectedDevices/GetConnectedDevicesResponse.hpp"
+#include "Application/Packets/Commands/CreateConnection/CreateConnection.hpp"
+#include "Application/Packets/Commands/CancelConnection/CancelConnectionRequest.hpp"
 #include "Application/Packets/Events/DeviceConnected/DeviceConnected.hpp"
 #include "Application/Packets/Events/DeviceDisconnected/DeviceDisconnected.hpp"
-#include "Application/Packets/Events/DeviceFound/DeviceFound.hpp"
-#include "Application/Packets/Events/Discovering/Discovering.hpp"
-#include "Application/Packets/Events/ClassOfDeviceChanged/ClassOfDeviceChanged.hpp"
-#include "Application/Packets/Events/NewSettings/NewSettings.hpp"
 #include "Application/Packets/Events/ControllerAdded/ControllerAdded.hpp"
 #include "Application/Packets/Events/ControllerRemoved/ControllerRemoved.hpp"
-#include "Application/Packets/Events/DeviceAdded/DeviceAdded.hpp"
-#include "Application/Packets/Events/DeviceRemoved/DeviceRemoved.hpp"
-#include "Application/Packets/Events/LEAdvertisingReport/LEAdvertisingReport.hpp"
-#include "Application/Packets/Events/LEReadRemoteUsedFeaturesComplete/LEReadRemoteUsedFeaturesComplete.hpp"
-#include "Application/Packets/Meta/GetControllersList/GetControllersList.hpp"
+#include "Application/Packets/Events/AdvertisingReport/AdvertisingReport.hpp"
+#include "Application/Packets/Events/CommandComplete/CommandComplete.hpp"
 #include "Application/Packets/Control/Exit/Exit.hpp"
 #include "Application/Packets/Control/Ready/Ready.hpp"
+#include "Application/Packets/Errors/ErrorResponse/ErrorResponse.hpp"
+#include "Application/Packets/Meta/StartScan/StartScan.hpp"
+#include "Application/Packets/Meta/StopScan/StopScan.hpp"
+#include "Application/Packets/Meta/GetControllersList/GetControllersList.hpp"
+#include "Application/Packets/Meta/ProbeServices/ProbeServices.hpp"
+#include "Application/Packets/Meta/ProbeCharacteristics/ProbeCharacteristics.hpp"
 
 using namespace std;
-using Packet::Meta::GetControllersList;
 
 namespace Bootstrap {
 
-  // Create one HCI socket per Bluetooth controller
-  vector<shared_ptr<HCISocket>> create_hci_sockets(const shared_ptr<MGMTSocket>& mgmt_socket, const shared_ptr<HCIFormat>& hci_format) {
-    vector<shared_ptr<HCISocket>> hci_sockets;
-
-    Packet::Type mgmt_packet_type = mgmt_socket->format()->get_packet_type();
-    shared_ptr<GetControllersList> get_controllers_list_packet = make_shared<GetControllersList>(mgmt_packet_type, mgmt_packet_type);
-
-    // Send GetControllersList packet through MGMT
-    while (!get_controllers_list_packet->expected_response_ids().empty()){
-      mgmt_socket->sync_send(get_controllers_list_packet->to_bytes());
-      vector<uint8_t> raw_response = mgmt_socket->sync_receive();
-
-      shared_ptr<AbstractExtractor> extractor = mgmt_socket->format()->create_extractor(raw_response);
-      get_controllers_list_packet->on_response_received(mgmt_packet_type, extractor);
-    }
-
-    // Get controllers list from GetControllersList packet
-    vector<Format::MGMT::Controller> controllers = get_controllers_list_packet->get_controllers();
-    hci_sockets.reserve(controllers.size());
-
-    // Create HCI sockets
-    for (auto& controller : controllers) {
-      hci_sockets.push_back(make_shared<HCISocket>(hci_format, controller.id, controller.address));
-    }
-
-    return hci_sockets;
-  }
-
   // MGMT
-  void register_mgmt_packets(PacketContainer& mgmt_packet_container, shared_ptr<AbstractFormat> output_format) {
-    mgmt_packet_container
-      .set_output_format(std::move(output_format))
-        .register_command<Packet::Commands::GetMGMTInfo>()
-        .register_command<Packet::Commands::GetControllersIds>()
-        .register_command<Packet::Commands::GetControllerInfo>()
-        .register_command<Packet::Commands::GetConnectedDevices>()
-        .register_command<Packet::Commands::StartScan>()
-        .register_command<Packet::Commands::StopScan>()
-        .register_command<Packet::Commands::AddDevice>()
-        .register_command<Packet::Commands::RemoveDevice>()
-        .register_command<Packet::Commands::Disconnect>()
-        .register_command<Packet::Commands::SetPowered>()
-        .register_command<Packet::Commands::SetDiscoverable>()
-        .register_command<Packet::Commands::SetConnectable>()
-        .register_event<Packet::Events::DeviceFound>()
-        .register_event<Packet::Events::Discovering>()
-        .register_event<Packet::Events::ControllerAdded>()
-        .register_event<Packet::Events::ControllerRemoved>()
-        .register_event<Packet::Events::DeviceAdded>()
-        .register_event<Packet::Events::DeviceRemoved>()
-      .set_output_format(nullptr)
-        .register_event<Packet::Events::DeviceConnected>()
-        .register_event<Packet::Events::DeviceDisconnected>()
-        .register_event<Packet::Events::ClassOfDeviceChanged>()
-        .register_event<Packet::Events::NewSettings>();
+  void register_mgmt_packets(PacketBuilder& mgmt_packet_builder) {
+    mgmt_packet_builder
+      .register_command<Packet::Commands::GetMGMTInfoResponse>()
+      .register_command<Packet::Commands::GetControllersIdsResponse>()
+      .register_command<Packet::Commands::GetControllerInfoResponse>()
+      .register_command<Packet::Commands::GetConnectedDevicesResponse>()
+      .register_command<Packet::Commands::SetPoweredResponse>()
+      .register_command<Packet::Commands::SetDiscoverableResponse>()
+      .register_command<Packet::Commands::SetConnectableResponse>()
+      .register_event<Packet::Events::ControllerAdded>()
+      .register_event<Packet::Events::ControllerRemoved>()
+      .set_ignored_packets({
+        Format::MGMT::EventCode::ClassOfDeviceChanged,
+        Format::MGMT::EventCode::LocalNameChanged,
+        Format::MGMT::EventCode::NewSettings,
+        Format::MGMT::EventCode::DeviceAdded,
+        Format::MGMT::EventCode::DeviceConnected,
+        Format::MGMT::EventCode::DeviceDisconnected,
+        Format::MGMT::EventCode::DeviceRemoved,
+        Format::MGMT::EventCode::Discovering
+      });
   }
 
   // HCI
-  void register_hci_packets(PacketContainer& hci_packet_container, shared_ptr<AbstractFormat> output_format) {
-    hci_packet_container
-      .set_output_format(std::move(output_format))
-        .register_event<Packet::Events::DeviceConnected>()
-        .register_event<Packet::Events::DeviceDisconnected>()
-        .register_command<Packet::Commands::Read>()
-        .register_command<Packet::Commands::Write>()
-        .register_command<Packet::Commands::NotificationReceived>()
-        .register_command<Packet::Commands::ProbeServices>()
-        .register_command<Packet::Commands::ProbeCharacteristics>()
-      .set_output_format(nullptr)
-        .register_event<Packet::Events::LEAdvertisingReport>()
-        .register_event<Packet::Events::LEReadRemoteUsedFeaturesComplete>();
+  void register_hci_packets(PacketBuilder& hci_packet_builder) {
+    hci_packet_builder
+      .register_command<Packet::Commands::ReadResponse>()
+      .register_command<Packet::Commands::WriteResponse>()
+      .register_command<Packet::Commands::NotificationReceived>()
+      .register_command<Packet::Commands::ReadByGroupTypeResponse>()
+      .register_command<Packet::Commands::ReadByTypeResponse>()
+      .register_command<Packet::Errors::ErrorResponse>()
+      .register_event<Packet::Events::DeviceConnected>()
+      .register_event<Packet::Events::DeviceDisconnected>()
+      .register_event<Packet::Events::AdvertisingReport>()
+      .register_event<Packet::Events::CommandComplete>()
+      .set_ignored_packets({
+        Format::HCI::SubEventCode::LEReadRemoteUsedFeaturesComplete
+      });
   }
 
   // Stdio
-  void register_stdio_packets(PacketContainer& stdio_packet_container, shared_ptr<MGMTFormat> mgmt_format, shared_ptr<HCIFormat> hci_format) {
-    stdio_packet_container
-      .set_output_format(std::move(mgmt_format))
-        .register_command<Packet::Commands::GetMGMTInfo>()
-        .register_command<Packet::Commands::GetControllersIds>()
-        .register_command<Packet::Commands::GetControllerInfo>()
-        .register_command<Packet::Commands::GetConnectedDevices>()
-        .register_command<Packet::Commands::StartScan>()
-        .register_command<Packet::Commands::StopScan>()
-        .register_command<Packet::Commands::AddDevice>()
-        .register_command<Packet::Commands::RemoveDevice>()
-        .register_command<Packet::Commands::Disconnect>()
-        .register_command<Packet::Commands::SetPowered>()
-        .register_command<Packet::Commands::SetDiscoverable>()
-        .register_command<Packet::Commands::SetConnectable>()
-        .register_command<Packet::Meta::GetControllersList>()
-      .set_output_format(std::move(hci_format))
-        .register_command<Packet::Commands::Read>()
-        .register_command<Packet::Commands::Write>()
-        .register_command<Packet::Commands::WriteWithoutResponse>()
-        .register_command<Packet::Commands::ProbeServices>()
-        .register_command<Packet::Commands::ProbeCharacteristics>()
-      .set_output_format(nullptr)
-        .register_command<Packet::Control::Exit>();
+  void register_stdio_packets(PacketBuilder& stdio_packet_builder) {
+    stdio_packet_builder
+      .register_command<Packet::Commands::GetMGMTInfoRequest>()
+      .register_command<Packet::Commands::GetControllersIdsRequest>()
+      .register_command<Packet::Commands::GetControllerInfoRequest>()
+      .register_command<Packet::Commands::GetConnectedDevicesRequest>()
+      .register_command<Packet::Commands::SetPoweredRequest>()
+      .register_command<Packet::Commands::SetDiscoverableRequest>()
+      .register_command<Packet::Commands::SetConnectableRequest>()
+      .register_command<Packet::Commands::CreateConnection>()
+      .register_command<Packet::Commands::CancelConnectionRequest>()
+      .register_command<Packet::Commands::Disconnect>()
+      .register_command<Packet::Commands::ReadRequest>()
+      .register_command<Packet::Commands::WriteRequest>()
+      .register_command<Packet::Commands::WriteWithoutResponse>()
+      .register_command<Packet::Meta::GetControllersList>()
+      .register_command<Packet::Meta::StartScan>()
+      .register_command<Packet::Meta::StopScan>()
+      .register_command<Packet::Meta::ProbeServices>()
+      .register_command<Packet::Meta::ProbeCharacteristics>()
+      .register_command<Packet::Control::Exit>();
   }
 
 }

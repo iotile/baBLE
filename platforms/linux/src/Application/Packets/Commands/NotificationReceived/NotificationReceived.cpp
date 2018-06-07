@@ -1,51 +1,48 @@
 #include "NotificationReceived.hpp"
+#include "../../../../utils/string_formats.hpp"
 
 using namespace std;
 
-namespace Packet::Commands {
+namespace Packet {
 
-  NotificationReceived::NotificationReceived(Packet::Type initial_type, Packet::Type translated_type)
-      : CommandPacket(initial_type, translated_type) {
-    m_id = BaBLE::Payload::NotificationReceived;
-    m_connection_handle = 0;
-    m_attribute_handle = 0;
-  }
+  namespace Commands {
 
-  void NotificationReceived::unserialize(HCIFormatExtractor& extractor) {
-    CommandPacket::unserialize(extractor);
+    NotificationReceived::NotificationReceived()
+        : ControllerToHostPacket(Packet::Id::NotificationReceived, initial_type(), initial_packet_code(), final_packet_code()) {
+      m_attribute_handle = 0;
+    }
 
-    m_connection_handle = extractor.get_connection_id();
-    m_attribute_handle = extractor.get_value<uint16_t>();
+    void NotificationReceived::unserialize(HCIFormatExtractor& extractor) {
+      m_attribute_handle = extractor.get_value<uint16_t>();
 
-    auto value_length = extractor.get_data_length() - sizeof(m_attribute_handle);
-    m_value = extractor.get_vector<uint8_t>(value_length);
-  }
+      auto value_length = extractor.get_data_length() - sizeof(m_attribute_handle);
+      m_value = extractor.get_vector<uint8_t>(value_length);
+    }
 
-  vector<uint8_t> NotificationReceived::serialize(AsciiFormatBuilder& builder) const {
-    CommandPacket::serialize(builder);
+    vector<uint8_t> NotificationReceived::serialize(FlatbuffersFormatBuilder& builder) const {
+      auto value = builder.CreateVector(m_value);
 
-    builder
-        .set_name("NotificationReceived")
-        .add("Connection handle", m_connection_handle)
-        .add("Attribute handle", m_attribute_handle)
-        .add("Data", m_value);
+      auto payload = BaBLE::CreateNotificationReceived(
+          builder,
+          m_connection_id,
+          m_attribute_handle,
+          value
+      );
 
-    return builder.build();
-  };
+      return builder.build(payload, BaBLE::Payload::NotificationReceived);
+    }
 
-  vector<uint8_t> NotificationReceived::serialize(FlatbuffersFormatBuilder& builder) const {
-    CommandPacket::serialize(builder);
+    const string NotificationReceived::stringify() const {
+      stringstream result;
 
-    auto value = builder.CreateVector(m_value);
+      result << "<NotificationReceived> "
+             << AbstractPacket::stringify() << ", "
+             << "Attribute handle: " << to_string(m_attribute_handle) << ", "
+             << "Data: " << Utils::format_bytes_array(m_value);
 
-    auto payload = BaBLE::CreateNotificationReceived(
-        builder,
-        m_connection_handle,
-        m_attribute_handle,
-        value
-    );
+      return result.str();
+    }
 
-    return builder.build(payload, BaBLE::Payload::NotificationReceived);
   }
 
 }

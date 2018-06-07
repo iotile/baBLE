@@ -1,52 +1,40 @@
 #ifndef BABLE_LINUX_DEVICEDISCONNECTED_HPP
 #define BABLE_LINUX_DEVICEDISCONNECTED_HPP
 
-#include "../EventPacket.hpp"
+#include "../../Base/ControllerToHostPacket.hpp"
 
-namespace Packet::Events {
+namespace Packet {
 
-  class DeviceDisconnected : public EventPacket<DeviceDisconnected> {
+  namespace Events {
 
-  public:
-    static const uint16_t packet_code(Packet::Type type) {
-      switch(type) {
-        case Packet::Type::MGMT:
-          return Format::MGMT::EventCode::DeviceDisconnected;
+    class DeviceDisconnected : public ControllerToHostPacket {
 
-        case Packet::Type::HCI:
-          return Format::HCI::EventCode::DisconnectComplete;
+    public:
+      static const Packet::Type initial_type() {
+        return Packet::Type::HCI;
+      };
 
-        case Packet::Type::ASCII:
-          return Format::Ascii::EventCode::DeviceDisconnected;
+      static const uint16_t initial_packet_code() {
+        return Format::HCI::EventCode::DisconnectComplete;
+      };
 
-        case Packet::Type::FLATBUFFERS:
-          return static_cast<uint16_t>(BaBLE::Payload::DeviceDisconnected);
+      static const uint16_t final_packet_code() {
+        return static_cast<uint16_t>(BaBLE::Payload::DeviceDisconnected);
+      };
 
-        case Packet::Type::NONE:
-          return 0;
-      }
+      DeviceDisconnected();
+
+      void unserialize(HCIFormatExtractor& extractor) override;
+      std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
+
+      const std::string stringify() const override;
+
+    private:
+      uint8_t m_raw_reason;
+      std::string m_reason;
     };
 
-    DeviceDisconnected(Packet::Type initial_type, Packet::Type translated_type);
-
-    void unserialize(MGMTFormatExtractor& extractor) override;
-    void unserialize(HCIFormatExtractor& extractor) override;
-
-    std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
-    std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
-
-    inline uint16_t get_connection_handle() const {
-      return m_connection_handle;
-    };
-
-  private:
-    std::array<uint8_t, 6> m_address{};
-    uint8_t m_address_type;
-    uint8_t m_raw_reason;
-    std::string m_reason;
-
-    uint16_t m_connection_handle;
-  };
+  }
 
 }
 #endif //BABLE_LINUX_DEVICEDISCONNECTED_HPP

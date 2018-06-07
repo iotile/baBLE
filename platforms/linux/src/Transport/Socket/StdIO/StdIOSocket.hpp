@@ -3,9 +3,7 @@
 
 #define MAGIC_CODE 0xCAFE
 
-#include <algorithm>
 #include "../../AbstractSocket.hpp"
-#include "../../../Log/Log.hpp"
 
 enum STDIO_ID {
   in = 0,
@@ -15,10 +13,13 @@ enum STDIO_ID {
 class StdIOSocket : public AbstractSocket {
 
 public:
-  explicit StdIOSocket(std::shared_ptr<AbstractFormat> format);
+  using OnCloseCallback = std::function<void()>;
+
+  explicit StdIOSocket(std::shared_ptr<uvw::Loop>& loop, std::shared_ptr<AbstractFormat> format);
 
   bool send(const std::vector<uint8_t>& data) override;
-  void poll(std::shared_ptr<uvw::Loop> loop, OnReceivedCallback on_received, OnErrorCallback on_error) override;
+  void poll(OnReceivedCallback on_received, OnErrorCallback on_error) override;
+  void on_close(OnCloseCallback on_close);
 
 private:
   std::vector<uint8_t> generate_header(const std::vector<uint8_t>& data);
@@ -29,6 +30,8 @@ private:
   std::vector<uint8_t> m_payload;
   size_t m_header_length;
   size_t m_payload_length;
+
+  std::shared_ptr<uvw::PipeHandle> m_poller;
 
 };
 

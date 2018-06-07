@@ -1,19 +1,28 @@
 #ifndef BABLE_LINUX_READY_HPP
 #define BABLE_LINUX_READY_HPP
 
-#include "../../../AbstractPacket.hpp"
+#include "../../Base/HostOnlyPacket.hpp"
 
-namespace Packet::Control {
+namespace Packet {
 
-  class Ready : public AbstractPacket {
+  namespace Control {
 
-  public:
-    explicit Ready(Packet::Type output_type);
+    class Ready : public HostOnlyPacket {
 
-    std::vector<uint8_t> serialize(AsciiFormatBuilder& builder) const override;
-    std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
+    public:
+      static const uint16_t initial_packet_code() {
+        return static_cast<uint16_t>(BaBLE::Payload::Ready);
+      };
 
-  };
+      Ready();
+
+      std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
+
+      const std::string stringify() const override;
+
+    };
+
+  }
 
 }
 

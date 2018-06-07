@@ -1,11 +1,9 @@
 #ifndef BABLE_LINUX_ABSTRACTSOCKET_HPP
 #define BABLE_LINUX_ABSTRACTSOCKET_HPP
 
-#include <memory>
+#include <functional>
 #include <uvw.hpp>
-#include <vector>
 #include "../Format/AbstractFormat.hpp"
-#include "../Format/HCI/constants.hpp"
 
 class AbstractSocket {
 
@@ -27,7 +25,7 @@ public:
   };
 
   virtual bool send(const std::vector<uint8_t>& data) = 0;
-  virtual void poll(std::shared_ptr<uvw::Loop> loop, OnReceivedCallback on_received, OnErrorCallback on_error) = 0;
+  virtual void poll(OnReceivedCallback on_received, OnErrorCallback on_error) = 0;
 
   virtual ~AbstractSocket() = default;
 

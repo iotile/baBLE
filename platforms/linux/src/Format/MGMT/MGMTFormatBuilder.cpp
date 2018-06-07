@@ -4,13 +4,13 @@ using namespace std;
 
 // Constructors
 MGMTFormatBuilder::MGMTFormatBuilder(uint16_t controller_id) {
-  m_code = 0;
+  m_opcode = 0;
   m_controller_id = controller_id;
-};
+}
 
 // Setters
-MGMTFormatBuilder& MGMTFormatBuilder::set_code(uint16_t code) {
-  m_code = code;
+MGMTFormatBuilder& MGMTFormatBuilder::set_opcode(uint16_t opcode) {
+  m_opcode = opcode;
   return *this;
 }
 
@@ -46,8 +46,8 @@ vector<uint8_t> MGMTFormatBuilder::generate_header() {
   header.reserve(Format::MGMT::header_length);
 
   // Use little-endian
-  header.push_back(static_cast<uint8_t>(m_code & 0x00FF));
-  header.push_back(static_cast<uint8_t>(m_code >> 8));
+  header.push_back(static_cast<uint8_t>(m_opcode & 0x00FF));
+  header.push_back(static_cast<uint8_t>(m_opcode >> 8));
 
   header.push_back(static_cast<uint8_t>(m_controller_id & 0x00FF));
   header.push_back(static_cast<uint8_t>(m_controller_id >> 8));

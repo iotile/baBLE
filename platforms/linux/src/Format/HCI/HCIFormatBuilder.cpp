@@ -10,7 +10,7 @@ HCIFormatBuilder::HCIFormatBuilder(uint16_t controller_id) {
 };
 
 // Setters
-HCIFormatBuilder& HCIFormatBuilder::set_opcode(uint8_t code) {
+HCIFormatBuilder& HCIFormatBuilder::set_opcode(uint16_t code) {
   m_opcode = code;
   return *this;
 }
@@ -55,15 +55,15 @@ vector<uint8_t> HCIFormatBuilder::generate_header(Format::HCI::Type type) {
       return generate_async_data_header();
 
     case Format::HCI::SyncData:
-      throw std::invalid_argument("Header generation for SyncData packet is not implemented.");
+      throw invalid_argument("Header generation for SyncData packet is not implemented.");
 
     case Format::HCI::Event:
-      throw std::invalid_argument("Can't build Event packet.");
+      throw invalid_argument("Can't build Event packet.");
   }
 };
 
 vector<uint8_t> HCIFormatBuilder::generate_command_header() {
-  auto params_length = static_cast<uint16_t>(m_formatted_data.size());
+  auto params_length = static_cast<uint8_t>(m_formatted_data.size());
 
   vector<uint8_t> header;
   header.reserve(Format::HCI::command_header_length);
@@ -74,15 +74,17 @@ vector<uint8_t> HCIFormatBuilder::generate_command_header() {
   header.push_back(static_cast<uint8_t>(m_opcode & 0x00FF));
   header.push_back(static_cast<uint8_t>(m_opcode >> 8));
 
-  header.push_back(static_cast<uint8_t>(params_length & 0x00FF));
-  header.push_back(static_cast<uint8_t>(params_length >> 8));
+  header.push_back(params_length);
 
   return header;
 };
 
 vector<uint8_t> HCIFormatBuilder::generate_async_data_header() {
   auto data_length = static_cast<uint16_t>(m_formatted_data.size());
-  uint16_t l2cap_length = sizeof(m_opcode) + data_length;
+
+  auto opcode = static_cast<uint8_t>(m_opcode);
+
+  uint16_t l2cap_length = sizeof(opcode) + data_length;
   auto total_length = static_cast<uint16_t>(l2cap_length + 4);
 
   vector<uint8_t> header;
@@ -105,7 +107,7 @@ vector<uint8_t> HCIFormatBuilder::generate_async_data_header() {
   header.push_back(static_cast<uint8_t>(ATT_CID & 0x00FF));
   header.push_back(static_cast<uint8_t>(ATT_CID >> 8));
 
-  header.push_back(m_opcode);
+  header.push_back(opcode);
 
   return header;
 };

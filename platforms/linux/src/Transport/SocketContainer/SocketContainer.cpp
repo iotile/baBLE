@@ -1,4 +1,6 @@
 #include "SocketContainer.hpp"
+#include "../../Log/Log.hpp"
+#include "../../Exceptions/NotFound/NotFoundException.hpp"
 
 using namespace std;
 
@@ -10,14 +12,14 @@ SocketContainer& SocketContainer::register_socket(shared_ptr<AbstractSocket> soc
 }
 
 bool SocketContainer::send(const shared_ptr<Packet::AbstractPacket>& packet) {
-  Packet::Type packet_type = packet->get_current_type();
+  Packet::Type packet_type = packet->get_type();
 
   if (packet_type == Packet::Type::NONE) {
     LOG.debug("Packet ignored: " + packet->stringify());
     return true;
   }
 
-  std::tuple<Packet::Type, uint16_t> key;
+  tuple<Packet::Type, uint16_t> key;
   if (packet_type == Packet::Type::HCI) {
     key = make_tuple(packet_type, packet->get_controller_id());
   } else {
@@ -31,5 +33,6 @@ bool SocketContainer::send(const shared_ptr<Packet::AbstractPacket>& packet) {
   shared_ptr<AbstractSocket> socket = it->second;
 
   vector<uint8_t> data = packet->to_bytes();
+
   return socket->send(data);
 };

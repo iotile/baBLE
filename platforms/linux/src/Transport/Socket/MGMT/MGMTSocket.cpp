@@ -1,4 +1,10 @@
+#include <cerrno>
+#include <cstring>
+#include <fcntl.h>
+#include <unistd.h>
 #include "MGMTSocket.hpp"
+#include "../../../Exceptions/Socket/SocketException.hpp"
+#include "../../../Log/Log.hpp"
 
 using namespace std;
 using namespace uvw;
@@ -6,7 +12,7 @@ using namespace uvw;
 Flags<PollHandle::Event> MGMTSocket::readable_flag = Flags<PollHandle::Event>(PollHandle::Event::READABLE);
 Flags<PollHandle::Event> MGMTSocket::writable_flag = Flags<PollHandle::Event>(PollHandle::Event::WRITABLE);
 
-MGMTSocket::MGMTSocket(shared_ptr<MGMTFormat> format)
+MGMTSocket::MGMTSocket(shared_ptr<uvw::Loop>& loop, shared_ptr<MGMTFormat> format)
     : AbstractSocket(move(format)) {
   m_header_length = m_format->get_header_length(0);
   m_writable = true;
@@ -19,6 +25,8 @@ MGMTSocket::MGMTSocket(shared_ptr<MGMTFormat> format)
   if(!bind_socket()) {
     throw Exceptions::SocketException("Error while binding the MGMT socket.");
   }
+
+  m_poller = loop->resource<PollHandle>(m_socket);
 }
 
 bool MGMTSocket::bind_socket() {
@@ -52,7 +60,7 @@ bool MGMTSocket::send(const vector<uint8_t>& data) {
   } else {
     set_writable(false);
 
-    LOG.info("Sending data...", "MGMT socket");
+    LOG.debug("Sending data...", "MGMT socket");
     LOG.debug(data, "MGMT socket");
     if (write(m_socket, data.data(), data.size()) < 0) {
       LOG.error("Error while sending a message to MGMT socket: " + string(strerror(errno)), "MGMTSocket");
@@ -116,13 +124,11 @@ vector<uint8_t> MGMTSocket::receive() {
   return result;
 }
 
-void MGMTSocket::poll(shared_ptr<Loop> loop, OnReceivedCallback on_received, OnErrorCallback on_error) {
-  m_poller = loop->resource<PollHandle>(m_socket);
-
+void MGMTSocket::poll(OnReceivedCallback on_received, OnErrorCallback on_error) {
   m_poller->on<PollEvent>([this, on_received, on_error](const PollEvent& event, const PollHandle& handle){
     try {
       if (event.flags & PollHandle::Event::READABLE) {
-        LOG.info("Reading data...", "MGMTSocket");
+        LOG.debug("Reading data...", "MGMTSocket");
         vector<uint8_t> received_payload = receive();
         on_received(received_payload, m_format);
       } else if (event.flags & PollHandle::Event::WRITABLE) {

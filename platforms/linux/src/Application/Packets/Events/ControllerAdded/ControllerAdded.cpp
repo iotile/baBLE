@@ -1,32 +1,33 @@
+#include <sstream>
 #include "ControllerAdded.hpp"
 
 using namespace std;
 
-namespace Packet::Events {
+namespace Packet {
 
-  ControllerAdded::ControllerAdded(Packet::Type initial_type, Packet::Type translated_type)
-      : EventPacket(initial_type, translated_type) {
-    m_id = BaBLE::Payload::ControllerAdded;
-  }
+  namespace Events {
 
-  void ControllerAdded::unserialize(MGMTFormatExtractor& extractor) {
-    EventPacket::unserialize(extractor);
-  };
+    ControllerAdded::ControllerAdded()
+        : ControllerToHostPacket(Packet::Id::ControllerAdded,initial_type(), initial_packet_code(), final_packet_code()) {
+    }
 
-  vector<uint8_t> ControllerAdded::serialize(AsciiFormatBuilder& builder) const {
-    EventPacket::serialize(builder);
+    void ControllerAdded::unserialize(MGMTFormatExtractor& extractor) {}
 
-    builder.set_name("ControllerAdded");
+    vector<uint8_t> ControllerAdded::serialize(FlatbuffersFormatBuilder& builder) const {
+      auto payload = BaBLE::CreateControllerAdded(builder);
 
-    return builder.build();
-  };
+      return builder.build(payload, BaBLE::Payload::ControllerAdded);
+    }
 
-  vector<uint8_t> ControllerAdded::serialize(FlatbuffersFormatBuilder& builder) const {
-    EventPacket::serialize(builder);
+    const string ControllerAdded::stringify() const {
+      stringstream result;
 
-    auto payload = BaBLE::CreateControllerAdded(builder);
+      result << "<ControllerAdded> "
+             << AbstractPacket::stringify();
 
-    return builder.build(payload, BaBLE::Payload::ControllerAdded);
+      return result.str();
+    }
+
   }
 
 }

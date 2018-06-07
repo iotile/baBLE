@@ -1,4 +1,5 @@
 #include "MGMTFormatExtractor.hpp"
+#include "../../Log/Log.hpp"
 
 using namespace std;
 
@@ -56,35 +57,44 @@ Format::MGMT::EIR MGMTFormatExtractor::parse_eir(const vector<uint8_t>& data) {
     field_length--;
 
     switch(type) {
-      case 0x01: // Flags
+      case Format::MGMT::EIRType::Flags:
         result.flags = *it;
         break;
 
-      case 0x02: // 16bits UUID
-      case 0x03:
+      case Format::MGMT::EIRType::IncompleteUUID16ServiceClass:
+      case Format::MGMT::EIRType::UUID16ServiceClass:
         result.uuid.assign(it, it + 4);
         break;
 
-      case 0x04: // 32bits UUID
-      case 0x05:
+      case Format::MGMT::EIRType::IncompleteUUID32ServiceClass:
+      case Format::MGMT::EIRType::UUID32ServiceClass:
         result.uuid.assign(it, it + 8);
         break;
 
-      case 0x06: // 128bits UUID
-      case 0x07:
+      case Format::MGMT::EIRType::IncompleteUUID128ServiceClass:
+      case Format::MGMT::EIRType::UUID128ServiceClass:
         result.uuid.assign(it, it + 16);
         break;
 
-      case 0xFF: // Manufacturer Specific
+      case Format::MGMT::EIRType::ManufacturerSpecific:
+      {
         result.company_id = (*it << 8) | *(it + 1);
-        break;
+        field_length -= sizeof(result.company_id);
+        it += sizeof(result.company_id);
 
-      case 0x09: // Device complete name
+        result.manufacturer_data.reserve(field_length);
+        for (uint8_t i = 0; i < field_length; i ++) {
+          result.manufacturer_data.push_back(*(it + i));
+        }
+        break;
+      }
+
+      case Format::MGMT::EIRType::CompleteDeviceName:
         result.device_name.assign(it, it + field_length);
         break;
 
       default:
-        LOG.warning("Unknown EIR type received: " + to_string(type), "DeviceFoundEvent");
+        LOG.warning("Unknown EIR type received: " + to_string(type));
         break;
     }
 

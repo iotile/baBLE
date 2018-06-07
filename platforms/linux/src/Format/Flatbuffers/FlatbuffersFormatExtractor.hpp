@@ -1,11 +1,8 @@
 #ifndef BABLE_LINUX_FLATBUFFERSFORMATEXTRACTOR_HPP
 #define BABLE_LINUX_FLATBUFFERSFORMATEXTRACTOR_HPP
 
-#include <cstdint>
 #include <Packet_generated.h>
-#include <vector>
 #include "../AbstractExtractor.hpp"
-#include "../../Exceptions/WrongFormat/WrongFormatException.hpp"
 
 class FlatbuffersFormatExtractor : public AbstractExtractor {
 
@@ -20,10 +17,6 @@ public:
   // Getters
   template<typename T>
   T get_payload() const;
-
-  inline uint16_t get_controller_id() const override {
-    return m_packet->controller_id();
-  };
 
   inline std::string get_uuid_request() const {
     return m_packet->uuid()->str();
