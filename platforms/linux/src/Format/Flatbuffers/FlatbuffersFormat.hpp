@@ -1,10 +1,13 @@
 #ifndef BABLE_LINUX_FLATBUFFERSFORMAT_HPP
 #define BABLE_LINUX_FLATBUFFERSFORMAT_HPP
 
+#include <iterator>
+#include <vector>
 #include <Packet_generated.h>
 #include "../AbstractFormat.hpp"
 #include "FlatbuffersFormatBuilder.hpp"
 #include "FlatbuffersFormatExtractor.hpp"
+#include "../../Exceptions/WrongFormat/WrongFormatException.hpp"
 
 class FlatbuffersFormat : public AbstractFormat {
 

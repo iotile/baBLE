@@ -1,8 +1,0 @@
-# Compiled files
-*.pyc
-
-#Setuptools distribution folder
-/dist/
-
-# Python egg metadata
-/*.egg-info

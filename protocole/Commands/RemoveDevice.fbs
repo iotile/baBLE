@@ -1,0 +1,6 @@
+namespace BaBLE;
+
+table RemoveDevice {
+  address:[uint8];
+  address_type:uint8 = 2;  // LE Random
+}

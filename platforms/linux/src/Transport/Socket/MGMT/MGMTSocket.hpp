@@ -1,11 +1,21 @@
 #ifndef BABLE_LINUX_MGMTSOCKET_HPP
 #define BABLE_LINUX_MGMTSOCKET_HPP
 
+#include <cerrno>
+#include <cstring>
+#include <fcntl.h>
+#include <memory>
 #include <queue>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <utility>
 #include <uvw.hpp>
 
 #include "../../AbstractSocket.hpp"
+#include "../../../Log/Log.hpp"
 #include "../../../Format/MGMT/MGMTFormat.hpp"
+#include "../../../Format/HCI/constants.hpp"
+#include "../../../Exceptions/Socket/SocketException.hpp"
 
 class MGMTSocket : public AbstractSocket {
 

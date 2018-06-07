@@ -3,6 +3,7 @@
 
 #include <array>
 #include <sstream>
+#include <string>
 #include <vector>
 
 class AsciiFormatBuilder {

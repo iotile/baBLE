@@ -1,13 +1,15 @@
 #ifndef BABLE_LINUX_MGMTFORMATBUILDER_HPP
 #define BABLE_LINUX_MGMTFORMATBUILDER_HPP
 
-#include <array>
-#include <vector>
-#include "./constants.hpp"
-
 #if __BYTE_ORDER__ == __ORDER_PDP_ENDIAN__
 #error "Byte order not suported (PDP endian)"
 #endif
+
+#include <array>
+#include <cstdint>
+#include <vector>
+#include <string>
+#include "./constants.hpp"
 
 class MGMTFormatBuilder {
 
@@ -16,7 +18,7 @@ public:
   explicit MGMTFormatBuilder(uint16_t controller_id);
 
   // Setters
-  MGMTFormatBuilder& set_opcode(uint16_t opcode);
+  MGMTFormatBuilder& set_code(uint16_t code);
   MGMTFormatBuilder& set_controller_id(uint16_t controller_id);
 
   // To add data to current building object
@@ -36,7 +38,7 @@ public:
 private:
   std::vector<uint8_t> generate_header();
 
-  uint16_t m_opcode;
+  uint16_t m_code;
   uint16_t m_controller_id;
   std::vector<uint8_t> m_formatted_data;
 

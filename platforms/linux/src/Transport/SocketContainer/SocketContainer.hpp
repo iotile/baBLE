@@ -1,9 +1,12 @@
-#ifndef BABLE_LINUX_SOCKETCONTAINER_HPP
-#define BABLE_LINUX_SOCKETCONTAINER_HPP
+#ifndef BABLE_LINUX_ROUTER_HPP
+#define BABLE_LINUX_ROUTER_HPP
 
+#include <cstdint>
+#include <memory>
 #include <map>
 #include "../AbstractSocket.hpp"
 #include "../../Application/AbstractPacket.hpp"
+#include "../../Exceptions/NotFound/NotFoundException.hpp"
 
 class SocketContainer {
 
@@ -19,4 +22,4 @@ private:
 
 };
 
-#endif //BABLE_LINUX_SOCKETCONTAINER_HPP
+#endif //BABLE_LINUX_ROUTER_HPP

@@ -1,8 +1,11 @@
 #ifndef BABLE_LINUX_ABSTRACTEXCEPTION_HPP
 #define BABLE_LINUX_ABSTRACTEXCEPTION_HPP
 
+#include <string>
+#include <exception>
 #include "../Log/Loggable.hpp"
 #include "constants.hpp"
+#include "../Log/Log.hpp"
 
 namespace Exceptions {
 

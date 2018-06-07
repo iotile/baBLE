@@ -1,6 +1,7 @@
 #ifndef BABLE_LINUX_HCIFORMAT_HPP
 #define BABLE_LINUX_HCIFORMAT_HPP
 
+#include "./constants.hpp"
 #include "../AbstractFormat.hpp"
 #include "HCIFormatBuilder.hpp"
 #include "HCIFormatExtractor.hpp"

@@ -2,31 +2,31 @@
 
 using namespace std;
 
-namespace Packet {
+namespace Packet::Events {
 
-  namespace Events {
+  ControllerRemoved::ControllerRemoved(Packet::Type initial_type, Packet::Type translated_type)
+      : EventPacket(initial_type, translated_type) {
+    m_id = BaBLE::Payload::ControllerRemoved;
+  }
 
-    ControllerRemoved::ControllerRemoved(Packet::Type initial_type, Packet::Type translated_type)
-        : EventPacket(initial_type, translated_type) {
-      m_id = Packet::Id::ControllerRemoved;
-    }
+  void ControllerRemoved::unserialize(MGMTFormatExtractor& extractor) {
+    EventPacket::unserialize(extractor);
+  };
 
-    void ControllerRemoved::unserialize(MGMTFormatExtractor& extractor) {};
+  vector<uint8_t> ControllerRemoved::serialize(AsciiFormatBuilder& builder) const {
+    EventPacket::serialize(builder);
 
-    vector<uint8_t> ControllerRemoved::serialize(AsciiFormatBuilder& builder) const {
-      EventPacket::serialize(builder);
+    builder.set_name("ControllerRemoved");
 
-      builder.set_name("ControllerRemoved");
+    return builder.build();
+  };
 
-      return builder.build();
-    };
+  vector<uint8_t> ControllerRemoved::serialize(FlatbuffersFormatBuilder& builder) const {
+    EventPacket::serialize(builder);
 
-    vector<uint8_t> ControllerRemoved::serialize(FlatbuffersFormatBuilder& builder) const {
-      auto payload = BaBLE::CreateControllerRemoved(builder);
+    auto payload = BaBLE::CreateControllerRemoved(builder);
 
-      return builder.build(payload, BaBLE::Payload::ControllerRemoved);
-    }
-
+    return builder.build(payload, BaBLE::Payload::ControllerRemoved);
   }
 
 }

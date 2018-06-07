@@ -1,7 +1,11 @@
 #ifndef BABLE_LINUX_ASCIIFORMAT_HPP
 #define BABLE_LINUX_ASCIIFORMAT_HPP
 
-#include "constants.hpp"
+#include <array>
+#include <cstdint>
+#include <sstream>
+#include <string>
+#include <vector>
 #include "../AbstractFormat.hpp"
 #include "AsciiFormatBuilder.hpp"
 #include "AsciiFormatExtractor.hpp"
@@ -53,9 +57,9 @@ public:
   };
 
   template<typename T>
-  static T string_to_number(const std::string& str, int base = 10) {
+  static T string_to_number(const std::string& str) {
     try {
-      auto result = static_cast<T>(stoi(str, nullptr, base));
+      auto result = static_cast<T>(stoi(str));
 
     } catch (const std::bad_cast& err) {
       throw Exceptions::WrongFormatException("Can't cast given string: \"" + str + "\"");

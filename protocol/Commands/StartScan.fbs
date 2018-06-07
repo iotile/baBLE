@@ -1,5 +1,0 @@
-namespace BaBLE;
-
-table StartScan {
-  active_scan:bool = true;
-}

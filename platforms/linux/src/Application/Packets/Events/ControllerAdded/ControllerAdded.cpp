@@ -2,31 +2,31 @@
 
 using namespace std;
 
-namespace Packet {
+namespace Packet::Events {
 
-  namespace Events {
+  ControllerAdded::ControllerAdded(Packet::Type initial_type, Packet::Type translated_type)
+      : EventPacket(initial_type, translated_type) {
+    m_id = BaBLE::Payload::ControllerAdded;
+  }
 
-    ControllerAdded::ControllerAdded(Packet::Type initial_type, Packet::Type translated_type)
-        : EventPacket(initial_type, translated_type) {
-      m_id = Packet::Id::ControllerAdded;
-    }
+  void ControllerAdded::unserialize(MGMTFormatExtractor& extractor) {
+    EventPacket::unserialize(extractor);
+  };
 
-    void ControllerAdded::unserialize(MGMTFormatExtractor& extractor) {};
+  vector<uint8_t> ControllerAdded::serialize(AsciiFormatBuilder& builder) const {
+    EventPacket::serialize(builder);
 
-    vector<uint8_t> ControllerAdded::serialize(AsciiFormatBuilder& builder) const {
-      EventPacket::serialize(builder);
+    builder.set_name("ControllerAdded");
 
-      builder.set_name("ControllerAdded");
+    return builder.build();
+  };
 
-      return builder.build();
-    };
+  vector<uint8_t> ControllerAdded::serialize(FlatbuffersFormatBuilder& builder) const {
+    EventPacket::serialize(builder);
 
-    vector<uint8_t> ControllerAdded::serialize(FlatbuffersFormatBuilder& builder) const {
-      auto payload = BaBLE::CreateControllerAdded(builder);
+    auto payload = BaBLE::CreateControllerAdded(builder);
 
-      return builder.build(payload, BaBLE::Payload::ControllerAdded);
-    }
-
+    return builder.build(payload, BaBLE::Payload::ControllerAdded);
   }
 
 }

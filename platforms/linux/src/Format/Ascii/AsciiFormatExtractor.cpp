@@ -1,13 +1,10 @@
-#include <typeinfo>
 #include "AsciiFormatExtractor.hpp"
-#include "constants.hpp"
-#include "../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 
 using namespace std;
 
 // Statics
 uint16_t AsciiFormatExtractor::extract_payload_length(const vector<uint8_t>& data) {
-  throw runtime_error("Ascii format can't extract payload length: this information is not included in the format.");
+  throw std::runtime_error("Ascii format can't extract payload length: this information is not included in the format.");
 }
 
 // Constructors
@@ -16,7 +13,7 @@ AsciiFormatExtractor::AsciiFormatExtractor(const vector<uint8_t>& data) : Abstra
 }
 
 // Parser
-void AsciiFormatExtractor::parse_header(const vector<uint8_t>& data) {
+void AsciiFormatExtractor::parse_header(const std::vector<uint8_t>& data) {
   try {
     m_uuid_request = get_string();
   } catch (const Exceptions::WrongFormatException& err) {
@@ -31,7 +28,7 @@ void AsciiFormatExtractor::parse_header(const vector<uint8_t>& data) {
     throw Exceptions::InvalidCommandException("Invalid command. Usage: <command_code>,<controller_id>,<params...>", m_uuid_request);
   } catch (const bad_cast& err) {
     throw Exceptions::InvalidCommandException("<command_code> and <controller_id> must be 16bits numbers.", m_uuid_request);
-  } catch (const invalid_argument& err) {
+  } catch (const std::invalid_argument& err) {
     throw Exceptions::InvalidCommandException("<command_code> and <controller_id> must be numbers.", m_uuid_request);
   }
 }

@@ -1,7 +1,15 @@
 #ifndef BABLE_LINUX_HCIFORMATEXTRACTOR_HPP
 #define BABLE_LINUX_HCIFORMATEXTRACTOR_HPP
 
+#include <array>
+#include <cstdint>
+#include <utility>
+#include <stdexcept>
+#include <vector>
+#include "./constants.hpp"
 #include "../AbstractExtractor.hpp"
+#include "../../Log/Log.hpp"
+#include "../../Exceptions/WrongFormat/WrongFormatException.hpp"
 
 class HCIFormatExtractor : public AbstractExtractor {
 
@@ -13,8 +21,6 @@ public:
 
   // Constructors
   explicit HCIFormatExtractor(const std::vector<uint8_t>& data);
-
-  Format::HCI::EIR parse_eir(const std::vector<uint8_t>& data);
 
 private:
   // Parsers

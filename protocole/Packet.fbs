@@ -1,0 +1,96 @@
+include "./Commands/GetMGMTInfo.fbs";
+include "./Commands/GetControllersList.fbs";
+include "./Commands/GetControllersIds.fbs";
+include "./Commands/GetControllerInfo.fbs";
+include "./Commands/GetConnectedDevices.fbs";
+include "./Commands/StartScan.fbs";
+include "./Commands/StopScan.fbs";
+include "./Commands/AddDevice.fbs";
+include "./Commands/RemoveDevice.fbs";
+include "./Commands/Disconnect.fbs";
+include "./Commands/SetPowered.fbs";
+include "./Commands/SetDiscoverable.fbs";
+include "./Commands/SetConnectable.fbs";
+include "./Commands/Read.fbs";
+include "./Commands/Write.fbs";
+include "./Commands/WriteWithoutResponse.fbs";
+include "./Commands/ProbeServices.fbs";
+include "./Commands/ProbeCharacteristics.fbs";
+include "./Events/DeviceConnected.fbs";
+include "./Events/DeviceDisconnected.fbs";
+include "./Events/DeviceFound.fbs";
+include "./Events/Discovering.fbs";
+include "./Events/ControllerChanged.fbs";
+include "./Events/DeviceChanged.fbs";
+include "./Events/NotificationReceived.fbs";
+include "./Errors/BaBLEError.fbs";
+include "./Control/Ready.fbs";
+include "./Control/Exit.fbs";
+
+namespace BaBLE;
+
+union Payload {
+  // Commands
+  AddDevice,
+  Disconnect,
+  GetConnectedDevices,
+  GetControllersIds,
+  GetControllerInfo,
+  GetControllersList,
+  GetMGMTInfo,
+  ProbeCharacteristics,
+  ProbeServices,
+  Read,
+  RemoveDevice,
+  SetConnectable,
+  SetDiscoverable,
+  SetPowered,
+  StartScan,
+  StopScan,
+  Write,
+  WriteWithoutResponse,
+
+  // Events
+  ControllerAdded,
+  ControllerRemoved,
+  DeviceAdded,
+  DeviceRemoved,
+  DeviceConnected,
+  DeviceDisconnected,
+  DeviceFound,
+  Discovering,
+  NotificationReceived,
+
+  // Errors
+  BaBLEError,
+
+  // Control
+  Exit,
+  Ready
+}
+
+enum StatusCode:uint8 {
+  Success = 0x00,
+  SocketError = 0x01,
+  NotFound = 0x02,
+  WrongFormat = 0x03,
+  InvalidCommand = 0x04,
+  Unknown = 0x05,
+  Rejected = 0x06,
+  Denied = 0x07,
+  Cancelled = 0x08,
+  NotPowered = 0x09,
+  Failed = 0x0A,
+  NotConnected = 0x0B
+}
+
+table Packet {
+  uuid:string;
+  payload:Payload;
+  controller_id:uint16 = 0xFFFF;
+  status:StatusCode = Success;
+  native_status:uint8 = 0x00;
+  native_class:string;
+}
+
+root_type Packet;

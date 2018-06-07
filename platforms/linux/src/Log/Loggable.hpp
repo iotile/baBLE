@@ -1,6 +1,8 @@
 #ifndef BABLE_LINUX_LOGGABLE_HPP
 #define BABLE_LINUX_LOGGABLE_HPP
 
+#include <string>
+
 // Interface making a class "loggable" meaning that we can have a string representation to log
 class Loggable {
 
