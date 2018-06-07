@@ -1,15 +1,11 @@
 #ifndef BABLE_LINUX_HCIFORMATBUILDER_HPP
 #define BABLE_LINUX_HCIFORMATBUILDER_HPP
 
+#include "./constants.hpp"
+
 #if __BYTE_ORDER__ == __ORDER_PDP_ENDIAN__
 #error "Byte order not suported (PDP endian)"
 #endif
-
-#include <array>
-#include <cstdint>
-#include <vector>
-#include <string>
-#include "./constants.hpp"
 
 class HCIFormatBuilder {
 
@@ -18,7 +14,7 @@ public:
   explicit HCIFormatBuilder(uint16_t controller_id);
 
   // Setters
-  HCIFormatBuilder& set_opcode(uint8_t code);
+  HCIFormatBuilder& set_opcode(uint16_t code);
   HCIFormatBuilder& set_controller_id(uint16_t controller_id);
   HCIFormatBuilder& set_connection_handle(uint16_t connection_handle);
 
@@ -41,7 +37,7 @@ private:
   std::vector<uint8_t> generate_command_header();
   std::vector<uint8_t> generate_async_data_header();
 
-  uint8_t m_opcode;
+  uint16_t m_opcode;
   uint16_t m_controller_id;
   uint16_t m_connection_handle;
   std::vector<uint8_t> m_formatted_data;

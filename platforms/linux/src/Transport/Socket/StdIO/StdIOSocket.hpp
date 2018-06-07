@@ -3,9 +3,7 @@
 
 #define MAGIC_CODE 0xCAFE
 
-#include <algorithm>
 #include "../../AbstractSocket.hpp"
-#include "../../../Log/Log.hpp"
 
 enum STDIO_ID {
   in = 0,

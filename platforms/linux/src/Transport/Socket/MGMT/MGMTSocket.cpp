@@ -1,4 +1,10 @@
+#include <cerrno>
+#include <cstring>
+#include <fcntl.h>
+#include <unistd.h>
 #include "MGMTSocket.hpp"
+#include "../../../Exceptions/Socket/SocketException.hpp"
+#include "../../../Log/Log.hpp"
 
 using namespace std;
 using namespace uvw;
@@ -52,7 +58,7 @@ bool MGMTSocket::send(const vector<uint8_t>& data) {
   } else {
     set_writable(false);
 
-    LOG.info("Sending data...", "MGMT socket");
+    LOG.debug("Sending data...", "MGMT socket");
     LOG.debug(data, "MGMT socket");
     if (write(m_socket, data.data(), data.size()) < 0) {
       LOG.error("Error while sending a message to MGMT socket: " + string(strerror(errno)), "MGMTSocket");
@@ -122,7 +128,7 @@ void MGMTSocket::poll(shared_ptr<Loop> loop, OnReceivedCallback on_received, OnE
   m_poller->on<PollEvent>([this, on_received, on_error](const PollEvent& event, const PollHandle& handle){
     try {
       if (event.flags & PollHandle::Event::READABLE) {
-        LOG.info("Reading data...", "MGMTSocket");
+        LOG.debug("Reading data...", "MGMTSocket");
         vector<uint8_t> received_payload = receive();
         on_received(received_payload, m_format);
       } else if (event.flags & PollHandle::Event::WRITABLE) {

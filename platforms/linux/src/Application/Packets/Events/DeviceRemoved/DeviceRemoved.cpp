@@ -2,39 +2,40 @@
 
 using namespace std;
 
-namespace Packet::Events {
+namespace Packet {
 
-  DeviceRemoved::DeviceRemoved(Packet::Type initial_type, Packet::Type translated_type)
-      : EventPacket(initial_type, translated_type) {
-    m_id = BaBLE::Payload::DeviceRemoved;
-    m_address_type = 0;
-  }
+  namespace Events {
 
-  void DeviceRemoved::unserialize(MGMTFormatExtractor& extractor) {
-    EventPacket::unserialize(extractor);
-    m_address = extractor.get_array<uint8_t, 6>();
-    m_address_type = extractor.get_value<uint8_t>();
-  };
+    DeviceRemoved::DeviceRemoved(Packet::Type initial_type, Packet::Type translated_type)
+        : EventPacket(initial_type, translated_type) {
+      m_id = Packet::Id::DeviceRemoved;
+      m_address_type = 0;
+    }
 
-  vector<uint8_t> DeviceRemoved::serialize(AsciiFormatBuilder& builder) const {
-    EventPacket::serialize(builder);
+    void DeviceRemoved::unserialize(MGMTFormatExtractor& extractor) {
+      m_address = extractor.get_array<uint8_t, 6>();
+      m_address_type = extractor.get_value<uint8_t>();
+    };
 
-    builder
-        .set_name("DeviceRemoved")
-        .add("Address", AsciiFormat::format_bd_address(m_address))
-        .add("Address type", m_address_type);
+    vector<uint8_t> DeviceRemoved::serialize(AsciiFormatBuilder& builder) const {
+      EventPacket::serialize(builder);
 
-    return builder.build();
-  };
+      builder
+          .set_name("DeviceRemoved")
+          .add("Address", AsciiFormat::format_bd_address(m_address))
+          .add("Address type", m_address_type);
 
-  vector<uint8_t> DeviceRemoved::serialize(FlatbuffersFormatBuilder& builder) const {
-    EventPacket::serialize(builder);
+      return builder.build();
+    };
 
-    auto address = builder.CreateString(AsciiFormat::format_bd_address(m_address));
+    vector<uint8_t> DeviceRemoved::serialize(FlatbuffersFormatBuilder& builder) const {
+      auto address = builder.CreateString(AsciiFormat::format_bd_address(m_address));
 
-    auto payload = BaBLE::CreateDeviceRemoved(builder, address, m_address_type);
+      auto payload = BaBLE::CreateDeviceRemoved(builder, address, m_address_type);
 
-    return builder.build(payload, BaBLE::Payload::DeviceRemoved);
+      return builder.build(payload, BaBLE::Payload::DeviceRemoved);
+    }
+
   }
 
 }

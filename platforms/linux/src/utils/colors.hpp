@@ -1,8 +1,6 @@
 #ifndef BABLE_LINUX_COLORS_HPP
 #define BABLE_LINUX_COLORS_HPP
 
-#include <string>
-
 #define RESET_COLOR "\033[0m"
 
 #define RED_COLOR "\033[1;31m"

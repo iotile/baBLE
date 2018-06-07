@@ -1,0 +1,6 @@
+namespace BaBLE;
+
+table ErrorResponse {
+  opcode:uint8;
+  handle:uint16;
+}
