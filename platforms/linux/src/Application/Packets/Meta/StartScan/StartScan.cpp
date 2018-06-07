@@ -30,8 +30,6 @@ namespace Packet {
     vector<uint8_t> StartScan::serialize(FlatbuffersFormatBuilder& builder) const {
       auto payload = BaBLE::CreateStartScan(builder, m_active_scan);
 
-      LOG.critical(to_string(m_active_scan), "SERIALIZE");
-
       return builder.build(payload, BaBLE::Payload::StartScan);
     }
 
@@ -125,8 +123,6 @@ namespace Packet {
 
       import_status(m_set_scan_params_packet);
       m_waiting_response = Packet::Id::None;
-
-      LOG.critical(to_string(m_active_scan), "ON SET SCAN ENABLE RESPONSE");
 
       return shared_from(this);
     }
