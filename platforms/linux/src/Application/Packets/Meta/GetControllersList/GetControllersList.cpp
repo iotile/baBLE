@@ -138,7 +138,7 @@ namespace Packet {
 
       auto controllers_ids_response_packet = dynamic_pointer_cast<Packet::Commands::GetControllersIdsResponse>(packet);
       if (controllers_ids_response_packet == nullptr) {
-        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to GetControllersIds packet.");
+        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to GetControllersIds packet.", m_uuid_request);
       }
 
       import_status(controllers_ids_response_packet);
@@ -167,7 +167,7 @@ namespace Packet {
 
       auto controller_info_response_packet = dynamic_pointer_cast<Packet::Commands::GetControllerInfoResponse>(packet);
       if (controller_info_response_packet == nullptr) {
-        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to GetControllerInfo packet.");
+        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to GetControllerInfo packet.", m_uuid_request);
       }
 
       import_status(controller_info_response_packet);

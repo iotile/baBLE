@@ -36,7 +36,7 @@ namespace Packet {
       LOG.debug("Response received", "CancelConnectionRequest");
       auto command_complete_packet = dynamic_pointer_cast<Packet::Events::CommandComplete>(packet);
       if (command_complete_packet == nullptr) {
-        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to CommandComplete packet.");
+        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to CommandComplete packet.", m_uuid_request);
       }
 
       vector<uint8_t> result = command_complete_packet->get_returned_params();

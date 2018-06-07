@@ -117,7 +117,7 @@ namespace Packet {
 
       auto read_by_type_response_packet = dynamic_pointer_cast<Packet::Commands::ReadByTypeResponse>(packet);
       if (read_by_type_response_packet == nullptr) {
-        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to ReadByTypeResponse packet.");
+        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to ReadByTypeResponse packet.", m_uuid_request);
       }
 
       vector<Format::HCI::Characteristic> new_characteristics = read_by_type_response_packet->get_characteristics();
@@ -144,7 +144,7 @@ namespace Packet {
 
       auto error_packet = dynamic_pointer_cast<Packet::Errors::ErrorResponse>(packet);
       if (error_packet == nullptr) {
-        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to ErrorResponse packet.");
+        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to ErrorResponse packet.", m_uuid_request);
       }
 
       Format::HCI::AttributeErrorCode error_code = error_packet->get_error_code();

@@ -104,7 +104,7 @@ namespace Packet {
 
       auto read_by_group_type_response_packet = dynamic_pointer_cast<Packet::Commands::ReadByGroupTypeResponse>(packet);
       if (read_by_group_type_response_packet == nullptr) {
-        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to ReadByGroupTypeResponse packet.");
+        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to ReadByGroupTypeResponse packet.", m_uuid_request);
       }
 
       vector<Format::HCI::Service> new_services = read_by_group_type_response_packet->get_services();
