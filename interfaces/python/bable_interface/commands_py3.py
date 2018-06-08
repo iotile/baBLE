@@ -3,7 +3,7 @@ from asyncio import Future
 import uuid
 
 from .BaBLE import Payload, DeviceFound, StartScan, StopScan, ProbeServices, ProbeCharacteristics, DeviceConnected, \
-    Connect, Disconnect, CancelConnection, DeviceDisconnected
+    Connect, Disconnect, CancelConnection, DeviceDisconnected, GetConnectedDevices, GetControllersList
 from .flatbuffer import extract_packet
 
 
@@ -294,3 +294,70 @@ def cancel_connection(self, controller_id):
 
     print("Waiting for connection to cancel...")
     yield from asyncio.wait_for(future, 15.0)
+
+
+@asyncio.coroutine
+def list_connected_devices(self, controller_id):
+
+    @asyncio.coroutine
+    def on_response_received(packet, future):
+        print("ON LIST CONNECTED DEVICES RESPONSE", packet.Status())
+
+        result = extract_packet(
+            packet=packet,
+            payload_class=GetConnectedDevices.GetConnectedDevices,
+            list_params=["devices"]
+        )
+
+        future.set_result(result["devices"])
+
+    future = Future()
+    uuid_request = str(uuid.uuid4())
+
+    self.register_response_callback(uuid=uuid_request, callback_fn=on_response_received, future=future)
+
+    self.send_packet(payload_module=GetConnectedDevices, uuid=uuid_request, controller_id=controller_id)
+
+    print("Waiting for list of connected devices...")
+    result = yield from asyncio.wait_for(future, 15.0)
+
+    return result
+
+
+@asyncio.coroutine
+def list_controllers(self):
+
+    @asyncio.coroutine
+    def on_response_received(packet, future):
+        print("ON LIST CONTROLLERS RESPONSE", packet.Status())
+
+        result = extract_packet(
+            packet=packet,
+            payload_class=GetControllersList.GetControllersList,
+            list_params=["controllers"]
+        )
+        controllers = []
+        for controller in result["controllers"]:
+            controllers.append({
+                "id": controller.Id(),
+                "address": controller.Address(),
+                "name": controller.Name(),
+                "powered": controller.Powered(),
+                "connectable": controller.Connectable(),
+                "discoverable": controller.Discoverable(),
+                "low_energy": controller.LowEnergy()
+            })
+
+        future.set_result(controllers)
+
+    future = Future()
+    uuid_request = str(uuid.uuid4())
+
+    self.register_response_callback(uuid=uuid_request, callback_fn=on_response_received, future=future)
+
+    self.send_packet(payload_module=GetControllersList, uuid=uuid_request)
+
+    print("Waiting for list of controllers...")
+    result = yield from asyncio.wait_for(future, 15.0)
+
+    return result

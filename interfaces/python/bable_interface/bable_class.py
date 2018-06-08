@@ -96,3 +96,33 @@ class BaBLEInterface(object):
         self.working_thread.add_task(
             self.commands_manager.cancel_connection(controller_id)
         )
+
+    def list_connected_devices(self, controller_id=0):
+        calldone = threading.Event()
+        result = [None]
+
+        def list_received(fut):
+            result[0] = fut.result()
+            calldone.set()
+
+        self.working_thread.add_task(
+            self.commands_manager.list_connected_devices(controller_id),
+            list_received
+        )
+        calldone.wait()
+        return result[0]
+
+    def list_controllers(self):
+        calldone = threading.Event()
+        result = [None]
+
+        def list_received(fut):
+            result[0] = fut.result()
+            calldone.set()
+
+        self.working_thread.add_task(
+            self.commands_manager.list_controllers(),
+            list_received
+        )
+        calldone.wait()
+        return result[0]

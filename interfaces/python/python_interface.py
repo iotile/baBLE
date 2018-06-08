@@ -370,9 +370,9 @@ try:
                   "Connection handle:", connection_handle,
                   "Controller ID:", controller_id, "Address type:", address_type, "Address:", address)
 
-            process.stdin.write(fb_write_without_response("0002", 0, device_connection_handle, 0x0003, "AA"))
-            time.sleep(2)
-            process.stdin.write(fb_read("0002", 0, device_connection_handle, 0x0003))
+            # process.stdin.write(fb_write_without_response("0002", 0, device_connection_handle, 0x0003, "AA"))
+            # time.sleep(2)
+            # process.stdin.write(fb_read("0002", 0, device_connection_handle, 0x0003))
 
             # process.stdin.write(fb_write("write", 0, device_connection_handle, 0x0003, "Alexis"))
             # process.stdin.write(fb_probe_characteristics("12356789", 0, device_connection_handle))
@@ -598,12 +598,12 @@ try:
 
             print("ReadyPacket")
 
-            # process.stdin.write(fb_connect("0001", 0, "C4:F0:A5:E6:8A:01"))
+            process.stdin.write(fb_connect("0001", 0, "C4:F0:A5:E6:8A:91"))
             # process.stdin.write(fb_cancel_connection("0002", 0))
             # process.stdin.write(fb_probe_characteristics("0001", 0, device_connection_handle))
-            process.stdin.write(fb_start_scan("0001", 0))
-            time.sleep(1)
-            process.stdin.write(fb_stop_scan("0002", 0))
+            # process.stdin.write(fb_start_scan("0001", 0))
+            # time.sleep(1)
+            # process.stdin.write(fb_stop_scan("0002", 0))
             # process.stdin.write(fb_get_mgmt_info("UUID"))
             # process.stdin.write(fb_get_controllers_ids("0001"))
             # process.stdin.write(fb_set_discoverable("0001", 0, False))
