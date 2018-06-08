@@ -75,6 +75,10 @@ class CommandsManager(object):
         if key in self.events_callbacks:
             del self.events_callbacks[key]
 
+    def remove_response_callback(self, uuid):
+        if uuid in self.responses_callbacks:
+            del self.responses_callbacks[uuid]
+
     def send_packet(self, payload_module, *args, **kwargs):
         self.subprocess.stdin.write(build_packet(payload_module, *args, **kwargs))
 

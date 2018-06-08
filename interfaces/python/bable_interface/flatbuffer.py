@@ -28,7 +28,7 @@ else:
     def to_bytes(value, length, byteorder='big'):
         return value.to_bytes(length, byteorder=byteorder)
 
-
+# TODO: create a dict with PayloadType -> {payload_name, PayloadModule, PayloadClass} instead ?
 PAYLOAD_IDS = {k: v for k, v in vars(Payload.Payload).items() if not k.startswith("__")}
 
 

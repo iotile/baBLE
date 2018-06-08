@@ -126,3 +126,8 @@ class BaBLEInterface(object):
         )
         calldone.wait()
         return result[0]
+
+    def read(self, connection_handle, attribute_handle, on_read_callback, controller_id=0):
+        self.working_thread.add_task(
+            self.commands_manager.read(controller_id, connection_handle, attribute_handle, on_read_callback)
+        )

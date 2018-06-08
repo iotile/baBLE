@@ -9,11 +9,22 @@ def on_device_found(success, result, failure_reason):
     print("ON DEVICE FOUND", result)
 
 
+def on_read(success, result, failure_reason):
+    print("ON READ", result)
+    if success:
+        message = ""
+        for v in result["value"]:
+            message += chr(v)
+        print(message)
+
+
 def on_connected(success, result, failure_reason):
     print("ON CONNECTED", result)
     if not success:
         bable.cancel_connection()
         print(failure_reason)
+    else:
+        bable.read(result["connection_handle"], 0x0003, on_read)
 
 
 def on_unexpected_disconnection(success, result, failure_reason):
@@ -31,14 +42,15 @@ bable.start()
 # bable.stop_scan()
 # print("SCAN STOPPED IN TEST.PY")
 
-# bable.connect("C4:F0:A5:E6:8A:91", "random", on_connected, on_unexpected_disconnection)
-# print("CONNECTED IN TEST.PY")
-# time.sleep(15)
-# bable.disconnect(0x0040, on_disconnected)
-# print("DISCONNECTED IN TEST.PY")
+bable.connect("C4:F0:A5:E6:8A:91", "random", on_connected, on_unexpected_disconnection)
+print("CONNECTED IN TEST.PY")
+time.sleep(15)
+bable.disconnect(0x0040, on_disconnected)
+print("DISCONNECTED IN TEST.PY")
 
-devices = bable.list_connected_devices()
-print(devices)
+# devices = bable.list_connected_devices()
+# print(devices)
+
 time.sleep(2)
 bable.stop()
 print("DONE")

@@ -3,7 +3,7 @@ from asyncio import Future
 import uuid
 
 from .BaBLE import Payload, DeviceFound, StartScan, StopScan, ProbeServices, ProbeCharacteristics, DeviceConnected, \
-    Connect, Disconnect, CancelConnection, DeviceDisconnected, GetConnectedDevices, GetControllersList
+    Connect, Disconnect, CancelConnection, DeviceDisconnected, GetConnectedDevices, GetControllersList, Read
 from .flatbuffer import extract_packet
 
 
@@ -272,7 +272,11 @@ def disconnect(self, controller_id, connection_handle, on_disconnected):
         yield from asyncio.wait_for(future, 5.0)
     except asyncio.TimeoutError:
         print("DISCONNECTION TIMEOUT")
-        self.remove_event_callback(payload_type=Payload.Payload.DeviceDisconnected, controller_id=controller_id)
+        self.remove_event_callback(
+            payload_type=Payload.Payload.DeviceDisconnected,
+            controller_id=controller_id,
+            connection_handle=connection_handle
+        )
 
 
 @asyncio.coroutine
@@ -361,3 +365,41 @@ def list_controllers(self):
     result = yield from asyncio.wait_for(future, 15.0)
 
     return result
+
+
+@asyncio.coroutine
+def read(self, controller_id, connection_handle, attribute_handle, on_read):
+
+    @asyncio.coroutine
+    def on_response_received(packet, future):
+        print("ON READ RESPONSE", packet.Status())
+        data = extract_packet(
+            packet=packet,
+            payload_class=Read.Read,
+            params=["connection_handle", "attribute_handle"],
+            numpy_params=["value"]
+        )
+        data["controller_id"] = packet.ControllerId()
+
+        future.set_result(None)
+
+        on_read(True, data, None)
+
+    future = Future()
+    uuid_request = str(uuid.uuid4())
+
+    self.register_response_callback(uuid=uuid_request, callback_fn=on_response_received, future=future)
+
+    self.send_packet(
+        payload_module=Read,
+        uuid=uuid_request,
+        controller_id=controller_id,
+        params={"connection_handle": connection_handle, "attribute_handle": attribute_handle}
+    )
+
+    print("Reading...")
+    try:
+        yield from asyncio.wait_for(future, 5.0)
+    except asyncio.TimeoutError:
+        print("READ TIMEOUT")
+        self.remove_response_callback(uuid=uuid_request)
