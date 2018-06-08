@@ -131,3 +131,13 @@ class BaBLEInterface(object):
         self.working_thread.add_task(
             self.commands_manager.read(controller_id, connection_handle, attribute_handle, on_read_callback)
         )
+
+    def write(self, connection_handle, attribute_handle, value, on_written_callback, controller_id=0):
+        self.working_thread.add_task(
+            self.commands_manager.write(controller_id, connection_handle, attribute_handle, value, on_written_callback)
+        )
+
+    def write_without_response(self, connection_handle, attribute_handle, value, controller_id=0):
+        self.working_thread.add_task(
+            self.commands_manager.write_without_response(controller_id, connection_handle, attribute_handle, value)
+        )

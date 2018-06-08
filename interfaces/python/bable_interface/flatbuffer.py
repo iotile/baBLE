@@ -99,6 +99,11 @@ def build_packet(payload_module, uuid="", controller_id=None, params=None):
             param_name = snake_to_camel(param_name)
             if isinstance(param_value, str):
                 fb_params[param_name] = builder.CreateString(param_value)
+            elif isinstance(param_value, tuple) or isinstance(param_value, list) or isinstance(param_value, bytes):
+                getattr(payload_module, "{}Start{}Vector".format(packet_name, param_name))(builder, len(param_value))
+                for element in reversed(param_value):
+                    builder.PrependByte(element)
+                fb_params[param_name] = builder.EndVector(len(param_value))
             else:
                 fb_params[param_name] = param_value
 

@@ -3,7 +3,8 @@ from asyncio import Future
 import uuid
 
 from .BaBLE import Payload, DeviceFound, StartScan, StopScan, ProbeServices, ProbeCharacteristics, DeviceConnected, \
-    Connect, Disconnect, CancelConnection, DeviceDisconnected, GetConnectedDevices, GetControllersList, Read
+    Connect, Disconnect, CancelConnection, DeviceDisconnected, GetConnectedDevices, GetControllersList, Read, Write, \
+    WriteWithoutResponse
 from .flatbuffer import extract_packet
 
 
@@ -277,6 +278,7 @@ def disconnect(self, controller_id, connection_handle, on_disconnected):
             controller_id=controller_id,
             connection_handle=connection_handle
         )
+        on_disconnected(False, None, "Disconnection timed out")
 
 
 @asyncio.coroutine
@@ -403,3 +405,56 @@ def read(self, controller_id, connection_handle, attribute_handle, on_read):
     except asyncio.TimeoutError:
         print("READ TIMEOUT")
         self.remove_response_callback(uuid=uuid_request)
+        on_read(False, None, "Read timed out")
+
+
+@asyncio.coroutine
+def write(self, controller_id, connection_handle, attribute_handle, value, on_written):
+
+    @asyncio.coroutine
+    def on_response_received(packet, future):
+        print("ON WRITE RESPONSE", packet.Status())
+        data = extract_packet(
+            packet=packet,
+            payload_class=Write.Write,
+            params=["connection_handle", "attribute_handle"]
+        )
+        data["controller_id"] = packet.ControllerId()
+
+        future.set_result(None)
+
+        on_written(True, data, None)
+
+    future = Future()
+    uuid_request = str(uuid.uuid4())
+
+    self.register_response_callback(uuid=uuid_request, callback_fn=on_response_received, future=future)
+
+    self.send_packet(
+        payload_module=Write,
+        uuid=uuid_request,
+        controller_id=controller_id,
+        params={"connection_handle": connection_handle, "attribute_handle": attribute_handle, "value": value}
+    )
+
+    print("Writing...")
+    try:
+        yield from asyncio.wait_for(future, 5.0)
+    except asyncio.TimeoutError:
+        print("WRITE TIMEOUT")
+        self.remove_response_callback(uuid=uuid_request)
+        on_written(False, None, "Write timed out")
+
+
+@asyncio.coroutine
+def write_without_response(self, controller_id, connection_handle, attribute_handle, value):
+    uuid_request = str(uuid.uuid4())
+
+    self.send_packet(
+        payload_module=WriteWithoutResponse,
+        uuid=uuid_request,
+        controller_id=controller_id,
+        params={"connection_handle": connection_handle, "attribute_handle": attribute_handle, "value": value}
+    )
+
+    print("Write without response command sent")

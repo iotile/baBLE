@@ -18,13 +18,20 @@ def on_read(success, result, failure_reason):
         print(message)
 
 
+def on_write(success, result, failure_reason):
+    print("ON WRITE", result)
+    if success:
+        bable.read(result["connection_handle"], 0x0003, on_read)
+
+
 def on_connected(success, result, failure_reason):
     print("ON CONNECTED", result)
     if not success:
         bable.cancel_connection()
         print(failure_reason)
     else:
-        bable.read(result["connection_handle"], 0x0003, on_read)
+        # bable.write(result["connection_handle"], 0x0003, bytes("Cafe", encoding="utf-8"), on_write)
+        bable.write_without_response(result["connection_handle"], 0x0003, bytes("Arch", encoding="utf-8"))
 
 
 def on_unexpected_disconnection(success, result, failure_reason):
@@ -44,7 +51,9 @@ bable.start()
 
 bable.connect("C4:F0:A5:E6:8A:91", "random", on_connected, on_unexpected_disconnection)
 print("CONNECTED IN TEST.PY")
-time.sleep(15)
+time.sleep(10)
+bable.read(0x0040, 0x0003, on_read)
+time.sleep(5)
 bable.disconnect(0x0040, on_disconnected)
 print("DISCONNECTED IN TEST.PY")
 
