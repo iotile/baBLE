@@ -31,7 +31,7 @@ class ReceivingThread(threading.Thread):
                     payload += self.file.read(1)
 
                 packet = Packet.Packet.GetRootAsPacket(payload, 0)
-                if packet.PayloadType() == Payload.Payload().Exit:
+                if packet.PayloadType() == Payload.Payload.Exit:
                     break
 
                 self.on_receive(packet)

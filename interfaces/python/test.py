@@ -2,35 +2,40 @@ import bable_interface
 import time
 
 
-def on_device_found(device):
-    print("ON DEVICE FOUND", device)
+bable = bable_interface.BaBLEInterface()
 
 
-def on_connected(device):
-    print("ON CONNECTED", device)
+def on_device_found(success, result, failure_reason):
+    print("ON DEVICE FOUND", result)
 
 
-def on_error():
-    print("ERROR")
+def on_connected(success, result, failure_reason):
+    print("ON CONNECTED", result)
+    if not success:
+        bable.cancel_connection()
+        print(failure_reason)
 
 
-def on_disconnected(connection_handle):
-    print("ON DISCONNECTED", connection_handle)
+def on_unexpected_disconnection(success, result, failure_reason):
+    print("ON UNEXPECTED DISCONNECTION", result)
 
 
-bable = bable_interface.BaBLE()
+def on_disconnected(success, result, failure_reason):
+    print("ON DISCONNECTED", result)
+
+
 bable.start()
 # bable.start_scan(on_device_found)
 # print("SCAN STARTED IN TEST.PY")
 # time.sleep(2)
 # bable.stop_scan()
 # print("SCAN STOPPED IN TEST.PY")
-# time.sleep(2)
-bable.connect("C4:F0:A5:E6:8A:91", "random", on_connected, on_error)
+bable.connect("C4:F0:A5:E6:8A:91", "random", on_connected, on_unexpected_disconnection)
 print("CONNECTED IN TEST.PY")
-time.sleep(20)
-# bable.disconnect(0x0040, on_disconnected)
-# print("DISCONNECTED IN TEST.PY")
+time.sleep(15)
+bable.disconnect(0x0040, on_disconnected)
+print("DISCONNECTED IN TEST.PY")
+time.sleep(2)
 bable.stop()
 print("DONE")
 

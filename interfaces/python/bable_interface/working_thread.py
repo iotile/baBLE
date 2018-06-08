@@ -2,9 +2,7 @@ import functools
 import threading
 import sys
 
-PYTHON_2 = sys.version_info[0] < 3
-
-if PYTHON_2:
+if sys.version_info < (3, 4):
     import trollius as asyncio
 else:
     import asyncio
