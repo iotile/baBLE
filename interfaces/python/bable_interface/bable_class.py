@@ -7,6 +7,7 @@ from .flatbuffer import build_packet
 from .working_thread import WorkingThread
 from .receiving_thread import ReceivingThread
 from .commands_manager import CommandsManager
+from .utils import none_cb
 
 
 class BaBLEInterface(object):
@@ -58,23 +59,21 @@ class BaBLEInterface(object):
         else:
             self.commands_manager.handle(packet, self.working_thread.add_task)
 
-    def on_done(self, fut, event=None, return_value=None):
-        if isinstance(return_value, dict):
-            if fut.exception() is not None:
-                return_value.update({
-                    "success": False,
-                    "result": None,
-                    "failure_reason": fut.exception()
-                })
-            else:
-                return_value.update({
-                    "success": True,
-                    "result": fut.result(),
-                    "failure_reason": None
-                })
+    def on_done(self, fut, event, return_value):
+        if fut.exception() is not None:
+            return_value.update({
+                "success": False,
+                "result": None,
+                "failure_reason": fut.exception()
+            })
+        else:
+            return_value.update({
+                "success": True,
+                "result": fut.result(),
+                "failure_reason": None
+            })
 
-        if event is not None:
-            event.set()
+        event.set()
 
     def run_command(self, command, sync):
         calldone = threading.Event()
@@ -95,13 +94,13 @@ class BaBLEInterface(object):
     def stop_scan(self, controller_id=0, sync=True):
         return self.run_command(command=self.commands_manager.stop_scan(controller_id), sync=sync)
 
-    def connect(self, address, address_type, on_connected, on_disconnected, controller_id=0, sync=False):
+    def connect(self, address, address_type, on_connected=none_cb, on_disconnected=none_cb, controller_id=0, sync=False):
         return self.run_command(
             command=self.commands_manager.connect(controller_id, address, address_type, on_connected, on_disconnected),
             sync=sync
         )
 
-    def disconnect(self, connection_handle, on_disconnected, controller_id=0, sync=False):
+    def disconnect(self, connection_handle, on_disconnected=none_cb, controller_id=0, sync=False):
         return self.run_command(
             command=self.commands_manager.disconnect(controller_id, connection_handle, on_disconnected),
             sync=sync
@@ -116,15 +115,15 @@ class BaBLEInterface(object):
     def list_controllers(self):
         return self.run_command(command=self.commands_manager.list_controllers(), sync=True)
 
-    def read(self, connection_handle, attribute_handle, on_read_callback, controller_id=0, sync=False):
+    def read(self, connection_handle, attribute_handle, on_read=none_cb, controller_id=0, sync=False):
         return self.run_command(
-            command=self.commands_manager.read(controller_id, connection_handle, attribute_handle, on_read_callback),
+            command=self.commands_manager.read(controller_id, connection_handle, attribute_handle, on_read),
             sync=sync
         )
 
-    def write(self, connection_handle, attribute_handle, value, on_written_callback, controller_id=0, sync=False):
+    def write(self, connection_handle, attribute_handle, value, on_written=none_cb, controller_id=0, sync=False):
         return self.run_command(
-            command=self.commands_manager.write(controller_id, connection_handle, attribute_handle, value, on_written_callback),
+            command=self.commands_manager.write(controller_id, connection_handle, attribute_handle, value, on_written),
             sync=sync
         )
 
@@ -134,7 +133,7 @@ class BaBLEInterface(object):
             sync=sync
         )
 
-    def enable_notification(self, connection_handle, attribute_handle, on_notification_received, controller_id=0, sync=True):
+    def enable_notification(self, connection_handle, attribute_handle, on_notification_received=none_cb, controller_id=0, sync=True):
         return self.run_command(
             command=self.commands_manager.set_notification(True, controller_id, connection_handle, attribute_handle, on_notification_received),
             sync=sync

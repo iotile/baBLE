@@ -1,6 +1,7 @@
 import threading
 
 from .BaBLE import Packet, Payload
+from .utils import MAGIC_CODE
 
 
 class ReceivingThread(threading.Thread):
@@ -18,7 +19,7 @@ class ReceivingThread(threading.Thread):
                 while len(header) < 4:
                     header += self.file.read(1)
 
-                if header[:2] != b'\xCA\xFE':
+                if header[:2] != MAGIC_CODE:
                     print('ERROR')
                     print(header[:2])
                     continue

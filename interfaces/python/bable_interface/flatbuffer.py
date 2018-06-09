@@ -1,32 +1,8 @@
 import flatbuffers
-import sys
 
 from .BaBLE import Packet, Payload, DeviceConnected, DeviceFound, DeviceDisconnected, NotificationReceived,\
     ControllerAdded, ControllerRemoved, BaBLEError
-
-if sys.version_info < (3, 2):
-    import struct
-
-    def to_bytes(value, length, byteorder='big'):
-        struct_str = '>' if byteorder == 'big' else '<'
-        if value < 0:
-            raise ValueError("Can't convert negative values to bytes.")
-
-        if length == 1:
-            struct_str += 'B'
-        elif length == 2:
-            struct_str += 'H'
-        elif length == 4:
-            struct_str += 'I'
-        elif length == 8:
-            struct_str += 'Q'
-        else:
-            raise ValueError("Invalid length.")
-
-        return struct.pack(struct_str, value)
-else:
-    def to_bytes(value, length, byteorder='big'):
-        return value.to_bytes(length, byteorder=byteorder)
+from .utils import to_bytes, MAGIC_CODE
 
 # TODO: create a dict with PayloadType -> {payload_name, PayloadModule, PayloadClass} instead ?
 PAYLOAD_IDS = {k: v for k, v in vars(Payload.Payload).items() if not k.startswith("__")}
@@ -130,7 +106,7 @@ def build_packet(payload_module, uuid="", controller_id=None, params=None):
     builder.Finish(packet)
 
     buf = builder.Output()
-    buf = b'\xCA\xFE' + to_bytes(len(buf), 2, byteorder='little') + buf
+    buf = MAGIC_CODE + to_bytes(len(buf), 2, byteorder='little') + buf
 
     return buf
 
