@@ -26,22 +26,18 @@ class WorkingThread(threading.Thread):
     def stop(self):
         self.loop.call_soon_threadsafe(self.loop.stop)
 
-    def add_task(self, task, callback=None):
-        def _async_add(func):
-            try:
-                result = func()
-                if callback is not None:
-                    result.add_done_callback(callback)
-            except Exception as e:
-                print(e)
-
-        func = functools.partial(asyncio.ensure_future, task, loop=self.loop)
-        if threading.current_thread() == self.thread_id:
-            result = func()  # We can call directly if we're not going between threads.
+    def add_task(self, task, callback=None, **kwargs):
+        def run_task(func):
+            result = func()
             if callback is not None:
-                result.add_done_callback(callback)
+                result.add_done_callback(functools.partial(callback, **kwargs))
+
+        async_task = functools.partial(asyncio.ensure_future, task, loop=self.loop)
+
+        if threading.current_thread() == self.thread_id: # We can call directly if we're not going between threads.
+            run_task(async_task)
         else:
-            self.loop.call_soon_threadsafe(_async_add, func)
+            self.loop.call_soon_threadsafe(run_task, async_task)
 
     def cancel_task(self, task):
         self.loop.call_soon_threadsafe(task.cancel)

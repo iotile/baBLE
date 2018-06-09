@@ -45,22 +45,27 @@ def on_disconnected(success, result, failure_reason):
 
 
 bable.start()
-# bable.start_scan(on_device_found)
-# print("SCAN STARTED IN TEST.PY")
+
+# try:
+#     bable.start_scan(on_device_found )
+#     print("SCAN STARTED IN TEST.PY")
+# except Exception as e:
+#     print("EXCEPTION CAUGHT IN TEST.PY", e)
+#
 # time.sleep(2)
 # bable.stop_scan()
 # print("SCAN STOPPED IN TEST.PY")
 
-bable.connect("C4:F0:A5:E6:8A:91", "random", on_connected, on_unexpected_disconnection)
-print("CONNECTED IN TEST.PY")
-time.sleep(10)
+# bable.connect("C4:F0:A5:E6:8A:91", "random", on_connected, on_unexpected_disconnection)
+# print("CONNECTED IN TEST.PY")
+# time.sleep(10)
 # bable.read(0x0040, 0x0003, on_read)
 # time.sleep(5)
-bable.disconnect(0x0040, on_disconnected)
-print("DISCONNECTED IN TEST.PY")
+# bable.disconnect(0x0040, on_disconnected)
+# print("DISCONNECTED IN TEST.PY")
 
-# devices = bable.list_connected_devices()
-# print(devices)
+devices = bable.list_controllers()
+print(devices)
 
 time.sleep(2)
 bable.stop()

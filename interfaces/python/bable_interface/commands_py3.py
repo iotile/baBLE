@@ -32,6 +32,8 @@ def start_scan(self, controller_id, on_device_found):
     future = Future()
     uuid_request = str(uuid.uuid4())
 
+    raise Exception("TEST")
+
     self.register_event_callback(
         payload_type=Payload.Payload.DeviceFound, controller_id=controller_id, callback_fn=on_device_found_event
     )

@@ -58,164 +58,90 @@ class BaBLEInterface(object):
         else:
             self.commands_manager.handle(packet, self.working_thread.add_task)
 
-    def start_scan(self, on_device_found, controller_id=0, sync=True):
+    def on_done(self, fut, event=None, return_value=None):
+        if isinstance(return_value, dict):
+            if fut.exception() is not None:
+                return_value.update({
+                    "success": False,
+                    "result": None,
+                    "failure_reason": fut.exception()
+                })
+            else:
+                return_value.update({
+                    "success": True,
+                    "result": fut.result(),
+                    "failure_reason": None
+                })
+
+        if event is not None:
+            event.set()
+
+    def run_command(self, command, sync):
         calldone = threading.Event()
+        result = {}
 
-        def on_done(fut):
-            calldone.set()
-
-        self.working_thread.add_task(self.commands_manager.start_scan(controller_id, on_device_found), on_done)
+        self.working_thread.add_task(task=command, callback=self.on_done, event=calldone, return_value=result)
 
         if sync:
             calldone.wait()
+            if result.get("success", False):
+                return result["result"]
+            else:
+                raise RuntimeError(result.get("failure_reason", "No result returned"))
+
+    def start_scan(self, on_device_found, controller_id=0, sync=True):
+        return self.run_command(command=self.commands_manager.start_scan(controller_id, on_device_found), sync=sync)
 
     def stop_scan(self, controller_id=0, sync=True):
-        calldone = threading.Event()
-
-        def on_done(fut):
-            calldone.set()
-
-        self.working_thread.add_task(self.commands_manager.stop_scan(controller_id), on_done)
-
-        if sync:
-            calldone.wait()
+        return self.run_command(command=self.commands_manager.stop_scan(controller_id), sync=sync)
 
     def connect(self, address, address_type, on_connected, on_disconnected, controller_id=0, sync=False):
-        calldone = threading.Event()
-
-        def on_done(fut):
-            calldone.set()
-
-        self.working_thread.add_task(
-            self.commands_manager.connect(controller_id, address, address_type, on_connected, on_disconnected),
-            on_done
+        return self.run_command(
+            command=self.commands_manager.connect(controller_id, address, address_type, on_connected, on_disconnected),
+            sync=sync
         )
-
-        if sync:
-            calldone.wait()
 
     def disconnect(self, connection_handle, on_disconnected, controller_id=0, sync=False):
-        calldone = threading.Event()
-
-        def on_done(fut):
-            calldone.set()
-
-        self.working_thread.add_task(
-            self.commands_manager.disconnect(controller_id, connection_handle, on_disconnected),
-            on_done
+        return self.run_command(
+            command=self.commands_manager.disconnect(controller_id, connection_handle, on_disconnected),
+            sync=sync
         )
-
-        if sync:
-            calldone.wait()
 
     def cancel_connection(self, controller_id=0, sync=False):
-        calldone = threading.Event()
-
-        def on_done(fut):
-            calldone.set()
-
-        self.working_thread.add_task(
-            self.commands_manager.cancel_connection(controller_id),
-            on_done
-        )
-
-        if sync:
-            calldone.wait()
+        return self.run_command(command=self.commands_manager.cancel_connection(controller_id), sync=sync)
 
     def list_connected_devices(self, controller_id=0):
-        calldone = threading.Event()
-        result = [None]
-
-        def on_list_received(fut):
-            result[0] = fut.result()
-            calldone.set()
-
-        self.working_thread.add_task(self.commands_manager.list_connected_devices(controller_id), on_list_received)
-        calldone.wait()
-        return result[0]
+        return self.run_command(command=self.commands_manager.list_connected_devices(controller_id), sync=True)
 
     def list_controllers(self):
-        calldone = threading.Event()
-        result = [None]
-
-        def on_list_received(fut):
-            result[0] = fut.result()
-            calldone.set()
-
-        self.working_thread.add_task(self.commands_manager.list_controllers(), on_list_received)
-        calldone.wait()
-        return result[0]
+        return self.run_command(command=self.commands_manager.list_controllers(), sync=True)
 
     def read(self, connection_handle, attribute_handle, on_read_callback, controller_id=0, sync=False):
-        calldone = threading.Event()
-
-        def on_done(fut):
-            calldone.set()
-
-        self.working_thread.add_task(
-            self.commands_manager.read(controller_id, connection_handle, attribute_handle, on_read_callback),
-            on_done
+        return self.run_command(
+            command=self.commands_manager.read(controller_id, connection_handle, attribute_handle, on_read_callback),
+            sync=sync
         )
-
-        if sync:
-            calldone.wait()
 
     def write(self, connection_handle, attribute_handle, value, on_written_callback, controller_id=0, sync=False):
-        calldone = threading.Event()
-
-        def on_done(fut):
-            calldone.set()
-
-        self.working_thread.add_task(
-            self.commands_manager.write(controller_id, connection_handle, attribute_handle, value, on_written_callback),
-            on_done
+        return self.run_command(
+            command=self.commands_manager.write(controller_id, connection_handle, attribute_handle, value, on_written_callback),
+            sync=sync
         )
-
-        if sync:
-            calldone.wait()
 
     def write_without_response(self, connection_handle, attribute_handle, value, controller_id=0, sync=False):
-        calldone = threading.Event()
-
-        def on_done(fut):
-            calldone.set()
-
-        self.working_thread.add_task(
-            self.commands_manager.write_without_response(controller_id, connection_handle, attribute_handle, value),
-            on_done
+        return self.run_command(
+            command=self.commands_manager.write_without_response(controller_id, connection_handle, attribute_handle, value),
+            sync=sync
         )
-
-        if sync:
-            calldone.wait()
 
     def enable_notification(self, connection_handle, attribute_handle, on_notification_received, controller_id=0, sync=True):
-        calldone = threading.Event()
-
-        def on_done(fut):
-            calldone.set()
-
-        self.working_thread.add_task(
-            self.commands_manager.set_notification(
-                True, controller_id, connection_handle, attribute_handle, on_notification_received
-            ),
-            on_done
+        return self.run_command(
+            command=self.commands_manager.set_notification(True, controller_id, connection_handle, attribute_handle, on_notification_received),
+            sync=sync
         )
-
-        if sync:
-            calldone.wait()
 
     def disable_notification(self, connection_handle, attribute_handle, controller_id=0, sync=True):
-        calldone = threading.Event()
-
-        def on_done(fut):
-            calldone.set()
-
-        self.working_thread.add_task(
-            self.commands_manager.set_notification(
-                False, controller_id, connection_handle, attribute_handle
-            ),
-            on_done
+        return self.run_command(
+            command=self.commands_manager.set_notification(False, controller_id, connection_handle, attribute_handle),
+            sync=sync
         )
-
-        if sync:
-            calldone.wait()
