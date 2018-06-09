@@ -2,7 +2,6 @@ import asyncio
 from asyncio import Future
 import uuid
 import struct
-
 from .BaBLE import Payload, DeviceFound, StartScan, StopScan, ProbeServices, ProbeCharacteristics, DeviceConnected, \
     Connect, Disconnect, CancelConnection, DeviceDisconnected, GetConnectedDevices, GetControllersList, Read, Write, \
     WriteWithoutResponse, NotificationReceived
@@ -11,7 +10,7 @@ from .utils import none_cb, to_bytes
 
 
 @asyncio.coroutine
-def start_scan(self, controller_id, on_device_found):
+def start_scan(self, controller_id, on_device_found, timeout=15.0):
 
     @asyncio.coroutine
     def on_device_found_event(packet):
@@ -47,7 +46,7 @@ def start_scan(self, controller_id, on_device_found):
 
     print("Waiting for scan to start...")
     try:
-        yield from asyncio.wait_for(future, 15.0)
+        yield from asyncio.wait_for(future, timeout=timeout)
     except asyncio.TimeoutError:
         self.remove_response_callback(uuid=uuid_request)
         self.remove_event_callback(payload_type=Payload.Payload.DeviceFound, controller_id=controller_id)
@@ -55,7 +54,7 @@ def start_scan(self, controller_id, on_device_found):
 
 
 @asyncio.coroutine
-def stop_scan(self, controller_id):
+def stop_scan(self, controller_id, timeout=15.0):
 
     @asyncio.coroutine
     def on_stop_scan_response(packet, future):
@@ -72,14 +71,14 @@ def stop_scan(self, controller_id):
 
     print("Waiting for scan to stop...")
     try:
-        yield from asyncio.wait_for(future, 15.0)  # TODO: add timeout parameter
+        yield from asyncio.wait_for(future, timeout=timeout)
     except asyncio.TimeoutError:
         self.remove_response_callback(uuid=uuid_request)
         raise TimeoutError("Stop scan timed out")
 
 
 @asyncio.coroutine
-def probe_services(self, controller_id, connection_handle):
+def probe_services(self, controller_id, connection_handle, timeout=15.0):
 
     @asyncio.coroutine
     def on_services_probed(packet, future):
@@ -115,7 +114,7 @@ def probe_services(self, controller_id, connection_handle):
     print("Waiting for services...")
 
     try:
-        services = yield from asyncio.wait_for(future, 15.0)
+        services = yield from asyncio.wait_for(future, timeout=timeout)
         return services
     except asyncio.TimeoutError:
         self.remove_response_callback(uuid=uuid_request)
@@ -123,7 +122,7 @@ def probe_services(self, controller_id, connection_handle):
 
 
 @asyncio.coroutine
-def probe_characteristics(self, controller_id, connection_handle):
+def probe_characteristics(self, controller_id, connection_handle, timeout=15.0):
 
     @asyncio.coroutine
     def on_characteristics_probed(packet, future):
@@ -166,7 +165,7 @@ def probe_characteristics(self, controller_id, connection_handle):
 
     print("Waiting for characteristics...")
     try:
-        characteristics = yield from asyncio.wait_for(future, 15.0)
+        characteristics = yield from asyncio.wait_for(future, timeout=timeout)
         return characteristics
     except asyncio.TimeoutError:
         self.remove_response_callback(uuid=uuid_request)
@@ -174,7 +173,7 @@ def probe_characteristics(self, controller_id, connection_handle):
 
 
 @asyncio.coroutine
-def connect(self, controller_id, address, address_type, on_connected_with_info, on_disconnected):
+def connect(self, controller_id, address, address_type, on_connected_with_info, on_disconnected, timeout=15.0):
 
     @asyncio.coroutine
     def on_unexpected_disconnection(packet):
@@ -242,8 +241,8 @@ def connect(self, controller_id, address, address_type, on_connected_with_info, 
 
     # TODO: add timeout connection
     try:
-        yield from asyncio.wait_for(future, 5.0)
-    except asyncio.TimeoutError as e:
+        yield from asyncio.wait_for(future, timeout=timeout)
+    except asyncio.TimeoutError:
         print("CONNECTION TIMEOUT")
         self.remove_event_callback(payload_type=Payload.Payload.DeviceConnected, controller_id=controller_id)
         on_connected_with_info(False, None, "Connection timed out")
@@ -251,7 +250,7 @@ def connect(self, controller_id, address, address_type, on_connected_with_info, 
 
 
 @asyncio.coroutine
-def disconnect(self, controller_id, connection_handle, on_disconnected):
+def disconnect(self, controller_id, connection_handle, on_disconnected, timeout=15.0):
 
     @asyncio.coroutine
     def on_device_disconnected(packet, future):
@@ -293,7 +292,7 @@ def disconnect(self, controller_id, connection_handle, on_disconnected):
 
     print("Disconnecting...")
     try:
-        yield from asyncio.wait_for(future, 5.0)
+        yield from asyncio.wait_for(future, timeout=timeout)
     except asyncio.TimeoutError:
         print("DISCONNECTION TIMEOUT")
         self.remove_event_callback(
@@ -306,7 +305,7 @@ def disconnect(self, controller_id, connection_handle, on_disconnected):
 
 
 @asyncio.coroutine
-def cancel_connection(self, controller_id):
+def cancel_connection(self, controller_id, timeout=15.0):
 
     @asyncio.coroutine
     def on_connection_cancelled(packet, future):
@@ -322,14 +321,14 @@ def cancel_connection(self, controller_id):
 
     print("Waiting for connection to cancel...")
     try:
-        yield from asyncio.wait_for(future, 15.0)
+        yield from asyncio.wait_for(future, timeout=timeout)
     except asyncio.TimeoutError:
         self.remove_response_callback(uuid=uuid_request)
         raise TimeoutError("Cancel connection timed out")
 
 
 @asyncio.coroutine
-def list_connected_devices(self, controller_id):
+def list_connected_devices(self, controller_id, timeout=15.0):
 
     @asyncio.coroutine
     def on_response_received(packet, future):
@@ -353,7 +352,7 @@ def list_connected_devices(self, controller_id):
     print("Waiting for list of connected devices...")
 
     try:
-        connected_devices = yield from asyncio.wait_for(future, 15.0)
+        connected_devices = yield from asyncio.wait_for(future, timeout=timeout)
         return connected_devices
     except asyncio.TimeoutError:
         self.remove_response_callback(uuid=uuid_request)
@@ -361,7 +360,7 @@ def list_connected_devices(self, controller_id):
 
 
 @asyncio.coroutine
-def list_controllers(self):
+def list_controllers(self, timeout=15.0):
 
     @asyncio.coroutine
     def on_response_received(packet, future):
@@ -395,7 +394,7 @@ def list_controllers(self):
 
     print("Waiting for list of controllers...")
     try:
-        controllers = yield from asyncio.wait_for(future, 15.0)
+        controllers = yield from asyncio.wait_for(future, timeout=timeout)
         return controllers
     except asyncio.TimeoutError:
         self.remove_response_callback(uuid=uuid_request)
@@ -403,7 +402,7 @@ def list_controllers(self):
 
 
 @asyncio.coroutine
-def read(self, controller_id, connection_handle, attribute_handle, on_read):
+def read(self, controller_id, connection_handle, attribute_handle, on_read, timeout=15.0):
 
     @asyncio.coroutine
     def on_response_received(packet, future):
@@ -435,7 +434,7 @@ def read(self, controller_id, connection_handle, attribute_handle, on_read):
 
     print("Reading...")
     try:
-        result = yield from asyncio.wait_for(future, 5.0)
+        result = yield from asyncio.wait_for(future, timeout=timeout)
         return result
     except asyncio.TimeoutError:
         print("READ TIMEOUT")
@@ -445,7 +444,7 @@ def read(self, controller_id, connection_handle, attribute_handle, on_read):
 
 
 @asyncio.coroutine
-def write(self, controller_id, connection_handle, attribute_handle, value, on_written):
+def write(self, controller_id, connection_handle, attribute_handle, value, on_written, timeout=15.0):
 
     @asyncio.coroutine
     def on_response_received(packet, future):
@@ -475,7 +474,7 @@ def write(self, controller_id, connection_handle, attribute_handle, value, on_wr
 
     print("Writing...")
     try:
-        result = yield from asyncio.wait_for(future, 5.0)
+        result = yield from asyncio.wait_for(future, timeout=timeout)
         return result
     except asyncio.TimeoutError:
         print("WRITE TIMEOUT")
@@ -499,9 +498,9 @@ def write_without_response(self, controller_id, connection_handle, attribute_han
 
 
 @asyncio.coroutine
-def set_notification(self, state, controller_id, connection_handle, attribute_handle, on_notification_received):
+def set_notification(self, state, controller_id, connection_handle, attribute_handle, on_notification_received, timeout=15.0):
     try:
-        read_result = yield from self.read(controller_id, connection_handle, attribute_handle, none_cb)
+        read_result = yield from self.read(controller_id, connection_handle, attribute_handle, none_cb, timeout)
     except Exception as e:
         on_notification_received(False, None, "Error while reading notification configuration (exception={})".format(e))
         raise RuntimeError("Error while reading notification configuration (exception={})".format(e))
@@ -542,7 +541,7 @@ def set_notification(self, state, controller_id, connection_handle, attribute_ha
 
     try:
         # TODO: clean way to format bytes
-        yield from self.write(controller_id, connection_handle, attribute_handle, to_bytes(new_state, 2, byteorder='little'), none_cb)
+        yield from self.write(controller_id, connection_handle, attribute_handle, to_bytes(new_state, 2, byteorder='little'), none_cb, timeout)
     except Exception as e:
         if state:
             self.remove_event_callback(

@@ -1,5 +1,4 @@
 import threading
-
 from .BaBLE import Packet, Payload
 from .utils import MAGIC_CODE
 

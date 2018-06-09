@@ -181,7 +181,6 @@ def connect(self, controller_id, address, address_type, on_connected_with_info, 
     ))
     print("Connecting...")
 
-    # TODO: add timeout connection
     try:
         yield From(asyncio.wait_for(fut, 5.0))
     except asyncio.TimeoutError:
@@ -225,7 +224,7 @@ def cancel_connection(self, controller_id):
 
     fut = Future()
 
-    self.callbacks[(Payload.Payload.CancelConnection, controller_id)] = (on_connection_cancelled, fut)  # TODO: use UUID instead...
+    self.callbacks[(Payload.Payload.CancelConnection, controller_id)] = (on_connection_cancelled, fut)
 
     # Send command to BaBLEInterface
     self.subprocess.stdin.write(build_packet("CancelConnection", uuid="0003", controller_id=controller_id))

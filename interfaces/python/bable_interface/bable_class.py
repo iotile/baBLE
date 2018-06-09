@@ -1,7 +1,6 @@
 import threading
 import subprocess
 import time
-
 from .BaBLE import Payload, Exit
 from .flatbuffer import build_packet
 from .working_thread import WorkingThread
@@ -88,59 +87,59 @@ class BaBLEInterface(object):
             else:
                 raise RuntimeError(result.get("failure_reason", "No result returned"))
 
-    def start_scan(self, on_device_found, controller_id=0, sync=True):
-        return self.run_command(command=self.commands_manager.start_scan(controller_id, on_device_found), sync=sync)
+    def start_scan(self, on_device_found, controller_id=0, sync=True, timeout=15.0):
+        return self.run_command(command=self.commands_manager.start_scan(controller_id, on_device_found, timeout), sync=sync)
 
-    def stop_scan(self, controller_id=0, sync=True):
-        return self.run_command(command=self.commands_manager.stop_scan(controller_id), sync=sync)
+    def stop_scan(self, controller_id=0, sync=True, timeout=15.0):
+        return self.run_command(command=self.commands_manager.stop_scan(controller_id, timeout), sync=sync)
 
-    def connect(self, address, address_type, on_connected=none_cb, on_disconnected=none_cb, controller_id=0, sync=False):
+    def connect(self, address, address_type, on_connected=none_cb, on_disconnected=none_cb, controller_id=0, sync=False, timeout=15.0):
         return self.run_command(
-            command=self.commands_manager.connect(controller_id, address, address_type, on_connected, on_disconnected),
+            command=self.commands_manager.connect(controller_id, address, address_type, on_connected, on_disconnected, timeout),
             sync=sync
         )
 
-    def disconnect(self, connection_handle, on_disconnected=none_cb, controller_id=0, sync=False):
+    def disconnect(self, connection_handle, on_disconnected=none_cb, controller_id=0, sync=False, timeout=15.0):
         return self.run_command(
-            command=self.commands_manager.disconnect(controller_id, connection_handle, on_disconnected),
+            command=self.commands_manager.disconnect(controller_id, connection_handle, on_disconnected, timeout),
             sync=sync
         )
 
-    def cancel_connection(self, controller_id=0, sync=False):
-        return self.run_command(command=self.commands_manager.cancel_connection(controller_id), sync=sync)
+    def cancel_connection(self, controller_id=0, sync=False, timeout=15.0):
+        return self.run_command(command=self.commands_manager.cancel_connection(controller_id, timeout), sync=sync)
 
-    def list_connected_devices(self, controller_id=0):
-        return self.run_command(command=self.commands_manager.list_connected_devices(controller_id), sync=True)
+    def list_connected_devices(self, controller_id=0, timeout=15.0):
+        return self.run_command(command=self.commands_manager.list_connected_devices(controller_id, timeout), sync=True)
 
-    def list_controllers(self):
-        return self.run_command(command=self.commands_manager.list_controllers(), sync=True)
+    def list_controllers(self, timeout=15.0):
+        return self.run_command(command=self.commands_manager.list_controllers(timeout), sync=True)
 
-    def read(self, connection_handle, attribute_handle, on_read=none_cb, controller_id=0, sync=False):
+    def read(self, connection_handle, attribute_handle, on_read=none_cb, controller_id=0, sync=False, timeout=15.0):
         return self.run_command(
-            command=self.commands_manager.read(controller_id, connection_handle, attribute_handle, on_read),
+            command=self.commands_manager.read(controller_id, connection_handle, attribute_handle, on_read, timeout),
             sync=sync
         )
 
-    def write(self, connection_handle, attribute_handle, value, on_written=none_cb, controller_id=0, sync=False):
+    def write(self, connection_handle, attribute_handle, value, on_written=none_cb, controller_id=0, sync=False, timeout=15.0):
         return self.run_command(
-            command=self.commands_manager.write(controller_id, connection_handle, attribute_handle, value, on_written),
+            command=self.commands_manager.write(controller_id, connection_handle, attribute_handle, value, on_written, timeout),
             sync=sync
         )
 
-    def write_without_response(self, connection_handle, attribute_handle, value, controller_id=0, sync=False):
+    def write_without_response(self, connection_handle, attribute_handle, value, controller_id=0, sync=False, timeout=15.0):
         return self.run_command(
-            command=self.commands_manager.write_without_response(controller_id, connection_handle, attribute_handle, value),
+            command=self.commands_manager.write_without_response(controller_id, connection_handle, attribute_handle, value, timeout),
             sync=sync
         )
 
-    def enable_notification(self, connection_handle, attribute_handle, on_notification_received=none_cb, controller_id=0, sync=True):
+    def enable_notification(self, connection_handle, attribute_handle, on_notification_received=none_cb, controller_id=0, sync=True, timeout=15.0):
         return self.run_command(
-            command=self.commands_manager.set_notification(True, controller_id, connection_handle, attribute_handle, on_notification_received),
+            command=self.commands_manager.set_notification(True, controller_id, connection_handle, attribute_handle, on_notification_received, timeout),
             sync=sync
         )
 
-    def disable_notification(self, connection_handle, attribute_handle, controller_id=0, sync=True):
+    def disable_notification(self, connection_handle, attribute_handle, controller_id=0, sync=True, timeout=15.0):
         return self.run_command(
-            command=self.commands_manager.set_notification(False, controller_id, connection_handle, attribute_handle),
+            command=self.commands_manager.set_notification(False, controller_id, connection_handle, attribute_handle, timeout),
             sync=sync
         )

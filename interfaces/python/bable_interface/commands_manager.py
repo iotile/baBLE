@@ -35,7 +35,7 @@ class CommandsManager(object):
             uuid = uuid.decode()
             if uuid in self.responses_callbacks:
                 callback_fn, kwargs = self.responses_callbacks[uuid]
-                del self.responses_callbacks[uuid]
+                self.remove_response_callback(uuid)
                 add_task_fn(callback_fn(packet, **kwargs))
             else:
                 print("Unexpected response received (uuid={})".format(uuid))
