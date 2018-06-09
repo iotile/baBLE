@@ -31,10 +31,14 @@ namespace Packet {
                                                                  const std::shared_ptr<AbstractPacket>& packet);
 
     private:
-      bool m_waiting_characteristics;
+      void _merge_characteristics();
+
+      bool m_waiting_char_declaration;
+      bool m_waiting_char_configuration;
 
       std::shared_ptr<Packet::Commands::ReadByTypeRequest> m_read_by_type_request_packet;
       std::vector<Format::HCI::Characteristic> m_characteristics;
+      std::vector<Format::HCI::Characteristic> m_characteristics_config;
 
     };
 

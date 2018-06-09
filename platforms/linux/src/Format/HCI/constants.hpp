@@ -285,12 +285,15 @@ namespace Format {
       uint16_t handle = 0;
       uint8_t properties = 0;
       uint16_t value_handle = 0;
+      uint16_t config_handle = 0;
+      uint16_t configuration = 0;
       std::vector<uint8_t> uuid{};
     };
 
-    enum UUID {
-      GattPrimaryServiceDeclaration= 0x2800,
-      GattCharacteristicDeclaration= 0x2803
+    enum GattUUID {
+      PrimaryServiceDeclaration= 0x2800,
+      CharacteristicDeclaration= 0x2803,
+      ClientCharacteristicConfiguration= 0x2902
     };
 
   }

@@ -8,18 +8,22 @@ namespace Packet {
 
   namespace Commands {
 
-    ReadByTypeRequest::ReadByTypeRequest(uint16_t starting_handle, uint16_t ending_handle, uint16_t uuid)
+    ReadByTypeRequest::ReadByTypeRequest(Format::HCI::GattUUID uuid, uint16_t starting_handle, uint16_t ending_handle)
         : HostToControllerPacket(Packet::Id::ReadByTypeRequest, final_type(), final_packet_code()) {
       m_response_packet_code = Format::HCI::AttributeCode::ReadByTypeResponse;
 
-      m_starting_handle = 0x0001;
-      m_ending_handle = 0xFFFF;
-      m_uuid = static_cast<uint16_t>(Format::HCI::UUID::GattCharacteristicDeclaration);
+      m_starting_handle = starting_handle;
+      m_ending_handle = ending_handle;
+      m_uuid = uuid;
     }
 
     void ReadByTypeRequest::set_handles(uint16_t starting_handle, uint16_t ending_handle) {
       m_starting_handle = starting_handle;
       m_ending_handle = ending_handle;
+    }
+
+    void ReadByTypeRequest::set_gatt_uuid(Format::HCI::GattUUID uuid) {
+      m_uuid = uuid;
     }
 
     vector<uint8_t> ReadByTypeRequest::serialize(HCIFormatBuilder& builder) const {

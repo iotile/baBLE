@@ -24,7 +24,7 @@ namespace Packet {
 
       explicit ReadByGroupTypeRequest(uint16_t starting_handle = 0x0001,
                                       uint16_t ending_handle = 0xFFFF,
-                                      uint16_t uuid = Format::HCI::UUID::GattPrimaryServiceDeclaration);
+                                      uint16_t uuid = Format::HCI::GattUUID::PrimaryServiceDeclaration);
 
       std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
 

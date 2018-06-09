@@ -374,8 +374,8 @@ try:
             # time.sleep(2)
             # process.stdin.write(fb_read("0002", 0, device_connection_handle, 0x0003))
 
-            process.stdin.write(fb_write("write", 0, device_connection_handle, 0x0003, "Alexis"))
-            # process.stdin.write(fb_probe_characteristics("12356789", 0, device_connection_handle))
+            # process.stdin.write(fb_write("write", 0, device_connection_handle, 0x0003, "Alexis"))
+            process.stdin.write(fb_probe_characteristics("12356789", 0, device_connection_handle))
             # process.stdin.write(fb_probe_services("12356789", 0, device_connection_handle))
         elif packet.PayloadType() == Payload.Payload.DeviceDisconnected:
             device_disconnected = DeviceDisconnected.DeviceDisconnected()
@@ -578,6 +578,9 @@ try:
 
             for characteristic in characteristics:
                 print("\tHandle:", characteristic.Handle(), "Value handle:", characteristic.ValueHandle(),
+                      "Config handle:", characteristic.ConfigHandle(),
+                      "Notification enabled:", characteristic.NotificationEnabled(),
+                      "Indication enabled:", characteristic.IndicationEnabled(),
                       "UUID:", characteristic.Uuid(), "Indicate:", characteristic.Indicate(),
                       "Notify:", characteristic.Notify(), "Read:", characteristic.Read(),
                       "Write:", characteristic.Write(), "Broadcast:", characteristic.Broadcast())

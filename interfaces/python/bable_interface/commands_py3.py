@@ -123,6 +123,9 @@ def probe_characteristics(self, controller_id, connection_handle):
             characteristics.append({
                 "handle": characteristic.Handle(),
                 "value_handle": characteristic.ValueHandle(),
+                "config_handle": characteristic.ConfigHandle(),
+                "notification_enabled": characteristic.NotificationEnabled(),
+                "indication_enabled": characteristic.IndicationEnabled(),
                 "uuid": characteristic.Uuid(),
                 "indicate": characteristic.Indicate(),
                 "notify": characteristic.Notify(),

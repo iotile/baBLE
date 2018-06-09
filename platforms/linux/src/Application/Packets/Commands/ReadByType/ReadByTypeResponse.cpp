@@ -28,16 +28,25 @@ namespace Packet {
 
       while (data_length >= attribute_length) {
         Format::HCI::Characteristic characteristic{};
-        characteristic.handle = extractor.get_value<uint16_t>();
-        characteristic.properties = extractor.get_value<uint8_t>();
-        characteristic.value_handle = extractor.get_value<uint16_t>();
-        characteristic.uuid = extractor.get_vector<uint8_t>(attribute_length
-                                                                - sizeof(characteristic.handle)
-                                                                - sizeof(characteristic.properties)
-                                                                - sizeof(characteristic.value_handle));
+
+        if (attribute_length == 7) {
+          // Contains a GATT Characteristic Declaration
+          characteristic.handle = extractor.get_value<uint16_t>();
+          characteristic.properties = extractor.get_value<uint8_t>();
+          characteristic.value_handle = extractor.get_value<uint16_t>();
+          characteristic.uuid = extractor.get_vector<uint8_t>(attribute_length
+                                                                  - sizeof(characteristic.handle)
+                                                                  - sizeof(characteristic.properties)
+                                                                  - sizeof(characteristic.value_handle));
+          m_last_ending_handle = characteristic.value_handle;
+        } else {
+          // Contains a GATT Client Characteristic Configuration
+          characteristic.config_handle = extractor.get_value<uint16_t>();
+          characteristic.configuration = extractor.get_value<uint16_t>();
+          m_last_ending_handle = characteristic.config_handle;
+        }
 
         m_characteristics.push_back(characteristic);
-        m_last_ending_handle = characteristic.value_handle;
         data_length -= attribute_length;
       }
     }
@@ -53,6 +62,8 @@ namespace Packet {
         result << "{ Handle: " << to_string(it->handle) << ", "
                << "Properties" << to_string(it->properties) << ", "
                << "Value handle" << to_string(it->value_handle) << ", "
+               << "Config handle" << to_string(it->config_handle) << ", "
+               << "Configuration" << to_string(it->configuration) << ", "
                << "UUID" << Utils::format_uuid(it->uuid) << "}";
         if (next(it) != m_characteristics.end()) {
           result << ", ";

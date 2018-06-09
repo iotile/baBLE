@@ -22,9 +22,9 @@ namespace Packet {
         return Format::HCI::AttributeCode::ReadByTypeRequest;
       };
 
-      explicit ReadByTypeRequest(uint16_t starting_handle = 0x0001,
-                                 uint16_t ending_handle = 0xFFFF,
-                                 uint16_t uuid = Format::HCI::UUID::GattCharacteristicDeclaration);
+      explicit ReadByTypeRequest(Format::HCI::GattUUID uuid = Format::HCI::GattUUID::CharacteristicDeclaration,
+                                 uint16_t starting_handle = 0x0001,
+                                 uint16_t ending_handle = 0xFFFF);
 
       std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
 
@@ -37,6 +37,7 @@ namespace Packet {
                                                                          const std::shared_ptr<AbstractPacket>& packet);
 
       void set_handles(uint16_t starting_handle, uint16_t ending_handle);
+      void set_gatt_uuid(Format::HCI::GattUUID uuid);
 
     private:
       uint16_t m_starting_handle;
