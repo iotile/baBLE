@@ -11,11 +11,6 @@ def on_device_found(success, result, failure_reason):
 
 def on_read(success, result, failure_reason):
     print("ON READ", result)
-    if success:
-        message = ""
-        for v in result["value"]:
-            message += chr(v)
-        print(message)
 
 
 def on_write(success, result, failure_reason):
@@ -24,13 +19,19 @@ def on_write(success, result, failure_reason):
         bable.read(result["connection_handle"], 0x0003, on_read)
 
 
+def on_notification_received(success, result, failure_reason):
+    print("ON NOTIFICATION RECEIVED", result)
+
+
 def on_connected(success, result, failure_reason):
     print("ON CONNECTED", result)
     if not success:
         bable.cancel_connection()
         print(failure_reason)
     else:
-        pass
+        bable.enable_notification(result["connection_handle"], 0x000e, on_notification_received, sync=False)
+        print("NOTIFICATION ENABLED")
+        # bable.read(result["connection_handle"], 0x000e, on_read)
         # bable.write(result["connection_handle"], 0x0003, bytes("Cafe", encoding="utf-8"), on_write)
         # bable.write_without_response(result["connection_handle"], 0x0003, bytes("Arch", encoding="utf-8"))
 

@@ -1,10 +1,11 @@
 import asyncio
 from asyncio import Future
 import uuid
+import struct
 
 from .BaBLE import Payload, DeviceFound, StartScan, StopScan, ProbeServices, ProbeCharacteristics, DeviceConnected, \
     Connect, Disconnect, CancelConnection, DeviceDisconnected, GetConnectedDevices, GetControllersList, Read, Write, \
-    WriteWithoutResponse
+    WriteWithoutResponse, NotificationReceived
 from .flatbuffer import extract_packet
 
 
@@ -19,6 +20,7 @@ def start_scan(self, controller_id, on_device_found):
             params=["type", "address", "address_type", "rssi", "uuid", "company_id", "device_name"],
             numpy_params=["manufacturer_data"]
         )
+        result["manufacturer_data"] = result["manufacturer_data"].tobytes()
 
         on_device_found(True, result, None)
 
@@ -373,7 +375,7 @@ def list_controllers(self):
 
 
 @asyncio.coroutine
-def read(self, controller_id, connection_handle, attribute_handle, on_read):
+def read(self, controller_id, connection_handle, attribute_handle, on_read=None):
 
     @asyncio.coroutine
     def on_response_received(packet, future):
@@ -385,10 +387,12 @@ def read(self, controller_id, connection_handle, attribute_handle, on_read):
             numpy_params=["value"]
         )
         data["controller_id"] = packet.ControllerId()
+        data["value"] = data["value"].tobytes()  # TODO: in python2 make it bytearray
 
-        future.set_result(None)
+        future.set_result(data)
 
-        on_read(True, data, None)
+        if on_read is not None:
+            on_read(True, data, None)
 
     future = Future()
     uuid_request = str(uuid.uuid4())
@@ -404,15 +408,17 @@ def read(self, controller_id, connection_handle, attribute_handle, on_read):
 
     print("Reading...")
     try:
-        yield from asyncio.wait_for(future, 5.0)
+        result = yield from asyncio.wait_for(future, 5.0)
+        return result
     except asyncio.TimeoutError:
         print("READ TIMEOUT")
         self.remove_response_callback(uuid=uuid_request)
-        on_read(False, None, "Read timed out")
+        if on_read is not None:
+            on_read(False, None, "Read timed out")
 
 
 @asyncio.coroutine
-def write(self, controller_id, connection_handle, attribute_handle, value, on_written):
+def write(self, controller_id, connection_handle, attribute_handle, value, on_written=None):
 
     @asyncio.coroutine
     def on_response_received(packet, future):
@@ -424,9 +430,10 @@ def write(self, controller_id, connection_handle, attribute_handle, value, on_wr
         )
         data["controller_id"] = packet.ControllerId()
 
-        future.set_result(None)
+        future.set_result(data)
 
-        on_written(True, data, None)
+        if on_written is not None:
+            on_written(True, data, None)
 
     future = Future()
     uuid_request = str(uuid.uuid4())
@@ -442,11 +449,13 @@ def write(self, controller_id, connection_handle, attribute_handle, value, on_wr
 
     print("Writing...")
     try:
-        yield from asyncio.wait_for(future, 5.0)
+        result = yield from asyncio.wait_for(future, 5.0)
+        return result
     except asyncio.TimeoutError:
         print("WRITE TIMEOUT")
         self.remove_response_callback(uuid=uuid_request)
-        on_written(False, None, "Write timed out")
+        if on_written is not None:
+            on_written(False, None, "Write timed out")
 
 
 @asyncio.coroutine
@@ -461,3 +470,51 @@ def write_without_response(self, controller_id, connection_handle, attribute_han
     )
 
     print("Write without response command sent")
+
+
+@asyncio.coroutine
+def set_notification(self, state, controller_id, connection_handle, attribute_handle, on_notification_received):
+    read_result = yield from self.read(controller_id, connection_handle, attribute_handle)
+    if not read_result:
+        print("Error while reading notification configuration")
+        return
+
+    current_state = struct.unpack("H", read_result["value"])[0]
+
+    if state:
+
+        @asyncio.coroutine
+        def on_notification_event(packet):
+            result = extract_packet(
+                packet=packet,
+                payload_class=NotificationReceived.NotificationReceived,
+                params=["connection_handle", "attribute_handle"],
+                numpy_params=["value"]
+            )
+            result["value"] = result["value"].tobytes()  # TODO: in python2 make it bytearray
+
+            on_notification_received(True, result, None)
+
+        self.register_event_callback(
+            payload_type=Payload.Payload.NotificationReceived,
+            controller_id=controller_id,
+            connection_handle=connection_handle,
+            attribute_handle=attribute_handle,
+            callback_fn=on_notification_event
+        )
+
+        new_state = current_state | 1
+    else:
+        new_state = current_state & 0xFFFE
+
+    write_result = yield from self.write(controller_id, connection_handle, attribute_handle, bytes([new_state, 0]))  # TODO: clean way to format bytes
+
+    if not write_result:
+        print("Error while writing notification configuration")
+        if state:
+            self.remove_event_callback(
+                payload_type=Payload.Payload.NotificationReceived,
+                controller_id=controller_id,
+                connection_handle=connection_handle,
+                attribute_handle=attribute_handle
+            )
