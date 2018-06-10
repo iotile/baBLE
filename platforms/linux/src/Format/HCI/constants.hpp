@@ -151,8 +151,9 @@ namespace Format {
 
     enum EventCode {
       DisconnectComplete= 0x05,
-      CommandComplete= 0x0e,
-      LEMeta= 0x3e
+      CommandComplete= 0x0E,
+      CommandStatus= 0x0F,
+      LEMeta= 0x3E
     };
 
     enum SubEventCode {

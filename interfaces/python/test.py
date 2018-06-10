@@ -60,6 +60,9 @@ bable.start(on_error=on_error)
 # time.sleep(2)
 # bable.stop_scan()
 # print("SCAN STOPPED IN TEST.PY")
+# time.sleep(2)
+# bable.stop()
+# print("DONE")
 
 try:
     # bable.connect("C4:F0:A5:E6:8A:01", "random", sync=True)

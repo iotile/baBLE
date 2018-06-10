@@ -377,6 +377,16 @@ try:
             process.stdin.write(fb_write("write", 0, device_connection_handle, 0x0003, "Alexis"))
             # process.stdin.write(fb_probe_characteristics("12356789", 0, device_connection_handle))
             # process.stdin.write(fb_probe_services("12356789", 0, device_connection_handle))
+        elif packet.PayloadType() == Payload.Payload.Connect:
+            connect = Connect.Connect()
+            connect.Init(packet.Payload().Bytes, packet.Payload().Pos)
+            address = connect.Address()
+            address_type = connect.AddressType()
+
+            print("Connect",
+                  "UUID:", uuid,
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Address:", address, "Address type:", address_type)
         elif packet.PayloadType() == Payload.Payload.DeviceDisconnected:
             device_disconnected = DeviceDisconnected.DeviceDisconnected()
             device_disconnected.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -390,7 +400,15 @@ try:
                   "Controller ID:", controller_id, "Reason:", reason)
 
             process.stdin.write(fb_exit())
+        elif packet.PayloadType() == Payload.Payload.Disconnect:
+            disconnect = Disconnect.Disconnect()
+            disconnect.Init(packet.Payload().Bytes, packet.Payload().Pos)
+            connection_handle = disconnect.ConnectionHandle()
 
+            print("Disconnect",
+                  "UUID:", uuid,
+                  "Status:", status, "Native class:", native_class, "Native status:", native_status,
+                  "Connection handle:", connection_handle, "Controller ID:", controller_id)
         elif packet.PayloadType() == Payload.Payload.SetPowered:
             set_powered = SetPowered.SetPowered()
             set_powered.Init(packet.Payload().Bytes, packet.Payload().Pos)
@@ -602,6 +620,7 @@ try:
             print("ReadyPacket")
 
             process.stdin.write(fb_connect("0001", 0, "C4:F0:A5:E6:8A:91"))
+            # process.stdin.write(fb_disconnect("0001", 0, device_connection_handle))
             # process.stdin.write(fb_cancel_connection("0002", 0))
             # process.stdin.write(fb_probe_characteristics("0001", 0, device_connection_handle))
             # process.stdin.write(fb_start_scan("0001", 0))

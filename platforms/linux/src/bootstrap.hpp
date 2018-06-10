@@ -3,8 +3,6 @@
 
 #include "Format/AbstractFormat.hpp"
 #include "Application/PacketBuilder/PacketBuilder.hpp"
-#include "Application/Packets/Commands/GetMGMTInfo/GetMGMTInfoRequest.hpp"
-#include "Application/Packets/Commands/GetMGMTInfo/GetMGMTInfoResponse.hpp"
 #include "Application/Packets/Commands/Disconnect/Disconnect.hpp"
 #include "Application/Packets/Commands/SetPowered/SetPoweredRequest.hpp"
 #include "Application/Packets/Commands/SetPowered/SetPoweredResponse.hpp"
@@ -34,6 +32,7 @@
 #include "Application/Packets/Events/ControllerRemoved/ControllerRemoved.hpp"
 #include "Application/Packets/Events/AdvertisingReport/AdvertisingReport.hpp"
 #include "Application/Packets/Events/CommandComplete/CommandComplete.hpp"
+#include "Application/Packets/Events/CommandStatus/CommandStatus.hpp"
 #include "Application/Packets/Control/Exit/Exit.hpp"
 #include "Application/Packets/Control/Ready/Ready.hpp"
 #include "Application/Packets/Errors/ErrorResponse/ErrorResponse.hpp"
@@ -50,7 +49,6 @@ namespace Bootstrap {
   // MGMT
   void register_mgmt_packets(PacketBuilder& mgmt_packet_builder) {
     mgmt_packet_builder
-      .register_command<Packet::Commands::GetMGMTInfoResponse>()
       .register_command<Packet::Commands::GetControllersIdsResponse>()
       .register_command<Packet::Commands::GetControllerInfoResponse>()
       .register_command<Packet::Commands::GetConnectedDevicesResponse>()
@@ -84,6 +82,7 @@ namespace Bootstrap {
       .register_event<Packet::Events::DeviceDisconnected>()
       .register_event<Packet::Events::AdvertisingReport>()
       .register_event<Packet::Events::CommandComplete>()
+      .register_event<Packet::Events::CommandStatus>()
       .set_ignored_packets({
         Format::HCI::SubEventCode::LEReadRemoteUsedFeaturesComplete
       });
@@ -92,7 +91,6 @@ namespace Bootstrap {
   // Stdio
   void register_stdio_packets(PacketBuilder& stdio_packet_builder) {
     stdio_packet_builder
-      .register_command<Packet::Commands::GetMGMTInfoRequest>()
       .register_command<Packet::Commands::GetControllersIdsRequest>()
       .register_command<Packet::Commands::GetControllerInfoRequest>()
       .register_command<Packet::Commands::GetConnectedDevicesRequest>()
