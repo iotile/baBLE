@@ -13,8 +13,9 @@ namespace Packet {
 
       m_type = exception.get_type();
       m_name = exception.get_name();
-      m_message = exception.stringify();
+      m_message = exception.get_message();
       m_uuid_request = exception.get_uuid_request();
+      set_status(static_cast<uint8_t>(m_type), false);
 
       switch (m_type) {
         case Exceptions::Type::Unknown:

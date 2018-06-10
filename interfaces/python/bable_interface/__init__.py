@@ -1,1 +1,1 @@
-from .bable_class import *
+from .bable_class import BaBLEInterface

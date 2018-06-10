@@ -1,8 +1,8 @@
 import trollius as asyncio
 from trollius import Future, From
 
-from .BaBLE import Payload
-from .flatbuffer import build_packet, extract_packet
+from bable_interface.BaBLE import Payload
+from bable_interface.flatbuffer import build_packet, extract_packet
 
 # TODO : make changes like in commands_py3.py
 

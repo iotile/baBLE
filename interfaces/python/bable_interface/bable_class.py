@@ -1,12 +1,11 @@
 import threading
 import subprocess
 import time
-from .BaBLE import Payload, Exit
-from .flatbuffer import build_packet
-from .working_thread import WorkingThread
-from .receiving_thread import ReceivingThread
-from .commands_manager import CommandsManager
-from .utils import none_cb
+from bable_interface.BaBLE import Payload, Exit
+from bable_interface.flatbuffer import build_packet
+from bable_interface.threads import WorkingThread, ReceivingThread
+from bable_interface.commands import CommandsManager
+from bable_interface.utils import none_cb
 
 
 class BaBLEInterface(object):
@@ -22,8 +21,9 @@ class BaBLEInterface(object):
         self.subprocess_ready_event = threading.Event()
 
         self.commands_manager = None
+        self.started = False
 
-    def start(self):
+    def start(self, on_error=None):
         self.working_thread.start()
         self.working_ready_event.wait()
         self.subprocess = subprocess.Popen(["../../platforms/linux/build/debug/baBLE_linux", "--logging", "info"],
@@ -31,15 +31,20 @@ class BaBLEInterface(object):
                                            bufsize=0,
                                            universal_newlines=False)
 
-        self.commands_manager = CommandsManager(self.subprocess)
+        self.commands_manager = CommandsManager(self.subprocess, on_error)
 
         self.receiving_thread = ReceivingThread(self.stop_receiving_event, self.on_receive, self.subprocess.stdout)
         self.receiving_thread.setDaemon(True)
         self.receiving_thread.start()
 
         self.subprocess_ready_event.wait()
+        self.started = True
 
     def stop(self):
+        if not self.started:
+            raise RuntimeError("BaBLEInterface not running")
+        self.started = False
+
         self.working_thread.stop()
 
         self.subprocess.stdin.write(build_packet(Exit))
@@ -75,6 +80,9 @@ class BaBLEInterface(object):
         event.set()
 
     def run_command(self, command, sync):
+        if not self.started:
+            raise RuntimeError("BaBLEInterface not running")
+
         calldone = threading.Event()
         result = {}
 

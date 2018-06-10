@@ -1,20 +1,15 @@
-import inspect
-import sys
-from .flatbuffer import build_packet, get_packet_uuid
-
-if sys.version_info < (3, 4):
-    import bable_interface.commands_py2 as commands_module
-else:
-    import bable_interface.commands_py3 as commands_module
+from bable_interface.BaBLE import Payload
+from bable_interface.flatbuffer import build_packet, get_packet_uuid
 
 
 class CommandsManager(object):
 
-    def __init__(self, subprocess):
+    def __init__(self, subprocess, on_error):
         self.responses_callbacks = {}
         self.events_callbacks = {}
 
         self.subprocess = subprocess
+        self.on_error = on_error
 
     # TODO: create a PacketUuid object and create a list of tuples
     def _find_event_callback(self, key):
@@ -40,14 +35,17 @@ class CommandsManager(object):
             else:
                 print("Unexpected response received (uuid={})".format(uuid))
         else:
-            uuid = get_packet_uuid(packet)
-            # print("UUID COMPUTED", uuid)
-            event_callback = self._find_event_callback(uuid)
-            if event_callback is not None:
-                callback_fn, kwargs = event_callback
-                add_task_fn(callback_fn(packet, **kwargs))
+            if packet.PayloadType() == Payload.Payload.BaBLEError:
+                add_task_fn(self.handle_bable_error(packet))
             else:
-                print("Unexpected event received (uuid={})".format(uuid))
+                uuid = get_packet_uuid(packet)
+
+                event_callback = self._find_event_callback(uuid)
+                if event_callback is not None:
+                    callback_fn, kwargs = event_callback
+                    add_task_fn(callback_fn(packet, **kwargs))
+                else:
+                    print("Unexpected event received (uuid={})".format(uuid))
 
     def register_response_callback(self, uuid, callback_fn, **cb_kwargs):
         if uuid in self.responses_callbacks:
@@ -79,8 +77,3 @@ class CommandsManager(object):
 
     def send_packet(self, payload_module, *args, **kwargs):
         self.subprocess.stdin.write(build_packet(payload_module, *args, **kwargs))
-
-
-commands = inspect.getmembers(commands_module, inspect.isfunction)
-for command_name, command_fn in commands:
-    setattr(CommandsManager, command_name, command_fn)

@@ -24,6 +24,11 @@ class WorkingThread(threading.Thread):
         self.loop.run_forever()
 
     def stop(self):
+        current_task = asyncio.Task.current_task()
+        for task in asyncio.Task.all_tasks():
+            if current_task is None or task != current_task:
+                task.cancel()
+
         self.loop.call_soon_threadsafe(self.loop.stop)
 
     def add_task(self, task, callback=None, **kwargs):
@@ -34,7 +39,7 @@ class WorkingThread(threading.Thread):
 
         async_task = functools.partial(asyncio.ensure_future, task, loop=self.loop)
 
-        if threading.current_thread() == self.thread_id: # We can call directly if we're not going between threads.
+        if threading.current_thread() == self.thread_id:  # We can call directly if we're not going between threads.
             run_task(async_task)
         else:
             self.loop.call_soon_threadsafe(run_task, async_task)

@@ -19,10 +19,6 @@ namespace Exceptions {
       return "RuntimeError";
     };
 
-    const std::string stringify() const override {
-      return "Runtime error: " + m_message;
-    };
-
   };
 
 }

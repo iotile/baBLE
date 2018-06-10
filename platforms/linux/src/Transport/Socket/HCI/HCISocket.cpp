@@ -155,7 +155,7 @@ bool HCISocket::send(const vector<uint8_t>& data) {
     LOG.debug(data, "HCI socket");
     if (write(m_hci_socket, data.data(), data.size()) < 0) {
       LOG.error("Error while sending a message to HCI socket: " + string(strerror(errno)), "HCISocket");
-      throw Exceptions::SocketException("Error occured while sending the packet through HCI socket.");
+      throw Exceptions::SocketException("Error occured while sending the packet through HCI socket: " +  string(strerror(errno)));
     }
   }
 

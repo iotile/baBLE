@@ -19,10 +19,6 @@ namespace Exceptions {
       return "InvalidCommand";
     };
 
-    const std::string stringify() const override {
-      return "Invalid command error: " + m_message;
-    };
-
   };
 
 }

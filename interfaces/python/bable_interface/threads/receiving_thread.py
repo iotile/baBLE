@@ -1,6 +1,6 @@
 import threading
-from .BaBLE import Packet, Payload
-from .utils import MAGIC_CODE
+from bable_interface.BaBLE import Packet, Payload
+from bable_interface.utils import MAGIC_CODE
 
 
 class ReceivingThread(threading.Thread):
