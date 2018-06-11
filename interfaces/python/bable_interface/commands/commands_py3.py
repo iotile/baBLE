@@ -51,7 +51,8 @@ def start_scan(self, controller_id, on_device_found, timeout=15.0):
 
     print("Waiting for scan to start...")
     try:
-        yield from asyncio.wait_for(future, timeout=timeout)
+        result = yield from asyncio.wait_for(future, timeout=timeout)
+        return result
     except asyncio.TimeoutError:
         self.remove_response_callback(uuid=uuid_request)
         self.remove_event_callback(payload_type=Payload.Payload.DeviceFound, controller_id=controller_id)
@@ -79,7 +80,8 @@ def stop_scan(self, controller_id, timeout=15.0):
 
     print("Waiting for scan to stop...")
     try:
-        yield from asyncio.wait_for(future, timeout=timeout)
+        result = yield from asyncio.wait_for(future, timeout=timeout)
+        return result
     except asyncio.TimeoutError:
         self.remove_response_callback(uuid=uuid_request)
         raise TimeoutError("Stop scan timed out")
@@ -209,7 +211,12 @@ def connect(self, controller_id, address, address_type, on_connected_with_info, 
     @asyncio.coroutine
     def on_connected(packet, future):
         print("ON DEVICE CONNECTED", packet.Status())
-        self.remove_event_callback(payload_type=Payload.Payload.DeviceConnected, controller_id=packet.ControllerId())
+        self.remove_event_callback(
+            payload_type=Payload.Payload.DeviceConnected,
+            controller_id=controller_id,
+            address=address
+        )
+
         if packet.Status() == StatusCode.StatusCode.Success:
             device = extract_packet(
                 packet=packet,
@@ -237,11 +244,25 @@ def connect(self, controller_id, address, address_type, on_connected_with_info, 
         else:
             error = BaBLEException(packet, "Failed to connect", address=address)
             future.set_exception(error)
-            on_connected_with_info(False, error, str(error))
+            on_connected_with_info(False, None, error)
+
+    @asyncio.coroutine
+    def on_response_received(packet, future):
+        print("ON CONNECT RESPONSE", packet.Status())
+        if packet.Status() != StatusCode.StatusCode.Success:
+            self.remove_event_callback(
+                payload_type=Payload.Payload.DeviceConnected,
+                controller_id=controller_id,
+                address=address
+            )
+            error = BaBLEException(packet, "Failed to connect", address=address)
+            future.set_exception(error)
+            on_connected_with_info(False, None, error)
 
     future = Future()
     uuid_request = str(uuid.uuid4())
 
+    self.register_response_callback(uuid=uuid_request, callback_fn=on_response_received, future=future)
     self.register_event_callback(
         payload_type=Payload.Payload.DeviceConnected,
         controller_id=controller_id,
@@ -259,10 +280,11 @@ def connect(self, controller_id, address, address_type, on_connected_with_info, 
 
     print("Connecting...")
     try:
-        yield from asyncio.wait_for(future, timeout=timeout)
+        result = yield from asyncio.wait_for(future, timeout=timeout)
+        return result
     except asyncio.TimeoutError:
         print("CONNECTION TIMEOUT")
-        self.remove_event_callback(payload_type=Payload.Payload.DeviceConnected, controller_id=controller_id)
+        self.remove_event_callback(payload_type=Payload.Payload.DeviceConnected, controller_id=controller_id, address=address)
         on_connected_with_info(False, None, "Connection timed out")
         raise TimeoutError("Connection timed out")
 
@@ -286,11 +308,6 @@ def disconnect(self, controller_id, connection_handle, on_disconnected, timeout=
                 params=["connection_handle", "reason"]
             )
             data["controller_id"] = packet.ControllerId()
-            self.remove_event_callback(
-                payload_type=Payload.Payload.DeviceDisconnected,
-                controller_id=data["controller_id"],
-                connection_handle=data["connection_handle"]
-            )
 
             future.set_result(data)
 
@@ -298,11 +315,25 @@ def disconnect(self, controller_id, connection_handle, on_disconnected, timeout=
         else:
             error = BaBLEException(packet, "Failed to disconnect", connection_handle=connection_handle)
             future.set_exception(error)
-            on_disconnected(False, error, str(error))
+            on_disconnected(False, None, error)
+
+    @asyncio.coroutine
+    def on_response_received(packet, future):
+        print("ON DISCONNECT RESPONSE", packet.Status())
+        if packet.Status() != StatusCode.StatusCode.Success:
+            self.remove_event_callback(
+                payload_type=Payload.Payload.DeviceConnected,
+                controller_id=controller_id,
+                connection_handle=connection_handle
+            )
+            error = BaBLEException(packet, "Failed to disconnect", connection_handle=connection_handle)
+            future.set_exception(error)
+            on_disconnected(False, None, error)
 
     future = Future()
     uuid_request = str(uuid.uuid4())
 
+    self.register_response_callback(uuid=uuid_request, callback_fn=on_response_received, future=future)
     self.register_event_callback(
         replace=True,
         payload_type=Payload.Payload.DeviceDisconnected,
@@ -321,7 +352,8 @@ def disconnect(self, controller_id, connection_handle, on_disconnected, timeout=
 
     print("Disconnecting...")
     try:
-        yield from asyncio.wait_for(future, timeout=timeout)
+        result = yield from asyncio.wait_for(future, timeout=timeout)
+        return result
     except asyncio.TimeoutError:
         print("DISCONNECTION TIMEOUT")
         self.remove_event_callback(
@@ -353,7 +385,8 @@ def cancel_connection(self, controller_id, timeout=15.0):
 
     print("Waiting for connection to cancel...")
     try:
-        yield from asyncio.wait_for(future, timeout=timeout)
+        result = yield from asyncio.wait_for(future, timeout=timeout)
+        return result
     except asyncio.TimeoutError:
         self.remove_response_callback(uuid=uuid_request)
         raise TimeoutError("Cancel connection timed out")
@@ -461,7 +494,7 @@ def read(self, controller_id, connection_handle, attribute_handle, on_read, time
                                    connection_handle=connection_handle,
                                    attribute_handle=attribute_handle)
             future.set_exception(error)
-            on_read(False, error, str(error))
+            on_read(False, None, error)
 
     future = Future()
     uuid_request = str(uuid.uuid4())
@@ -508,7 +541,7 @@ def write(self, controller_id, connection_handle, attribute_handle, value, on_wr
                                    connection_handle=connection_handle,
                                    attribute_handle=attribute_handle)
             future.set_exception(error)
-            on_written(False, error, str(error))
+            on_written(False, None, error)
 
     future = Future()
     uuid_request = str(uuid.uuid4())
@@ -590,7 +623,8 @@ def set_notification(self, state, controller_id, connection_handle, attribute_ha
         )
 
     try:
-        yield from self.write(controller_id, connection_handle, attribute_handle, to_bytes(new_state, 2, byteorder='little'), none_cb, timeout)
+        result = yield from self.write(controller_id, connection_handle, attribute_handle, to_bytes(new_state, 2, byteorder='little'), none_cb, timeout)
+        return result
     except Exception as e:
         if state:
             self.remove_event_callback(

@@ -6,28 +6,27 @@ bable = bable_interface.BaBLEInterface()
 
 
 def on_device_found(success, result, failure_reason):
-    print("ON DEVICE FOUND", result)
+    print("ON DEVICE FOUND", result, failure_reason)
 
 
 def on_read(success, result, failure_reason):
-    print("ON READ", result)
+    print("ON READ", result, failure_reason)
 
 
 def on_write(success, result, failure_reason):
-    print("ON WRITE", result)
+    print("ON WRITE", result, failure_reason)
     if success:
         bable.read(result["connection_handle"], 0x0003, on_read)
 
 
 def on_notification_received(success, result, failure_reason):
-    print("ON NOTIFICATION RECEIVED", result)
+    print("ON NOTIFICATION RECEIVED", result, failure_reason)
 
 
 def on_connected(success, result, failure_reason):
-    print("ON CONNECTED", result)
+    print("ON CONNECTED", result, failure_reason)
     if not success:
         bable.cancel_connection()
-        print(failure_reason)
     else:
         bable.enable_notification(0x0040, 0x000e, on_notification_received, sync=False)
         print("NOTIFICATION ENABLED")
@@ -37,11 +36,11 @@ def on_connected(success, result, failure_reason):
 
 
 def on_unexpected_disconnection(success, result, failure_reason):
-    print("ON UNEXPECTED DISCONNECTION", result)
+    print("ON UNEXPECTED DISCONNECTION", result, failure_reason)
 
 
 def on_disconnected(success, result, failure_reason):
-    print("ON DISCONNECTED", result)
+    print("ON DISCONNECTED", result, failure_reason)
 
 
 def on_error(error):
@@ -66,19 +65,19 @@ bable.start(on_error=on_error)
 
 try:
     # bable.connect("C4:F0:A5:E6:8A:01", "random", sync=True)
-    bable.connect("C4:F0:A5:E6:8A:91", "random", on_connected, on_unexpected_disconnection)
+    bable.connect("C4:F0:A5:E6:8A:01", "random", on_connected, on_unexpected_disconnection, timeout=5.0)
     print("CONNECTED IN TEST.PY")
     time.sleep(10)
     # bable.read(0x0040, 0x0003, on_read)
     # time.sleep(5)
-    bable.disconnect(0x0040, on_disconnected)
+    bable.disconnect(0x0040, on_disconnected, sync=True)
     print("DISCONNECTED IN TEST.PY")
 
     # devices = bable.list_controllers()
     # print(devices)
-
-    time.sleep(2)
-    bable.stop()
-    print("DONE")
 except Exception as e:
     print("Exception caught in test.py={}".format(e))
+
+time.sleep(2)
+bable.stop()
+print("DONE")

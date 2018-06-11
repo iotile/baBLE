@@ -2,7 +2,7 @@ from bable_interface.flatbuffer import extract_packet
 from bable_interface.BaBLE import BaBLEError, Payload, StatusCode
 
 
-class BaBLEException(BaseException):
+class BaBLEException(Exception):
 
     def __init__(self, packet, message=None, **kwargs):
         super(BaBLEException, self).__init__()
@@ -33,7 +33,7 @@ class BaBLEException(BaseException):
 
     def __getattribute__(self, name):
         try:
-            result = BaseException.__getattribute__(self, name)
+            result = super(BaBLEException, self).__getattribute__(name)
         except AttributeError:
             result = self.kwargs[name]
 

@@ -64,17 +64,17 @@ class BaBLEInterface(object):
             self.commands_manager.handle(packet, self.working_thread.add_task)
 
     def on_done(self, fut, event, return_value):
-        if fut.exception() is not None:
-            return_value.update({
-                "success": False,
-                "result": None,
-                "failure_reason": fut.exception()
-            })
-        else:
+        try:
             return_value.update({
                 "success": True,
                 "result": fut.result(),
                 "failure_reason": None
+            })
+        except Exception as e:
+            return_value.update({
+                "success": False,
+                "result": None,
+                "failure_reason": e
             })
 
         event.set()
@@ -91,9 +91,9 @@ class BaBLEInterface(object):
         if sync:
             calldone.wait()
             if result.get("success", False):
-                return result["result"]
+                return result.get("result")
             else:
-                raise RuntimeError(result.get("failure_reason", "No result returned"))
+                raise result.get("failure_reason", RuntimeError("Command failed without given failure reason"))
 
     def start_scan(self, on_device_found, controller_id=0, sync=True, timeout=15.0):
         return self.run_command(command=self.commands_manager.start_scan(controller_id, on_device_found, timeout), sync=sync)
