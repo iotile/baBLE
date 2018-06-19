@@ -1,5 +1,6 @@
 import threading
-from bable_interface.BaBLE import Packet, Payload
+from bable_interface.BaBLE.Payload import Payload
+from bable_interface.models import Packet
 from bable_interface.utils import MAGIC_CODE
 
 
@@ -19,8 +20,7 @@ class ReceivingThread(threading.Thread):
                     header += self.file.read(1)
 
                 if header[:2] != MAGIC_CODE:
-                    print('ERROR')
-                    print(header[:2])
+                    print('Wrong magic code received: {}'.format(header[:2]))
                     continue
 
                 length = (header[3] << 8) | header[2]  # depends on ENDIANNESS
@@ -30,8 +30,8 @@ class ReceivingThread(threading.Thread):
                 while len(payload) < length:
                     payload += self.file.read(1)
 
-                packet = Packet.Packet.GetRootAsPacket(payload, 0)
-                if packet.PayloadType() == Payload.Payload.Exit:
+                packet = Packet.extract(payload)
+                if packet.payload_type == Payload.Exit:
                     break
 
                 self.on_receive(packet)

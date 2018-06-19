@@ -27,7 +27,7 @@ class WorkingThread(threading.Thread):
         current_task = asyncio.Task.current_task()
         for task in asyncio.Task.all_tasks():
             if current_task is None or task != current_task:
-                task.cancel()
+                self.cancel_task(task)
 
         self.loop.call_soon_threadsafe(self.loop.stop)
 

@@ -1,79 +1,46 @@
-from bable_interface.BaBLE import Payload
-from bable_interface.flatbuffer import build_packet, get_packet_uuid
+import functools
 
 
 class CommandsManager(object):
 
-    def __init__(self, subprocess, on_error):
-        self.responses_callbacks = {}
-        self.events_callbacks = {}
-
+    def __init__(self, subprocess):
+        self.callbacks = []
         self.subprocess = subprocess
-        self.on_error = on_error
-
-    # TODO: create a PacketUuid object and create a list of tuples
-    def _find_event_callback(self, key):
-        for packet_uuid, callback_with_params in self.events_callbacks.items():
-            if key[0] == packet_uuid[0] \
-               and key[1] == packet_uuid[1] \
-               and (packet_uuid[2] is None or (key[2] is not None and key[2].lower() == packet_uuid[2].lower())) \
-               and (packet_uuid[3] is None or key[3] == packet_uuid[3]) \
-               and (packet_uuid[4] is None or key[4] == packet_uuid[4]):
-                return callback_with_params
-
-        return None
 
     def handle(self, packet, add_task_fn):
-        uuid = packet.Uuid()
+        packet_uuid = packet.packet_uuid
+        found = False
 
-        if uuid:
-            uuid = uuid.decode()
-            if uuid in self.responses_callbacks:
-                callback_fn, kwargs = self.responses_callbacks[uuid]
-                self.remove_response_callback(uuid)
-                add_task_fn(callback_fn(packet, **kwargs))
-            else:
-                print("Unexpected response received (uuid={})".format(uuid))
-        else:
-            if packet.PayloadType() == Payload.Payload.BaBLEError:
-                add_task_fn(self.handle_bable_error(packet))
-            else:
-                uuid = get_packet_uuid(packet)
+        for index, (uuid, callback) in enumerate(self.callbacks):
+            if uuid.match(packet_uuid):
+                found = True
+                add_task_fn(callback(packet=packet))
 
-                event_callback = self._find_event_callback(uuid)
-                if event_callback is not None:
-                    callback_fn, kwargs = event_callback
-                    add_task_fn(callback_fn(packet, **kwargs))
-                else:
-                    print("Unexpected event received (uuid={})".format(uuid))
+        if not found:
+            print("Unexpected response received (uuid={})".format(packet_uuid))  # TODO: use logger instead
+            return
 
-    def register_response_callback(self, uuid, callback_fn, **cb_kwargs):
-        if uuid in self.responses_callbacks:
-            raise KeyError("UUID already registered in responses callbacks (uuid={})".format(uuid))
+        # TODO: add mutex on self.callbacks
 
-        self.responses_callbacks[uuid] = (callback_fn, cb_kwargs)
+    def register_callback(self, packet_uuid, callback, params=None, replace=False):
+        if replace:
+            self.remove_callback(packet_uuid)
 
-    def register_event_callback(self, payload_type, controller_id, callback_fn,
-                                connection_handle=None, attribute_handle=None, address=None,
-                                replace=False, **cb_kwargs):
-        key = (payload_type, controller_id, address, connection_handle, attribute_handle)
+        if params is None:
+            params = {}
 
-        if key in self.events_callbacks:
-            if not replace:
-                raise KeyError("Event key already registered in events callbacks (key={})".format(key))
+        callback_with_args = functools.partial(callback, **params)
+        self.callbacks.append((packet_uuid, callback_with_args))
+        print("Callback registered: {}".format(packet_uuid))
 
-        self.events_callbacks[key] = (callback_fn, cb_kwargs)
+    def remove_callback(self, *packet_uuids):
+        to_remove = []
+        for index, (uuid, callback) in enumerate(self.callbacks):
+            if uuid in packet_uuids:
+                to_remove.append(index)
 
-    def remove_event_callback(self, payload_type, controller_id, connection_handle=None, attribute_handle=None,
-                              address=None):
-        key = (payload_type, controller_id, address, connection_handle, attribute_handle)
+        for index in to_remove:
+            del self.callbacks[index]
 
-        if key in self.events_callbacks:
-            del self.events_callbacks[key]
-
-    def remove_response_callback(self, uuid):
-        if uuid in self.responses_callbacks:
-            del self.responses_callbacks[uuid]
-
-    def send_packet(self, payload_module, *args, **kwargs):
-        self.subprocess.stdin.write(build_packet(payload_module, *args, **kwargs))
+    def send_packet(self, packet):
+        self.subprocess.stdin.write(packet.serialize())

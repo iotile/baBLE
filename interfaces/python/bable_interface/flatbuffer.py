@@ -1,95 +1,151 @@
 import flatbuffers
+import inspect
+from .BaBLE import Packet, BaBLEError, CancelConnection, Connect, ControllerAdded, ControllerRemoved, \
+    DeviceConnected, DeviceDisconnected, DeviceFound, Disconnect, Exit, GetConnectedDevices, GetControllersList, \
+    GetControllerInfo, GetControllersIds, GetMGMTInfo, NotificationReceived, ProbeCharacteristics, ProbeServices, \
+    Read, Ready, SetConnectable, SetDiscoverable, SetPowered, StartScan, StopScan, Write, WriteWithoutResponse
+from .BaBLE.Payload import Payload
+from .utils import to_bytes, MAGIC_CODE, snake_to_camel, camel_to_snake
 
-from .BaBLE import Packet, Payload, DeviceConnected, DeviceFound, DeviceDisconnected, NotificationReceived,\
-    ControllerAdded, ControllerRemoved, BaBLEError
-from .utils import to_bytes, MAGIC_CODE
+PAYLOADS = {}
+for payload_name, payload_type in vars(Payload).items():
+    if not payload_name.startswith('__') and payload_name != 'NONE':
+        try:
+            payload_module = globals()[payload_name]
+        except KeyError:
+            print("{} not imported in {}".format(payload_name, __file__))
+            continue
 
-# TODO: create a dict with PayloadType -> {payload_name, PayloadModule, PayloadClass} instead ?
-PAYLOAD_IDS = {k: v for k, v in vars(Payload.Payload).items() if not k.startswith("__")}
+        payload_class = getattr(payload_module, payload_name)
+        PAYLOADS[payload_type] = {
+            'name': payload_name,
+            'module': payload_module,
+            'class': payload_class
+        }
 
 
-def snake_to_camel(word):
-    return ''.join(subword[:1].upper() + subword[1:] for subword in word.split('_'))
+def get_payload_data(payload_type):
+    payload_data = PAYLOADS.get(payload_type)
+
+    if payload_data is None:
+        raise ValueError("Payload type not found in PAYLOADS dict (payload_type={})".format(payload_type))
+
+    return payload_data
 
 
-def get_packet_uuid(packet):
-    module_name = None
-    for payload_name, payload_id in PAYLOAD_IDS.items():
-        if payload_id == packet.PayloadType():
-            module_name = payload_name
-            break
+def get_type(payload_module=None, payload_class=None, payload_name=None):
+    key = None
+    value = None
 
-    if module_name is None:
-        raise KeyError("Unknown payload in the given packet (payload_id={})".format(packet.PayloadType()))
+    if payload_module is not None:
+        key = 'module'
+        value = payload_module
+    elif payload_class is not None:
+        key = 'class'
+        value = payload_class
+    elif payload_name is not None:
+        key = 'name'
+        value = payload_name
 
+    if key is None:
+        raise ValueError("No parameter provided to get_type() function.")
+
+    for payload_type, payload_data in PAYLOADS.items():
+        if payload_data[key] == value:
+            return payload_type
+
+    raise ModuleNotFoundError("Given module '{}' not found in PAYLOADS dict. Can't get payload type."
+                              .format(payload_module))
+
+
+def has_attribute(payload_type, attribute_name):
+    payload_data = get_payload_data(payload_type)
+    payload_class = payload_data['class']
     try:
-        payload_class = getattr(globals()[module_name], module_name)
-    except KeyError as e:
-        print("Can't find module {} in flatbuffers.py".format(module_name))
-        raise e
-    except AttributeError as e:
-        print("Can't find class {} in module {}".format(module_name, module_name))
-        raise e
-
-    payload = get_payload(packet, payload_class)
-
-    address = get_variable(payload, "address")
-    connection_handle = get_variable(payload, "connection_handle")
-    attribute_handle = get_variable(payload, "attribute_handle")
-
-    return (
-        packet.PayloadType(),
-        packet.ControllerId(),
-        address.decode() if address is not None else address,
-        connection_handle,
-        attribute_handle
-    )
-
-
-def get_payload(packet, payload_class):
-    payload = payload_class()
-    payload.Init(packet.Payload().Bytes, packet.Payload().Pos)
-
-    return payload
-
-
-def get_variable(payload_instance, attribute_name, return_function=False):
-    try:
-        attribute_fn = getattr(payload_instance, snake_to_camel(attribute_name))
-
-        if return_function:
-            return attribute_fn
-
-        return attribute_fn()
+        getattr(payload_class, snake_to_camel(attribute_name))
+        return True
     except AttributeError:
-        return None
+        return False
 
 
-def build_packet(payload_module, uuid="", controller_id=None, params=None):
-    packet_name = payload_module.__name__.split(".")[-1]
+def get_name(payload_type):
+    payload_data = get_payload_data(payload_type)
+    return payload_data['name']
+
+
+def parse_packet(raw_bytes):
+    return Packet.Packet.GetRootAsPacket(raw_bytes, 0)
+
+
+def get_params(fb_packet):
+    payload_type = fb_packet.PayloadType()
+    payload_data = get_payload_data(payload_type)
+
+    payload_instance = payload_data['class']()
+    payload_instance.Init(fb_packet.Payload().Bytes, fb_packet.Payload().Pos)
+
+    for method_name, method_fn in inspect.getmembers(payload_instance, predicate=inspect.ismethod):
+        if method_name == 'Init' or method_name.startswith('GetRootAs'):
+            continue
+
+        if method_name.endswith('Length'):
+            result = []
+            get_item_method_name = method_name[:-6]
+            get_item_fn = getattr(payload_instance, get_item_method_name)
+
+            list_length = method_fn()
+            for i in range(list_length):
+                item = get_item_fn(i)
+                result.append(item)
+
+            attribute_name = camel_to_snake(get_item_method_name)
+            yield attribute_name, result, 'list'
+
+        elif method_name.endswith('AsNumpy'):
+            attribute_name = camel_to_snake(method_name[:-7])
+            yield attribute_name, method_fn(), 'numpy'
+
+        else:
+            try:
+                result = method_fn()
+                attribute_name = camel_to_snake(method_name)
+                if isinstance(result, bytes):
+                    result = result.decode()
+                yield attribute_name, result, 'value'
+            except TypeError:
+                continue
+
+
+def build_packet(payload_type, uuid="", controller_id=None, params=None):
+    payload_data = get_payload_data(payload_type)
+    payload_name = payload_data['name']
+    payload_module = payload_data['module']
+
     builder = flatbuffers.Builder(0)
     fb_params = {}
 
     if params is not None:
         for param_name, param_value in params.items():
             param_name = snake_to_camel(param_name)
+
             if isinstance(param_value, str):
                 fb_params[param_name] = builder.CreateString(param_value)
+
             elif isinstance(param_value, tuple) or isinstance(param_value, list) or isinstance(param_value, bytes):
-                getattr(payload_module, "{}Start{}Vector".format(packet_name, param_name))(builder, len(param_value))
+                getattr(payload_module, "{}Start{}Vector".format(payload_name, param_name))(builder, len(param_value))
                 for element in reversed(param_value):
                     builder.PrependByte(element)
                 fb_params[param_name] = builder.EndVector(len(param_value))
+
             else:
                 fb_params[param_name] = param_value
 
-    getattr(payload_module, '{}Start'.format(packet_name))(builder)
+    getattr(payload_module, "{}Start".format(payload_name))(builder)
 
     for param_name, param_value in fb_params.items():
-        getattr(payload_module, '{}Add{}'.format(packet_name, param_name))(builder, param_value)
+        getattr(payload_module, "{}Add{}".format(payload_name, param_name))(builder, param_value)
 
-    payload = getattr(payload_module, '{}End'.format(packet_name))(builder)
-    payload_type = getattr(Payload.Payload, packet_name)
+    payload = getattr(payload_module, "{}End".format(payload_name))(builder)
 
     fb_uuid = builder.CreateString(uuid)
 
@@ -109,29 +165,3 @@ def build_packet(payload_module, uuid="", controller_id=None, params=None):
     buf = MAGIC_CODE + to_bytes(len(buf), 2, byteorder='little') + buf
 
     return buf
-
-
-def extract_packet(packet, payload_class, params=None, list_params=None, numpy_params=None):
-    payload = get_payload(packet, payload_class)
-
-    result = {}
-
-    if params is not None:
-        for param_name in params:
-            result[param_name] = get_variable(payload, param_name)
-
-    if list_params is not None:
-        for param_name in list_params:
-            list_length = get_variable(payload, '{}Length'.format(param_name))
-            result[param_name] = []
-            get_item_fn = get_variable(payload, param_name, return_function=True)
-
-            for i in range(list_length):
-                item = get_item_fn(i)
-                result[param_name].append(item)
-
-    if numpy_params is not None:
-        for param_name in numpy_params:
-            result[param_name] = get_variable(payload, '{}AsNumpy'.format(param_name))
-
-    return result
