@@ -1,12 +1,16 @@
 import functools
+import logging
 import threading
 
 
 class CommandsManager(object):
 
     def __init__(self, subprocess):
+        self.logger = logging.getLogger(__name__)
+
         self.callbacks = []
         self.callback_lock = threading.Lock()
+
         self.subprocess = subprocess
 
     # Executed into the ReceiverThread
@@ -21,7 +25,7 @@ class CommandsManager(object):
                     add_task_fn(callback(packet=packet))
 
         if not found:
-            print("Unexpected response received (uuid={})".format(packet_uuid))  # TODO: use logger instead
+            self.logger.info("Unexpected response received (uuid={})".format(packet_uuid))
             return
 
     # Executed into the WorkingThread
@@ -43,8 +47,9 @@ class CommandsManager(object):
 
         with self.callback_lock:
             for index, (uuid, callback) in enumerate(self.callbacks):
-                if uuid in packet_uuids:
-                    to_remove.append(index)
+                for uuid_to_remove in packet_uuids:
+                    if uuid.match(uuid_to_remove):
+                        to_remove.append(index)
 
             for index in to_remove:
                 del self.callbacks[index]

@@ -1,3 +1,4 @@
+import logging
 import threading
 import subprocess
 import time
@@ -11,6 +12,8 @@ from .models import Packet
 class BaBLEInterface(object):
 
     def __init__(self):
+        self.logger = logging.getLogger(__name__)
+
         self.working_ready_event = threading.Event()
         self.working_thread = WorkingThread(self.working_ready_event)
 
@@ -54,12 +57,12 @@ class BaBLEInterface(object):
         self.commands_manager.send_packet(Packet.build(Exit))
 
         while self.subprocess.poll() is None:
-            print("Waiting for subprocess to stop")
+            self.logger.info("Waiting for subprocess to stop")
             time.sleep(0.1)
 
         self.receiving_thread.join(5)
         if self.receiving_thread.isAlive():
-            print("Timeout while waiting for receiving thread to stop...")
+            self.logger.warning("Timeout while waiting for receiving thread to stop...")
 
     def on_receive(self, packet):
         if packet.payload_type == Payload.Payload.Ready:

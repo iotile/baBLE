@@ -1,6 +1,14 @@
 import bable_interface
 import time
+import logging
 
+log = logging.getLogger()
+
+console = logging.StreamHandler()
+console.setFormatter(logging.Formatter('%(asctime)s %(levelname).3s [%(name)s] %(message)s', '%y-%m-%d %H:%M:%S'))
+log.addHandler(console)
+
+log.setLevel(logging.DEBUG)
 
 bable = bable_interface.BaBLEInterface()
 

@@ -1,4 +1,6 @@
+import logging
 import threading
+import sys
 from bable_interface.BaBLE.Payload import Payload
 from bable_interface.models import Packet
 from bable_interface.utils import MAGIC_CODE
@@ -8,6 +10,8 @@ class ReceivingThread(threading.Thread):
 
     def __init__(self, stop_event, on_receive, file):
         super(ReceivingThread, self).__init__()
+        self.logger = logging.getLogger(__name__)
+
         self.stop_event = stop_event
         self.on_receive = on_receive
         self.file = file
@@ -20,12 +24,14 @@ class ReceivingThread(threading.Thread):
                     header += self.file.read(1)
 
                 if header[:2] != MAGIC_CODE:
-                    print('Wrong magic code received: {}'.format(header[:2]))
+                    self.logger.error("Wrong magic code received: {}".format(header[:2]))
                     continue
 
-                length = (header[3] << 8) | header[2]  # depends on ENDIANNESS
+                if sys.byteorder == 'little':  # depends on ENDIANNESS
+                    length = (header[3] << 8) | header[2]
+                else:
+                    length = (header[2] << 8) | header[3]
 
-                # Needs timeout
                 payload = bytearray()
                 while len(payload) < length:
                     payload += self.file.read(1)
