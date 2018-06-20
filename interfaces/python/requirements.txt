@@ -1,4 +1,1 @@
--e git+https://github.com/google/flatbuffers.git@0848f58cdd848d2353b1c0a070f1f6c932d2458f#egg=flatbuffers&subdirectory=python
-numpy==1.14.3
-six==1.11.0
-trollius==2.2
+-e .
