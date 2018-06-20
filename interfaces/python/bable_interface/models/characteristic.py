@@ -15,3 +15,5 @@ class Characteristic(object):
         self.read = raw_characteristic.Read()
         self.write = raw_characteristic.Write()
         self.broadcast = raw_characteristic.Broadcast()
+
+# TODO: add str

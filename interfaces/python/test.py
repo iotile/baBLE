@@ -36,9 +36,9 @@ def on_connected(success, result, failure_reason):
     if not success:
         bable.cancel_connection()
     else:
-        # bable.enable_notification(0x0040, 0x000e, on_notification_received, sync=False)
-        # print("NOTIFICATION ENABLED")
-        bable.read(result["connection_handle"], 0x0003, on_read)
+        bable.enable_notification(0x0040, 0x000e, on_notification_received, sync=False)
+        print("NOTIFICATION ENABLED")
+        # bable.read(result["connection_handle"], 0x0003, on_read)
         # bable.write(result["connection_handle"], 0x0003, bytes("Cafe", encoding="utf-8"), on_write)
         # bable.write_without_response(result["connection_handle"], 0x0003, bytes("Arch", encoding="utf-8"))
 
