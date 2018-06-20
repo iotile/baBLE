@@ -8,3 +8,6 @@ class Controller(object):
         self.connectable = raw_ctrl.Connectable()
         self.discoverable = raw_ctrl.Discoverable()
         self.low_energy = raw_ctrl.LowEnergy()
+
+    def __str__(self):
+        return "<Controller id={}, address={}, name={}>".format(self.id, self.address, self.name)
