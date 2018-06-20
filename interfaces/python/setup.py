@@ -2,7 +2,6 @@ from setuptools import setup, find_packages
 import version
 
 # TODO: according to the OS, import baBLE executable
-
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
@@ -10,11 +9,8 @@ setup(
     name="bable_interface",
     install_requires=[
         'trollius;python_version<"3.4"',
-        'numpy'
-    ],
-    dependency_links=[
-        # Flatbuffers
-        'git+https://github.com/google/flatbuffers.git@0848f58cdd848d2353b1c0a070f1f6c932d2458f#egg=flatbuffers&subdirectory=python'
+        'numpy',
+        'flatbuffers==1.9'
     ],
     packages=find_packages(exclude=("test",)),
     version=version.version,
