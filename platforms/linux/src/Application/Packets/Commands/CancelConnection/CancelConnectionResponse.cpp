@@ -1,3 +1,4 @@
+#include <sstream>
 #include "CancelConnectionResponse.hpp"
 
 using namespace std;

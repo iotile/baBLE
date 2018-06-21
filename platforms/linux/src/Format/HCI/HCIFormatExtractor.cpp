@@ -175,7 +175,7 @@ void HCIFormatExtractor::parse_header(const vector<uint8_t>& data) {
 
     case Format::HCI::Type::AsyncData:
       // Use little endian
-      m_connection_id = (static_cast<uint16_t>(data.at(2) & 0x0F) << 8) | data.at(1);
+      m_connection_handle = (static_cast<uint16_t>(data.at(2) & 0x0F) << 8) | data.at(1);
       m_data_length = ((data.at(6) << 8) | data.at(5));
       if (m_data_length > 0) {
         m_data_length -= 1; // To consider opcode as part of the header

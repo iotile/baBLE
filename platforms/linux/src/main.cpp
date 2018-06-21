@@ -36,7 +36,8 @@ void parse_options(int argc, char* argv[]) {
       if (i + 1 < argc) {
         LOG.set_level(string(argv[++i]));
       } else {
-        throw invalid_argument("Invalid option: --logging option requires one argument [debug|info|warning|error|critical]");
+        throw invalid_argument("Invalid option:"
+                               "--logging option requires one argument [DEBUG|INFO|WARNING|ERROR|CRITICAL|NOTSET]");
       }
     } else {
       cerr << "Unknown option given (" << option_name << ")" << endl;
@@ -45,7 +46,6 @@ void parse_options(int argc, char* argv[]) {
 }
 
 int main(int argc, char* argv[]) {
-  ENABLE_LOGGING(INFO);
   parse_options(argc, argv);
 
   // Create loop
@@ -160,7 +160,7 @@ int main(int argc, char* argv[]) {
 
           LOG.debug("DeviceConnected", "HCI poller");
           hci_socket->connect_l2cap_socket(
-              device_connected_packet->get_connection_id(),
+              device_connected_packet->get_connection_handle(),
               device_connected_packet->get_raw_device_address(),
               device_connected_packet->get_device_address_type()
           );
@@ -176,7 +176,7 @@ int main(int argc, char* argv[]) {
           }
 
           LOG.debug("DeviceDisconnected", "HCI poller");
-          hci_socket->disconnect_l2cap_socket(device_disconnected_packet->get_connection_id());
+          hci_socket->disconnect_l2cap_socket(device_disconnected_packet->get_connection_handle());
         }
 
         // Check if there are packets waiting for a response

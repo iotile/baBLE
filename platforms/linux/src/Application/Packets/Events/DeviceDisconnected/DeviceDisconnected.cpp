@@ -14,7 +14,7 @@ namespace Packet {
 
     void DeviceDisconnected::unserialize(HCIFormatExtractor& extractor) {
       set_status(extractor.get_value<uint8_t>());
-      m_connection_id = extractor.get_value<uint16_t>();
+      m_connection_handle = extractor.get_value<uint16_t>();
       m_raw_reason = extractor.get_value<uint8_t>();
 
       switch (m_raw_reason) {
@@ -48,7 +48,7 @@ namespace Packet {
 
       auto payload = BaBLE::CreateDeviceDisconnected(
           builder,
-          m_connection_id,
+          m_connection_handle,
           reason
       );
 

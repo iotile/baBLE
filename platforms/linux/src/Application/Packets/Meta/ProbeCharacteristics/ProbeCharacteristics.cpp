@@ -23,10 +23,10 @@ namespace Packet {
     void ProbeCharacteristics::unserialize(FlatbuffersFormatExtractor& extractor) {
       auto payload = extractor.get_payload<const BaBLE::ProbeCharacteristics*>();
 
-      m_connection_id = payload->connection_handle();
+      m_connection_handle = payload->connection_handle();
 
       m_read_by_type_request_packet->set_controller_id(m_controller_id);
-      m_read_by_type_request_packet->set_connection_id(m_connection_id);
+      m_read_by_type_request_packet->set_connection_handle(m_connection_handle);
     }
 
     vector<uint8_t> ProbeCharacteristics::serialize(FlatbuffersFormatBuilder& builder) const {
@@ -63,7 +63,7 @@ namespace Packet {
       }
 
       auto characteristics_vector = builder.CreateVector(characteristics);
-      auto payload = BaBLE::CreateProbeCharacteristics(builder, m_connection_id, characteristics_vector);
+      auto payload = BaBLE::CreateProbeCharacteristics(builder, m_connection_handle, characteristics_vector);
 
       return builder.build(payload, BaBLE::Payload::ProbeCharacteristics);
     }

@@ -14,7 +14,7 @@ namespace Packet {
 
     void DeviceConnected::unserialize(HCIFormatExtractor& extractor) {
       set_status(extractor.get_value<uint8_t>());
-      m_connection_id = extractor.get_value<uint16_t>();
+      m_connection_handle = extractor.get_value<uint16_t>();
       auto role = extractor.get_value<uint8_t>();
       m_address_type = static_cast<uint8_t>(extractor.get_value<uint8_t>() + 1);
       m_raw_address = extractor.get_array<uint8_t, 6>();
@@ -27,7 +27,7 @@ namespace Packet {
 
       auto payload = BaBLE::CreateDeviceConnected(
           builder,
-          m_connection_id,
+          m_connection_handle,
           address,
           m_address_type
       );

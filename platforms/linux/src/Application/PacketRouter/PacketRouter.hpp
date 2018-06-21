@@ -17,6 +17,7 @@ public:
   PacketRouter();
 
   void add_callback(Packet::PacketUuid uuid, std::shared_ptr<Packet::AbstractPacket> packet, const CallbackFunction& callback);
+  void remove_callback_timestamp(Packet::PacketUuid uuid);
   void remove_callback(Packet::PacketUuid uuid);
 
   void expire_waiting_packets(unsigned int expiration_duration_seconds);
@@ -25,7 +26,7 @@ public:
   const std::string stringify() const override;
 
 private:
-  std::unordered_map<Packet::PacketUuid, std::tuple<std::shared_ptr<Packet::AbstractPacket>, CallbackFunction>> m_callbacks;
+  std::vector<std::tuple<Packet::PacketUuid, std::shared_ptr<Packet::AbstractPacket>, CallbackFunction>> m_callbacks;
   std::multimap<TimePoint, Packet::PacketUuid> m_timestamps;
 
 };

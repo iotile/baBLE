@@ -33,7 +33,9 @@ class BaBLEInterface(object):
 
         self.working_thread.start()
         self.working_ready_event.wait()
-        self.subprocess = subprocess.Popen(["../../platforms/linux/build/debug/baBLE_linux", "--logging", "info"],
+
+        logging_lvl = logging.getLevelName(self.logger.getEffectiveLevel())
+        self.subprocess = subprocess.Popen(["../../platforms/linux/build/debug/baBLE_linux", "--logging", logging_lvl],
                                            stdout=subprocess.PIPE, stdin=subprocess.PIPE,
                                            bufsize=0,
                                            universal_newlines=False)

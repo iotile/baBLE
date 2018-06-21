@@ -19,10 +19,10 @@ namespace Packet {
     void ProbeServices::unserialize(FlatbuffersFormatExtractor& extractor) {
       auto payload = extractor.get_payload<const BaBLE::ProbeServices*>();
 
-      m_connection_id = payload->connection_handle();
+      m_connection_handle = payload->connection_handle();
 
       m_read_by_type_group_request_packet->set_controller_id(m_controller_id);
-      m_read_by_type_group_request_packet->set_connection_id(m_connection_id);
+      m_read_by_type_group_request_packet->set_connection_handle(m_connection_handle);
     }
 
     vector<uint8_t> ProbeServices::serialize(FlatbuffersFormatBuilder& builder) const {
@@ -42,7 +42,7 @@ namespace Packet {
       }
 
       auto services_vector = builder.CreateVector(services);
-      auto payload = BaBLE::CreateProbeServices(builder, m_connection_id, services_vector);
+      auto payload = BaBLE::CreateProbeServices(builder, m_connection_handle, services_vector);
 
       return builder.build(payload, BaBLE::Payload::ProbeServices);
     }

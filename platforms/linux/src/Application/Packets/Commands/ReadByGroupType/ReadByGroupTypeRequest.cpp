@@ -76,7 +76,7 @@ namespace Packet {
       response_packet->import_status(packet);
       response_packet->set_uuid_request(m_uuid_request);
       response_packet->set_controller_id(m_controller_id);
-      response_packet->set_connection_id(m_connection_id);
+      response_packet->set_connection_handle(m_connection_handle);
 
       return response_packet;
     }

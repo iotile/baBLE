@@ -21,7 +21,7 @@ namespace Packet {
       auto data_read = builder.CreateVector(m_data_read);
       auto payload = BaBLE::CreateRead(
           builder,
-          m_connection_id,
+          m_connection_handle,
           m_attribute_handle,
           data_read
       );

@@ -32,7 +32,7 @@ namespace Packet {
       return PacketUuid{
           m_current_type,
           m_controller_id,
-          m_connection_id,
+          m_connection_handle,
           m_packet_code,
           get_opcode()
       };

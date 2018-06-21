@@ -48,8 +48,8 @@ namespace Packet {
       return m_controller_id;
     };
 
-    inline const uint16_t get_connection_id() const {
-      return m_connection_id;
+    inline const uint16_t get_connection_handle() const {
+      return m_connection_handle;
     };
 
     inline const BaBLE::StatusCode get_status() const {
@@ -64,7 +64,7 @@ namespace Packet {
 
     void set_uuid_request(const std::string& uuid_request);
     void set_controller_id(uint16_t controller_id);
-    void set_connection_id(uint16_t connection_id);
+    void set_connection_handle(uint16_t connection_handle);
     void set_status(uint8_t native_status, bool compute_status = true, const std::string& native_class = "");
 
     void translate();
@@ -89,7 +89,7 @@ namespace Packet {
     uint16_t m_packet_code;
 
     uint16_t m_controller_id;
-    uint16_t m_connection_id;
+    uint16_t m_connection_handle;
     std::string m_uuid_request;
 
     std::string m_native_class;

@@ -4,7 +4,7 @@ AbstractExtractor::AbstractExtractor(const std::vector<uint8_t>& data) {
   m_type_code = 0;
   m_packet_code = 0;
   m_controller_id = NON_CONTROLLER_ID;
-  m_connection_id = 0;
+  m_connection_handle = 0;
   m_header_length = 0;
   m_data.assign(data.begin(), data.end());
   m_data_length = static_cast<uint16_t>(m_data.size());

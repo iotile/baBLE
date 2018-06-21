@@ -47,8 +47,8 @@ public:
     return m_controller_id;
   };
 
-  inline uint16_t get_connection_id() const {
-    return m_connection_id;
+  inline uint16_t get_connection_handle() const {
+    return m_connection_handle;
   };
 
   inline const uint16_t get_data_length() const {
@@ -68,7 +68,7 @@ protected:
   uint16_t m_type_code;
   uint16_t m_packet_code;
   uint16_t m_controller_id;
-  uint16_t m_connection_id;
+  uint16_t m_connection_handle;
   uint16_t m_data_length;
   size_t m_header_length;
 

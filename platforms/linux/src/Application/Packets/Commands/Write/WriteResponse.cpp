@@ -15,7 +15,7 @@ namespace Packet {
     vector<uint8_t> WriteResponse::serialize(FlatbuffersFormatBuilder& builder) const {
       auto payload = BaBLE::CreateWrite(
           builder,
-          m_connection_id,
+          m_connection_handle,
           m_attribute_handle
       );
 

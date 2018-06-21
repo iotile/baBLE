@@ -9,48 +9,43 @@ PacketRouter::PacketRouter() = default;
 void PacketRouter::add_callback(Packet::PacketUuid waiting_uuid, shared_ptr<Packet::AbstractPacket> packet, const CallbackFunction& callback) {
   TimePoint inserted_time = chrono::steady_clock::now();
 
-  auto waiting_it = m_callbacks.find(waiting_uuid);
-  if (waiting_it != m_callbacks.end()) {
-    throw Exceptions::RuntimeErrorException("Command already in flight ("
-                                              "type=" + to_string(static_cast<uint16_t>(waiting_uuid.packet_type)) +
-                                              ", controller=" + to_string(waiting_uuid.controller_id) +
-                                              ", connection=" + to_string(waiting_uuid.connection_id) +
-                                              ", request_packet=" + to_string(waiting_uuid.request_packet_code) +
-                                              ", response_packet=" + to_string(waiting_uuid.response_packet_code) + ")",
-                                            packet->get_uuid_request());
-  }
-
-  m_callbacks.emplace(waiting_uuid, make_tuple(packet, callback));
+  m_callbacks.emplace_back(waiting_uuid, packet, callback);
   m_timestamps.emplace(inserted_time, waiting_uuid); // To expire waiting packets without response
 }
 
-void PacketRouter::remove_callback(Packet::PacketUuid uuid) {
+void PacketRouter::remove_callback_timestamp(Packet::PacketUuid uuid) {
   for (auto expiration_it = m_timestamps.begin(); expiration_it != m_timestamps.end(); ++expiration_it) {
-    // FIXME: a == b does not give the same result as b == a for PacketUuid (because of the hacky equal function to match packets with other ID...)
-    if (uuid == expiration_it->second) { // Comparaison must be done this way to work as wanted
+    if (uuid == expiration_it->second) {
       m_timestamps.erase(expiration_it);
       break;
     }
   }
-  m_callbacks.erase(uuid);
+}
+
+void PacketRouter::remove_callback(Packet::PacketUuid uuid) {
+  for (auto callback_it = m_callbacks.begin(); callback_it != m_callbacks.end(); ++callback_it) {
+    if (uuid == get<0>(*callback_it)) {
+      m_callbacks.erase(callback_it);
+      break;
+    }
+  }
 }
 
 shared_ptr<Packet::AbstractPacket> PacketRouter::route(const shared_ptr<PacketRouter>& router, shared_ptr<Packet::AbstractPacket> received_packet) {
-  Packet::PacketUuid key = received_packet->get_uuid();
+  Packet::PacketUuid received_uuid = received_packet->get_uuid();
 
-  auto callback_it = router->m_callbacks.find(key);
-  if (callback_it != router->m_callbacks.end()) {
-    CallbackFunction callback = get<1>(callback_it->second);
+  for (auto callback_it = router->m_callbacks.begin(); callback_it != router->m_callbacks.end(); ++callback_it) {
+    Packet::PacketUuid uuid = get<0>(*callback_it);
+    if (received_uuid.match(uuid)) {
+      shared_ptr<Packet::AbstractPacket> request_packet = get<1>(*callback_it);
+      CallbackFunction callback = get<2>(*callback_it);
 
-    try {
+      router->remove_callback_timestamp(uuid);
+      router->m_callbacks.erase(callback_it);
+
       shared_ptr<Packet::AbstractPacket> packet_routed = callback(router, received_packet);
-      router->remove_callback(key);
 
       return packet_routed;
-
-    } catch (const exception& err) {
-      router->remove_callback(key);
-      throw;
     }
   }
 
@@ -84,9 +79,17 @@ void PacketRouter::expire_waiting_packets(unsigned int expiration_duration_secon
     return;
   }
 
+  auto callback_it = m_callbacks.begin();
   for (auto it = m_timestamps.begin(); it != it_last_expired; ++it) {
     LOG.warning("Expiring packet (" + to_string(it->second.response_packet_code) + ")", "PacketBuilder");
-    m_callbacks.erase(it->second);
+    while (callback_it != m_callbacks.end()) {
+      if (get<0>(*callback_it) == it->second) {
+        m_callbacks.erase(callback_it);
+        break;
+      } else {
+        ++callback_it;
+      }
+    }
   }
 
   m_timestamps.erase(m_timestamps.begin(), it_last_expired);
@@ -110,8 +113,10 @@ const string PacketRouter::stringify() const {
 
   result << "Router" << endl;
   for (auto& element : m_callbacks) {
+    Packet::PacketUuid uuid = get<0>(element);
+
     result << "\tType: ";
-    switch (element.first.packet_type) {
+    switch (uuid.packet_type) {
       case Packet::Type::MGMT:
         result << "MGMT";
         break;
@@ -125,7 +130,7 @@ const string PacketRouter::stringify() const {
         result << "NONE";
         break;
     }
-    result << ", Packet code: " << element.first.response_packet_code << endl;
+    result << ", Packet code: " << uuid.response_packet_code << endl;
   }
 
   return result.str();

@@ -18,21 +18,21 @@ namespace Packet {
     void Disconnect::unserialize(FlatbuffersFormatExtractor& extractor) {
       auto payload = extractor.get_payload<const BaBLE::Disconnect*>();
 
-      m_connection_id = payload->connection_handle();
+      m_connection_handle = payload->connection_handle();
     }
 
     vector<uint8_t> Disconnect::serialize(HCIFormatBuilder& builder) const {
       HostToControllerPacket::serialize(builder);
 
       builder
-          .add(m_connection_id)
+          .add(m_connection_handle)
           .add(m_reason);
 
       return builder.build(Format::HCI::Type::Command);
     }
 
     vector<uint8_t> Disconnect::serialize(FlatbuffersFormatBuilder& builder) const {
-      auto payload = BaBLE::CreateDisconnect(builder, m_connection_id);
+      auto payload = BaBLE::CreateDisconnect(builder, m_connection_handle);
 
       return builder.build(payload, BaBLE::Payload::Disconnect);
     }
@@ -52,7 +52,7 @@ namespace Packet {
         m_current_type = final_type();
 
         PacketUuid response_uuid = get_response_uuid();
-        response_uuid.connection_id = 0x00;
+        response_uuid.connection_handle = 0x00;
         auto response_callback =
             [this](const shared_ptr<PacketRouter>& router, const shared_ptr<AbstractPacket>& packet) {
               return on_response_received(router, packet);

@@ -23,7 +23,7 @@ public:
     WARNING = 30,
     INFO = 20,
     DEBUG = 10,
-    DISABLED = 0
+    NOTSET = 0
   };
 
   void set_level(const Level& level);
@@ -64,7 +64,5 @@ void Log::debug(std::array<uint8_t, N> bytes, const std::string &name) {
 };
 
 #define LOG Log::get()
-#define ENABLE_LOGGING(lvl) LOG.set_level(Log::Level::lvl)
-#define DISABLE_LOGGING LOG.set_level(Log::Level::DISABLED)
 
 #endif //BABLE_LINUX_LOG_HPP

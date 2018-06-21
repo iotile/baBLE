@@ -19,7 +19,7 @@ namespace Packet {
       case Packet::Type::HCI:
       {
         HCIFormatBuilder builder(m_controller_id);
-        builder.set_connection_handle(m_connection_id);
+        builder.set_connection_handle(m_connection_handle);
 
         return serialize(builder);
       }
@@ -39,7 +39,7 @@ namespace Packet {
   void AbstractPacket::from_bytes(const shared_ptr<AbstractExtractor>& extractor) {
     try {
       m_controller_id = extractor->get_controller_id();
-      m_connection_id = extractor->get_connection_id();
+      m_connection_handle = extractor->get_connection_handle();
 
       switch(m_current_type) {
         case Packet::Type::MGMT:
@@ -93,7 +93,7 @@ namespace Packet {
     result << "Controller ID: " << to_string(m_controller_id) << ", "
            << "UUID request: " <<  m_uuid_request << ", "
            << "Packet code: " <<  HEX(m_packet_code) << ", "
-           << "Connection ID: " <<  HEX(m_connection_id) << ", "
+           << "Connection ID: " <<  HEX(m_connection_handle) << ", "
            << "Status: " << status_name << ", "
            << "Native class: " <<  m_native_class << ", "
            << "Native status: " <<  HEX(m_native_status);
@@ -108,7 +108,7 @@ namespace Packet {
     m_packet_code = packet_code;
 
     m_controller_id = NON_CONTROLLER_ID;
-    m_connection_id = 0;
+    m_connection_handle = 0;
     m_status = BaBLE::StatusCode::Success;
     m_native_status = 0x00;
   };
@@ -117,7 +117,7 @@ namespace Packet {
     return PacketUuid{
         m_current_type,
         m_controller_id,
-        m_connection_id,
+        m_connection_handle,
         m_packet_code
     };
   };
@@ -142,8 +142,8 @@ namespace Packet {
     m_controller_id = controller_id;
   }
 
-  void AbstractPacket::set_connection_id(uint16_t connection_id) {
-    m_connection_id = connection_id;
+  void AbstractPacket::set_connection_handle(uint16_t connection_handle) {
+    m_connection_handle = connection_handle;
   }
 
   void AbstractPacket::import_status(const shared_ptr<AbstractPacket>& packet) {

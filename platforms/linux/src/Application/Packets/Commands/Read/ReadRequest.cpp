@@ -18,7 +18,7 @@ namespace Packet {
     void ReadRequest::unserialize(FlatbuffersFormatExtractor& extractor) {
       auto payload = extractor.get_payload<const BaBLE::Read*>();
 
-      m_connection_id = payload->connection_handle();
+      m_connection_handle = payload->connection_handle();
       m_attribute_handle = payload->attribute_handle();
     }
 
@@ -81,7 +81,7 @@ namespace Packet {
       response_packet->set_uuid_request(m_uuid_request);
       response_packet->set_attribute_handle(m_attribute_handle);
       response_packet->set_controller_id(m_controller_id);
-      response_packet->set_connection_id(m_connection_id);
+      response_packet->set_connection_handle(m_connection_handle);
 
       return response_packet;
     }

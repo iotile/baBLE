@@ -30,7 +30,6 @@ string Log::get_level_name(const Level& level) {
 
 Log::Log() {
   set_level(Level::INFO);
-  info("Starting log session...");
 }
 
 void Log::set_level(const Level& level) {
@@ -38,18 +37,18 @@ void Log::set_level(const Level& level) {
 }
 
 void Log::set_level(const string& str_level) {
-  if (str_level == "debug") {
+  if (str_level == "DEBUG") {
     m_log_level = Level::DEBUG;
-  } else if (str_level == "info") {
+  } else if (str_level == "INFO") {
     m_log_level = Level::INFO;
-  } else if (str_level == "warning") {
+  } else if (str_level == "WARNING") {
     m_log_level = Level::WARNING;
-  } else if (str_level == "error") {
+  } else if (str_level == "ERROR") {
     m_log_level = Level::ERROR;
-  } else if (str_level == "critical") {
+  } else if (str_level == "CRITICAL") {
     m_log_level = Level::CRITICAL;
-  } else if (str_level == "disabled") {
-    m_log_level = Level::DISABLED;
+  } else if (str_level == "NOTSET") {
+    m_log_level = Level::NOTSET;
   } else {
     throw invalid_argument("Wrong log level.");
   }
@@ -67,7 +66,7 @@ string Log::build_prefix(const string &name, const Level& level) {
 }
 
 void Log::write_log(const string& name, const string& message, const Level& level, const string& color) {
-  if (m_log_level != Level::DISABLED && level >= m_log_level) {
+  if (m_log_level != Level::NOTSET && level >= m_log_level) {
     const string prefix = build_prefix(name, level);
 
     cerr << COLORIZE(color, prefix) << message << endl;
