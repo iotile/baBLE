@@ -27,6 +27,11 @@ setup(
     ],
     packages=find_packages(exclude=("test",)),
     include_package_data=True,
+    entry_points={
+        'console_scripts': [
+            'bable = bable_interface.scripts.bable_script:main'
+        ]
+    },
     version=version.version,
     license="MIT",
     author="Arch",

@@ -29,19 +29,25 @@ class BaBLEInterface(object):
 
         self.on_error = None
 
-    def start(self, on_error=None):
-        self.on_error = on_error
-
-        self.working_thread.start()
-        self.working_ready_event.wait()
-
+    def start(self, on_error=None, use_path=False):
         logging_lvl = logging.getLevelName(self.logger.getEffectiveLevel())
+
+        if use_path:
+            bable_bridge_path = 'baBLE_linux'
+        else:
+            bable_bridge_path = os.path.join(os.path.dirname(__file__), 'bin', 'baBLE_linux')
+
         self.subprocess = subprocess.Popen(
-            [os.path.join(os.path.dirname(__file__), "bin", "baBLE_linux"), "--logging", logging_lvl],
+            [bable_bridge_path, "--logging", logging_lvl],
             stdout=subprocess.PIPE, stdin=subprocess.PIPE,
             bufsize=0,
             universal_newlines=False
         )
+
+        self.on_error = on_error
+
+        self.working_thread.start()
+        self.working_ready_event.wait()
 
         self.commands_manager = CommandsManager(self.subprocess)
 
