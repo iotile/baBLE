@@ -8,8 +8,6 @@
 
 namespace BaBLE {
 
-struct GetMGMTInfo;
-
 struct Controller;
 
 struct GetControllersList;
@@ -79,31 +77,30 @@ enum class Payload : uint8_t {
   GetControllersIds = 5,
   GetControllerInfo = 6,
   GetControllersList = 7,
-  GetMGMTInfo = 8,
-  ProbeCharacteristics = 9,
-  ProbeServices = 10,
-  Read = 11,
-  SetConnectable = 12,
-  SetDiscoverable = 13,
-  SetPowered = 14,
-  StartScan = 15,
-  StopScan = 16,
-  Write = 17,
-  WriteWithoutResponse = 18,
-  ControllerAdded = 19,
-  ControllerRemoved = 20,
-  DeviceConnected = 21,
-  DeviceDisconnected = 22,
-  DeviceFound = 23,
-  NotificationReceived = 24,
-  BaBLEError = 25,
-  Exit = 26,
-  Ready = 27,
+  ProbeCharacteristics = 8,
+  ProbeServices = 9,
+  Read = 10,
+  SetConnectable = 11,
+  SetDiscoverable = 12,
+  SetPowered = 13,
+  StartScan = 14,
+  StopScan = 15,
+  Write = 16,
+  WriteWithoutResponse = 17,
+  ControllerAdded = 18,
+  ControllerRemoved = 19,
+  DeviceConnected = 20,
+  DeviceDisconnected = 21,
+  DeviceFound = 22,
+  NotificationReceived = 23,
+  BaBLEError = 24,
+  Exit = 25,
+  Ready = 26,
   MIN = NONE,
   MAX = Ready
 };
 
-inline const Payload (&EnumValuesPayload())[28] {
+inline const Payload (&EnumValuesPayload())[27] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::CancelConnection,
@@ -113,7 +110,6 @@ inline const Payload (&EnumValuesPayload())[28] {
     Payload::GetControllersIds,
     Payload::GetControllerInfo,
     Payload::GetControllersList,
-    Payload::GetMGMTInfo,
     Payload::ProbeCharacteristics,
     Payload::ProbeServices,
     Payload::Read,
@@ -147,7 +143,6 @@ inline const char * const *EnumNamesPayload() {
     "GetControllersIds",
     "GetControllerInfo",
     "GetControllersList",
-    "GetMGMTInfo",
     "ProbeCharacteristics",
     "ProbeServices",
     "Read",
@@ -207,10 +202,6 @@ template<> struct PayloadTraits<GetControllerInfo> {
 
 template<> struct PayloadTraits<GetControllersList> {
   static const Payload enum_value = Payload::GetControllersList;
-};
-
-template<> struct PayloadTraits<GetMGMTInfo> {
-  static const Payload enum_value = Payload::GetMGMTInfo;
 };
 
 template<> struct PayloadTraits<ProbeCharacteristics> {
@@ -349,56 +340,6 @@ inline const char * const *EnumNamesStatusCode() {
 inline const char *EnumNameStatusCode(StatusCode e) {
   const size_t index = static_cast<int>(e);
   return EnumNamesStatusCode()[index];
-}
-
-struct GetMGMTInfo FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
-    VT_VERSION = 4,
-    VT_REVISION = 6
-  };
-  uint8_t version() const {
-    return GetField<uint8_t>(VT_VERSION, 0);
-  }
-  uint16_t revision() const {
-    return GetField<uint16_t>(VT_REVISION, 0);
-  }
-  bool Verify(flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<uint8_t>(verifier, VT_VERSION) &&
-           VerifyField<uint16_t>(verifier, VT_REVISION) &&
-           verifier.EndTable();
-  }
-};
-
-struct GetMGMTInfoBuilder {
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_version(uint8_t version) {
-    fbb_.AddElement<uint8_t>(GetMGMTInfo::VT_VERSION, version, 0);
-  }
-  void add_revision(uint16_t revision) {
-    fbb_.AddElement<uint16_t>(GetMGMTInfo::VT_REVISION, revision, 0);
-  }
-  explicit GetMGMTInfoBuilder(flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  GetMGMTInfoBuilder &operator=(const GetMGMTInfoBuilder &);
-  flatbuffers::Offset<GetMGMTInfo> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<GetMGMTInfo>(end);
-    return o;
-  }
-};
-
-inline flatbuffers::Offset<GetMGMTInfo> CreateGetMGMTInfo(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    uint8_t version = 0,
-    uint16_t revision = 0) {
-  GetMGMTInfoBuilder builder_(_fbb);
-  builder_.add_revision(revision);
-  builder_.add_version(version);
-  return builder_.Finish();
 }
 
 struct Controller FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
@@ -2196,9 +2137,6 @@ struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const GetControllersList *payload_as_GetControllersList() const {
     return payload_type() == Payload::GetControllersList ? static_cast<const GetControllersList *>(payload()) : nullptr;
   }
-  const GetMGMTInfo *payload_as_GetMGMTInfo() const {
-    return payload_type() == Payload::GetMGMTInfo ? static_cast<const GetMGMTInfo *>(payload()) : nullptr;
-  }
   const ProbeCharacteristics *payload_as_ProbeCharacteristics() const {
     return payload_type() == Payload::ProbeCharacteristics ? static_cast<const ProbeCharacteristics *>(payload()) : nullptr;
   }
@@ -2310,10 +2248,6 @@ template<> inline const GetControllerInfo *Packet::payload_as<GetControllerInfo>
 
 template<> inline const GetControllersList *Packet::payload_as<GetControllersList>() const {
   return payload_as_GetControllersList();
-}
-
-template<> inline const GetMGMTInfo *Packet::payload_as<GetMGMTInfo>() const {
-  return payload_as_GetMGMTInfo();
 }
 
 template<> inline const ProbeCharacteristics *Packet::payload_as<ProbeCharacteristics>() const {
@@ -2499,10 +2433,6 @@ inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *obj, Payl
     }
     case Payload::GetControllersList: {
       auto ptr = reinterpret_cast<const GetControllersList *>(obj);
-      return verifier.VerifyTable(ptr);
-    }
-    case Payload::GetMGMTInfo: {
-      auto ptr = reinterpret_cast<const GetMGMTInfo *>(obj);
       return verifier.VerifyTable(ptr);
     }
     case Payload::ProbeCharacteristics: {

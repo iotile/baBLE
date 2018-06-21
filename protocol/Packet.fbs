@@ -1,4 +1,3 @@
-include "./Commands/GetMGMTInfo.fbs";
 include "./Commands/GetControllersList.fbs";
 include "./Commands/GetControllersIds.fbs";
 include "./Commands/GetControllerInfo.fbs";
@@ -36,7 +35,6 @@ union Payload {
   GetControllersIds,
   GetControllerInfo,
   GetControllersList,
-  GetMGMTInfo,
   ProbeCharacteristics,
   ProbeServices,
   Read,

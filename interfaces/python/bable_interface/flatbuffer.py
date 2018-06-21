@@ -3,7 +3,7 @@ import inspect
 import logging
 from .BaBLE import Packet, BaBLEError, CancelConnection, Connect, ControllerAdded, ControllerRemoved, \
     DeviceConnected, DeviceDisconnected, DeviceFound, Disconnect, Exit, GetConnectedDevices, GetControllersList, \
-    GetControllerInfo, GetControllersIds, GetMGMTInfo, NotificationReceived, ProbeCharacteristics, ProbeServices, \
+    GetControllerInfo, GetControllersIds, NotificationReceived, ProbeCharacteristics, ProbeServices, \
     Read, Ready, SetConnectable, SetDiscoverable, SetPowered, StartScan, StopScan, Write, WriteWithoutResponse
 from .BaBLE.Payload import Payload
 from .utils import to_bytes, MAGIC_CODE, snake_to_camel, camel_to_snake
