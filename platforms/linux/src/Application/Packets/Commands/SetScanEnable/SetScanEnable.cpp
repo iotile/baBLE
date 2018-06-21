@@ -42,7 +42,7 @@ namespace Packet {
       LOG.debug("Response received", "SetScanEnable");
       auto response_packet = dynamic_pointer_cast<Packet::Events::CommandComplete>(packet);
       if (response_packet == nullptr) {
-        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to CommandComplete packet.");
+        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to CommandComplete packet.", m_uuid_request);
       }
 
       vector<uint8_t> result = response_packet->get_returned_params();

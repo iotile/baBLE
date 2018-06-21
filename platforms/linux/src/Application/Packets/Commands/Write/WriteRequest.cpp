@@ -68,7 +68,7 @@ namespace Packet {
 
       auto write_response_packet = dynamic_pointer_cast<Packet::Commands::WriteResponse>(packet);
       if (write_response_packet == nullptr) {
-        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to WriteResponse packet.");
+        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to WriteResponse packet.", m_uuid_request);
       }
 
       write_response_packet->set_uuid_request(m_uuid_request);

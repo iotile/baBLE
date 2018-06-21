@@ -26,7 +26,8 @@ void PacketRouter::add_callback(Packet::PacketUuid waiting_uuid, shared_ptr<Pack
 
 void PacketRouter::remove_callback(Packet::PacketUuid uuid) {
   for (auto expiration_it = m_timestamps.begin(); expiration_it != m_timestamps.end(); ++expiration_it) {
-    if (expiration_it->second == uuid) {
+    // FIXME: a == b does not give the same result as b == a for PacketUuid (because of the hacky equal function to match packets with other ID...)
+    if (uuid == expiration_it->second) { // Comparaison must be done this way to work as wanted
       m_timestamps.erase(expiration_it);
       break;
     }

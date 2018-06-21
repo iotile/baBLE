@@ -730,7 +730,7 @@ struct StartScan FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_ACTIVE_SCAN = 4
   };
   bool active_scan() const {
-    return GetField<uint8_t>(VT_ACTIVE_SCAN, 0) != 0;
+    return GetField<uint8_t>(VT_ACTIVE_SCAN, 1) != 0;
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -743,7 +743,7 @@ struct StartScanBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
   void add_active_scan(bool active_scan) {
-    fbb_.AddElement<uint8_t>(StartScan::VT_ACTIVE_SCAN, static_cast<uint8_t>(active_scan), 0);
+    fbb_.AddElement<uint8_t>(StartScan::VT_ACTIVE_SCAN, static_cast<uint8_t>(active_scan), 1);
   }
   explicit StartScanBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -759,7 +759,7 @@ struct StartScanBuilder {
 
 inline flatbuffers::Offset<StartScan> CreateStartScan(
     flatbuffers::FlatBufferBuilder &_fbb,
-    bool active_scan = false) {
+    bool active_scan = true) {
   StartScanBuilder builder_(_fbb);
   builder_.add_active_scan(active_scan);
   return builder_.Finish();
@@ -1410,18 +1410,24 @@ struct Characteristic FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_HANDLE = 4,
     VT_VALUE_HANDLE = 6,
-    VT_INDICATE = 8,
-    VT_NOTIFY = 10,
-    VT_WRITE = 12,
-    VT_READ = 14,
-    VT_BROADCAST = 16,
-    VT_UUID = 18
+    VT_CONFIG_HANDLE = 8,
+    VT_INDICATE = 10,
+    VT_NOTIFY = 12,
+    VT_WRITE = 14,
+    VT_READ = 16,
+    VT_BROADCAST = 18,
+    VT_NOTIFICATION_ENABLED = 20,
+    VT_INDICATION_ENABLED = 22,
+    VT_UUID = 24
   };
   uint16_t handle() const {
     return GetField<uint16_t>(VT_HANDLE, 0);
   }
   uint16_t value_handle() const {
     return GetField<uint16_t>(VT_VALUE_HANDLE, 0);
+  }
+  uint16_t config_handle() const {
+    return GetField<uint16_t>(VT_CONFIG_HANDLE, 0);
   }
   bool indicate() const {
     return GetField<uint8_t>(VT_INDICATE, 0) != 0;
@@ -1438,6 +1444,12 @@ struct Characteristic FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   bool broadcast() const {
     return GetField<uint8_t>(VT_BROADCAST, 0) != 0;
   }
+  bool notification_enabled() const {
+    return GetField<uint8_t>(VT_NOTIFICATION_ENABLED, 0) != 0;
+  }
+  bool indication_enabled() const {
+    return GetField<uint8_t>(VT_INDICATION_ENABLED, 0) != 0;
+  }
   const flatbuffers::String *uuid() const {
     return GetPointer<const flatbuffers::String *>(VT_UUID);
   }
@@ -1445,11 +1457,14 @@ struct Characteristic FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     return VerifyTableStart(verifier) &&
            VerifyField<uint16_t>(verifier, VT_HANDLE) &&
            VerifyField<uint16_t>(verifier, VT_VALUE_HANDLE) &&
+           VerifyField<uint16_t>(verifier, VT_CONFIG_HANDLE) &&
            VerifyField<uint8_t>(verifier, VT_INDICATE) &&
            VerifyField<uint8_t>(verifier, VT_NOTIFY) &&
            VerifyField<uint8_t>(verifier, VT_WRITE) &&
            VerifyField<uint8_t>(verifier, VT_READ) &&
            VerifyField<uint8_t>(verifier, VT_BROADCAST) &&
+           VerifyField<uint8_t>(verifier, VT_NOTIFICATION_ENABLED) &&
+           VerifyField<uint8_t>(verifier, VT_INDICATION_ENABLED) &&
            VerifyOffset(verifier, VT_UUID) &&
            verifier.Verify(uuid()) &&
            verifier.EndTable();
@@ -1465,6 +1480,9 @@ struct CharacteristicBuilder {
   void add_value_handle(uint16_t value_handle) {
     fbb_.AddElement<uint16_t>(Characteristic::VT_VALUE_HANDLE, value_handle, 0);
   }
+  void add_config_handle(uint16_t config_handle) {
+    fbb_.AddElement<uint16_t>(Characteristic::VT_CONFIG_HANDLE, config_handle, 0);
+  }
   void add_indicate(bool indicate) {
     fbb_.AddElement<uint8_t>(Characteristic::VT_INDICATE, static_cast<uint8_t>(indicate), 0);
   }
@@ -1479,6 +1497,12 @@ struct CharacteristicBuilder {
   }
   void add_broadcast(bool broadcast) {
     fbb_.AddElement<uint8_t>(Characteristic::VT_BROADCAST, static_cast<uint8_t>(broadcast), 0);
+  }
+  void add_notification_enabled(bool notification_enabled) {
+    fbb_.AddElement<uint8_t>(Characteristic::VT_NOTIFICATION_ENABLED, static_cast<uint8_t>(notification_enabled), 0);
+  }
+  void add_indication_enabled(bool indication_enabled) {
+    fbb_.AddElement<uint8_t>(Characteristic::VT_INDICATION_ENABLED, static_cast<uint8_t>(indication_enabled), 0);
   }
   void add_uuid(flatbuffers::Offset<flatbuffers::String> uuid) {
     fbb_.AddOffset(Characteristic::VT_UUID, uuid);
@@ -1499,16 +1523,22 @@ inline flatbuffers::Offset<Characteristic> CreateCharacteristic(
     flatbuffers::FlatBufferBuilder &_fbb,
     uint16_t handle = 0,
     uint16_t value_handle = 0,
+    uint16_t config_handle = 0,
     bool indicate = false,
     bool notify = false,
     bool write = false,
     bool read = false,
     bool broadcast = false,
+    bool notification_enabled = false,
+    bool indication_enabled = false,
     flatbuffers::Offset<flatbuffers::String> uuid = 0) {
   CharacteristicBuilder builder_(_fbb);
   builder_.add_uuid(uuid);
+  builder_.add_config_handle(config_handle);
   builder_.add_value_handle(value_handle);
   builder_.add_handle(handle);
+  builder_.add_indication_enabled(indication_enabled);
+  builder_.add_notification_enabled(notification_enabled);
   builder_.add_broadcast(broadcast);
   builder_.add_read(read);
   builder_.add_write(write);
@@ -1521,21 +1551,27 @@ inline flatbuffers::Offset<Characteristic> CreateCharacteristicDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     uint16_t handle = 0,
     uint16_t value_handle = 0,
+    uint16_t config_handle = 0,
     bool indicate = false,
     bool notify = false,
     bool write = false,
     bool read = false,
     bool broadcast = false,
+    bool notification_enabled = false,
+    bool indication_enabled = false,
     const char *uuid = nullptr) {
   return BaBLE::CreateCharacteristic(
       _fbb,
       handle,
       value_handle,
+      config_handle,
       indicate,
       notify,
       write,
       read,
       broadcast,
+      notification_enabled,
+      indication_enabled,
       uuid ? _fbb.CreateString(uuid) : 0);
 }
 

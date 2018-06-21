@@ -12,9 +12,12 @@ namespace Packet {
 
     ProbeCharacteristics::ProbeCharacteristics()
         : HostOnlyPacket(Packet::Id::ProbeCharacteristics, initial_packet_code()) {
-      m_waiting_characteristics = true;
+      m_waiting_char_declaration = true;
+      m_waiting_char_configuration = false;
 
-      m_read_by_type_request_packet = make_shared<Packet::Commands::ReadByTypeRequest>();
+      m_read_by_type_request_packet = make_shared<Packet::Commands::ReadByTypeRequest>(
+          Format::HCI::GattUUID::CharacteristicDeclaration
+      );
     }
 
     void ProbeCharacteristics::unserialize(FlatbuffersFormatExtractor& extractor) {
@@ -37,17 +40,23 @@ namespace Packet {
         bool notify = (characteristic.properties & 1 << 4) > 0;
         bool write = (characteristic.properties & 1 << 3) > 0 | (characteristic.properties & 1 << 2) > 0;
         bool read = (characteristic.properties & 1 << 1) > 0;
-        bool broadcast = (characteristic.properties & 1) > 0;
+        bool broadcast = (characteristic.properties & 1 << 0) > 0;
+
+        bool notification_enabled = (characteristic.configuration & 1 << 0) > 0;
+        bool indication_enabled = (characteristic.configuration & 1 << 1) > 0;
 
         auto characteristic_offset = BaBLE::CreateCharacteristic(
             builder,
             characteristic.handle,
             characteristic.value_handle,
+            characteristic.config_handle,
             indicate,
             notify,
             write,
             read,
             broadcast,
+            notification_enabled,
+            indication_enabled,
             uuid
         );
         characteristics.push_back(characteristic_offset);
@@ -73,6 +82,8 @@ namespace Packet {
         result << "{ Handle: " << to_string(it->handle) << ", "
                << "Properties: " << to_string(it->properties) << ", "
                << "Value handle: " << to_string(it->value_handle) << ", "
+               << "Config handle: " << to_string(it->config_handle) << ", "
+               << "Configuration: " << to_string(it->configuration) << ", "
                << "UUID: " << Utils::format_uuid(it->uuid) << "} ";
         if (next(it) != m_characteristics.end()) {
           result << ", ";
@@ -84,7 +95,7 @@ namespace Packet {
 
     void ProbeCharacteristics::prepare(const shared_ptr<PacketRouter>& router) {
       // We want to keep the same Packet::Type to resend command until we probed all the characteristics
-      if (m_waiting_characteristics) {
+      if (m_waiting_char_declaration || m_waiting_char_configuration) {
         m_read_by_type_request_packet->translate();
         m_current_type = m_read_by_type_request_packet->get_type();
 
@@ -117,19 +128,33 @@ namespace Packet {
 
       auto read_by_type_response_packet = dynamic_pointer_cast<Packet::Commands::ReadByTypeResponse>(packet);
       if (read_by_type_response_packet == nullptr) {
-        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to ReadByTypeResponse packet.");
+        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to ReadByTypeResponse packet.", m_uuid_request);
       }
 
       vector<Format::HCI::Characteristic> new_characteristics = read_by_type_response_packet->get_characteristics();
 
-      m_characteristics.insert(m_characteristics.end(), new_characteristics.begin(), new_characteristics.end());
+      if (m_waiting_char_declaration) {
+        m_characteristics.insert(m_characteristics.end(), new_characteristics.begin(), new_characteristics.end());
 
-      uint16_t last_ending_handle = read_by_type_response_packet->get_last_ending_handle();
-      if (last_ending_handle == 0xFFFF) {
-        m_waiting_characteristics = false;
+        uint16_t last_ending_handle = read_by_type_response_packet->get_last_ending_handle();
+        if (last_ending_handle == 0xFFFF) {
+          m_waiting_char_declaration = false;
+          m_waiting_char_configuration = true;
+        } else {
+          m_waiting_char_declaration = true;
+          m_read_by_type_request_packet->set_handles(static_cast<uint16_t>(last_ending_handle + 1), 0xFFFF);
+        }
       } else {
-        m_waiting_characteristics = true;
-        m_read_by_type_request_packet->set_handles(static_cast<uint16_t>(last_ending_handle + 1), 0xFFFF);
+        m_characteristics_config.insert(m_characteristics_config.end(), new_characteristics.begin(), new_characteristics.end());
+
+        uint16_t last_ending_handle = read_by_type_response_packet->get_last_ending_handle();
+        if (last_ending_handle == 0xFFFF) {
+          m_waiting_char_configuration = false;
+          _merge_characteristics();
+        } else {
+          m_waiting_char_configuration = true;
+          m_read_by_type_request_packet->set_handles(static_cast<uint16_t>(last_ending_handle + 1), 0xFFFF);
+        }
       }
 
       return shared_from(this);
@@ -144,18 +169,47 @@ namespace Packet {
 
       auto error_packet = dynamic_pointer_cast<Packet::Errors::ErrorResponse>(packet);
       if (error_packet == nullptr) {
-        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to ErrorResponse packet.");
+        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to ErrorResponse packet.", m_uuid_request);
       }
 
       Format::HCI::AttributeErrorCode error_code = error_packet->get_error_code();
 
       if (error_code != Format::HCI::AttributeErrorCode::AttributeNotFound) {
         import_status(error_packet);
+        m_waiting_char_declaration = false;
+        m_waiting_char_configuration = false;
+        return shared_from(this);
       }
 
-      m_waiting_characteristics = false;
+      if (m_waiting_char_declaration) {
+        // 1st step done -> now we want the characteristics configurations
+        m_waiting_char_declaration = false;
+        m_waiting_char_configuration = true;
+        m_read_by_type_request_packet->set_gatt_uuid(Format::HCI::GattUUID::ClientCharacteristicConfiguration);
+        m_read_by_type_request_packet->set_handles(0x0001, 0xFFFF);
+
+      } else {
+        // 2nd step done
+        m_waiting_char_configuration = false;
+        _merge_characteristics();
+      }
 
       return shared_from(this);
+    }
+
+    void ProbeCharacteristics::_merge_characteristics() {
+      auto it = m_characteristics.begin();
+
+      for (auto config_char : m_characteristics_config) {
+        while (config_char.config_handle > it->value_handle) {
+          if(++it == m_characteristics.end()) return;
+        }
+
+        prev(it)->config_handle = config_char.config_handle;
+        prev(it)->configuration = config_char.configuration;
+      }
+
+      m_characteristics_config.clear();
     }
 
   }

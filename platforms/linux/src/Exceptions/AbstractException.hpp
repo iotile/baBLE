@@ -20,6 +20,14 @@ namespace Exceptions {
       return m_uuid_request;
     };
 
+    std::string get_message() const {
+      return m_message;
+    };
+
+    const std::string stringify() const override {
+      return get_name() + ": " + get_message();
+    };
+
   protected:
     explicit AbstractException(const std::string& message, const std::string& uuid_request) {
       m_message = message;

@@ -19,10 +19,6 @@ namespace Exceptions {
       return "SocketError";
     };
 
-    const std::string stringify() const override {
-      return "Socket error: " + m_message;
-    };
-
   };
 
 }

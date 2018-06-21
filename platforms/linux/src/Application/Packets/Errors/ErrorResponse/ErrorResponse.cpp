@@ -22,7 +22,7 @@ namespace Packet {
         m_error_code = static_cast<Format::HCI::AttributeErrorCode>(extractor.get_value<uint8_t>());
 
       } catch (const bad_cast& err) {
-        throw Exceptions::WrongFormatException("Unknown error code received in ErrorResponse", m_uuid_request);
+        throw Exceptions::WrongFormatException("Unknown error code received in ErrorResponse");
       }
 
       set_status(m_error_code, false);

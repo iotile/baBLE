@@ -25,12 +25,12 @@ namespace Packet {
     AbstractPacket::translate();
     
     if (m_waiting_response) {
-    PacketUuid response_uuid = get_response_uuid();
-    auto response_callback =
-        [this](const shared_ptr<PacketRouter>& router, const shared_ptr<AbstractPacket>& packet) {
-          return on_response_received(router, packet);
-        };
-    router->add_callback(response_uuid, shared_from(this), response_callback);
+      PacketUuid response_uuid = get_response_uuid();
+      auto response_callback =
+          [this](const shared_ptr<PacketRouter>& router, const shared_ptr<AbstractPacket>& packet) {
+            return on_response_received(router, packet);
+          };
+      router->add_callback(response_uuid, shared_from(this), response_callback);
     }
   }
 

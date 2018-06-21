@@ -61,7 +61,7 @@ namespace Packet {
 
       auto read_response_packet = dynamic_pointer_cast<Packet::Commands::ReadResponse>(packet);
       if (read_response_packet == nullptr) {
-        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to ReadResponse packet.");
+        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to ReadResponse packet.", m_uuid_request);
       }
 
       read_response_packet->set_uuid_request(m_uuid_request);

@@ -30,8 +30,6 @@ namespace Packet {
     vector<uint8_t> StartScan::serialize(FlatbuffersFormatBuilder& builder) const {
       auto payload = BaBLE::CreateStartScan(builder, m_active_scan);
 
-      LOG.critical(to_string(m_active_scan), "SERIALIZE");
-
       return builder.build(payload, BaBLE::Payload::StartScan);
     }
 
@@ -100,7 +98,7 @@ namespace Packet {
           m_set_scan_params_packet->on_response_received(router, packet)
       );
       if (m_set_scan_params_packet == nullptr) {
-        throw Exceptions::RuntimeErrorException("Can't cast AbstractPacket to SetScanParameter packet");
+        throw Exceptions::RuntimeErrorException("Can't cast AbstractPacket to SetScanParameter packet", m_uuid_request);
       }
 
       if (m_set_scan_params_packet->get_status() != BaBLE::StatusCode::Success) {
@@ -120,13 +118,11 @@ namespace Packet {
           m_set_scan_enable_packet->on_response_received(router, packet)
       );
       if (m_set_scan_enable_packet == nullptr) {
-        throw Exceptions::RuntimeErrorException("Can't cast AbstractPacket to SetScanEnable packet");
+        throw Exceptions::RuntimeErrorException("Can't cast AbstractPacket to SetScanEnable packet", m_uuid_request);
       }
 
       import_status(m_set_scan_params_packet);
       m_waiting_response = Packet::Id::None;
-
-      LOG.critical(to_string(m_active_scan), "ON SET SCAN ENABLE RESPONSE");
 
       return shared_from(this);
     }

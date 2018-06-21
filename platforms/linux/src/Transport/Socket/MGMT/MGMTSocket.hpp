@@ -15,9 +15,6 @@ public:
   bool send(const std::vector<uint8_t>& data) override;
   void poll(OnReceivedCallback on_received, OnErrorCallback on_error) override;
 
-  void sync_send(const std::vector<uint8_t>& data);
-  std::vector<uint8_t> sync_receive();
-
   void set_writable(bool is_writable);
 
   ~MGMTSocket() override;
@@ -27,7 +24,6 @@ private:
   static uvw::Flags<uvw::PollHandle::Event> writable_flag;
 
   bool bind_socket();
-  void set_blocking(bool state);
   std::vector<uint8_t> receive();
 
   size_t m_header_length;

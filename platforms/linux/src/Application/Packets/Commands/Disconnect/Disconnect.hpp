@@ -26,11 +26,18 @@ namespace Packet {
 
       void unserialize(FlatbuffersFormatExtractor& extractor) override;
       std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
+      std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
 
       const std::string stringify() const override;
 
+      void prepare(const std::shared_ptr<PacketRouter>& router) override;
+      std::shared_ptr<Packet::AbstractPacket> on_response_received(const std::shared_ptr<PacketRouter>& router,
+                                                                   const std::shared_ptr<AbstractPacket>& packet) override;
+
     private:
       uint8_t m_reason;
+
+      bool m_response_received;
 
     };
 

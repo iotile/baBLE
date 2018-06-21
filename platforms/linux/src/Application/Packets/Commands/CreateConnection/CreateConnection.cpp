@@ -9,7 +9,9 @@ namespace Packet {
   namespace Commands {
 
     CreateConnection::CreateConnection(const std::string& address, uint8_t address_type)
-        : HostToControllerPacket(Packet::Id::CreateConnection, final_type(), final_packet_code(), false) {
+        : HostToControllerPacket(Packet::Id::CreateConnection, final_type(), final_packet_code()) {
+      m_response_packet_code = Format::HCI::EventCode::CommandStatus;
+
       m_scan_interval = 0x0060; // 60ms
       m_scan_window = 0x0060; // 60ms;
       m_policy = 0x00; // Use peer address
@@ -24,6 +26,7 @@ namespace Packet {
       m_max_ce_length = 0x0000;
 
       m_raw_address = Utils::extract_bd_address(m_address);
+      m_response_received = false;
     }
 
     void CreateConnection::unserialize(FlatbuffersFormatExtractor& extractor) {
@@ -60,6 +63,14 @@ namespace Packet {
       return builder.build(Format::HCI::Type::Command);
     }
 
+    vector<uint8_t> CreateConnection::serialize(FlatbuffersFormatBuilder& builder) const {
+      auto address = builder.CreateString(m_address);
+
+      auto payload = BaBLE::CreateConnect(builder, address, m_peer_address_type);
+
+      return builder.build(payload, BaBLE::Payload::Connect);
+    }
+
     const std::string CreateConnection::stringify() const {
       stringstream result;
 
@@ -79,6 +90,31 @@ namespace Packet {
                                << to_string(m_max_ce_length) << "]";
 
       return result.str();
+    }
+
+    void CreateConnection::prepare(const shared_ptr<PacketRouter>& router) {
+      if (!m_response_received) {
+        m_current_type = final_type();
+
+        PacketUuid response_uuid = get_response_uuid();
+        response_uuid.connection_id = 0x00;
+        auto response_callback =
+            [this](const shared_ptr<PacketRouter>& router, const shared_ptr<AbstractPacket>& packet) {
+              return on_response_received(router, packet);
+            };
+        router->add_callback(response_uuid, shared_from(this), response_callback);
+      } else {
+        m_current_type = initial_type();
+      }
+    }
+
+    shared_ptr<Packet::AbstractPacket> CreateConnection::on_response_received(const std::shared_ptr<PacketRouter>& router,
+                                                                              const shared_ptr<Packet::AbstractPacket>& packet) {
+      LOG.debug("Response received", "CreateConnection");
+      import_status(packet);
+      m_response_received = true;
+
+      return shared_from(this);
     }
 
   }

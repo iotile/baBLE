@@ -19,10 +19,6 @@ namespace Exceptions {
       return "NotFound";
     };
 
-    const std::string stringify() const override {
-      return "Not found error: " + m_message;
-    };
-
   };
 
 }

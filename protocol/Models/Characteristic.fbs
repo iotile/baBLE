@@ -3,10 +3,13 @@ namespace BaBLE;
 table Characteristic {
   handle:uint16;
   value_handle:uint16;
+  config_handle:uint16;
   indicate:bool;
   notify:bool;
   write:bool;
   read:bool;
   broadcast:bool;
+  notification_enabled:bool;
+  indication_enabled:bool;
   uuid:string;
 }

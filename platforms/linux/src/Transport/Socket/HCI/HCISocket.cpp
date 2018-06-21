@@ -95,7 +95,7 @@ bool HCISocket::set_filter() {
   // IMPORTANT: without these filters, nothing will be received on the HCI socket...
   struct Format::HCI::hci_filter filter {
     (1 << Format::HCI::Type::Event) | (1 << Format::HCI::Type::AsyncData),
-    (1 << Format::HCI::EventCode::DisconnectComplete) | (1 << Format::HCI::EventCode::CommandComplete),
+    (1 << Format::HCI::EventCode::DisconnectComplete) | (1 << Format::HCI::EventCode::CommandComplete) | (1 << Format::HCI::EventCode::CommandStatus),
     (1 << Format::HCI::EventCode::LEMeta - 32),
     0
   };
@@ -116,7 +116,7 @@ void HCISocket::connect_l2cap_socket(uint16_t connection_handle, const array<uin
   addr.l2_bdaddr_type = 0x01;
 
   if (bind(l2cap_socket, (struct sockaddr*)&addr, sizeof(addr)) != 0){
-    throw Exceptions::SocketException("Error while binding L2CAP socket.");
+    throw Exceptions::SocketException("Error while binding L2CAP socket: " + string(strerror(errno)));
   }
 
   addr.l2_family = AF_BLUETOOTH;
@@ -125,7 +125,7 @@ void HCISocket::connect_l2cap_socket(uint16_t connection_handle, const array<uin
   addr.l2_bdaddr_type = device_address_type;
 
   if (connect(l2cap_socket, (struct sockaddr *)&addr, sizeof(addr)) != 0){
-    throw Exceptions::SocketException("Error while connecting L2CAP socket.");
+    throw Exceptions::SocketException("Error while connecting L2CAP socket: " + string(strerror(errno)));
   }
 
   LOG.info("L2CAP socket connected.", "HCISocket");
@@ -155,7 +155,7 @@ bool HCISocket::send(const vector<uint8_t>& data) {
     LOG.debug(data, "HCI socket");
     if (write(m_hci_socket, data.data(), data.size()) < 0) {
       LOG.error("Error while sending a message to HCI socket: " + string(strerror(errno)), "HCISocket");
-      throw Exceptions::SocketException("Error occured while sending the packet through HCI socket.");
+      throw Exceptions::SocketException("Error occured while sending the packet through HCI socket: " +  string(strerror(errno)));
     }
   }
 

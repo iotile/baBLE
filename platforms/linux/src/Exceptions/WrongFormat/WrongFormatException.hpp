@@ -19,10 +19,6 @@ namespace Exceptions {
       return "WrongFormat";
     };
 
-    const std::string stringify() const override {
-      return "Wrong format error: " + m_message;
-    };
-
   };
 
 }
