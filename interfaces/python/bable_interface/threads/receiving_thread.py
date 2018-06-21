@@ -9,7 +9,7 @@ from bable_interface.utils import MAGIC_CODE
 class ReceivingThread(threading.Thread):
 
     def __init__(self, stop_event, on_receive, file):
-        super(ReceivingThread, self).__init__()
+        super(ReceivingThread, self).__init__(name=__name__)
         self.logger = logging.getLogger(__name__)
 
         self.stop_event = stop_event

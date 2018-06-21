@@ -1,9 +1,13 @@
 # Compiled files
 *.pyc
 bable_interface/BaBLE
+bable_interface/bin/*
 
 #Setuptools distribution folder
 /dist/
 
 # Python egg metadata
 /*.egg-info
+
+# Keep .gitkeep
+!.gitkeep

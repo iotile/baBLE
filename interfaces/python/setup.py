@@ -26,6 +26,7 @@ setup(
         'flatbuffers==1.9'
     ],
     packages=find_packages(exclude=("test",)),
+    include_package_data=True,
     version=version.version,
     license="MIT",
     author="Arch",

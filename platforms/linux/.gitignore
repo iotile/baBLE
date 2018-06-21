@@ -1,3 +1,6 @@
 # Compiled files
 /build/
-/bin/
+/bin/*
+
+# Keep .gitkeep
+!.gitkeep

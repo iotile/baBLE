@@ -593,3 +593,8 @@ def set_notification(self, state, controller_id, connection_handle, attribute_ha
             self.remove_callback(notification_event_uuid)
         on_notification_received(False, None, "Error while writing notification configuration (exception={})".format(e))
         raise RuntimeError("Error while writing notification configuration (exception={})".format(e))
+
+
+@asyncio.coroutine
+def handle_error(self, packet, on_error):
+    on_error(packet.full_status, packet.get('message'))

@@ -1,6 +1,7 @@
 import logging
-import threading
+import os
 import subprocess
+import threading
 import time
 from .BaBLE import Payload, Exit
 from .threads import WorkingThread, ReceivingThread
@@ -35,10 +36,12 @@ class BaBLEInterface(object):
         self.working_ready_event.wait()
 
         logging_lvl = logging.getLevelName(self.logger.getEffectiveLevel())
-        self.subprocess = subprocess.Popen(["../../platforms/linux/build/debug/baBLE_linux", "--logging", logging_lvl],
-                                           stdout=subprocess.PIPE, stdin=subprocess.PIPE,
-                                           bufsize=0,
-                                           universal_newlines=False)
+        self.subprocess = subprocess.Popen(
+            [os.path.join(os.path.dirname(__file__), "bin", "baBLE_linux"), "--logging", logging_lvl],
+            stdout=subprocess.PIPE, stdin=subprocess.PIPE,
+            bufsize=0,
+            universal_newlines=False
+        )
 
         self.commands_manager = CommandsManager(self.subprocess)
 
@@ -73,7 +76,7 @@ class BaBLEInterface(object):
 
         if packet.payload_type == Payload.Payload.BaBLEError:
             if not packet.packet_uuid.uuid and self.on_error is not None:
-                self.working_thread.add_task(task=self.on_error(packet.full_status, packet.get('message')))
+                self.working_thread.add_task(task=self.commands_manager.handle_error(packet, self.on_error))
                 return
 
         self.commands_manager.handle(packet, self.working_thread.add_task)

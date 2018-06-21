@@ -11,7 +11,7 @@ else:
 class WorkingThread(threading.Thread):
 
     def __init__(self, ready_event):
-        super(WorkingThread, self).__init__()
+        super(WorkingThread, self).__init__(name=__name__)
         self.loop = asyncio.get_event_loop()
         self.thread_id = None
         self.ready_event = ready_event
@@ -28,7 +28,7 @@ class WorkingThread(threading.Thread):
         for task in asyncio.Task.all_tasks():
             if current_task is None or task != current_task:
                 self.cancel_task(task)
-
+        # FIXME: error when stopping from working thread (cancelled coroutine still pending)
         self.loop.call_soon_threadsafe(self.loop.stop)
 
     def add_task(self, task, callback=None, **kwargs):
