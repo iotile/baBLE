@@ -1,7 +1,8 @@
 # Compiled files
 *.pyc
-bable_interface/BaBLE
-bable_interface/bin/*
+/bable_interface/BaBLE
+/bable_interface/bin/*
+/build/
 
 #Setuptools distribution folder
 /dist/

@@ -102,11 +102,10 @@ def get_params(fb_packet):
                 result.append(item)
 
             attribute_name = camel_to_snake(get_item_method_name)
-            yield attribute_name, result, 'list'
+            yield attribute_name, result
 
         elif method_name.endswith('AsNumpy'):
-            attribute_name = camel_to_snake(method_name[:-7])
-            yield attribute_name, method_fn(), 'numpy'
+            continue
 
         else:
             try:
@@ -114,7 +113,7 @@ def get_params(fb_packet):
                 attribute_name = camel_to_snake(method_name)
                 if isinstance(result, bytes):
                     result = result.decode()
-                yield attribute_name, result, 'value'
+                yield attribute_name, result
             except TypeError:
                 continue
 

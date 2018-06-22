@@ -8,10 +8,7 @@ if sys.version_info < (2, 7):
     sys.exit(1)
 
 # Check the OS
-if sys.platform == 'linux':
-    # TODO: add possibility to use either the precompiled executable in the wheel or the user compiled (in PATH)
-    pass
-else:
+if sys.platform != 'linux' and sys.platform != 'linux2':
     print("baBLE only works on Linux for now.")
     sys.exit(1)
 
@@ -22,7 +19,7 @@ setup(
     name="bable_interface",
     install_requires=[
         'trollius;python_version<"3.4"',
-        'numpy',
+        'future;python_version<"3.0"',
         'flatbuffers==1.9'
     ],
     packages=find_packages(exclude=("test",)),

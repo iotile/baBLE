@@ -93,10 +93,7 @@ class Packet(object):
         )
 
         # Extract data dependent to payload type
-        for name, value, type in get_params(fb_packet):
-            if name in packet.params and type == 'list':
-                continue
-
+        for name, value in get_params(fb_packet):
             packet.params[name] = value
 
         # Update uuid with params

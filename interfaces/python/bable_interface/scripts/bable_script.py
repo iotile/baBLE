@@ -1,7 +1,7 @@
 import argparse
 import os
 import sys
-from version import version
+from pkg_resources import get_distribution
 
 
 def main(argv=None):
@@ -11,7 +11,7 @@ def main(argv=None):
     default_path = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'bin', 'baBLE_linux'))
 
     parser = argparse.ArgumentParser(prog='bable')
-    parser.add_argument('-v', '--version', action='version', version=version)
+    parser.add_argument('-v', '--version', action='store_true', help="Display installed version")
     parser.add_argument('-s', '--set-cap', nargs='?', const=default_path, help="Set the executable capability to use baBLE without sudo", metavar='PATH')
 
     if len(argv) == 0:
@@ -20,7 +20,18 @@ def main(argv=None):
 
     args = parser.parse_args(argv)
 
-    if args.set_cap is not None:
+    if args.version:
+        if __package__ is not None:
+            package_name = __package__.split('.')[0]
+            package = get_distribution(package_name)
+            version = package.version
+        else:
+            version = None
+
+        print(version)
+        return 0
+
+    if args.set_cap:
         if not os.path.exists(args.set_cap):
             print("Wrong path given to --set-cap: file doesn't exist")
             return 1
@@ -38,6 +49,3 @@ def main(argv=None):
             print("Capabilities set with success. You can now run baBLE without sudo.")
 
     return 0
-
-
-main()

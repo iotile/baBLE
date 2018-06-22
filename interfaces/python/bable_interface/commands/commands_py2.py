@@ -1,6 +1,7 @@
 import trollius as asyncio
 from trollius import From
 import struct
+from builtins import bytes
 
 from bable_interface.BaBLE import StartScan, StopScan, ProbeServices, ProbeCharacteristics, Connect, Disconnect, \
     CancelConnection, GetConnectedDevices, GetControllersList, Read, Write, WriteWithoutResponse
@@ -24,7 +25,7 @@ def start_scan(self, controller_id, on_device_found, on_scan_started, timeout=15
             "uuid",
             "company_id",
             "device_name",
-            ("manufacturer_data", lambda value: value.tobytes())
+            ("manufacturer_data", lambda value: bytes(value))
         ])
 
         on_device_found(True, result, None)
@@ -451,7 +452,7 @@ def read(self, controller_id, connection_handle, attribute_handle, on_read, time
                 "controller_id",
                 "connection_handle",
                 "attribute_handle",
-                ("value", lambda value: value.tobytes())
+                ("value", lambda value: bytes(value))
             ])
 
             on_read(True, data, None)
@@ -518,7 +519,7 @@ def write(self, controller_id, connection_handle, attribute_handle, value, on_wr
         controller_id=controller_id,
         connection_handle=connection_handle,
         attribute_handle=attribute_handle,
-        value=value
+        value=bytes(value)
     )
 
     self.register_callback(request_packet.packet_uuid, callback=on_response_received, params={"future": future})
@@ -542,7 +543,7 @@ def write_without_response(self, controller_id, connection_handle, attribute_han
         controller_id=controller_id,
         connection_handle=connection_handle,
         attribute_handle=attribute_handle,
-        value=value
+        value=bytes(value)
     )
 
     self.send_packet(request_packet)
@@ -564,7 +565,7 @@ def set_notification(self, state, controller_id, connection_handle, attribute_ha
         result = packet.get_dict([
             "connection_handle",
             "attribute_handle",
-            ("value", lambda value: value.tobytes())
+            ("value", lambda value: bytes(value))
         ])
 
         on_notification_received(True, result, None)
