@@ -11,8 +11,8 @@ def main(argv=None):
     default_path = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'bin', 'baBLE_linux'))
 
     parser = argparse.ArgumentParser(prog='bable')
-    parser.add_argument('-v', '--version', action='store_true', help="Display installed version")
-    parser.add_argument('-s', '--set-cap', nargs='?', const=default_path, help="Set the executable capability to use baBLE without sudo", metavar='PATH')
+    parser.add_argument('-v', '--version', action='store_true', help="display installed version")
+    parser.add_argument('-s', '--set-cap', nargs='?', const=default_path, help="set the executable capability to use baBLE without sudo", metavar='PATH')
 
     if len(argv) == 0:
         parser.print_help()

@@ -36,7 +36,7 @@ setup(
     description="Python interface for BaBLE",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/iotile/baBLE",
+    url="https://github.com/iotile/baBLE/interfaces/python",
     keywords=["bable", "arch", "bridge", "BLE", "Bluetooth", "cross-platform"],
     classifiers=(
         "Programming Language :: Python",
