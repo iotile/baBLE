@@ -8,13 +8,9 @@
 #include "../../../utils/string_formats.hpp"
 
 using namespace std;
-using namespace uvw;
-
-Flags<PollHandle::Event> HCISocket::readable_flag = Flags<PollHandle::Event>(PollHandle::Event::READABLE);
-Flags<PollHandle::Event> HCISocket::writable_flag = Flags<PollHandle::Event>(PollHandle::Event::WRITABLE);
 
 // Create one HCI socket per Bluetooth controller
-vector<shared_ptr<HCISocket>> HCISocket::create_all(shared_ptr<uvw::Loop>& loop, shared_ptr<HCIFormat> hci_format) {
+vector<shared_ptr<HCISocket>> HCISocket::create_all(uv_loop_t* loop, shared_ptr<HCIFormat> hci_format) {
   vector<shared_ptr<HCISocket>> hci_sockets;
 
   int sock = socket(AF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC, BTPROTO_HCI);
@@ -41,7 +37,7 @@ vector<shared_ptr<HCISocket>> HCISocket::create_all(shared_ptr<uvw::Loop>& loop,
   return hci_sockets;
 }
 
-HCISocket::HCISocket(shared_ptr<uvw::Loop>& loop, shared_ptr<HCIFormat> format, uint16_t controller_id)
+HCISocket::HCISocket(uv_loop_t* loop, shared_ptr<HCIFormat> format, uint16_t controller_id)
     : AbstractSocket(move(format)) {
   m_controller_id = controller_id;
   m_writable = true;
@@ -65,7 +61,9 @@ HCISocket::HCISocket(shared_ptr<uvw::Loop>& loop, shared_ptr<HCIFormat> format, 
 
   LOG.debug("HCI socket created on " + Utils::format_bd_address(m_controller_address), "HCI socket");
 
-  m_poller = loop->resource<uvw::PollHandle>(m_hci_socket);
+  m_poller = make_unique<uv_poll_t>();
+  m_poller->data = this;
+  uv_poll_init_socket(loop, m_poller.get(), m_hci_socket);
 }
 
 bool HCISocket::bind_hci_socket() {
@@ -104,7 +102,7 @@ bool HCISocket::set_filter() {
 }
 
 void HCISocket::connect_l2cap_socket(uint16_t connection_handle, const array<uint8_t, 6>& device_address, uint8_t device_address_type) {
-  OSSocketHandle::Type l2cap_socket = socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP);
+  uv_os_sock_t l2cap_socket = socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP);
   if (l2cap_socket < 0) {
     throw Exceptions::SocketException("Error while creating the L2CAP socket: " + string(strerror(errno)));
   }
@@ -135,7 +133,7 @@ void HCISocket::connect_l2cap_socket(uint16_t connection_handle, const array<uin
 void HCISocket::disconnect_l2cap_socket(uint16_t connection_handle) {
   auto it = m_l2cap_sockets.find(connection_handle);
   if (it != m_l2cap_sockets.end()) {
-    OSSocketHandle::Type l2cap_socket = it->second;
+    uv_os_sock_t l2cap_socket = it->second;
     close(l2cap_socket);
     m_l2cap_sockets.erase(it);
     LOG.info("L2CAP socket manually disconnected.", "HCISocket");
@@ -198,26 +196,35 @@ vector<uint8_t> HCISocket::receive() {
   return result;
 }
 
-void HCISocket::poll(OnReceivedCallback on_received, OnErrorCallback on_error) {
-  m_poller->on<uvw::PollEvent>([this, on_received, on_error](const uvw::PollEvent& event, const uvw::PollHandle& handle){
-    try {
-      if (event.flags & uvw::PollHandle::Event::READABLE) {
-        LOG.debug("Reading data...", "HCISocket");
-        vector<uint8_t> received_payload = receive();
+void HCISocket::on_poll(uv_poll_t* handle, int status, int events) {
+  if (status < 0) {
+    LOG.error("Error while polling HCI socket: " + string(uv_err_name(status)), "HCISocket");
+    return;
+  }
 
-        on_received(received_payload, m_format);
+  auto hci_socket = static_cast<HCISocket*>(handle->data);
 
-      } else if (event.flags & uvw::PollHandle::Event::WRITABLE) {
-        set_writable(true);
-        m_poller->start(HCISocket::readable_flag);
-      }
+  try {
+    if (events & UV_READABLE) {
+      LOG.debug("Reading data...", "HCISocket");
+      vector<uint8_t> received_payload = hci_socket->receive();
+      hci_socket->m_on_received(received_payload, hci_socket->m_format);
 
-    } catch (const Exceptions::AbstractException& err) {
-      on_error(err);
+    } else if (events & UV_WRITABLE) {
+      hci_socket->set_writable(true);
+      uv_poll_start(hci_socket->m_poller.get(), UV_READABLE, hci_socket->on_poll);
     }
-  });
 
-  m_poller->start(HCISocket::readable_flag | HCISocket::writable_flag);
+  } catch (const Exceptions::AbstractException& err) {
+    hci_socket->m_on_error(err);
+  }
+}
+
+void HCISocket::poll(OnReceivedCallback on_received, OnErrorCallback on_error) {
+  m_on_received = on_received;
+  m_on_error = on_error;
+
+  uv_poll_start(m_poller.get(), UV_READABLE | UV_WRITABLE, on_poll);
 }
 
 void HCISocket::set_writable(bool is_writable) {
@@ -225,13 +232,13 @@ void HCISocket::set_writable(bool is_writable) {
     m_writable = is_writable;
 
     if (!m_writable) {
-      m_poller->start(HCISocket::readable_flag | HCISocket::writable_flag);
+      uv_poll_start(m_poller.get(), UV_READABLE | UV_WRITABLE, on_poll);
     }
   }
 
   if (m_writable) {
     if (!m_send_queue.empty()) {
-      send(m_send_queue.front());
+      send(reinterpret_cast<const vector<uint8_t>&>(m_send_queue.front()));
       m_send_queue.pop();
     }
   }

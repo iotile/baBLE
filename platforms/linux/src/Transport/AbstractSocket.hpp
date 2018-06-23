@@ -2,18 +2,20 @@
 #define BABLE_LINUX_ABSTRACTSOCKET_HPP
 
 #include <functional>
-#include <uvw.hpp>
 #include "../Format/AbstractFormat.hpp"
 
 class AbstractSocket {
 
 public:
-  using OnReceivedCallback = std::function<void(const std::vector<uint8_t>&, const std::shared_ptr<AbstractFormat>& format)>;
+  using OnReceivedCallback = std::function<void(const std::vector<uint8_t>&, const std::shared_ptr<AbstractFormat>&)>;
   using OnErrorCallback = std::function<void(const Exceptions::AbstractException&)>;
 
   explicit AbstractSocket(std::shared_ptr<AbstractFormat> format) {
     m_format = std::move(format);
     m_controller_id = NON_CONTROLLER_ID;
+
+    m_on_received = [](const std::vector<uint8_t>& data, const std::shared_ptr<AbstractFormat>& format) {};
+    m_on_error = [](const Exceptions::AbstractException&) {};
   }
 
   const std::shared_ptr<AbstractFormat> format() const {
@@ -32,6 +34,8 @@ public:
 protected:
   std::shared_ptr<AbstractFormat> m_format;
   uint16_t m_controller_id;
+  OnReceivedCallback m_on_received;
+  OnErrorCallback m_on_error;
 
 };
 

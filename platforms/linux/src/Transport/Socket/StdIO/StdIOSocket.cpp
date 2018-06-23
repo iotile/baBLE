@@ -4,14 +4,18 @@
 
 using namespace std;
 
-StdIOSocket::StdIOSocket(shared_ptr<uvw::Loop>& loop, shared_ptr<AbstractFormat> format)
+StdIOSocket::StdIOSocket(uv_loop_t* loop, shared_ptr<AbstractFormat> format)
 : AbstractSocket(move(format)) {
   m_header_length = 4;
   m_payload_length = 0;
   m_header.reserve(m_header_length);
 
-  m_poller = loop->resource<uvw::PipeHandle>(false);
-  m_poller->open(STDIO_ID::in);
+  m_poller = make_unique<uv_pipe_t>();
+  m_poller->data = this;
+  uv_pipe_init(loop, m_poller.get(), false);
+  uv_pipe_open(m_poller.get(), STDIO_ID::in);
+
+  m_on_close_callback = []() {};
 }
 
 bool StdIOSocket::send(const vector<uint8_t>& data) {
@@ -24,48 +28,63 @@ bool StdIOSocket::send(const vector<uint8_t>& data) {
   return true;
 }
 
-void StdIOSocket::poll(OnReceivedCallback on_received, OnErrorCallback on_error) {
-  m_poller->on<uvw::DataEvent>([this, on_received, on_error](const uvw::DataEvent& event, const uvw::PipeHandle& handle){
+void StdIOSocket::allocate_buffer(uv_handle_t* handle, size_t suggested_size, uv_buf_t* buf) {
+  auto size = static_cast<unsigned int>(suggested_size);
+  *buf = uv_buf_init(new char[size], size);
+}
+
+void StdIOSocket::on_poll(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf) {
+  auto stdio_socket = static_cast<StdIOSocket*>(stream->data);
+
+  if (nread == UV_EOF) {
+    LOG.debug("StdIO socket closed...", "StdIOSocket");
+    stdio_socket->m_on_close_callback();
+
+  } else if (nread < 0) {
+    auto error_code = static_cast<int>(nread);
+    LOG.error("Error while polling stdin: " + string(uv_err_name(error_code)));
+
+  } else if (nread > 0) {
     LOG.debug("Readable data...", "StdIOSocket");
-    size_t remaining_data_length = event.length;
-    auto remaining_data = reinterpret_cast<uint8_t*>(event.data.get());
+    auto remaining_data_length = static_cast<size_t>(nread);
+    auto remaining_data = reinterpret_cast<uint8_t*>(buf->base);
 
     while (remaining_data_length > 0) {
       try {
         LOG.debug("Remaining data: " + to_string(remaining_data_length), "StdIOSocket");
-        if (!receive(remaining_data, remaining_data_length)) {
+        if (!stdio_socket->receive(remaining_data, remaining_data_length)) {
           return;
         }
 
-        size_t consumed_data_length = m_header.size() + m_payload.size();
+        size_t consumed_data_length = stdio_socket->m_header.size() + stdio_socket->m_payload.size();
         if (consumed_data_length > remaining_data_length) {
           LOG.error("Wrong value of data length consumed (consumed data=" + to_string(consumed_data_length) +
-                                                          ", remaining data=" + to_string(remaining_data_length));
+              ", remaining data=" + to_string(remaining_data_length));
           throw Exceptions::RuntimeErrorException("Error while receiving data on StdIO socket. Stream ignored");
         }
 
         remaining_data_length -= consumed_data_length;
         remaining_data += consumed_data_length;
 
-        on_received(m_payload, m_format);
+        stdio_socket->m_on_received(stdio_socket->m_payload, stdio_socket->m_format);
       } catch (const Exceptions::AbstractException& err) {
-        on_error(err);
+        stdio_socket->m_on_error(err);
       }
 
-      clear(); // To clean variables, before receiving other data in the next loop
+      stdio_socket->clear(); // To clean variables, before receiving other data in the next loop
     }
-  });
+  }
+}
 
-  m_poller->read();
+void StdIOSocket::poll(OnReceivedCallback on_received, OnErrorCallback on_error) {
+  m_on_received = move(on_received);
+  m_on_error = move(on_error);
+
+  uv_read_start((uv_stream_t*)m_poller.get(), allocate_buffer, on_poll);
 }
 
 void StdIOSocket::on_close(OnCloseCallback on_close) {
-  m_poller->on<uvw::EndEvent>([on_close](const uvw::EndEvent& event, const uvw::PipeHandle& handle){
-    LOG.debug("StdIO socket closed...", "StdIOSocket");
-    on_close();
-  });
-
-  m_poller->read();
+  m_on_close_callback = move(on_close);
 }
 
 vector<uint8_t> StdIOSocket::generate_header(const vector<uint8_t>& data) {

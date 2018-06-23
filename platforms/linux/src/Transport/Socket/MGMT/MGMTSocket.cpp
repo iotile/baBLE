@@ -6,12 +6,8 @@
 #include "../../../Log/Log.hpp"
 
 using namespace std;
-using namespace uvw;
 
-Flags<PollHandle::Event> MGMTSocket::readable_flag = Flags<PollHandle::Event>(PollHandle::Event::READABLE);
-Flags<PollHandle::Event> MGMTSocket::writable_flag = Flags<PollHandle::Event>(PollHandle::Event::WRITABLE);
-
-MGMTSocket::MGMTSocket(shared_ptr<uvw::Loop>& loop, shared_ptr<MGMTFormat> format)
+MGMTSocket::MGMTSocket(uv_loop_t* loop, shared_ptr<MGMTFormat> format)
     : AbstractSocket(move(format)) {
   m_header_length = m_format->get_header_length(0);
   m_writable = true;
@@ -25,7 +21,9 @@ MGMTSocket::MGMTSocket(shared_ptr<uvw::Loop>& loop, shared_ptr<MGMTFormat> forma
     throw Exceptions::SocketException("Error while binding the MGMT socket: " + string(strerror(errno)));
   }
 
-  m_poller = loop->resource<PollHandle>(m_socket);
+  m_poller = make_unique<uv_poll_t>();
+  m_poller->data = this;
+  uv_poll_init_socket(loop, m_poller.get(), m_socket);
 }
 
 bool MGMTSocket::bind_socket() {
@@ -83,24 +81,35 @@ vector<uint8_t> MGMTSocket::receive() {
   return result;
 }
 
-void MGMTSocket::poll(OnReceivedCallback on_received, OnErrorCallback on_error) {
-  m_poller->on<PollEvent>([this, on_received, on_error](const PollEvent& event, const PollHandle& handle){
-    try {
-      if (event.flags & PollHandle::Event::READABLE) {
-        LOG.debug("Reading data...", "MGMTSocket");
-        vector<uint8_t> received_payload = receive();
-        on_received(received_payload, m_format);
-      } else if (event.flags & PollHandle::Event::WRITABLE) {
-        set_writable(true);
-        m_poller->start(MGMTSocket::readable_flag);
-      }
+void MGMTSocket::on_poll(uv_poll_t* handle, int status, int events) {
+  if (status < 0) {
+    LOG.error("Error while polling MGMT socket: " + string(uv_err_name(status)), "MGMTSocket");
+    return;
+  }
 
-    } catch (const Exceptions::AbstractException& err) {
-      on_error(err);
+  auto mgmt_socket = static_cast<MGMTSocket*>(handle->data);
+
+  try {
+    if (events & UV_READABLE) {
+      LOG.debug("Reading data...", "MGMTSocket");
+      vector<uint8_t> received_payload = mgmt_socket->receive();
+      mgmt_socket->m_on_received(received_payload, mgmt_socket->m_format);
+
+    } else if (events & UV_WRITABLE) {
+      mgmt_socket->set_writable(true);
+      uv_poll_start(mgmt_socket->m_poller.get(), UV_READABLE, mgmt_socket->on_poll);
     }
-  });
 
-  m_poller->start(MGMTSocket::readable_flag | MGMTSocket::writable_flag);
+  } catch (const Exceptions::AbstractException& err) {
+    mgmt_socket->m_on_error(err);
+  }
+}
+
+void MGMTSocket::poll(OnReceivedCallback on_received, OnErrorCallback on_error) {
+  m_on_received = move(on_received);
+  m_on_error = move(on_error);
+
+  uv_poll_start(m_poller.get(), UV_READABLE | UV_WRITABLE, on_poll);
 }
 
 void MGMTSocket::set_writable(bool is_writable) {
@@ -108,13 +117,13 @@ void MGMTSocket::set_writable(bool is_writable) {
     m_writable = is_writable;
 
     if (!m_writable) {
-      m_poller->start(MGMTSocket::readable_flag | MGMTSocket::writable_flag);
+      uv_poll_start(m_poller.get(), UV_READABLE | UV_WRITABLE, on_poll);
     }
   }
 
   if (m_writable) {
     if (!m_send_queue.empty()) {
-      send(m_send_queue.front());
+      send(reinterpret_cast<const vector<uint8_t>&>(m_send_queue.front()));
       m_send_queue.pop();
     }
   }

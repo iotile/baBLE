@@ -1,6 +1,4 @@
-#include <memory>
-#include <iostream>
-#include <uvw.hpp>
+#include <uv.h>
 #include "Log/Log.hpp"
 #include "Application/PacketBuilder/PacketBuilder.hpp"
 #include "Application/PacketRouter/PacketRouter.hpp"
@@ -15,17 +13,17 @@
 #include "Application/Packets/Control/Ready/Ready.hpp"
 #include "bootstrap.hpp"
 
-#define EXPIRATION_DURATION_SECONDS 60
+#define EXPIRATION_DURATION_MS 60 * 1000
 
 using namespace std;
-using namespace uvw;
 
 // Function used to call all handlers closing callbacks before stopping the loop
-void cleanly_stop_loop(Loop& loop) {
-  loop.walk([](BaseHandle &handle){
-    handle.close();
-  });
-  loop.stop();
+void cleanly_stop_loop(uv_loop_t* loop) {
+  uv_walk(loop, [](uv_handle_t* handle, void* arg){
+    uv_close(handle, [](uv_handle_t* handle) {});
+  }, nullptr);
+
+  uv_stop(loop);
   LOG.debug("Handles stopped.");
 }
 
@@ -40,7 +38,7 @@ void parse_options(int argc, char* argv[]) {
                                "--logging option requires one argument [DEBUG|INFO|WARNING|ERROR|CRITICAL|NOTSET]");
       }
     } else {
-      cerr << "Unknown option given (" << option_name << ")" << endl;
+      fprintf(stderr, "Unknown option given (%s)\n", option_name.c_str());
     }
   }
 }
@@ -49,19 +47,17 @@ int main(int argc, char* argv[]) {
   parse_options(argc, argv);
 
   // Create loop
-  shared_ptr<Loop> loop = Loop::getDefault();
-  loop->on<ErrorEvent>([] (const ErrorEvent& err, Loop& l) {
-    LOG.error("An error occured: " + string(err.what()), "Loop");
-  });
+  uv_loop_t* loop = uv_default_loop();
+  uv_loop_init(loop);
   LOG.debug("Loop created.");
 
   // Stop on SIGINT signal
-  shared_ptr<SignalHandle> stop_signal = loop->resource<SignalHandle>();
-  stop_signal->on<SignalEvent>([] (const SignalEvent&, SignalHandle& sig) {
+  uv_signal_t stop_signal;
+  uv_signal_init(loop, &stop_signal);
+  uv_signal_start(&stop_signal, [](uv_signal_t* handle, int signum) {
     LOG.warning("Stop signal received...", "Signal");
-    cleanly_stop_loop(sig.loop());
-  });
-  stop_signal->start(SIGINT);
+    cleanly_stop_loop(handle->loop);
+  }, SIGINT);
   LOG.debug("SIGINT signal handled.");
 
   // Formats
@@ -87,7 +83,7 @@ int main(int argc, char* argv[]) {
   }
 
   // PacketRouter
-  shared_ptr<PacketRouter> packet_router = make_shared<PacketRouter>();
+  shared_ptr<PacketRouter> packet_router = make_shared<PacketRouter>(loop);
 
   // PacketBuilder
   LOG.info("Registering packets into packet builder...");
@@ -211,18 +207,18 @@ int main(int argc, char* argv[]) {
 
       if (packet->get_id() == Packet::Id::Exit) {
         LOG.debug("Received Exit packet. Cleanly stopping loop...");
-        cleanly_stop_loop(*loop);
+        cleanly_stop_loop(loop);
       }
     },
     on_error
   );
   stdio_socket->on_close([&loop]() {
-    cleanly_stop_loop(*loop);
+    cleanly_stop_loop(loop);
   });
 
   // Removed all expired waiting response
   LOG.info("Creating expiration timer...");
-  packet_router->start_expiration_timer(loop, EXPIRATION_DURATION_SECONDS);
+  packet_router->start_expiration_timer(EXPIRATION_DURATION_MS);
 
   // Send Ready packet to indicate that BaBLE has started and is ready to receive commands
   LOG.info("Sending Ready packet...");
@@ -231,11 +227,15 @@ int main(int argc, char* argv[]) {
 
   // Start the loop
   LOG.info("Starting loop...");
-  loop->run<Loop::Mode::DEFAULT>();
+
+  uv_run(loop, UV_RUN_DEFAULT);
   LOG.info("Loop stopped.");
 
   // Close and clean the loop
-  loop->close();
-  loop->clear();
+  int result = uv_loop_close(loop);
+  if (result != 0) {
+    LOG.critical("Failed to close libuv loop: " + string(uv_err_name(result)));
+  }
+
   return 0;
 }

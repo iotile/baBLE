@@ -4,6 +4,7 @@
 #include "../Log/Loggable.hpp"
 #include "constants.hpp"
 
+// TODO: remove Exception and just create one BaBLEException with type as enum
 namespace Exceptions {
 
   class AbstractException : public std::exception, public Loggable {

@@ -4,7 +4,11 @@
 
 using namespace std;
 
-PacketRouter::PacketRouter() = default;
+PacketRouter::PacketRouter(uv_loop_t* loop) {
+  m_expiration_timer = make_unique<uv_timer_t>();
+  m_expiration_timer->data = this;
+  uv_timer_init(loop, m_expiration_timer.get());
+};
 
 void PacketRouter::add_callback(Packet::PacketUuid waiting_uuid, shared_ptr<Packet::AbstractPacket> packet, const CallbackFunction& callback) {
   TimePoint inserted_time = chrono::steady_clock::now();
@@ -52,13 +56,13 @@ shared_ptr<Packet::AbstractPacket> PacketRouter::route(const shared_ptr<PacketRo
   return received_packet;
 }
 
-void PacketRouter::expire_waiting_packets(unsigned int expiration_duration_seconds) {
+void PacketRouter::expire_waiting_packets(uint64_t expiration_duration_ms) {
   if (m_timestamps.empty()) {
     return;
   }
 
   TimePoint current_time = chrono::steady_clock::now();
-  auto expiration_start_time = current_time - chrono::seconds(expiration_duration_seconds);
+  auto expiration_start_time = current_time - chrono::milliseconds(expiration_duration_ms);
 
   auto it_last_expired = m_timestamps.upper_bound(expiration_start_time);
   if (it_last_expired == m_timestamps.begin()) {
@@ -95,17 +99,16 @@ void PacketRouter::expire_waiting_packets(unsigned int expiration_duration_secon
   m_timestamps.erase(m_timestamps.begin(), it_last_expired);
 }
 
-void PacketRouter::start_expiration_timer(const shared_ptr<uvw::Loop>& loop, unsigned int expiration_duration_seconds) {
-  shared_ptr<uvw::TimerHandle> expiration_timer = loop->resource<uvw::TimerHandle>();
 
-  expiration_timer->on<uvw::TimerEvent>([this, expiration_duration_seconds](const uvw::TimerEvent&, uvw::TimerHandle& t) {
-    expire_waiting_packets(expiration_duration_seconds);
-  });
+void PacketRouter::on_expiration_timer_tic(uv_timer_t* handle) {
+  auto router = static_cast<PacketRouter*>(handle->data);
+  uint64_t duration = uv_timer_get_repeat(handle);
 
-  expiration_timer->start(
-      chrono::seconds(expiration_duration_seconds),
-      chrono::seconds(expiration_duration_seconds)
-  );
+  router->expire_waiting_packets(duration);
+}
+
+void PacketRouter::start_expiration_timer(uint64_t expiration_duration_ms) {
+  uv_timer_start(m_expiration_timer.get(), on_expiration_timer_tic, expiration_duration_ms, expiration_duration_ms);
 }
 
 const string PacketRouter::stringify() const {

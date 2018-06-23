@@ -3,6 +3,8 @@ project(baBLE_linux)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "-funsigned-char")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -s")
+link_libraries("-static")
 
 ## Build executable from sources files
 set(SOURCES_FILES
@@ -97,9 +99,6 @@ add_executable(baBLE_linux ${SOURCES_FILES})
 include_directories(deps/uv/libuv/include)
 add_subdirectory(deps/uv)
 target_link_libraries(baBLE_linux uv)
-### uvw
-add_subdirectory(deps/uvw)
-target_link_libraries(baBLE_linux uvw)
 ### flatbuffers
 add_subdirectory(deps/flatbuffers)
 target_link_libraries(baBLE_linux flatbuffers)

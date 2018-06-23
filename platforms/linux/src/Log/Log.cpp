@@ -1,4 +1,3 @@
-#include <iostream>
 #include "Log.hpp"
 
 using namespace std;
@@ -60,7 +59,7 @@ string Log::build_prefix(const string &name, const Level& level) {
 
   prefix = _get_time_string();
   prefix += " " + level_name;
-  prefix += " [" + name + "] - ";
+  prefix += " [" + name + "]";
 
   return prefix;
 }
@@ -68,8 +67,9 @@ string Log::build_prefix(const string &name, const Level& level) {
 void Log::write_log(const string& name, const string& message, const Level& level, const string& color) {
   if (m_log_level != Level::NOTSET && level >= m_log_level) {
     const string prefix = build_prefix(name, level);
+    const string log = COLORIZE(color, prefix) + " - " + message;
 
-    cerr << COLORIZE(color, prefix) << message << endl;
+    fprintf(stderr, "%s\n", log.c_str());
   }
 }
 

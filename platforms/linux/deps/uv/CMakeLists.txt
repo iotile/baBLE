@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.5)
 project(libuv)
 
 set(CMAKE_CXX_FLAGS "-funsigned-char")
+link_libraries("-static")
+
 set(LIBUVDIR libuv)
 
 include_directories(${LIBUVDIR}/include ${LIBUVDIR}/src)
