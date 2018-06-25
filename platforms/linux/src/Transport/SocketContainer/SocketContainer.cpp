@@ -1,6 +1,6 @@
 #include "SocketContainer.hpp"
 #include "../../Log/Log.hpp"
-#include "../../Exceptions/NotFound/NotFoundException.hpp"
+#include "../../Exceptions/BaBLEException.hpp"
 
 using namespace std;
 
@@ -28,11 +28,22 @@ bool SocketContainer::send(const shared_ptr<Packet::AbstractPacket>& packet) {
 
   auto it = m_sockets.find(key);
   if (it == m_sockets.end()) {
-    throw Exceptions::NotFoundException("Can't find socket in SocketContainer for given packet.", packet->get_uuid_request());
+    throw Exceptions::BaBLEException(
+        BaBLE::StatusCode::NotFound,
+        "Can't find socket in SocketContainer for given packet.",
+        packet->get_uuid_request()
+    );
   }
   shared_ptr<AbstractSocket> socket = it->second;
 
   vector<uint8_t> data = packet->to_bytes();
 
-  return socket->send(data);
+  try {
+    bool result = socket->send(data);
+    return result;
+
+  } catch (Exceptions::BaBLEException& err) {
+    err.set_uuid_request(packet->get_uuid_request());
+    throw;
+  }
 };

@@ -7,13 +7,12 @@
 #include "Transport/Socket/HCI/HCISocket.hpp"
 #include "Transport/Socket/StdIO/StdIOSocket.hpp"
 #include "Transport/SocketContainer/SocketContainer.hpp"
-#include "Exceptions/AbstractException.hpp"
-#include "Exceptions/RuntimeError/RuntimeErrorException.hpp"
 #include "Application/Packets/Errors/BaBLEError/BaBLEError.hpp"
 #include "Application/Packets/Control/Ready/Ready.hpp"
+#include "Exceptions/BaBLEException.hpp"
 #include "bootstrap.hpp"
 
-#define EXPIRATION_DURATION_MS 60 * 1000
+#define EXPIRATION_DURATION_MS (60 * 1000)
 
 using namespace std;
 
@@ -99,8 +98,8 @@ int main(int argc, char* argv[]) {
   // Poll sockets
   LOG.info("Creating socket pollers...");
 
-  auto on_error = [&stdio_socket, &socket_container](const Exceptions::AbstractException& err) {
-    LOG.error(err.stringify(), "Error");
+  auto on_error = [&stdio_socket, &socket_container](const Exceptions::BaBLEException& err) {
+    LOG.error(err.get_message(), "Error");
     shared_ptr<Packet::Errors::BaBLEError> error_packet = make_shared<Packet::Errors::BaBLEError>(err);
     socket_container.send(error_packet);
   };
@@ -145,13 +144,13 @@ int main(int argc, char* argv[]) {
         // we'll be disconnected after sending one packet.
         if (packet->get_id() == Packet::Id::DeviceConnected) {
           if (packet->get_status() != BaBLE::StatusCode::Success) {
-            LOG.debug("Unsuccessful DeviceConnected event ignored (because the device is not connected...)", "HCI poller");
+            LOG.info("Unsuccessful DeviceConnected event ignored (because the device is not connected...)", "HCI poller");
             return;
           }
 
           auto device_connected_packet = dynamic_pointer_cast<Packet::Events::DeviceConnected>(packet);
           if (device_connected_packet == nullptr) {
-            throw Exceptions::RuntimeErrorException("Can't downcast packet to DeviceConnected packet");
+            throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast packet to DeviceConnected packet");
           }
 
           LOG.debug("DeviceConnected", "HCI poller");
@@ -162,13 +161,13 @@ int main(int argc, char* argv[]) {
           );
         } else if (packet->get_id() == Packet::Id::DeviceDisconnected) {
           if (packet->get_status() != BaBLE::StatusCode::Success) {
-            LOG.debug("Unsuccessful DeviceDisconnected event ignored (because the device is not disconnected...)", "HCI poller");
+            LOG.info("Unsuccessful DeviceDisconnected event ignored (because the device is not disconnected...)", "HCI poller");
             return;
           }
 
           auto device_disconnected_packet = dynamic_pointer_cast<Packet::Events::DeviceDisconnected>(packet);
           if (device_disconnected_packet == nullptr) {
-            throw Exceptions::RuntimeErrorException("Can't downcast packet to DeviceDisconnected packet");
+            throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast packet to DeviceDisconnected packet");
           }
 
           LOG.debug("DeviceDisconnected", "HCI poller");

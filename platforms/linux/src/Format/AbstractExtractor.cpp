@@ -1,4 +1,5 @@
 #include "AbstractExtractor.hpp"
+#include "../Exceptions/BaBLEException.hpp"
 
 AbstractExtractor::AbstractExtractor(const std::vector<uint8_t>& data) {
   m_type_code = 0;
@@ -17,7 +18,10 @@ T AbstractExtractor::get_value() {
   const size_t nb_bytes = sizeof(T);
 
   if (m_data_iterator + nb_bytes > m_data.end()) {
-    throw Exceptions::WrongFormatException("Can't deserialize given type: not enough bytes in payload.");
+    throw Exceptions::BaBLEException(
+        BaBLE::StatusCode::WrongFormat,
+        "Can't deserialize given type: not enough bytes in payload."
+    );
   }
 
   T result;
@@ -68,9 +72,9 @@ std::vector<T> AbstractExtractor::get_vector() {
 
   while (true) {
     try {
-      T value = get_value<T>();
+      auto value = get_value<T>();
       result.push_back(value);
-    } catch (const Exceptions::WrongFormatException&) {
+    } catch (const Exceptions::BaBLEException&) {
       break;
     }
   }

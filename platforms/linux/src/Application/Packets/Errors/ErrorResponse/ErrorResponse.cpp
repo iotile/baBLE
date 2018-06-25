@@ -1,5 +1,6 @@
 #include <sstream>
 #include "ErrorResponse.hpp"
+#include "../../../../Exceptions/BaBLEException.hpp"
 
 using namespace std;
 
@@ -18,11 +19,15 @@ namespace Packet {
       m_opcode = extractor.get_value<uint8_t>();
       m_handle = extractor.get_value<uint16_t>();
 
+      auto raw_error_code = extractor.get_value<uint8_t>();
       try {
-        m_error_code = static_cast<Format::HCI::AttributeErrorCode>(extractor.get_value<uint8_t>());
+        m_error_code = static_cast<Format::HCI::AttributeErrorCode>(raw_error_code);
 
       } catch (const bad_cast& err) {
-        throw Exceptions::WrongFormatException("Unknown error code received in ErrorResponse");
+        throw Exceptions::BaBLEException(
+            BaBLE::StatusCode::WrongFormat,
+            "Unknown error code received in ErrorResponse: " + to_string(raw_error_code)
+        );
       }
 
       set_status(m_error_code, false);

@@ -1980,19 +1980,13 @@ inline flatbuffers::Offset<NotificationReceived> CreateNotificationReceivedDirec
 
 struct BaBLEError FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
-    VT_NAME = 4,
-    VT_MESSAGE = 6
+    VT_MESSAGE = 4
   };
-  const flatbuffers::String *name() const {
-    return GetPointer<const flatbuffers::String *>(VT_NAME);
-  }
   const flatbuffers::String *message() const {
     return GetPointer<const flatbuffers::String *>(VT_MESSAGE);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_NAME) &&
-           verifier.Verify(name()) &&
            VerifyOffset(verifier, VT_MESSAGE) &&
            verifier.Verify(message()) &&
            verifier.EndTable();
@@ -2002,9 +1996,6 @@ struct BaBLEError FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct BaBLEErrorBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_name(flatbuffers::Offset<flatbuffers::String> name) {
-    fbb_.AddOffset(BaBLEError::VT_NAME, name);
-  }
   void add_message(flatbuffers::Offset<flatbuffers::String> message) {
     fbb_.AddOffset(BaBLEError::VT_MESSAGE, message);
   }
@@ -2022,21 +2013,17 @@ struct BaBLEErrorBuilder {
 
 inline flatbuffers::Offset<BaBLEError> CreateBaBLEError(
     flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<flatbuffers::String> name = 0,
     flatbuffers::Offset<flatbuffers::String> message = 0) {
   BaBLEErrorBuilder builder_(_fbb);
   builder_.add_message(message);
-  builder_.add_name(name);
   return builder_.Finish();
 }
 
 inline flatbuffers::Offset<BaBLEError> CreateBaBLEErrorDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    const char *name = nullptr,
     const char *message = nullptr) {
   return BaBLE::CreateBaBLEError(
       _fbb,
-      name ? _fbb.CreateString(name) : 0,
       message ? _fbb.CreateString(message) : 0);
 }
 

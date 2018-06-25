@@ -1,12 +1,16 @@
 #include "MGMTFormatExtractor.hpp"
 #include "../../Log/Log.hpp"
+#include "../../Exceptions/BaBLEException.hpp"
 
 using namespace std;
 
 // Static
 uint16_t MGMTFormatExtractor::extract_payload_length(const vector<uint8_t>& data) {
   if (data.size() < 6) {
-    throw Exceptions::WrongFormatException("Given MGMT data are too small (< 6 bytes). Can't extract payload length.");
+    throw Exceptions::BaBLEException(
+        BaBLE::StatusCode::WrongFormat,
+        "Given MGMT data are too small. Can't extract payload length."
+    );
   }
 
   // Use little endian
@@ -32,7 +36,10 @@ MGMTFormatExtractor::MGMTFormatExtractor(const vector<uint8_t>& data)
 // Parsers
 void MGMTFormatExtractor::parse_header(const vector<uint8_t>& data) {
   if (data.size() < m_header_length) {
-    throw Exceptions::WrongFormatException("Given MGMT data are too small (< 6 bytes). Can't parse header.");
+    throw Exceptions::BaBLEException(
+        BaBLE::StatusCode::WrongFormat,
+        "Given MGMT data are too small. Can't parse header."
+    );
   }
 
   m_type_code = (static_cast<uint16_t>(data.at(1)) << 8) | data.at(0);
@@ -42,7 +49,10 @@ void MGMTFormatExtractor::parse_header(const vector<uint8_t>& data) {
 
 Format::MGMT::EIR MGMTFormatExtractor::parse_eir(const vector<uint8_t>& data) {
   if (data.size() < 3) {
-    throw Exceptions::WrongFormatException("Given EIR data are too small. Can't extract anything from it.");
+    throw Exceptions::BaBLEException(
+        BaBLE::StatusCode::WrongFormat,
+        "Given EIR data are too small. Can't extract anything from it."
+    );
   }
 
   Format::MGMT::EIR result = {};

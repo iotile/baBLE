@@ -1,5 +1,4 @@
 #include "ReadByTypeRequest.hpp"
-#include "../../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 #include "ReadByTypeResponse.hpp"
 
 using namespace std;

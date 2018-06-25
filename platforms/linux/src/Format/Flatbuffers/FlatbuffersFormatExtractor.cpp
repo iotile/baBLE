@@ -1,4 +1,5 @@
 #include "FlatbuffersFormatExtractor.hpp"
+#include "../../Exceptions/BaBLEException.hpp"
 
 using namespace std;
 
@@ -8,7 +9,7 @@ void FlatbuffersFormatExtractor::verify(const vector<uint8_t> & data) {
   bool packet_valid = BaBLE::VerifyPacketBuffer(packet_verifier);
 
   if (!packet_valid) {
-    throw Exceptions::WrongFormatException("Flatbuffers packet is not valid.");
+    throw Exceptions::BaBLEException(BaBLE::StatusCode::WrongFormat, "Flatbuffers packet is not valid.");
   }
 }
 

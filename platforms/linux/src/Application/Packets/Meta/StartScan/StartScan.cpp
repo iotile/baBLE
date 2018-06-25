@@ -1,5 +1,5 @@
 #include "StartScan.hpp"
-#include "../../../../Exceptions/RuntimeError/RuntimeErrorException.hpp"
+#include "../../../../Exceptions/BaBLEException.hpp"
 
 using namespace std;
 
@@ -98,7 +98,11 @@ namespace Packet {
           m_set_scan_params_packet->on_response_received(router, packet)
       );
       if (m_set_scan_params_packet == nullptr) {
-        throw Exceptions::RuntimeErrorException("Can't cast AbstractPacket to SetScanParameter packet", m_uuid_request);
+        throw Exceptions::BaBLEException(
+            BaBLE::StatusCode::Failed,
+            "Can't downcast AbstractPacket to SetScanParameter packet (StartScan).",
+            m_uuid_request
+        );
       }
 
       if (m_set_scan_params_packet->get_status() != BaBLE::StatusCode::Success) {
@@ -118,7 +122,11 @@ namespace Packet {
           m_set_scan_enable_packet->on_response_received(router, packet)
       );
       if (m_set_scan_enable_packet == nullptr) {
-        throw Exceptions::RuntimeErrorException("Can't cast AbstractPacket to SetScanEnable packet", m_uuid_request);
+        throw Exceptions::BaBLEException(
+            BaBLE::StatusCode::Failed,
+            "Can't downcast AbstractPacket to SetScanEnable packet (StartScan).",
+            m_uuid_request
+        );
       }
 
       import_status(m_set_scan_params_packet);

@@ -1,5 +1,4 @@
 #include "CreateConnection.hpp"
-#include "../../../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 #include "../../../../utils/string_formats.hpp"
 
 using namespace std;
@@ -38,8 +37,8 @@ namespace Packet {
       try {
         m_raw_address = Utils::extract_bd_address(m_address);
 
-      } catch (const Exceptions::WrongFormatException& err) {
-        throw Exceptions::InvalidCommandException("Wrong MAC address given.", m_uuid_request);
+      } catch (const Exceptions::BaBLEException& err) {
+        throw Exceptions::BaBLEException(BaBLE::StatusCode::InvalidCommand, "Wrong MAC address given.", m_uuid_request);
       }
     }
 

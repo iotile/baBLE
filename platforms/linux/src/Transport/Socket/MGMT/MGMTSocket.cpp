@@ -2,8 +2,8 @@
 #include <cstring>
 #include <unistd.h>
 #include "MGMTSocket.hpp"
-#include "../../../Exceptions/Socket/SocketException.hpp"
 #include "../../../Log/Log.hpp"
+#include "../../../Exceptions/BaBLEException.hpp"
 
 using namespace std;
 
@@ -14,11 +14,17 @@ MGMTSocket::MGMTSocket(uv_loop_t* loop, shared_ptr<MGMTFormat> format)
 
   m_socket = socket(AF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC | SOCK_NONBLOCK, BTPROTO_HCI);
   if (m_socket < 0) {
-    throw Exceptions::SocketException("Error while creating the MGMT socket: " + string(strerror(errno)));
+    throw Exceptions::BaBLEException(
+        BaBLE::StatusCode::SocketError,
+        "Error while creating the MGMT socket: " + string(strerror(errno))
+    );
   }
 
   if(!bind_socket()) {
-    throw Exceptions::SocketException("Error while binding the MGMT socket: " + string(strerror(errno)));
+    throw Exceptions::BaBLEException(
+        BaBLE::StatusCode::SocketError,
+        "Error while binding the MGMT socket: " + string(strerror(errno))
+    );
   }
 
   m_poller = make_unique<uv_poll_t>();
@@ -48,8 +54,10 @@ bool MGMTSocket::send(const vector<uint8_t>& data) {
     LOG.debug("Sending data...", "MGMT socket");
     LOG.debug(data, "MGMT socket");
     if (write(m_socket, data.data(), data.size()) < 0) {
-      LOG.error("Error while sending a message to MGMT socket: " + string(strerror(errno)), "MGMTSocket");
-      throw Exceptions::SocketException("Error occured while sending the packet through MGMT socket: " + string(strerror(errno)));
+      throw Exceptions::BaBLEException(
+          BaBLE::StatusCode::SocketError,
+          "Error occured while sending the packet through MGMT socket: " + string(strerror(errno))
+      );
     }
   }
 
@@ -64,8 +72,10 @@ vector<uint8_t> MGMTSocket::receive() {
   ssize_t length_read = recv(m_socket, header.data(), header.size(), MSG_PEEK);
 
   if (length_read < m_header_length) {
-    LOG.error("Error while reading the header: " + string(strerror(errno)), "MGMTSocket");
-    throw Exceptions::SocketException("Can't read header on the MGMT socket: " + string(strerror(errno)));
+    throw Exceptions::BaBLEException(
+        BaBLE::StatusCode::SocketError,
+        "Error while reading the MGMT header: " + string(strerror(errno))
+    );
   }
 
   size_t payload_length = m_format->extract_payload_length(header);
@@ -74,8 +84,10 @@ vector<uint8_t> MGMTSocket::receive() {
   length_read = read(m_socket, result.data(), result.size());
 
   if (length_read < m_header_length + payload_length) {
-    LOG.error("Error while reading the payload: " + string(strerror(errno)), "MGMTSocket");
-    throw Exceptions::SocketException("Can't read payload on the MGMT socket: " + string(strerror(errno)));
+    throw Exceptions::BaBLEException(
+        BaBLE::StatusCode::SocketError,
+        "Error while reading the MGMT payload: " + string(strerror(errno))
+    );
   }
 
   return result;
@@ -100,7 +112,7 @@ void MGMTSocket::on_poll(uv_poll_t* handle, int status, int events) {
       uv_poll_start(mgmt_socket->m_poller.get(), UV_READABLE, mgmt_socket->on_poll);
     }
 
-  } catch (const Exceptions::AbstractException& err) {
+  } catch (const Exceptions::BaBLEException& err) {
     mgmt_socket->m_on_error(err);
   }
 }

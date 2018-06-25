@@ -5,7 +5,7 @@
 #include <sstream>
 #include <vector>
 #include "./stream_formats.hpp"
-#include "../Exceptions/WrongFormat/WrongFormatException.hpp"
+#include "../Exceptions/BaBLEException.hpp"
 
 namespace Utils {
 
@@ -74,9 +74,15 @@ namespace Utils {
       auto result = static_cast<T>(stoi(str, nullptr, base));
 
     } catch (const std::bad_cast& err) {
-      throw Exceptions::WrongFormatException("Can't cast given string: \"" + str + "\"");
+      throw Exceptions::BaBLEException(
+          BaBLE::StatusCode::WrongFormat,
+          "Can't cast given string to number: \"" + str + "\""
+      );
     } catch (const std::invalid_argument& err) {
-      throw Exceptions::WrongFormatException("Given string is not a number: \"" + str + "\"");
+      throw Exceptions::BaBLEException(
+          BaBLE::StatusCode::WrongFormat,
+          "Given string is not a number: \"" + str + "\""
+      );
     }
   };
 
@@ -91,7 +97,10 @@ namespace Utils {
     std::istringstream address_stream(bd_address);
     for (auto it = bd_address_array.rbegin(); it != bd_address_array.rend(); ++it) {
       if (!getline(address_stream, item, ':')) {
-        throw Exceptions::WrongFormatException("Can't parse Bluetooth device MAC address.");
+        throw Exceptions::BaBLEException(
+            BaBLE::StatusCode::WrongFormat,
+            "Can't parse Bluetooth device MAC address: \"" + bd_address + "\""
+        );
       }
       *it = string_to_number<uint8_t>(item, 16);
     }

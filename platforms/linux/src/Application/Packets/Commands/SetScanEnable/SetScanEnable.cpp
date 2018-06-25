@@ -1,6 +1,6 @@
 #include "SetScanEnable.hpp"
-#include "../../../../Exceptions/RuntimeError/RuntimeErrorException.hpp"
 #include "../../Events/CommandComplete/CommandComplete.hpp"
+#include "../../../../Exceptions/BaBLEException.hpp"
 
 using namespace std;
 
@@ -42,12 +42,20 @@ namespace Packet {
       LOG.debug("Response received", "SetScanEnable");
       auto response_packet = dynamic_pointer_cast<Packet::Events::CommandComplete>(packet);
       if (response_packet == nullptr) {
-        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to CommandComplete packet.", m_uuid_request);
+        throw Exceptions::BaBLEException(
+            BaBLE::StatusCode::Failed,
+            "Can't downcast AbstractPacket to CommandComplete packet (SetScanEnable).",
+            m_uuid_request
+        );
       }
 
       vector<uint8_t> result = response_packet->get_returned_params();
       if (result.empty()) {
-        throw Exceptions::WrongFormatException("Response received with wrong result format (SetScanEnable).", m_uuid_request);
+        throw Exceptions::BaBLEException(
+            BaBLE::StatusCode::WrongFormat,
+            "Response received with no result (SetScanEnable).",
+            m_uuid_request
+        );
       }
 
       set_status(result.at(0));

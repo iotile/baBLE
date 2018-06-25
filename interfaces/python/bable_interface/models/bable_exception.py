@@ -7,17 +7,15 @@ class BaBLEException(Exception):
         super(BaBLEException, self).__init__()
 
         if packet.payload_type == Payload.BaBLEError:
-            self.name = packet.name
             self.message = packet.message
         else:
-            self.name = "ResponseError"
             self.message = message if message is not None else "Response with error status received"
 
         self.packet = packet
         self.kwargs = kwargs
 
     def __str__(self):
-        result = "{} - {} (packet={}, ".format(self.name, self.message, self.packet)
+        result = "{} (packet={}, ".format(self.message, self.packet)
 
         for key, value in self.kwargs.items():
             result += "{}={}, ".format(key, value)

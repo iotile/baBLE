@@ -84,14 +84,8 @@ set(SOURCES_FILES
         src/Transport/Socket/MGMT/MGMTSocket.cpp
         src/Transport/Socket/StdIO/StdIOSocket.cpp
         src/Transport/Socket/HCI/HCISocket.cpp
-        src/Exceptions/constants.hpp
-        src/Exceptions/AbstractException.hpp
-        src/Exceptions/NotFound/NotFoundException.hpp
-        src/Exceptions/WrongFormat/WrongFormatException.hpp
-        src/Exceptions/Socket/SocketException.hpp
-        src/Exceptions/InvalidCommand/InvalidCommandException.hpp
-        src/Exceptions/RuntimeError/RuntimeErrorException.hpp
-        src/bootstrap.hpp)
+        src/bootstrap.hpp
+        src/Exceptions/BaBLEException.cpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
 ## Include dependencies

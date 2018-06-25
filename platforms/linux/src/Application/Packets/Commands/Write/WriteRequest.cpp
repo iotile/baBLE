@@ -1,6 +1,5 @@
 #include "WriteRequest.hpp"
 #include "./WriteResponse.hpp"
-#include "../../../../Exceptions/RuntimeError/RuntimeErrorException.hpp"
 #include "../../../../utils/string_formats.hpp"
 
 using namespace std;
@@ -68,7 +67,11 @@ namespace Packet {
 
       auto write_response_packet = dynamic_pointer_cast<Packet::Commands::WriteResponse>(packet);
       if (write_response_packet == nullptr) {
-        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to WriteResponse packet.", m_uuid_request);
+        throw Exceptions::BaBLEException(
+            BaBLE::StatusCode::Failed,
+            "Can't downcast AbstractPacket to WriteResponse packet.",
+            m_uuid_request
+        );
       }
 
       write_response_packet->set_uuid_request(m_uuid_request);

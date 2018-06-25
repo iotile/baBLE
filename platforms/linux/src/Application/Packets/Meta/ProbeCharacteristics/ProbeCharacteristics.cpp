@@ -1,7 +1,6 @@
 #include "ProbeCharacteristics.hpp"
 #include "../../Commands/ReadByType/ReadByTypeResponse.hpp"
 #include "../../Errors/ErrorResponse/ErrorResponse.hpp"
-#include "../../../../Exceptions/RuntimeError/RuntimeErrorException.hpp"
 #include "../../../../utils/string_formats.hpp"
 
 using namespace std;
@@ -128,7 +127,11 @@ namespace Packet {
 
       auto read_by_type_response_packet = dynamic_pointer_cast<Packet::Commands::ReadByTypeResponse>(packet);
       if (read_by_type_response_packet == nullptr) {
-        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to ReadByTypeResponse packet.", m_uuid_request);
+        throw Exceptions::BaBLEException(
+            BaBLE::StatusCode::Failed,
+            "Can't downcast AbstractPacket to ReadByTypeResponse packet (ProbeCharacteristics).",
+            m_uuid_request
+        );
       }
 
       vector<Format::HCI::Characteristic> new_characteristics = read_by_type_response_packet->get_characteristics();
@@ -169,7 +172,11 @@ namespace Packet {
 
       auto error_packet = dynamic_pointer_cast<Packet::Errors::ErrorResponse>(packet);
       if (error_packet == nullptr) {
-        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to ErrorResponse packet.", m_uuid_request);
+        throw Exceptions::BaBLEException(
+            BaBLE::StatusCode::Failed,
+            "Can't downcast AbstractPacket to ErrorResponse packet (ProbeCharacteristics).",
+            m_uuid_request
+        );
       }
 
       Format::HCI::AttributeErrorCode error_code = error_packet->get_error_code();

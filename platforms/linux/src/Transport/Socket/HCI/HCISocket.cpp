@@ -3,7 +3,6 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include "HCISocket.hpp"
-#include "../../../Exceptions/Socket/SocketException.hpp"
 #include "../../../Log/Log.hpp"
 #include "../../../utils/string_formats.hpp"
 
@@ -44,19 +43,31 @@ HCISocket::HCISocket(uv_loop_t* loop, shared_ptr<HCIFormat> format, uint16_t con
 
   m_hci_socket = socket(AF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC | SOCK_NONBLOCK, BTPROTO_HCI);
   if (m_hci_socket < 0) {
-    throw Exceptions::SocketException("Error while creating the HCI socket: " + string(strerror(errno)));
+    throw Exceptions::BaBLEException(
+        BaBLE::StatusCode::SocketError,
+        "Error while creating the HCI socket: " + string(strerror(errno))
+    );
   }
 
   if (!set_filter()) {
-    throw Exceptions::SocketException("Error while setting filters on the HCI socket: " + string(strerror(errno)));
+    throw Exceptions::BaBLEException(
+        BaBLE::StatusCode::SocketError,
+        "Error while setting filters on the HCI socket: " + string(strerror(errno))
+    );
   }
 
   if(!bind_hci_socket()) {
-    throw Exceptions::SocketException("Error while binding the HCI socket: " + string(strerror(errno)));
+    throw Exceptions::BaBLEException(
+        BaBLE::StatusCode::SocketError,
+        "Error while binding the HCI socket: " + string(strerror(errno))
+    );
   }
 
   if (!get_controller_address()) {
-    throw Exceptions::SocketException("Error while retrieving the Bluetooth controller address: " + string(strerror(errno)));
+    throw Exceptions::BaBLEException(
+        BaBLE::StatusCode::SocketError,
+        "Error while retrieving the Bluetooth controller address: " + string(strerror(errno))
+    );
   }
 
   LOG.debug("HCI socket created on " + Utils::format_bd_address(m_controller_address), "HCI socket");
@@ -104,7 +115,10 @@ bool HCISocket::set_filter() {
 void HCISocket::connect_l2cap_socket(uint16_t connection_handle, const array<uint8_t, 6>& device_address, uint8_t device_address_type) {
   uv_os_sock_t l2cap_socket = socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP);
   if (l2cap_socket < 0) {
-    throw Exceptions::SocketException("Error while creating the L2CAP socket: " + string(strerror(errno)));
+    throw Exceptions::BaBLEException(
+        BaBLE::StatusCode::SocketError,
+        "Error while creating the L2CAP socket: " + string(strerror(errno))
+    );
   }
 
   struct Format::HCI::sockaddr_l2 addr{};
@@ -114,7 +128,10 @@ void HCISocket::connect_l2cap_socket(uint16_t connection_handle, const array<uin
   addr.l2_bdaddr_type = 0x01;
 
   if (bind(l2cap_socket, (struct sockaddr*)&addr, sizeof(addr)) != 0){
-    throw Exceptions::SocketException("Error while binding L2CAP socket: " + string(strerror(errno)));
+    throw Exceptions::BaBLEException(
+        BaBLE::StatusCode::SocketError,
+        "Error while binding L2CAP socket: " + string(strerror(errno))
+    );
   }
 
   addr.l2_family = AF_BLUETOOTH;
@@ -123,7 +140,10 @@ void HCISocket::connect_l2cap_socket(uint16_t connection_handle, const array<uin
   addr.l2_bdaddr_type = device_address_type;
 
   if (connect(l2cap_socket, (struct sockaddr *)&addr, sizeof(addr)) != 0){
-    throw Exceptions::SocketException("Error while connecting L2CAP socket: " + string(strerror(errno)));
+    throw Exceptions::BaBLEException(
+        BaBLE::StatusCode::SocketError,
+        "Error while connecting L2CAP socket: " + string(strerror(errno))
+    );
   }
 
   LOG.info("L2CAP socket connected.", "HCISocket");
@@ -152,8 +172,10 @@ bool HCISocket::send(const vector<uint8_t>& data) {
     LOG.debug("Sending data...", "HCI socket");
     LOG.debug(data, "HCI socket");
     if (write(m_hci_socket, data.data(), data.size()) < 0) {
-      LOG.error("Error while sending a message to HCI socket: " + string(strerror(errno)), "HCISocket");
-      throw Exceptions::SocketException("Error occured while sending the packet through HCI socket: " +  string(strerror(errno)));
+      throw Exceptions::BaBLEException(
+          BaBLE::StatusCode::SocketError,
+          "Error occured while sending the packet through HCI socket: " +  string(strerror(errno))
+      );
     }
   }
 
@@ -166,8 +188,10 @@ vector<uint8_t> HCISocket::receive() {
 
   length_read = recv(m_hci_socket, &type_code, sizeof(type_code), MSG_PEEK);
   if (length_read != sizeof(type_code)) {
-    LOG.error("Error while reading the type code: " + string(strerror(errno)), "HCISocket");
-    throw Exceptions::SocketException("Can't read type code on the HCI socket.");
+    throw Exceptions::BaBLEException(
+        BaBLE::StatusCode::SocketError,
+        "Error while reading the HCI type code: " + string(strerror(errno))
+    );
   }
 
   size_t header_length = m_format->get_header_length(type_code);
@@ -179,8 +203,10 @@ vector<uint8_t> HCISocket::receive() {
   length_read = recv(m_hci_socket, header.data(), header.size(), MSG_PEEK);
 
   if (length_read != header_length) {
-    LOG.error("Error while reading the header: " + string(strerror(errno)), "HCISocket");
-    throw Exceptions::SocketException("Can't read header on the HCI socket.");
+    throw Exceptions::BaBLEException(
+        BaBLE::StatusCode::SocketError,
+        "Error while reading the HCI header: " + string(strerror(errno))
+    );
   }
 
   size_t payload_length = m_format->extract_payload_length(header);
@@ -189,8 +215,10 @@ vector<uint8_t> HCISocket::receive() {
   length_read = read(m_hci_socket, result.data(), result.size());
 
   if (length_read != header_length + payload_length) {
-    LOG.error("Error while reading the payload: " + string(strerror(errno)), "HCISocket");
-    throw Exceptions::SocketException("Can't read payload on the HCI socket.");
+    throw Exceptions::BaBLEException(
+        BaBLE::StatusCode::SocketError,
+        "Error while reading the HCI payload: " + string(strerror(errno))
+    );
   }
 
   return result;
@@ -215,7 +243,7 @@ void HCISocket::on_poll(uv_poll_t* handle, int status, int events) {
       uv_poll_start(hci_socket->m_poller.get(), UV_READABLE, hci_socket->on_poll);
     }
 
-  } catch (const Exceptions::AbstractException& err) {
+  } catch (const Exceptions::BaBLEException& err) {
     hci_socket->m_on_error(err);
   }
 }

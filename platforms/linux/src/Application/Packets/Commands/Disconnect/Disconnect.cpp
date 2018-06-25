@@ -1,5 +1,4 @@
 #include "Disconnect.hpp"
-#include "../../../../Exceptions/RuntimeError/RuntimeErrorException.hpp"
 
 using namespace std;
 

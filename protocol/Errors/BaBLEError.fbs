@@ -1,6 +1,5 @@
 namespace BaBLE;
 
 table BaBLEError {
-  name:string;
   message:string;
 }

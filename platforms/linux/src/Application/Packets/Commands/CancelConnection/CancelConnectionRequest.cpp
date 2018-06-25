@@ -1,7 +1,7 @@
 #include "CancelConnectionRequest.hpp"
-#include "../../../../Exceptions/RuntimeError/RuntimeErrorException.hpp"
-#include "../../Events/CommandComplete/CommandComplete.hpp"
 #include "CancelConnectionResponse.hpp"
+#include "../../Events/CommandComplete/CommandComplete.hpp"
+#include "../../../../Exceptions/BaBLEException.hpp"
 
 using namespace std;
 
@@ -36,12 +36,20 @@ namespace Packet {
       LOG.debug("Response received", "CancelConnectionRequest");
       auto command_complete_packet = dynamic_pointer_cast<Packet::Events::CommandComplete>(packet);
       if (command_complete_packet == nullptr) {
-        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to CommandComplete packet.", m_uuid_request);
+        throw Exceptions::BaBLEException(
+            BaBLE::StatusCode::Failed,
+            "Can't downcast AbstractPacket to CommandComplete packet (CancelConnectionRequest).",
+            m_uuid_request
+        );
       }
 
       vector<uint8_t> result = command_complete_packet->get_returned_params();
       if (result.empty()) {
-        throw Exceptions::WrongFormatException("Response received with wrong result format (CancelConnectionRequest).", m_uuid_request);
+        throw Exceptions::BaBLEException(
+            BaBLE::StatusCode::WrongFormat,
+            "Response received with no result (CancelConnectionRequest).",
+            m_uuid_request
+        );
       }
 
       shared_ptr<Packet::Commands::CancelConnectionResponse> response_packet = make_shared<Packet::Commands::CancelConnectionResponse>();

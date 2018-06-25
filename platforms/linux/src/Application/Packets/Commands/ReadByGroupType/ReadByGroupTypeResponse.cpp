@@ -16,7 +16,10 @@ namespace Packet {
       uint16_t data_length = extractor.get_data_length();
 
       if (data_length <= 0) {
-        throw Exceptions::WrongFormatException("Receive HCI 'ReadByGroupTypeResponse' with no data.");
+        throw Exceptions::BaBLEException(
+            BaBLE::StatusCode::WrongFormat,
+            "Received HCI 'ReadByGroupTypeResponse' with no data."
+        );
       }
 
       auto attribute_length = extractor.get_value<uint8_t>();

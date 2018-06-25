@@ -2,6 +2,7 @@
 #define BABLE_LINUX_ABSTRACTPACKET_HPP
 
 #include "PacketUuid.hpp"
+#include "../../Log/Loggable.hpp"
 #include "../../Format/HCI/HCIFormat.hpp"
 #include "../../Format/MGMT/MGMTFormat.hpp"
 #include "../../Format/Flatbuffers/FlatbuffersFormat.hpp"

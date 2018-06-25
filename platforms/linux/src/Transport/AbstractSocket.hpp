@@ -3,19 +3,20 @@
 
 #include <functional>
 #include "../Format/AbstractFormat.hpp"
+#include "../Exceptions/BaBLEException.hpp"
 
 class AbstractSocket {
 
 public:
   using OnReceivedCallback = std::function<void(const std::vector<uint8_t>&, const std::shared_ptr<AbstractFormat>&)>;
-  using OnErrorCallback = std::function<void(const Exceptions::AbstractException&)>;
+  using OnErrorCallback = std::function<void(const Exceptions::BaBLEException&)>;
 
   explicit AbstractSocket(std::shared_ptr<AbstractFormat> format) {
     m_format = std::move(format);
     m_controller_id = NON_CONTROLLER_ID;
 
     m_on_received = [](const std::vector<uint8_t>& data, const std::shared_ptr<AbstractFormat>& format) {};
-    m_on_error = [](const Exceptions::AbstractException&) {};
+    m_on_error = [](const Exceptions::BaBLEException&) {};
   }
 
   const std::shared_ptr<AbstractFormat> format() const {

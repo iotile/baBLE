@@ -1,6 +1,6 @@
 #include "PacketBuilder.hpp"
 #include "../../Log/Log.hpp"
-#include "../../Exceptions/NotFound/NotFoundException.hpp"
+#include "../../Exceptions/BaBLEException.hpp"
 
 using namespace std;
 
@@ -25,7 +25,10 @@ shared_ptr<Packet::AbstractPacket> PacketBuilder::build(shared_ptr<AbstractExtra
   } else if (m_building_format->is_event(type_code)) {
     return build_packet(move(extractor), m_events);
   } else {
-    throw Exceptions::NotFoundException("Given data to build a packet has no known type: " + to_string(type_code));
+    throw Exceptions::BaBLEException(
+        BaBLE::StatusCode::NotFound,
+        "Given data to build a packet has no known type: " + to_string(type_code)
+    );
   }
 }
 

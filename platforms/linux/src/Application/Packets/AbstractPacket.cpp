@@ -1,8 +1,7 @@
 #include "./AbstractPacket.hpp"
 #include "../PacketRouter/PacketRouter.hpp"
-#include "../../Exceptions/RuntimeError/RuntimeErrorException.hpp"
-#include "../../Exceptions/InvalidCommand/InvalidCommandException.hpp"
 #include "../../utils/stream_formats.hpp"
+#include "../../Exceptions/BaBLEException.hpp"
 
 using namespace std;
 
@@ -46,7 +45,7 @@ namespace Packet {
         {
           auto mgmt_extractor = dynamic_pointer_cast<MGMTFormatExtractor>(extractor);
           if(mgmt_extractor == nullptr) {
-            throw Exceptions::RuntimeErrorException("Can't import data into packet: wrong extractor provided.");
+            throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't import data into packet: wrong extractor provided.");
           }
           m_native_class = "MGMT";
           return unserialize(*mgmt_extractor);
@@ -56,7 +55,7 @@ namespace Packet {
         {
           auto hci_extractor = dynamic_pointer_cast<HCIFormatExtractor>(extractor);
           if(hci_extractor == nullptr) {
-            throw Exceptions::RuntimeErrorException("Can't import data into packet: wrong extractor provided.");
+            throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't import data into packet: wrong extractor provided.");
           }
           m_native_class = "HCI";
           return unserialize(*hci_extractor);
@@ -66,7 +65,7 @@ namespace Packet {
         {
           auto fb_extractor = dynamic_pointer_cast<FlatbuffersFormatExtractor>(extractor);
           if(fb_extractor == nullptr) {
-            throw Exceptions::RuntimeErrorException("Can't import data into packet: wrong extractor provided.");
+            throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't import data into packet: wrong extractor provided.");
           }
           m_uuid_request = fb_extractor->get_uuid_request();
           m_native_class = "FLATBUFFERS";
@@ -74,11 +73,12 @@ namespace Packet {
         }
 
         case Packet::Type::NONE:
-          throw Exceptions::RuntimeErrorException("Can't import data into NONE type packet.");
+          throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't import data into NONE type packet.");
       }
 
-    } catch (const Exceptions::WrongFormatException& err) {
-      throw Exceptions::InvalidCommandException(err.stringify(), m_uuid_request);
+    } catch (Exceptions::BaBLEException& err) {
+      err.set_uuid_request(m_uuid_request);
+      throw;
     }
   }
 
@@ -248,7 +248,10 @@ namespace Packet {
         break;
 
       default:
-        throw Exceptions::RuntimeErrorException("Can't convert status from current type.");
+        throw Exceptions::BaBLEException(
+            BaBLE::StatusCode::Failed,
+            "Can't convert status from current type: " + to_string(m_native_status)
+        );
     }
   };
 

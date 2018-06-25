@@ -1,6 +1,5 @@
 #include "ProbeServices.hpp"
 #include "../../Commands/ReadByGroupType/ReadByGroupTypeResponse.hpp"
-#include "../../../../Exceptions/RuntimeError/RuntimeErrorException.hpp"
 #include "../../../../utils/string_formats.hpp"
 
 using namespace std;
@@ -104,7 +103,11 @@ namespace Packet {
 
       auto read_by_group_type_response_packet = dynamic_pointer_cast<Packet::Commands::ReadByGroupTypeResponse>(packet);
       if (read_by_group_type_response_packet == nullptr) {
-        throw Exceptions::RuntimeErrorException("Can't downcast AbstractPacket to ReadByGroupTypeResponse packet.", m_uuid_request);
+        throw Exceptions::BaBLEException(
+            BaBLE::StatusCode::Failed,
+            "Can't downcast AbstractPacket to ReadByGroupTypeResponse packet (ProbeServices).",
+            m_uuid_request
+        );
       }
 
       vector<Format::HCI::Service> new_services = read_by_group_type_response_packet->get_services();

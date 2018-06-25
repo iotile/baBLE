@@ -1,5 +1,5 @@
 #include "StopScan.hpp"
-#include "../../../../Exceptions/RuntimeError/RuntimeErrorException.hpp"
+#include "../../../../Exceptions/BaBLEException.hpp"
 
 using namespace std;
 
@@ -64,7 +64,11 @@ namespace Packet {
           m_set_scan_enable_packet->on_response_received(router, packet)
       );
       if (m_set_scan_enable_packet == nullptr) {
-        throw Exceptions::RuntimeErrorException("Can't cast AbstractPacket to SetScanEnable packet", m_uuid_request);
+        throw Exceptions::BaBLEException(
+            BaBLE::StatusCode::Failed,
+            "Can't downcast AbstractPacket to SetScanEnable packet (StopScan).",
+            m_uuid_request
+        );
       }
 
       import_status(m_set_scan_enable_packet);

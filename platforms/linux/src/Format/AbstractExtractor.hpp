@@ -2,7 +2,6 @@
 #define BABLE_LINUX_EXTRACTOR_HPP
 
 #include "./HCI/constants.hpp"
-#include "../Exceptions/WrongFormat/WrongFormatException.hpp"
 
 #if __BYTE_ORDER__ == __ORDER_PDP_ENDIAN__
 #error "Byte order not suported (PDP endian)"

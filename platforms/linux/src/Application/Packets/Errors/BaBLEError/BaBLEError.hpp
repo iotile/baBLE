@@ -2,7 +2,7 @@
 #define BABLE_LINUX_BABLEERROR_HPP
 
 #include "../../Base/HostOnlyPacket.hpp"
-#include "../../../../Exceptions/AbstractException.hpp"
+#include "../../../../Exceptions/BaBLEException.hpp"
 
 namespace Packet {
 
@@ -15,16 +15,14 @@ namespace Packet {
         return static_cast<uint16_t>(BaBLE::Payload::BaBLEError);
       };
 
-      explicit BaBLEError(const Exceptions::AbstractException& exception);
+      explicit BaBLEError(const Exceptions::BaBLEException& exception);
 
       std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
 
       const std::string stringify() const override;
 
     private:
-      Exceptions::Type m_type;
       std::string m_message;
-      std::string m_name;
 
     };
 

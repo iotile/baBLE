@@ -1,6 +1,6 @@
 #include "StdIOSocket.hpp"
 #include "../../../Log/Log.hpp"
-#include "../../../Exceptions/RuntimeError/RuntimeErrorException.hpp"
+#include "../../../Exceptions/BaBLEException.hpp"
 
 using namespace std;
 
@@ -60,14 +60,14 @@ void StdIOSocket::on_poll(uv_stream_t* stream, ssize_t nread, const uv_buf_t* bu
         if (consumed_data_length > remaining_data_length) {
           LOG.error("Wrong value of data length consumed (consumed data=" + to_string(consumed_data_length) +
               ", remaining data=" + to_string(remaining_data_length));
-          throw Exceptions::RuntimeErrorException("Error while receiving data on StdIO socket. Stream ignored");
+          throw Exceptions::BaBLEException(BaBLE::StatusCode::SocketError, "Error while receiving data on StdIO socket. Stream ignored");
         }
 
         remaining_data_length -= consumed_data_length;
         remaining_data += consumed_data_length;
 
         stdio_socket->m_on_received(stdio_socket->m_payload, stdio_socket->m_format);
-      } catch (const Exceptions::AbstractException& err) {
+      } catch (const Exceptions::BaBLEException& err) {
         stdio_socket->m_on_error(err);
       }
 

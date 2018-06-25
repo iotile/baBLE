@@ -22,7 +22,10 @@ namespace Packet {
       try {
         m_type = static_cast<Format::HCI::AdvertisingReportType>(extractor.get_value<uint8_t>());
       } catch (const bad_cast& err) {
-        throw Exceptions::WrongFormatException("Wrong event type received in AdvertisingReport.");
+        throw Exceptions::BaBLEException(
+            BaBLE::StatusCode::WrongFormat,
+            "Wrong event type received in AdvertisingReport."
+        );
       }
 
       m_address_type = extractor.get_value<uint8_t>();
