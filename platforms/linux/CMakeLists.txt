@@ -1,11 +1,20 @@
 cmake_minimum_required(VERSION 3.5)
 project(baBLE_linux)
 
+################ CONFIGURATION #################
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS "-funsigned-char")
+
+# To be sure that char = uint8_t
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -funsigned-char")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -funsigned-char")
+
+# To strip debug info on release
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -s")
+
+# To link statically the libraries (libuv)
 link_libraries("-static")
 
+############## CREATE EXECUTABLE ###############
 ## Build executable from sources files
 set(SOURCES_FILES
         src/main.cpp
@@ -88,19 +97,19 @@ set(SOURCES_FILES
         src/Exceptions/BaBLEException.cpp)
 add_executable(baBLE_linux ${SOURCES_FILES})
 
-## Include dependencies
-### libuv
+############# INCLUDE DEPENDENCIES #############
+## libuv
 include_directories(deps/uv/libuv/include)
 add_subdirectory(deps/uv)
 target_link_libraries(baBLE_linux uv)
-### flatbuffers
+
+## flatbuffers
 add_subdirectory(deps/flatbuffers)
 target_link_libraries(baBLE_linux flatbuffers)
 
-## Include generated flatbuffers protocol
+## Generated flatbuffers protocol
 include_directories(deps/protocol)
 
-## Install
+################# INSTALLATION #################
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR})
-install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/baBLE_linux
-        DESTINATION bin)
+install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/baBLE_linux DESTINATION bin)
