@@ -37,7 +37,7 @@ public:
   void info(const std::string& message, const std::string &name = DEFAULT_NAME);
   void debug(const std::string& message, const std::string &name = DEFAULT_NAME);
   void debug(const Loggable& object, const std::string &name = DEFAULT_NAME);
-  void debug(std::vector<uint8_t> bytes, const std::string &name = DEFAULT_NAME);
+  void debug(const std::vector<uint8_t>& bytes, const std::string &name = DEFAULT_NAME);
 
   template<size_t N>
   void debug(std::array<uint8_t, N> bytes, const std::string &name = DEFAULT_NAME);

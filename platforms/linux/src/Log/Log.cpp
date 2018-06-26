@@ -5,9 +5,10 @@ using namespace std;
 string _get_time_string() {
   time_t timestamp = time(nullptr);
   tm local_time = *localtime(&timestamp);
-  stringstream s;
-  s << put_time(&local_time, "%y-%m-%d %H:%M:%S");
-  return s.str();
+  char result[20];
+  strftime (result, sizeof(result), "%y-%m-%d %H:%M:%S", &local_time);
+
+  return string(result);
 }
 
 string Log::get_level_name(const Level& level) {
@@ -97,10 +98,10 @@ void Log::debug(const Loggable& object, const string& name) {
   debug(object.stringify(), name);
 }
 
-void Log::debug(vector<uint8_t> bytes, const string &name) {
+void Log::debug(const vector<uint8_t>& bytes, const string &name) {
   stringstream message_stream;
   message_stream << "[ ";
-  for(uint8_t& value : bytes) {
+  for(const uint8_t& value : bytes) {
     message_stream << HEX(value) << " ";
   }
   message_stream << "]";

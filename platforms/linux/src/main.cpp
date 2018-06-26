@@ -37,7 +37,7 @@ void parse_options(int argc, char* argv[]) {
                                "--logging option requires one argument [DEBUG|INFO|WARNING|ERROR|CRITICAL|NOTSET]");
       }
     } else if (option_name == "--version") {
-      fprintf(stdout, "%s", VERSION);
+      fprintf(stdout, "%s\n", VERSION);
       exit(0);
     } else {
       fprintf(stderr, "Unknown option given (%s)\n", option_name.c_str());
