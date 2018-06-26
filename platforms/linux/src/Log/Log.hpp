@@ -1,6 +1,7 @@
 #ifndef BABLE_LINUX_LOG_HPP
 #define BABLE_LINUX_LOG_HPP
 
+#include <array>
 #include <vector>
 #include "Loggable.hpp"
 #include "../utils/colors.hpp"

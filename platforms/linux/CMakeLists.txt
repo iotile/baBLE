@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.5)
-project(baBLE_linux)
+project(baBLE)
+
+################ VERSION #################
+file (STRINGS "../../VERSION" VERSION)
+add_definitions(-DVERSION="${VERSION}")
+message("Version: ${VERSION}")
 
 ################ CONFIGURATION #################
 set(CMAKE_CXX_STANDARD 14)
@@ -12,7 +17,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -funsigned-char")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -s")
 
 # To link statically the libraries (libuv)
-link_libraries("-static")
+link_libraries("-static -static-libgcc")
 
 ############## CREATE EXECUTABLE ###############
 ## Build executable from sources files
@@ -95,21 +100,20 @@ set(SOURCES_FILES
         src/Transport/Socket/HCI/HCISocket.cpp
         src/bootstrap.hpp
         src/Exceptions/BaBLEException.cpp)
-add_executable(baBLE_linux ${SOURCES_FILES})
+add_executable(bable-bridge-linux ${SOURCES_FILES})
 
 ############# INCLUDE DEPENDENCIES #############
 ## libuv
 include_directories(deps/uv/libuv/include)
 add_subdirectory(deps/uv)
-target_link_libraries(baBLE_linux uv)
+target_link_libraries(bable-bridge-linux uv)
 
 ## flatbuffers
 add_subdirectory(deps/flatbuffers)
-target_link_libraries(baBLE_linux flatbuffers)
+target_link_libraries(bable-bridge-linux flatbuffers)
 
 ## Generated flatbuffers protocol
 include_directories(deps/protocol)
 
 ################# INSTALLATION #################
-set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR})
-install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/baBLE_linux DESTINATION bin)
+install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bable-bridge-linux DESTINATION bin)

@@ -1,6 +1,6 @@
+from os.path import realpath, join, dirname
 from setuptools import setup, find_packages
 import sys
-import version
 
 # Make sure the system has the right Python version.
 if sys.version_info < (2, 7):
@@ -12,8 +12,12 @@ if sys.platform != 'linux' and sys.platform != 'linux2':
     print("baBLE only works on Linux for now.")
     sys.exit(1)
 
-with open("README.md", "r") as fh:
-    long_description = fh.read()
+root_folder = realpath(dirname(dirname(dirname(__file__))))
+with open(join(root_folder, 'VERSION'), 'r') as version_file:
+    version = version_file.read().strip()
+
+with open('README.md', 'r') as readme_file:
+    long_description = readme_file.read()
 
 setup(
     name="bable_interface",
@@ -22,14 +26,14 @@ setup(
         'future;python_version<"3.0"',
         'flatbuffers==1.9'
     ],
-    packages=find_packages(exclude=("test",)),
+    packages=find_packages(exclude=('test',)),
     include_package_data=True,
     entry_points={
         'console_scripts': [
             'bable = bable_interface.scripts.bable_script:main'
         ]
     },
-    version=version.version,
+    version=version,
     license="MIT",
     author="Arch",
     author_email="info@arch-iot.com",

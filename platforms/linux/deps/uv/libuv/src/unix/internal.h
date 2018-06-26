@@ -185,6 +185,18 @@ struct uv__stream_queued_fds_s {
 #define uv__nonblock uv__nonblock_fcntl
 #endif
 
+/* On Linux, uv__nonblock_fcntl() and uv__nonblock_ioctl() do not commute
+ * when O_NDELAY is not equal to O_NONBLOCK.  Case in point: linux/sparc32
+ * and linux/sparc64, where O_NDELAY is O_NONBLOCK + another bit.
+ *
+ * Libuv uses uv__nonblock_fcntl() directly sometimes so ensure that it
+ * commutes with uv__nonblock().
+ */
+#if defined(__linux__) && O_NDELAY != O_NONBLOCK
+#undef uv__nonblock
+#define uv__nonblock uv__nonblock_fcntl
+#endif
+
 /* core */
 int uv__cloexec_ioctl(int fd, int set);
 int uv__cloexec_fcntl(int fd, int set);
@@ -207,6 +219,7 @@ int uv__io_active(const uv__io_t* w, unsigned int events);
 int uv__io_check_fd(uv_loop_t* loop, int fd);
 void uv__io_poll(uv_loop_t* loop, int timeout); /* in milliseconds or -1 */
 int uv__io_fork(uv_loop_t* loop);
+int uv__fd_exists(uv_loop_t* loop, int fd);
 
 /* async */
 void uv__async_stop(uv_loop_t* loop);
@@ -239,10 +252,6 @@ int uv__tcp_keepalive(int fd, int on, unsigned int delay);
 /* pipe */
 int uv_pipe_listen(uv_pipe_t* handle, int backlog, uv_connection_cb cb);
 
-/* timer */
-void uv__run_timers(uv_loop_t* loop);
-int uv__next_timeout(const uv_loop_t* loop);
-
 /* signal */
 void uv__signal_close(uv_signal_t* handle);
 void uv__signal_global_once_init(void);
@@ -267,7 +276,6 @@ void uv__prepare_close(uv_prepare_t* handle);
 void uv__process_close(uv_process_t* handle);
 void uv__stream_close(uv_stream_t* handle);
 void uv__tcp_close(uv_tcp_t* handle);
-void uv__timer_close(uv_timer_t* handle);
 void uv__udp_close(uv_udp_t* handle);
 void uv__udp_finish_close(uv_udp_t* handle);
 uv_handle_type uv__handle_type(int fd);

@@ -8,7 +8,7 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv[1:]
 
-    default_path = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'bin', 'baBLE_linux'))
+    default_path = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', 'bin', 'bable-bridge-linux'))
 
     parser = argparse.ArgumentParser(prog='bable')
     parser.add_argument('-v', '--version', action='store_true', help="display installed version")

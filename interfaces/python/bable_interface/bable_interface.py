@@ -33,9 +33,9 @@ class BaBLEInterface(object):
         logging_lvl = logging.getLevelName(self.logger.getEffectiveLevel())
 
         if use_path:
-            bable_bridge_path = 'baBLE_linux'
+            bable_bridge_path = 'bable-bridge-linux'
         else:
-            bable_bridge_path = os.path.join(os.path.dirname(__file__), 'bin', 'baBLE_linux')
+            bable_bridge_path = os.path.join(os.path.dirname(__file__), 'bin', 'bable-bridge-linux')
 
         self.subprocess = subprocess.Popen(
             [bable_bridge_path, "--logging", logging_lvl],

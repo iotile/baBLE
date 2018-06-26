@@ -1,5 +1,0 @@
-flatbuffers==2015.12.22.1
-greenlet==0.4.13
-numpy==1.14.3
-six==1.11.0
-trollius==2.2
