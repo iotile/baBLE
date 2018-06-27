@@ -17,8 +17,9 @@ before_install:
 - docker exec -it bable aarch64-linux-gnu-g++ --version
 
 install:
+- cd interfaces/python
 - pip install tox-travis
-- pip install --upgrade -r interfaces/python/requirements.txt
+- pip install --upgrade -r requirements.txt
 
 script:
 - echo "OK"
