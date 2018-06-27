@@ -3,7 +3,7 @@ language: python
 env:
   global:
     - DOCKER_CACHE_DIR=$HOME/.docker-cache
-    - DOCKER_IMAGE_NAME=bable-c++-compiler
+    - DOCKER_IMAGE_NAME=bable-linux-compiler
     - DOCKER_CONTAINER_NAME=bable
     - DOCKER_CACHE_FILE=$DOCKER_CACHE_DIR/$DOCKER_IMAGE_NAME.tar.gz
 
