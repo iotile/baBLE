@@ -3,7 +3,7 @@ services:
   x64:
     image: bable-cpp-compiler
     working_dir: /build
-    command: bash /tools/compile.sh x64 /src/${SRC_DIR} /src/${OUTPUT_DIR}
+    command: bash /tools/compile.sh x64 /src/${CPP_SRC_DIR} /src/${OUTPUT_DIR}
     volumes:
       - ../..:/src
       - .:/tools
@@ -11,7 +11,7 @@ services:
 #  x86:
 #      image: bable-cpp-compiler
 #      working_dir: /build
-#      command: bash /tools/compile.sh x86 /src/${SRC_DIR} /src/${OUTPUT_DIR}
+#      command: bash /tools/compile.sh x86 /src/${CPP_SRC_DIR} /src/${OUTPUT_DIR}
 #      volumes:
 #        - ../..:/src
 #        - .:/tools
@@ -19,7 +19,7 @@ services:
 #  armhf:
 #      image: bable-cpp-compiler
 #      working_dir: /build
-#      command: bash /tools/compile.sh armhf /src/${SRC_DIR} /src/${OUTPUT_DIR}
+#      command: bash /tools/compile.sh armhf /src/${CPP_SRC_DIR} /src/${OUTPUT_DIR}
 #      volumes:
 #        - ../..:/src
 #        - .:/tools
@@ -27,7 +27,7 @@ services:
 #  arm64:
 #    image: bable-cpp-compiler
 #    working_dir: /build
-#    command: bash /tools/compile.sh arm64 /src/${SRC_DIR} /src/${OUTPUT_DIR}
+#    command: bash /tools/compile.sh arm64 /src/${CPP_SRC_DIR} /src/${OUTPUT_DIR}
 #    volumes:
 #      - ../..:/src
 #      - .:/tools
