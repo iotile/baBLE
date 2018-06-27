@@ -6,8 +6,9 @@ env:
     - DOCKER_CACHE_FILE=${DOCKER_CACHE_DIR}/${DOCKER_IMAGE_NAME}.tar.gz
     - DOCKER_IMAGE_NAME=bable-cpp-compiler
     - DOCKER_CONTAINER_NAME=bable
-    - OUTPUT_DIR=tmp
+    - CPP_BIN_DIR=tmp
     - CPP_SRC_DIR=platforms/linux
+    - PYTHON_SRC_DIR=interfaces/python
 
 cache:
   pip: true
@@ -16,7 +17,7 @@ cache:
 
 python:
   - 2.7
-#  - 3.6
+  - 3.6
 
 sudo: required
 services:
@@ -35,9 +36,16 @@ before_deploy:
 
 deploy:
   skip_cleanup: true
-  provider: script
-  script: python tools/release.py --dry-run 0.0.1 # $TRAVIS_TAG
-  on:
-    branch: feat-add_ci
-#    tags: true
-    condition: $TRAVIS_PYTHON_VERSION = "2.7"
+  - provider: script
+    script: python tools/release.py --dry-run --build_sdist 0.0.1 ${PYTHON_SRC_DIR} ${CPP_BIN_DIR} # $TRAVIS_TAG
+    on:
+      branch: feat-add_ci
+#      tags: true
+      condition: $TRAVIS_PYTHON_VERSION = "2.7"
+
+  - provider: script
+      script: python tools/release.py --dry-run 0.0.1 ${PYTHON_SRC_DIR} ${CPP_BIN_DIR} # $TRAVIS_TAG
+      on:
+        branch: feat-add_ci
+  #      tags: true
+        condition: $TRAVIS_PYTHON_VERSION = "3.6"
