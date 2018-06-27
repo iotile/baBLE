@@ -1,25 +1,41 @@
 language: python
+
+env:
+  global:
+    - DOCKER_CACHE_DIR=$HOME/.docker-cache
+    - DOCKER_IMAGE_NAME=bable-c++-compiler
+    - DOCKER_CONTAINER_NAME=bable
+    - DOCKER_CACHE_FILE=$DOCKER_CACHE_DIR/$DOCKER_IMAGE_NAME.tar.gz
+
+cache:
+  pip: true
+  directories:
+    - $DOCKER_CACHE_DIR
+
 python:
-- '2.7'
-- '3.6'
+  - '2.7'
+#  - '3.6'
 
 sudo: required
 services:
-- docker
+  - docker
+
+before_cache:
+  - if [ -f ${DOCKER_CACHE_FILE} ]; then gunzip -c ${DOCKER_CACHE_FILE} | docker load; fi
 
 before_install:
-- pwd
-- docker build -t bable-build .
-- docker run -td --rm --name bable bable-build
-- docker exec -it bable g++ --version
-- docker exec -it bable cmake --version
-- docker exec -it bable arm-linux-gnueabihf-g++ --version
-- docker exec -it bable aarch64-linux-gnu-g++ --version
+  - pwd
+  - if [ ! -f ${DOCKER_CACHE_FILE} ]; then mkdir -p $DOCKER_CACHE_DIR && docker build -t ${DOCKER_IMAGE_NAME} . && docker save ${DOCKER_IMAGE_NAME} | gzip > ${DOCKER_CACHE_FILE}; fi
+  - docker run -td --rm --name ${DOCKER_CONTAINER_NAME} ${DOCKER_IMAGE_NAME}
+  - docker exec -it ${DOCKER_CONTAINER_NAME} g++ --version
+  - docker exec -it ${DOCKER_CONTAINER_NAME} cmake --version
+  - docker exec -it ${DOCKER_CONTAINER_NAME} arm-linux-gnueabihf-g++ --version
+  - docker exec -it ${DOCKER_CONTAINER_NAME} aarch64-linux-gnu-g++ --version
 
 install:
-- cd interfaces/python
-- pip install tox-travis
-- pip install --upgrade -r requirements.txt
+  - cd interfaces/python
+  - pip install tox-travis
+  - pip install --upgrade -r requirements.txt
 
 script:
-- echo "OK"
+  - echo "OK"
