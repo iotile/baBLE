@@ -1,0 +1,28 @@
+branches:
+  only:
+  - feat_add_ci
+
+language: python
+python:
+- '2.7'
+- '3.6'
+
+sudo: required
+services:
+- docker
+
+before_install:
+- pwd
+- docker build -t bable-build .
+- docker run -td --rm --name bable bable-build
+- docker exec -it bable g++ --version
+- docker exec -it bable cmake --version
+- docker exec -it bable arm-linux-gnueabihf-g++ --version
+- docker exec -it bable aarch64-linux-gnu-g++ --version
+
+install:
+- pip install tox-travis
+- pip install --upgrade -r interfaces/python/requirements.txt
+
+script:
+- echo "OK"
