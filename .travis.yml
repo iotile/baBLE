@@ -2,10 +2,10 @@ language: python
 
 env:
   global:
-    - DOCKER_CACHE_DIR=${HOME}/.docker-cache
-    - DOCKER_CACHE_FILE=${DOCKER_CACHE_DIR}/${DOCKER_IMAGE_NAME}.tar.gz
     - DOCKER_IMAGE_NAME=bable-cpp-compiler
     - DOCKER_CONTAINER_NAME=bable
+    - DOCKER_CACHE_DIR=${HOME}/.docker-cache
+    - DOCKER_CACHE_FILE=${DOCKER_CACHE_DIR}/${DOCKER_IMAGE_NAME}.tar.gz
     - CPP_BIN_DIR=tmp
     - CPP_SRC_DIR=platforms/linux
     - PYTHON_SRC_DIR=interfaces/python

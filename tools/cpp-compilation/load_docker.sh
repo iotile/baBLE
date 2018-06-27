@@ -3,8 +3,6 @@
 INIT_DIR=`pwd`
 
 cd `dirname "$0"`
-ls -al ${HOME}
-ls -al
 
 if [ -f ${DOCKER_CACHE_FILE} ]; then
   gunzip -c ${DOCKER_CACHE_FILE} | docker load;
@@ -17,4 +15,3 @@ else
 fi
 
 cd ${INIT_DIR}
-ls -al
