@@ -3,7 +3,7 @@ language: python
 env:
   global:
     - DOCKER_CACHE_DIR=$HOME/.docker-cache
-    - DOCKER_IMAGE_NAME=bable-linux-compiler
+    - DOCKER_IMAGE_NAME=bable-cpp-compiler
     - DOCKER_CONTAINER_NAME=bable
     - DOCKER_CACHE_FILE=$DOCKER_CACHE_DIR/$DOCKER_IMAGE_NAME.tar.gz
 
@@ -20,20 +20,23 @@ sudo: required
 services:
   - docker
 
-before_install:
-  - pwd
-  - if [ -f ${DOCKER_CACHE_FILE} ]; then gunzip -c ${DOCKER_CACHE_FILE} | docker load; fi
-  - if [ ! -f ${DOCKER_CACHE_FILE} ]; then mkdir -p $DOCKER_CACHE_DIR && docker build -t ${DOCKER_IMAGE_NAME} . && docker save ${DOCKER_IMAGE_NAME} | gzip > ${DOCKER_CACHE_FILE}; fi
-  - docker run -td --rm --name ${DOCKER_CONTAINER_NAME} ${DOCKER_IMAGE_NAME}
-  - docker exec -it ${DOCKER_CONTAINER_NAME} g++ --version
-  - docker exec -it ${DOCKER_CONTAINER_NAME} cmake --version
-  - docker exec -it ${DOCKER_CONTAINER_NAME} arm-linux-gnueabihf-g++ --version
-  - docker exec -it ${DOCKER_CONTAINER_NAME} aarch64-linux-gnu-g++ --version
-
 install:
-  - cd interfaces/python
   - pip install tox-travis
-  - pip install --upgrade -r requirements.txt
+  - pip install --upgrade -r interfaces/python/build_requirements.txt
 
 script:
   - echo "OK"
+
+before_deploy:
+  - if [ -f ${DOCKER_CACHE_FILE} ]; then gunzip -c ${DOCKER_CACHE_FILE} | docker load; fi
+  - if [ ! -f ${DOCKER_CACHE_FILE} ]; then mkdir -p $DOCKER_CACHE_DIR && docker build -t ${DOCKER_IMAGE_NAME} . && docker save ${DOCKER_IMAGE_NAME} | gzip > ${DOCKER_CACHE_FILE}; fi
+  - SRC_DIR=platforms/linux OUTPUT_DIR=tmp docker-compose -f tools/cpp-compilation/docker-compose.yml up
+
+deploy:
+  skip_cleanup: true
+  provider: script
+  script: python tools/release.py $TRAVIS_TAG
+  on:
+    branch: feat-add_ci
+#    tags: true
+    condition: $TRAVIS_PYTHON_VERSION = "2.7"

@@ -1,0 +1,33 @@
+version: '3'
+services:
+  x64:
+    image: bable-cpp-compiler
+    working_dir: /build
+    command: bash /tools/compile.sh x64 /src/${SRC_DIR} /src/${OUTPUT_DIR}
+    volumes:
+      - ../..:/src
+      - .:/tools
+
+#  x86:
+#      image: bable-cpp-compiler
+#      working_dir: /build
+#      command: bash /tools/compile.sh x86 /src/${SRC_DIR} /src/${OUTPUT_DIR}
+#      volumes:
+#        - ../..:/src
+#        - .:/tools
+#
+#  armhf:
+#      image: bable-cpp-compiler
+#      working_dir: /build
+#      command: bash /tools/compile.sh armhf /src/${SRC_DIR} /src/${OUTPUT_DIR}
+#      volumes:
+#        - ../..:/src
+#        - .:/tools
+#
+#  arm64:
+#    image: bable-cpp-compiler
+#    working_dir: /build
+#    command: bash /tools/compile.sh arm64 /src/${SRC_DIR} /src/${OUTPUT_DIR}
+#    volumes:
+#      - ../..:/src
+#      - .:/tools

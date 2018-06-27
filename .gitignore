@@ -4,5 +4,8 @@
 # Mac
 .DS_Store
 
+# Temporary files
+/tmp
+
 # Keep .gitkeep
 !.gitkeep
