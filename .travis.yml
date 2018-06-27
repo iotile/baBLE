@@ -36,16 +36,16 @@ before_deploy:
 
 deploy:
   skip_cleanup: true
-  - provider: script
-    script: python tools/release.py --dry-run --build_sdist 0.0.1 ${PYTHON_SRC_DIR} ${CPP_BIN_DIR} # $TRAVIS_TAG
-    on:
-      branch: feat-add_ci
-#      tags: true
-      condition: $TRAVIS_PYTHON_VERSION = "2.7"
-
-  - provider: script
-      script: python tools/release.py --dry-run 0.0.1 ${PYTHON_SRC_DIR} ${CPP_BIN_DIR} # $TRAVIS_TAG
-      on:
-        branch: feat-add_ci
-  #      tags: true
-        condition: $TRAVIS_PYTHON_VERSION = "3.6"
+  provider: script
+  script: python tools/release.py --dry-run --build_sdist 0.0.1 ${PYTHON_SRC_DIR} ${CPP_BIN_DIR} # $TRAVIS_TAG
+  on:
+    branch: feat-add_ci
+#    tags: true
+    condition: $TRAVIS_PYTHON_VERSION = "2.7"
+#
+#  - provider: script
+#    script: python tools/release.py --dry-run 0.0.1 ${PYTHON_SRC_DIR} ${CPP_BIN_DIR} # $TRAVIS_TAG
+#    on:
+#      branch: feat-add_ci
+#  #    tags: true
+#      condition: $TRAVIS_PYTHON_VERSION = "3.6"

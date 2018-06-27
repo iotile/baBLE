@@ -3,6 +3,7 @@
 /bable_interface/BaBLE
 /bable_interface/bin/*
 /build/
+/temp/
 
 #Setuptools distribution folder
 /dist/
