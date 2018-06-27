@@ -29,24 +29,24 @@ install:
 
 script:
   - echo "OK"
+  - bash tools/cpp-compilation/load_docker.sh
 
 before_deploy:
-  - bash tools/cpp-compilation/load_docker.sh
   - docker-compose -f tools/cpp-compilation/docker-compose.yml up
 
 deploy:
   - provider: script
-    script: python tools/release.py --dry-run --build_sdist 0.0.1 ${PYTHON_SRC_DIR} ${CPP_BIN_DIR} # $TRAVIS_TAG
+    script: python tools/release.py --build_sdist ${TRAVIS_TAG} ${PYTHON_SRC_DIR} ${CPP_BIN_DIR}
     skip_cleanup: true
     on:
-      branch: feat-add_ci
-#      tags: true
+      branch: master
+      tags: true
       condition: $TRAVIS_PYTHON_VERSION = "2.7"
 
   - provider: script
     skip_cleanup: true
-    script: python tools/release.py --dry-run 0.0.1 ${PYTHON_SRC_DIR} ${CPP_BIN_DIR} # $TRAVIS_TAG
+    script: python tools/release.py ${TRAVIS_TAG} ${PYTHON_SRC_DIR} ${CPP_BIN_DIR}
     on:
-      branch: feat-add_ci
-  #    tags: true
+      branch: master
+      tags: true
       condition: $TRAVIS_PYTHON_VERSION = "3.6"
