@@ -116,7 +116,6 @@ def main():
         build_wheel('linux', args.arch)
     else:
         archs = os.listdir(binaries_dir)
-        print(binaries_dir, args)
         if len(archs) == 0:
             raise Exception("No binaries found in {}".format(binaries_dir))
 
