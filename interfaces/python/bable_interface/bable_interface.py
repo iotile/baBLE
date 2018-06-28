@@ -15,8 +15,8 @@ class BaBLEInterface(object):
     def __init__(self):
         self.logger = logging.getLogger(__name__)
 
+        self.working_thread = None
         self.working_ready_event = threading.Event()
-        self.working_thread = WorkingThread(self.working_ready_event)
 
         self.receiving_thread = None
         self.stop_receiving_event = threading.Event()
@@ -46,6 +46,11 @@ class BaBLEInterface(object):
 
         self.on_error = on_error
 
+        self.working_ready_event.clear()
+        self.stop_receiving_event.clear()
+        self.subprocess_ready_event.clear()
+
+        self.working_thread = WorkingThread(self.working_ready_event)
         self.working_thread.start()
         self.working_ready_event.wait()
 

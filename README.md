@@ -5,6 +5,7 @@ which can be used by any language, on any platform.
 
 Currently, this project contains:
  - the Linux bridge, making a proxy between Bluez and the generic baBLE commands.
+ - the python interface, wraping baBLE commands into asynchronous functions
 
 
 ## Schema

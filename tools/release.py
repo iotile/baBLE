@@ -3,16 +3,14 @@ import glob
 import os
 import setuptools.sandbox
 import sys
+import shutil
 from twine.commands.upload import upload as twine_upload
 
 root_folder = os.path.realpath(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
-def check_version():
+def check_version(expected_version):
     """ Make sure the package version in setuptools matches what we expect it to be """
-    expected_version = os.getenv("VERSION")
-    if expected_version is None:
-        raise EnvironmentError("VERSION env variable not defined.")
 
     with open(os.path.join(root_folder, 'VERSION'), 'r') as version_file:
         version = version_file.read().strip()
@@ -22,19 +20,24 @@ def check_version():
                                .format(expected_version, version))
 
 
-def build_wheel(system, platform):
+def build_wheel(platform):
     """Create a wheel"""
+
+    if platform in ['x86_64', 'i686']:
+        system = 'manylinux1'
+    else:
+        system = 'linux'
 
     setuptools.sandbox.run_setup(
         'setup.py',
-        ['-q', 'clean', 'bdist_wheel', '--plat-name', '{}_{}'.format(system, platform)]
+        ['-q', 'clean', '--all', 'bdist_wheel', '--plat-name', '{}_{}'.format(system, platform)]
     )
 
 
 def build_sdist():
     """Create an sdist package"""
 
-    setuptools.sandbox.run_setup('setup.py', ['-q', 'clean', 'sdist'])
+    setuptools.sandbox.run_setup('setup.py', ['-q', 'clean', '--all', 'sdist'])
 
 
 def upload(dist_dir):
@@ -57,11 +60,7 @@ def upload(dist_dir):
     twine_upload(packages, 'pypi', False, None, pypi_user, pypi_pass, None, None, '~/.pypirc', False, None, None, None)
 
 
-def get_release_notes():
-    version = os.getenv("VERSION")
-    if version is None:
-        raise EnvironmentError("VERSION env variable not defined.")
-
+def get_release_notes(version):
     notes_path = os.path.join(root_folder, 'RELEASE.md')
 
     try:
@@ -95,7 +94,6 @@ def get_release_notes():
 def main():
     parser = argparse.ArgumentParser(prog='release.py')
     parser.add_argument('--dry-run', action='store_true', help="check release without uploading it")
-    parser.add_argument('--arch', action='store', help="architecture to release")
     parser.add_argument('--build_sdist', action='store_true', help="indicate to build a source package (.tar.gz)")
     parser.add_argument('version', action='store', help="version to release")
     parser.add_argument('src_dir', action='store', help="path to python source directory")
@@ -103,34 +101,36 @@ def main():
 
     args = parser.parse_args(sys.argv[1:])
 
+    version = args.version
     src_folder = os.path.realpath(args.src_dir)
     binaries_dir = os.path.realpath(args.binaries_dir)
 
     os.chdir(src_folder)
-    os.environ["VERSION"] = args.version
+    os.environ["VERSION"] = version
 
-    check_version()
-    release_notes = get_release_notes()
+    check_version(version)
+    release_notes = get_release_notes(version)
 
-    if args.arch:
-        build_wheel('linux', args.arch)
-    else:
-        archs = os.listdir(binaries_dir)
-        if len(archs) == 0:
-            raise Exception("No binaries found in {}".format(binaries_dir))
+    archs = os.listdir(binaries_dir)
+    if len(archs) == 0:
+        raise Exception("No binaries found in {}".format(binaries_dir))
 
-        for arch in archs:
-            build_wheel('linux', arch)
+    for arch in archs:
+        shutil.copy(
+            os.path.join(binaries_dir, arch, 'bable-bridge-linux'),
+            os.path.join(src_folder, 'bable_interface', 'bin', 'bable-bridge-linux')
+        )
+        build_wheel(arch)
 
-        if args.build_sdist:
-            build_sdist()
+    if args.build_sdist:
+        build_sdist()
 
     if args.dry_run:
-        print("Dry-run release\nVersion: {}".format(os.getenv("VERSION")))
+        print("Dry-run release\nVersion: {}".format(version))
         print("Release Notes:\n" + release_notes)
     else:
         upload(os.path.join(src_folder, 'dist', '*'))
-        print('bable-interface version {} uploaded to pypi')
+        print('bable-interface version {} uploaded to pypi'.format(version))
 
 
 if __name__ == '__main__':

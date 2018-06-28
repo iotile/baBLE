@@ -420,7 +420,7 @@ def list_controllers(self, timeout=15.0):
     future = asyncio.Future()
     request_packet = Packet.build(GetControllersList)
 
-    self.register_response_callback(
+    self.register_callback(
         request_packet.packet_uuid,
         callback=on_response_received,
         params={"future": future}

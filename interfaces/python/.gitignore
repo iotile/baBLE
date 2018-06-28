@@ -1,6 +1,5 @@
 # Compiled files
 *.pyc
-/bable_interface/BaBLE
 /bable_interface/bin/*
 /build/
 /temp/

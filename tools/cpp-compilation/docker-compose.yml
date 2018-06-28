@@ -1,7 +1,7 @@
 version: '3'
 services:
   x86_64:
-    image: bable-cpp-compiler
+    image: ${DOCKER_IMAGE_NAME}
     working_dir: /build
     command: bash /tools/compile.sh x86_64 /src/${CPP_SRC_DIR} /src/${CPP_BIN_DIR}
     volumes:
@@ -9,25 +9,17 @@ services:
       - .:/tools
 
   i686:
-      image: bable-cpp-compiler
+      image: ${DOCKER_IMAGE_NAME}
       working_dir: /build
       command: bash /tools/compile.sh i686 /src/${CPP_SRC_DIR} /src/${CPP_BIN_DIR}
       volumes:
         - ../..:/src
         - .:/tools
-#
-#  armv7l:
-#      image: bable-cpp-compiler
-#      working_dir: /build
-#      command: bash /tools/compile.sh armv7l /src/${CPP_SRC_DIR} /src/${CPP_BIN_DIR}
-#      volumes:
-#        - ../..:/src
-#        - .:/tools
-#
-#  aarch64:
-#    image: bable-cpp-compiler
-#    working_dir: /build
-#    command: bash /tools/compile.sh aarch64 /src/${CPP_SRC_DIR} /src/${CPP_BIN_DIR}
-#    volumes:
-#      - ../..:/src
-#      - .:/tools
+
+  armv7l:
+      image: ${DOCKER_IMAGE_NAME}
+      working_dir: /build
+      command: bash /tools/compile.sh armv7l /src/${CPP_SRC_DIR} /src/${CPP_BIN_DIR}
+      volumes:
+        - ../..:/src
+        - .:/tools

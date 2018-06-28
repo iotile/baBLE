@@ -8,7 +8,7 @@ if [ -z ${ARCH} ] || [ -z ${SRC_PATH} ] || [ -z ${OUTPUT_PATH} ]; then
     echo "usage: compile.sh <ARCH> <SRC_PATH> <OUTPUT_PATH>"
     echo ""
     echo "options:"
-    echo "  ARCH           the target architecture for cross-compilation (x86_64|i686|armv7l|aarch64)"
+    echo "  ARCH           the target architecture for cross-compilation (x86_64|i686|armv7l)"
     echo "  SRC_PATH       the absolute path to the source folder"
     echo "  OUTPUT_PATH    the absolute path to the output folder"
     exit 1
