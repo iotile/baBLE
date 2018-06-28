@@ -29,9 +29,9 @@ install:
 
 script:
   - echo "OK"
-  - bash tools/cpp-compilation/load_docker.sh
 
 before_deploy:
+  - bash tools/cpp-compilation/load_docker.sh
   - docker-compose -f tools/cpp-compilation/docker-compose.yml up
 
 deploy:
