@@ -1,6 +1,6 @@
-from os.path import realpath, join, dirname
-from setuptools import setup, find_packages
+import os
 import sys
+from setuptools import setup, find_packages
 
 # Make sure the system has the right Python version.
 if sys.version_info < (2, 7):
@@ -12,15 +12,15 @@ if sys.platform != 'linux' and sys.platform != 'linux2':
     print("baBLE only works on Linux for now.")
     sys.exit(1)
 
-root_folder = realpath(dirname(dirname(dirname(__file__))))
-with open(join(root_folder, 'VERSION'), 'r') as version_file:
-    version = version_file.read().strip()
+version = os.getenv("VERSION")
+if version is None:
+    raise EnvironmentError("VERSION env variable not defined.")
 
 with open('README.md', 'r') as readme_file:
     long_description = readme_file.read()
 
 setup(
-    name="bable_interface",
+    name="bable-interface",
     install_requires=[
         'trollius;python_version<"3.4"',
         'future;python_version<"3.0"',

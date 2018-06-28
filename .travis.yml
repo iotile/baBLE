@@ -1,0 +1,52 @@
+language: python
+
+env:
+  global:
+    - DOCKER_IMAGE_NAME=bable-cpp-compiler
+    - DOCKER_CONTAINER_NAME=bable
+    - DOCKER_CACHE_DIR=${HOME}/.docker-cache
+    - DOCKER_CACHE_FILE=${DOCKER_CACHE_DIR}/${DOCKER_IMAGE_NAME}.tar.gz
+    - CPP_BIN_DIR=tmp
+    - CPP_SRC_DIR=platforms/linux
+    - PYTHON_SRC_DIR=interfaces/python
+
+cache:
+  pip: true
+  directories:
+    - $DOCKER_CACHE_DIR
+
+python:
+  - 2.7
+  - 3.6
+
+sudo: required
+services:
+  - docker
+
+install:
+  - pip install tox-travis
+  - pip install --upgrade -r interfaces/python/build_requirements.txt
+
+script:
+  - echo "OK"
+
+before_deploy:
+  - bash tools/cpp-compilation/load_docker.sh
+  - docker-compose -f tools/cpp-compilation/docker-compose.yml up
+
+deploy:
+  - provider: script
+    script: python tools/release.py --build_sdist ${TRAVIS_TAG} ${PYTHON_SRC_DIR} ${CPP_BIN_DIR}
+    skip_cleanup: true
+    on:
+      branch: master
+      tags: true
+      condition: $TRAVIS_PYTHON_VERSION = "2.7"
+
+  - provider: script
+    skip_cleanup: true
+    script: python tools/release.py ${TRAVIS_TAG} ${PYTHON_SRC_DIR} ${CPP_BIN_DIR}
+    on:
+      branch: master
+      tags: true
+      condition: $TRAVIS_PYTHON_VERSION = "3.6"
