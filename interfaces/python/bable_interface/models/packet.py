@@ -14,7 +14,7 @@ class PacketUuid(object):
         self.attribute_handle = attribute_handle
         self.uuid = uuid
 
-    def __str__(self):
+    def __repr__(self):
         return "<PacketUuid payload_type={}, controller_id={}, address={}, connection_handle={}, attribute_handle={}," \
                " uuid={}>".format(self.payload_type, self.controller_id, self.address, self.connection_handle,
                                   self.attribute_handle, self.uuid)
@@ -117,7 +117,7 @@ class Packet(object):
         self.packet_uuid = PacketUuid(payload_type=payload_type, controller_id=controller_id)
         self.params = {}
 
-    def __str__(self):
+    def __repr__(self):
         result = "<{} controller_id={}, status={}, uuid={}, "\
             .format(get_name(self.payload_type), self.controller_id, self.full_status, self.packet_uuid.uuid)
 

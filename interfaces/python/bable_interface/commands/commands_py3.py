@@ -363,7 +363,7 @@ def cancel_connection(self, controller_id, on_connection_cancelled, timeout=15.0
         result = yield from asyncio.wait_for(future, timeout=timeout)
         return result
     except asyncio.TimeoutError:
-        self.remove_response_callback(request_packet.packet_uuid)
+        self.remove_callback(request_packet.packet_uuid)
         on_connection_cancelled(False, None, "Cancel connection timed out")
         raise TimeoutError("Cancel connection timed out")
 
@@ -395,7 +395,7 @@ def list_connected_devices(self, controller_id, timeout=15.0):
         connected_devices = yield from asyncio.wait_for(future, timeout=timeout)
         return connected_devices
     except asyncio.TimeoutError:
-        self.remove_response_callback(request_packet.packet_uuid)
+        self.remove_callback(request_packet.packet_uuid)
         raise TimeoutError("List connected devices timed out")
 
 
@@ -433,7 +433,7 @@ def list_controllers(self, timeout=15.0):
         controllers = yield from asyncio.wait_for(future, timeout=timeout)
         return controllers
     except asyncio.TimeoutError:
-        self.remove_response_callback(request_packet.packet_uuid)
+        self.remove_callback(request_packet.packet_uuid)
         raise TimeoutError("List controllers timed out")
 
 

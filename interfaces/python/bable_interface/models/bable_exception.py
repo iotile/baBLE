@@ -14,7 +14,7 @@ class BaBLEException(Exception):
         self.packet = packet
         self.kwargs = kwargs
 
-    def __str__(self):
+    def __repr__(self):
         result = "{} (packet={}, ".format(self.message, self.packet)
 
         for key, value in self.kwargs.items():

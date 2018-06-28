@@ -240,7 +240,6 @@ void HCISocket::on_poll(uv_poll_t* handle, int status, int events) {
 
     } else if (events & UV_WRITABLE) {
       hci_socket->set_writable(true);
-      uv_poll_start(hci_socket->m_poller.get(), UV_READABLE, hci_socket->on_poll);
     }
 
   } catch (const Exceptions::BaBLEException& err) {
@@ -256,12 +255,12 @@ void HCISocket::poll(OnReceivedCallback on_received, OnErrorCallback on_error) {
 }
 
 void HCISocket::set_writable(bool is_writable) {
-  if (m_writable != is_writable) {
-    m_writable = is_writable;
+  m_writable = is_writable;
 
-    if (!m_writable) {
-      uv_poll_start(m_poller.get(), UV_READABLE | UV_WRITABLE, on_poll);
-    }
+  if (m_writable) {
+    uv_poll_start(m_poller.get(), UV_READABLE, on_poll);
+  } else {
+    uv_poll_start(m_poller.get(), UV_READABLE | UV_WRITABLE, on_poll);
   }
 
   if (m_writable) {

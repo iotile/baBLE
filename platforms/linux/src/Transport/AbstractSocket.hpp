@@ -1,7 +1,7 @@
 #ifndef BABLE_LINUX_ABSTRACTSOCKET_HPP
 #define BABLE_LINUX_ABSTRACTSOCKET_HPP
 
-#include <functional>
+#include <vector>
 #include "../Format/AbstractFormat.hpp"
 #include "../Exceptions/BaBLEException.hpp"
 

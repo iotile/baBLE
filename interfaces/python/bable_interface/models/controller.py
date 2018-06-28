@@ -9,5 +9,5 @@ class Controller(object):
         self.discoverable = raw_ctrl.Discoverable()
         self.low_energy = raw_ctrl.LowEnergy()
 
-    def __str__(self):
+    def __repr__(self):
         return "<Controller id={}, address={}, name={}>".format(self.id, self.address, self.name)

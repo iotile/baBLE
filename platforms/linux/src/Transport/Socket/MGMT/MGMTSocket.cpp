@@ -109,7 +109,6 @@ void MGMTSocket::on_poll(uv_poll_t* handle, int status, int events) {
 
     } else if (events & UV_WRITABLE) {
       mgmt_socket->set_writable(true);
-      uv_poll_start(mgmt_socket->m_poller.get(), UV_READABLE, mgmt_socket->on_poll);
     }
 
   } catch (const Exceptions::BaBLEException& err) {
@@ -125,12 +124,12 @@ void MGMTSocket::poll(OnReceivedCallback on_received, OnErrorCallback on_error) 
 }
 
 void MGMTSocket::set_writable(bool is_writable) {
-  if (m_writable != is_writable) {
-    m_writable = is_writable;
+  m_writable = is_writable;
 
-    if (!m_writable) {
-      uv_poll_start(m_poller.get(), UV_READABLE | UV_WRITABLE, on_poll);
-    }
+  if (m_writable) {
+    uv_poll_start(m_poller.get(), UV_READABLE, on_poll);
+  } else {
+    uv_poll_start(m_poller.get(), UV_READABLE | UV_WRITABLE, on_poll);
   }
 
   if (m_writable) {

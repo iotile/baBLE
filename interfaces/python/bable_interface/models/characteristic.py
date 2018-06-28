@@ -16,7 +16,7 @@ class Characteristic(object):
         self.notification_enabled = raw_characteristic.NotificationEnabled()
         self.indication_enabled = raw_characteristic.IndicationEnabled()
 
-    def __str__(self):
+    def __repr__(self):
         result = "<Characteristic uuid={}, handle={}, value_handle={}, config_handle={}, properties=["\
             .format(self.uuid, self.handle, self.value_handle, self.config_handle)
 
