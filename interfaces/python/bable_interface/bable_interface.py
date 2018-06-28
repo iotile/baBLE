@@ -51,6 +51,7 @@ class BaBLEInterface(object):
         self.subprocess_ready_event.clear()
 
         self.working_thread = WorkingThread(self.working_ready_event)
+        self.working_thread.setDaemon(True)
         self.working_thread.start()
         self.working_ready_event.wait()
 
