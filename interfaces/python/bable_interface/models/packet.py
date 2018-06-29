@@ -29,10 +29,7 @@ class PacketUuid(object):
         if self.uuid is not None:
             return self.uuid == other.uuid
 
-        if self.payload_type != other.payload_type:
-            return False
-
-        if self.controller_id != other.controller_id:
+        if self.payload_type != other.payload_type or self.controller_id != other.controller_id:
             return False
 
         if self.address is not None:
@@ -164,28 +161,30 @@ class Packet(object):
     @staticmethod
     def _format_status(status):
         if status == StatusCode.Success:
-            return "Success"
+            result = "Success"
         elif status == StatusCode.SocketError:
-            return "SocketError"
+            result = "SocketError"
         elif status == StatusCode.NotFound:
-            return "NotFound"
+            result = "NotFound"
         elif status == StatusCode.WrongFormat:
-            return "WrongFormat"
+            result = "WrongFormat"
         elif status == StatusCode.InvalidCommand:
-            return "InvalidCommand"
+            result = "InvalidCommand"
         elif status == StatusCode.Unknown:
-            return "Unknown"
+            result = "Unknown"
         elif status == StatusCode.Rejected:
-            return "Rejected"
+            result = "Rejected"
         elif status == StatusCode.Denied:
-            return "Denied"
+            result = "Denied"
         elif status == StatusCode.Cancelled:
-            return "Cancelled"
+            result = "Cancelled"
         elif status == StatusCode.NotPowered:
-            return "NotPowered"
+            result = "NotPowered"
         elif status == StatusCode.Failed:
-            return "Failed"
+            result = "Failed"
         elif status == StatusCode.NotConnected:
-            return "NotConnected"
+            result = "NotConnected"
         else:
-            return "-"
+            result = "-"
+
+        return result

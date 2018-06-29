@@ -19,7 +19,6 @@ class BaBLEInterface(object):
         self.working_ready_event = threading.Event()
 
         self.receiving_thread = None
-        self.stop_receiving_event = threading.Event()
 
         self.subprocess = None
         self.subprocess_ready_event = threading.Event()
@@ -47,7 +46,6 @@ class BaBLEInterface(object):
         self.on_error = on_error
 
         self.working_ready_event.clear()
-        self.stop_receiving_event.clear()
         self.subprocess_ready_event.clear()
 
         self.working_thread = WorkingThread(self.working_ready_event)
@@ -57,7 +55,7 @@ class BaBLEInterface(object):
 
         self.commands_manager = CommandsManager(self.subprocess)
 
-        self.receiving_thread = ReceivingThread(self.stop_receiving_event, self.on_receive, self.subprocess.stdout)
+        self.receiving_thread = ReceivingThread(self.on_receive, self.subprocess.stdout)
         self.receiving_thread.setDaemon(True)
         self.receiving_thread.start()
 
@@ -104,11 +102,11 @@ class BaBLEInterface(object):
                     "result": fut.result(),
                     "failure_reason": None
                 })
-            except Exception as e:
+            except Exception as err:
                 return_value.update({
                     "success": False,
                     "result": None,
-                    "failure_reason": e
+                    "failure_reason": err
                 })
 
             event.set()
@@ -124,6 +122,8 @@ class BaBLEInterface(object):
                 return result.get("result")
             else:
                 raise result.get("failure_reason", RuntimeError("Command failed without given failure reason"))
+
+        return None
 
     #### Commands ####
 

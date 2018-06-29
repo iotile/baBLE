@@ -19,13 +19,13 @@ class CommandsManager(object):
         found = False
 
         with self.callback_lock:
-            for index, (uuid, callback) in enumerate(self.callbacks):
+            for uuid, callback in self.callbacks:
                 if uuid.match(packet_uuid):
                     found = True
                     add_task_fn(callback(packet=packet))
 
         if not found:
-            self.logger.info("Unexpected response received (uuid={})".format(packet_uuid))
+            self.logger.info("Unexpected response received (uuid=%s)", packet_uuid)
             return
 
     # Executed into the WorkingThread
@@ -46,7 +46,7 @@ class CommandsManager(object):
         to_remove = []
 
         with self.callback_lock:
-            for index, (uuid, callback) in enumerate(self.callbacks):
+            for index, (uuid, _) in enumerate(self.callbacks):
                 for uuid_to_remove in packet_uuids:
                     if uuid.match(uuid_to_remove):
                         to_remove.append(index)

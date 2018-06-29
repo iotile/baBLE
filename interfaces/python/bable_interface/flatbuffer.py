@@ -1,6 +1,8 @@
-import flatbuffers
 import inspect
 import logging
+import flatbuffers
+
+# pylint:disable=unused-import
 from .BaBLE import Packet, BaBLEError, CancelConnection, Connect, ControllerAdded, ControllerRemoved, \
     DeviceConnected, DeviceDisconnected, DeviceFound, Disconnect, Exit, GetConnectedDevices, GetControllersList, \
     GetControllerInfo, GetControllersIds, NotificationReceived, ProbeCharacteristics, ProbeServices, \
@@ -8,7 +10,6 @@ from .BaBLE import Packet, BaBLEError, CancelConnection, Connect, ControllerAdde
 from .BaBLE.Payload import Payload
 from .utils import to_bytes, MAGIC_CODE, snake_to_camel, camel_to_snake
 
-logger = logging.getLogger(__name__)
 
 PAYLOADS = {}
 for payload_name, payload_type in vars(Payload).items():
@@ -16,7 +17,8 @@ for payload_name, payload_type in vars(Payload).items():
         try:
             payload_module = globals()[payload_name]
         except KeyError:
-            logger.error("{} not imported in {}".format(payload_name, __file__), )
+            logger = logging.getLogger(__name__)
+            logger.error("%s not imported in %s", payload_name, __file__)
             continue
 
         payload_class = getattr(payload_module, payload_name)
@@ -133,7 +135,7 @@ def build_packet(payload_type, uuid="", controller_id=None, params=None):
             if isinstance(param_value, str):
                 fb_params[param_name] = builder.CreateString(param_value)
 
-            elif isinstance(param_value, tuple) or isinstance(param_value, list) or isinstance(param_value, bytes):
+            elif isinstance(param_value, (tuple, list, bytes)):
                 getattr(payload_module, "{}Start{}Vector".format(payload_name, param_name))(builder, len(param_value))
                 for element in reversed(param_value):
                     builder.PrependByte(element)
@@ -164,6 +166,5 @@ def build_packet(payload_type, uuid="", controller_id=None, params=None):
     builder.Finish(packet)
 
     buf = builder.Output()
-    buf = MAGIC_CODE + to_bytes(len(buf), 2, byteorder='little') + buf
 
-    return buf
+    return MAGIC_CODE + to_bytes(len(buf), 2, byteorder='little') + buf

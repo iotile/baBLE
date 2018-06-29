@@ -1,8 +1,8 @@
 import re
 import sys
 
-first_cap_re = re.compile('(.)([A-Z][a-z]+)')
-all_cap_re = re.compile('([a-z0-9])([A-Z])')
+FIRST_CAP_REGEX = re.compile('(.)([A-Z][a-z]+)')
+ALL_CAP_REGEX = re.compile('([a-z0-9])([A-Z])')
 
 if sys.version_info < (3, 2):
     import struct
@@ -38,8 +38,8 @@ def snake_to_camel(word):
 
 
 def camel_to_snake(word):
-    word = first_cap_re.sub(r'\1_\2', word)
-    return all_cap_re.sub(r'\1_\2', word).lower()
+    word = FIRST_CAP_REGEX.sub(r'\1_\2', word)
+    return ALL_CAP_REGEX.sub(r'\1_\2', word).lower()
 
 
 MAGIC_CODE = b'\xCA\xFE'

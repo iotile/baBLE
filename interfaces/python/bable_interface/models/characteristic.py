@@ -7,28 +7,17 @@ class Characteristic(object):
         self.value_handle = raw_characteristic.ValueHandle()
         self.config_handle = raw_characteristic.ConfigHandle()
 
-        self.indicate = raw_characteristic.Indicate()
-        self.notify = raw_characteristic.Notify()
-        self.read = raw_characteristic.Read()
-        self.write = raw_characteristic.Write()
-        self.broadcast = raw_characteristic.Broadcast()
+        self.properties = {
+            'indicate': raw_characteristic.Indicate(),
+            'notify': raw_characteristic.Notify(),
+            'read': raw_characteristic.Read(),
+            'write': raw_characteristic.Write(),
+            'broadcast': raw_characteristic.Broadcast()
+        }
 
         self.notification_enabled = raw_characteristic.NotificationEnabled()
         self.indication_enabled = raw_characteristic.IndicationEnabled()
 
     def __repr__(self):
-        result = "<Characteristic uuid={}, handle={}, value_handle={}, config_handle={}, properties=["\
-            .format(self.uuid, self.handle, self.value_handle, self.config_handle)
-
-        if self.indicate:
-            result += "indicate, "
-        if self.notify:
-            result += "notify, "
-        if self.read:
-            result += "read, "
-        if self.write:
-            result += "write, "
-        if self.broadcast:
-            result += "broadcast, "
-
-        return result[:-2] + "]>"
+        return "<Characteristic uuid={}, handle={}, value_handle={}, config_handle={}, properties={}"\
+            .format(self.uuid, self.handle, self.value_handle, self.config_handle, self.properties)

@@ -1,7 +1,7 @@
+from builtins import bytes
+import struct
 import trollius as asyncio
 from trollius import From
-import struct
-from builtins import bytes
 
 from bable_interface.BaBLE import StartScan, StopScan, ProbeServices, ProbeCharacteristics, Connect, Disconnect, \
     CancelConnection, GetConnectedDevices, GetControllersList, Read, Write, WriteWithoutResponse
@@ -25,7 +25,7 @@ def start_scan(self, controller_id, on_device_found, on_scan_started, timeout=15
             "uuid",
             "company_id",
             "device_name",
-            ("manufacturer_data", lambda value: bytes(value))
+            ("manufacturer_data", bytes)
         ])
 
         on_device_found(True, result, None)
@@ -452,7 +452,7 @@ def read(self, controller_id, connection_handle, attribute_handle, on_read, time
                 "controller_id",
                 "connection_handle",
                 "attribute_handle",
-                ("value", lambda value: bytes(value))
+                ("value", bytes)
             ])
 
             on_read(True, data, None)
@@ -565,16 +565,16 @@ def set_notification(self, state, controller_id, connection_handle, attribute_ha
         result = packet.get_dict([
             "connection_handle",
             "attribute_handle",
-            ("value", lambda value: bytes(value))
+            ("value", bytes)
         ])
 
         on_notification_received(True, result, None)
 
     try:
         read_result = yield From(self.read(controller_id, connection_handle, attribute_handle, none_cb, timeout))
-    except (TimeoutError, BaBLEException) as e:
-        on_notification_received(False, None, "Error while reading notification configuration (exception={})".format(e))
-        raise RuntimeError("Error while reading notification configuration (exception={})".format(e))
+    except (TimeoutError, BaBLEException) as err:
+        on_notification_received(False, None, "Error while reading notification config (exception={})".format(err))
+        raise RuntimeError("Error while reading notification config (exception={})".format(err))
 
     current_state = struct.unpack("H", read_result["value"])[0]
 
@@ -593,11 +593,11 @@ def set_notification(self, state, controller_id, connection_handle, attribute_ha
         returned_value = asyncio.Return(result)
         returned_value.raised = True  # To avoid the warning emitted in Return destructor ("... used without raise")
         raise returned_value
-    except (TimeoutError, BaBLEException) as e:
+    except (TimeoutError, BaBLEException) as err:
         if state:
             self.remove_callback(notification_event_uuid)
-        on_notification_received(False, None, "Error while writing notification configuration (exception={})".format(e))
-        raise RuntimeError("Error while writing notification configuration (exception={})".format(e))
+        on_notification_received(False, None, "Error while writing notification config (exception={})".format(err))
+        raise RuntimeError("Error while writing notification config (exception={})".format(err))
 
 
 @asyncio.coroutine
