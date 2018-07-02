@@ -3,6 +3,13 @@
 This is the cross-platform Python interface to communicate with the platform-dependent baBLE bridge, to use
 native Bluetooth Low Energy in your projects.
 
+- [Usage](#usage)
+- [Installation](#installation)
+- ["bable" script](#"bable"-script)
+- [Installing Support for IOTile Based Devices](#installing-support-for-iotile-based-devices)
+- [How to use it without sudo](#how-to-use-it-without-sudo)
+
+
 ## Usage
 
 ```python
@@ -69,4 +76,61 @@ except Exception as e:  # Synchronous commands raise exception on error
 # When we have finished, we have to stop the bable interface to cleanly terminate the threads and the subprocess.
 bable.stop()
 print("End")
+```
+
+## Installation
+
+Currently, only Linux is available (Windows and Mac coming soon...)
+
+#### From Pypi
+
+It is recommended to install it from Pypi to have a ready-to-go package with a pre-compiled bridge in it.
+
+```bash
+pip install bable-interface
+```
+
+This technique will work for for x86_64, i686 and armv7l architecture.
+
+#### From source
+
+You can also build it from source but you'll have to compile the bridge by yourself
+(cf [platforms/](https://github.com/iotile/baBLE/tree/master/platforms) to see how to build your bridge from source).
+
+```bash
+$ git clone https://github.com/iotile/baBLE.git
+$ cd baBLE/interfaces/python
+
+# Here you can either copy your compiled bridge to the bin folder to add it to your package...
+$ cp <path_to_your_bridge_exe> ./bable_interface/bin
+
+# ... or you can add the folder where the bridge executable is to your PATH (and add use_path=True to BaBLEInterface.start())
+$ export PATH=<path_to_your_bridge_exe_folder>:$PATH
+
+$ python setup.py install
+```
+
+## "bable" script
+
+After installing the Python bable interface, you'll have access to the `bable` command from your shell. It could be useful
+for 2 things:
+  - get the current bable version installed (`bable --version`)
+  - set the capabilities of the bridge executable ([cf "How to use it without sudo" part](#how-to-use-it-without-sudo))
+  (`bable --set-cap`)
+
+## How to use it without sudo
+
+By default, on Linux, you need to have root rights to communicate with the Bluetooth subkernel. But if you don't want to
+execute your program as sudo, you can simply set the capabilities of the bridge executable. 
+The simplest way to do so is simply to run:
+
+```bash
+$ bable --set-cap
+```
+
+This will simply run the following command, that you can obviously run by yourself, especially if you want to use a
+different bable bridge:
+
+```bash
+$ sudo setcap cap_net_raw,cap_net_admin+eip <path_to_your_bridge_exe>
 ```
