@@ -1,7 +1,7 @@
 #ifndef BABLE_LINUX_MGMTFORMATEXTRACTOR_HPP
 #define BABLE_LINUX_MGMTFORMATEXTRACTOR_HPP
 
-#include "../AbstractExtractor.hpp"
+#include "Format/AbstractExtractor.hpp"
 #include "./constants.hpp"
 
 class MGMTFormatExtractor : public AbstractExtractor {

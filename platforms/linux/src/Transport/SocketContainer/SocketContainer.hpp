@@ -2,8 +2,8 @@
 #define BABLE_LINUX_SOCKETCONTAINER_HPP
 
 #include <map>
-#include "../AbstractSocket.hpp"
-#include "../../Application/Packets/AbstractPacket.hpp"
+#include "Transport/AbstractSocket.hpp"
+#include "Application/Packets/AbstractPacket.hpp"
 
 class SocketContainer {
 

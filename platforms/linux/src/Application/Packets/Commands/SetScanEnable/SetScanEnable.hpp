@@ -1,7 +1,7 @@
 #ifndef BABLE_LINUX_SETSCANENABLE_HPP
 #define BABLE_LINUX_SETSCANENABLE_HPP
 
-#include "../../Base/HostToControllerPacket.hpp"
+#include "Application/Packets/Base/HostToControllerPacket.hpp"
 
 namespace Packet {
 

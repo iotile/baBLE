@@ -1,4 +1,5 @@
 #include <uv.h>
+#include <zconf.h>
 #include "Log/Log.hpp"
 #include "Application/PacketBuilder/PacketBuilder.hpp"
 #include "Application/PacketRouter/PacketRouter.hpp"
@@ -29,18 +30,23 @@ void cleanly_stop_loop(uv_loop_t* loop) {
 void parse_options(int argc, char* argv[]) {
   for (int i = 1; i < argc; i++) {
     string option_name = string(argv[i]);
-    if (option_name == "--logging") {
+    if (option_name == "--version") {
+      fprintf(stdout, "%s\n", VERSION);
+      exit(0);
+    } else if (option_name == "--help") {
+      fprintf(stdout, "usage: bable-bridge-linux [--version] [--logging <LEVEL>]\n"
+                      "options:\n"
+                      "  --version    display version of bable-linux-bridge\n"
+                      "  --logging    set logging level to LEVEL (values: DEBUG|INFO|WARNING|ERROR|CRITICAL|NOTSET)\n");
+      exit(0);
+    } else if (option_name == "--logging") {
       if (i + 1 < argc) {
         LOG.set_level(string(argv[++i]));
       } else {
-        throw invalid_argument("Invalid option:"
-                               "--logging option requires one argument [DEBUG|INFO|WARNING|ERROR|CRITICAL|NOTSET]");
+        throw invalid_argument("Invalid option: --logging option requires one argument");
       }
-    } else if (option_name == "--version") {
-      fprintf(stdout, "%s\n", VERSION);
-      exit(0);
     } else {
-      fprintf(stderr, "Unknown option given (%s)\n", option_name.c_str());
+      throw invalid_argument("Unknown option given: " + option_name);
     }
   }
 }

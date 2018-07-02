@@ -1,6 +1,6 @@
 #include "ReadRequest.hpp"
 #include "./ReadResponse.hpp"
-#include "../../../../Exceptions/BaBLEException.hpp"
+#include "Exceptions/BaBLEException.hpp"
 
 using namespace std;
 

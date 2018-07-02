@@ -1,6 +1,6 @@
 #include "MGMTFormatExtractor.hpp"
-#include "../../Log/Log.hpp"
-#include "../../Exceptions/BaBLEException.hpp"
+#include "Log/Log.hpp"
+#include "Exceptions/BaBLEException.hpp"
 
 using namespace std;
 

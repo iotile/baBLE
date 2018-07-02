@@ -1,6 +1,6 @@
 #include <sstream>
 #include "ErrorResponse.hpp"
-#include "../../../../Exceptions/BaBLEException.hpp"
+#include "Exceptions/BaBLEException.hpp"
 
 using namespace std;
 

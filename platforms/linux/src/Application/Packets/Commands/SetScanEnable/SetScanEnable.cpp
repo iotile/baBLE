@@ -1,6 +1,6 @@
 #include "SetScanEnable.hpp"
-#include "../../Events/CommandComplete/CommandComplete.hpp"
-#include "../../../../Exceptions/BaBLEException.hpp"
+#include "Application/Packets/Events/CommandComplete/CommandComplete.hpp"
+#include "Exceptions/BaBLEException.hpp"
 
 using namespace std;
 

@@ -1,12 +1,14 @@
 cmake_minimum_required(VERSION 3.5)
 project(baBLE)
 
-################ VERSION #################
+option(BUILD_TESTS "Determines whether to build tests." OFF)
+
+################ VERSION ##################
 file (STRINGS "../../VERSION" VERSION)
 add_definitions(-DVERSION="${VERSION}")
 message("Version: ${VERSION}")
 
-################ CONFIGURATION #################
+############## CONFIGURATION ###############
 set(CMAKE_CXX_STANDARD 14)
 
 # To be sure that char = uint8_t
@@ -19,10 +21,9 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -s")
 # To link statically the libraries (libuv)
 link_libraries("-static -static-libgcc")
 
-############## CREATE EXECUTABLE ###############
+############## CREATE LIBRARY ###############
 ## Build executable from sources files
 set(SOURCES_FILES
-        src/main.cpp
         src/utils/colors.hpp
         src/utils/stream_formats.hpp
         src/utils/string_formats.hpp
@@ -95,25 +96,45 @@ set(SOURCES_FILES
         src/Format/HCI/HCIFormatExtractor.cpp
         src/Transport/AbstractSocket.hpp
         src/Transport/SocketContainer/SocketContainer.cpp
+        src/Transport/Socket/Socket.cpp
         src/Transport/Socket/MGMT/MGMTSocket.cpp
         src/Transport/Socket/StdIO/StdIOSocket.cpp
         src/Transport/Socket/HCI/HCISocket.cpp
         src/bootstrap.hpp
         src/Exceptions/BaBLEException.cpp)
-add_executable(bable-bridge-linux ${SOURCES_FILES})
+add_library(bable ${SOURCES_FILES})
+target_include_directories(bable PUBLIC src)
 
-############# INCLUDE DEPENDENCIES #############
+#### Include dependencies ####
 ## libuv
-include_directories(deps/uv/libuv/include)
 add_subdirectory(deps/uv)
-target_link_libraries(bable-bridge-linux uv)
+target_link_libraries(bable uv)
 
 ## flatbuffers
 add_subdirectory(deps/flatbuffers)
-target_link_libraries(bable-bridge-linux flatbuffers)
+target_link_libraries(bable flatbuffers)
 
 ## Generated flatbuffers protocol
-include_directories(deps/protocol)
+target_include_directories(bable PUBLIC deps/protocol)
+
+############## CREATE EXECUTABLE ###############
+add_executable(bable-bridge-linux src/main.cpp)
+target_link_libraries(bable-bridge-linux bable)
+
+########## CREATE TEST (IF ENABLED) ############
+if (BUILD_TESTS)
+    enable_testing()
+
+    add_executable(bable-bridge-linux-test tests/test_main.cpp tests/test_formats.cpp)
+    target_link_libraries(bable-bridge-linux-test bable)
+
+    #### Include test dependencies ####
+    ## Catch2 (for unit tests)
+    target_include_directories(bable-bridge-linux-test PRIVATE deps/catch2)
+
+    #### Declare test ####
+    add_test(bable-bridge-linux-test bable-bridge-linux-test)
+endif()
 
 ################# INSTALLATION #################
 install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/bable-bridge-linux DESTINATION bin)

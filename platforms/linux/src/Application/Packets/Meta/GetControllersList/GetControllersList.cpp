@@ -1,7 +1,7 @@
 #include "GetControllersList.hpp"
-#include "../../Commands/GetControllersIds/GetControllersIdsResponse.hpp"
-#include "../../Commands/GetControllerInfo/GetControllerInfoResponse.hpp"
-#include "../../../../utils/string_formats.hpp"
+#include "Application/Packets/Commands/GetControllersIds/GetControllersIdsResponse.hpp"
+#include "Application/Packets/Commands/GetControllerInfo/GetControllerInfoResponse.hpp"
+#include "utils/string_formats.hpp"
 
 using namespace std;
 

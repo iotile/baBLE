@@ -1,5 +1,6 @@
 # Compiled files
 /build
+/tests/build
 
 # Keep .gitkeep
 !.gitkeep

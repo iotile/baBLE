@@ -1,8 +1,8 @@
 #ifndef BABLE_LINUX_PROBESERVICES_HPP
 #define BABLE_LINUX_PROBESERVICES_HPP
 
-#include "../../Base/HostOnlyPacket.hpp"
-#include "../../Commands/ReadByGroupType/ReadByGroupTypeRequest.hpp"
+#include "Application/Packets/Base/HostOnlyPacket.hpp"
+#include "Application/Packets/Commands/ReadByGroupType/ReadByGroupTypeRequest.hpp"
 
 namespace Packet {
 

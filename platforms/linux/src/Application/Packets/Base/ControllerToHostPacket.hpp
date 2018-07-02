@@ -1,7 +1,7 @@
 #ifndef BABLE_LINUX_CONTROLLERTOHOSTPACKET_HPP
 #define BABLE_LINUX_CONTROLLERTOHOSTPACKET_HPP
 
-#include "../AbstractPacket.hpp"
+#include "Application/Packets/AbstractPacket.hpp"
 
 namespace Packet {
 

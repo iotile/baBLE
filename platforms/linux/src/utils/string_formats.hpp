@@ -4,8 +4,8 @@
 #include <array>
 #include <sstream>
 #include <vector>
-#include "./stream_formats.hpp"
-#include "../Exceptions/BaBLEException.hpp"
+#include "utils/stream_formats.hpp"
+#include "Exceptions/BaBLEException.hpp"
 
 namespace Utils {
 

@@ -4,8 +4,8 @@
 #include <chrono>
 #include <map>
 #include <uv.h>
-#include "../Packets/AbstractPacket.hpp"
-#include "../../Log/Loggable.hpp"
+#include "Application/Packets/AbstractPacket.hpp"
+#include "Log/Loggable.hpp"
 
 class PacketRouter : public Loggable {
 
