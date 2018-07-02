@@ -2,7 +2,7 @@
 #define BABLE_LINUX_MGMTFORMAT_HPP
 
 #include "./constants.hpp"
-#include "../AbstractFormat.hpp"
+#include "Format/AbstractFormat.hpp"
 #include "MGMTFormatBuilder.hpp"
 #include "MGMTFormatExtractor.hpp"
 

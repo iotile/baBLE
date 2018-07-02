@@ -1,9 +1,9 @@
 #ifndef BABLE_LINUX_STOPSCAN_HPP
 #define BABLE_LINUX_STOPSCAN_HPP
 
-#include "../../Base/HostOnlyPacket.hpp"
-#include "../../Commands/SetScanParameters/SetScanParameters.hpp"
-#include "../../Commands/SetScanEnable/SetScanEnable.hpp"
+#include "Application/Packets/Base/HostOnlyPacket.hpp"
+#include "Application/Packets/Commands/SetScanParameters/SetScanParameters.hpp"
+#include "Application/Packets/Commands/SetScanEnable/SetScanEnable.hpp"
 
 namespace Packet {
 

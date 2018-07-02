@@ -1,6 +1,6 @@
 #include "ProbeServices.hpp"
-#include "../../Commands/ReadByGroupType/ReadByGroupTypeResponse.hpp"
-#include "../../../../utils/string_formats.hpp"
+#include "Application/Packets/Commands/ReadByGroupType/ReadByGroupTypeResponse.hpp"
+#include "utils/string_formats.hpp"
 
 using namespace std;
 

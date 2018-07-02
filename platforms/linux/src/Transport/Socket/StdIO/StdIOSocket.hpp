@@ -4,12 +4,7 @@
 #define MAGIC_CODE 0xCAFE
 
 #include <uv.h>
-#include "../../AbstractSocket.hpp"
-
-enum STDIO_ID {
-  in = 0,
-  out = 1
-};
+#include "Transport/AbstractSocket.hpp"
 
 class StdIOSocket : public AbstractSocket {
 
@@ -22,11 +17,12 @@ public:
   void poll(OnReceivedCallback on_received, OnErrorCallback on_error) override;
   void on_close(OnCloseCallback on_close);
 
+protected:
+  static void on_poll(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf);
+  std::vector<uint8_t> generate_header(const std::vector<uint8_t>& data);
+
 private:
   static void allocate_buffer(uv_handle_t* handle, size_t suggested_size, uv_buf_t* buf);
-  static void on_poll(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf);
-
-  std::vector<uint8_t> generate_header(const std::vector<uint8_t>& data);
   bool receive(const uint8_t* data, size_t length);
   void clear();
 

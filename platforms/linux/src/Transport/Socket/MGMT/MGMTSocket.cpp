@@ -2,44 +2,30 @@
 #include <cstring>
 #include <unistd.h>
 #include "MGMTSocket.hpp"
-#include "../../../Log/Log.hpp"
-#include "../../../Exceptions/BaBLEException.hpp"
+#include "Log/Log.hpp"
+#include "Exceptions/BaBLEException.hpp"
 
 using namespace std;
 
 MGMTSocket::MGMTSocket(uv_loop_t* loop, shared_ptr<MGMTFormat> format)
-    : AbstractSocket(move(format)) {
+    : MGMTSocket(loop, move(format), Socket(AF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC | SOCK_NONBLOCK, BTPROTO_HCI))
+{}
+
+MGMTSocket::MGMTSocket(uv_loop_t* loop, shared_ptr<MGMTFormat> format, const Socket& socket)
+    : AbstractSocket(move(format)),
+      m_socket(socket) {
   m_header_length = m_format->get_header_length(0);
   m_writable = true;
 
-  m_socket = socket(AF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC | SOCK_NONBLOCK, BTPROTO_HCI);
-  if (m_socket < 0) {
-    throw Exceptions::BaBLEException(
-        BaBLE::StatusCode::SocketError,
-        "Error while creating the MGMT socket: " + string(strerror(errno))
-    );
-  }
+  LOG.debug("Binding MGMT socket...", "MGMTSocket");
+  m_socket.bind(NON_CONTROLLER_ID, HCI_CHANNEL_CONTROL);
 
-  if(!bind_socket()) {
-    throw Exceptions::BaBLEException(
-        BaBLE::StatusCode::SocketError,
-        "Error while binding the MGMT socket: " + string(strerror(errno))
-    );
-  }
-
+  LOG.debug("Setting up poller on MGMT socket...", "MGMTSocket");
   m_poller = make_unique<uv_poll_t>();
   m_poller->data = this;
-  uv_poll_init_socket(loop, m_poller.get(), m_socket);
-}
+  uv_poll_init_socket(loop, m_poller.get(), static_cast<uv_os_sock_t>(m_socket.get_raw()));
 
-bool MGMTSocket::bind_socket() {
-  struct Format::HCI::sockaddr_hci addr {
-      AF_BLUETOOTH,
-      NON_CONTROLLER_ID,
-      HCI_CHANNEL_CONTROL
-  };
-
-  return bind(m_socket, (struct sockaddr*) &addr, sizeof(addr)) == 0;
+  LOG.debug("MGMT socket created", "MGMTSocket");
 }
 
 bool MGMTSocket::send(const vector<uint8_t>& data) {
@@ -51,44 +37,24 @@ bool MGMTSocket::send(const vector<uint8_t>& data) {
   } else {
     set_writable(false);
 
-    LOG.debug("Sending data...", "MGMT socket");
-    LOG.debug(data, "MGMT socket");
-    if (write(m_socket, data.data(), data.size()) < 0) {
-      throw Exceptions::BaBLEException(
-          BaBLE::StatusCode::SocketError,
-          "Error occured while sending the packet through MGMT socket: " + string(strerror(errno))
-      );
-    }
+    LOG.debug("Sending data...", "MGMTSocket");
+    LOG.debug(data, "MGMTSocket");
+    m_socket.write(data);
   }
 
   return true;
 }
 
 vector<uint8_t> MGMTSocket::receive() {
-  vector<uint8_t> header(m_header_length);
-
   // MSG_PEEK is used to not remove data in socket queue. Else, for unknown reason, all the data are consumed and we
   // can't read the payload afterwards...
-  ssize_t length_read = recv(m_socket, header.data(), header.size(), MSG_PEEK);
-
-  if (length_read < m_header_length) {
-    throw Exceptions::BaBLEException(
-        BaBLE::StatusCode::SocketError,
-        "Error while reading the MGMT header: " + string(strerror(errno))
-    );
-  }
+  vector<uint8_t> header(m_header_length);
+  m_socket.read(header, true);
 
   size_t payload_length = m_format->extract_payload_length(header);
 
   vector<uint8_t> result(m_header_length + payload_length);
-  length_read = read(m_socket, result.data(), result.size());
-
-  if (length_read < m_header_length + payload_length) {
-    throw Exceptions::BaBLEException(
-        BaBLE::StatusCode::SocketError,
-        "Error while reading the MGMT payload: " + string(strerror(errno))
-    );
-  }
+  m_socket.read(result);
 
   return result;
 }
@@ -141,6 +107,6 @@ void MGMTSocket::set_writable(bool is_writable) {
 }
 
 MGMTSocket::~MGMTSocket() {
-  close(m_socket);
-  LOG.debug("MGMT socket closed", "MGMT socket");
+  m_socket.close();
+  LOG.debug("MGMT socket closed", "MGMTSocket");
 };

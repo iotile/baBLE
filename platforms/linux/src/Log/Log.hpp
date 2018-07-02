@@ -4,8 +4,8 @@
 #include <array>
 #include <vector>
 #include "Loggable.hpp"
-#include "../utils/colors.hpp"
-#include "../utils/stream_formats.hpp"
+#include "utils/colors.hpp"
+#include "utils/stream_formats.hpp"
 
 #define DEFAULT_NAME "General"
 

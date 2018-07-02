@@ -1,6 +1,6 @@
 #include "StdIOSocket.hpp"
-#include "../../../Log/Log.hpp"
-#include "../../../Exceptions/BaBLEException.hpp"
+#include "Log/Log.hpp"
+#include "Exceptions/BaBLEException.hpp"
 
 using namespace std;
 
@@ -13,16 +13,17 @@ StdIOSocket::StdIOSocket(uv_loop_t* loop, shared_ptr<AbstractFormat> format)
   m_poller = make_unique<uv_pipe_t>();
   m_poller->data = this;
   uv_pipe_init(loop, m_poller.get(), false);
-  uv_pipe_open(m_poller.get(), STDIO_ID::in);
+  uv_pipe_open(m_poller.get(), fileno(stdin));
 
   m_on_close_callback = []() {};
 }
 
 bool StdIOSocket::send(const vector<uint8_t>& data) {
-  vector<uint8_t> result = generate_header(data);
-  result.insert(result.end(), data.begin(), data.end());
+  vector<uint8_t> header = generate_header(data);
 
-  fwrite(result.data(), sizeof(uint8_t), result.size(), stdout);
+  fwrite(header.data(), sizeof(uint8_t), header.size(), stdout);
+  fwrite(data.data(), sizeof(uint8_t), data.size(), stdout);
+
   fflush(stdout);
   LOG.debug("Data sent.", "StdIOSocket");
   return true;
@@ -42,7 +43,7 @@ void StdIOSocket::on_poll(uv_stream_t* stream, ssize_t nread, const uv_buf_t* bu
 
   } else if (nread < 0) {
     auto error_code = static_cast<int>(nread);
-    LOG.error("Error while polling stdin: " + string(uv_err_name(error_code)));
+    LOG.error("Error while polling input: " + string(uv_err_name(error_code)));
 
   } else if (nread > 0) {
     LOG.debug("Readable data...", "StdIOSocket");

@@ -1,7 +1,7 @@
 #ifndef BABLE_LINUX_HCIFORMATEXTRACTOR_HPP
 #define BABLE_LINUX_HCIFORMATEXTRACTOR_HPP
 
-#include "../AbstractExtractor.hpp"
+#include "Format/AbstractExtractor.hpp"
 
 class HCIFormatExtractor : public AbstractExtractor {
 
