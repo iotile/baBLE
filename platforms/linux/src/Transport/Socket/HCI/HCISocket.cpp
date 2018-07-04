@@ -1,6 +1,5 @@
 #include "HCISocket.hpp"
 #include "Log/Log.hpp"
-#include "utils/string_formats.hpp"
 
 using namespace std;
 
@@ -31,12 +30,12 @@ vector<shared_ptr<HCISocket>> HCISocket::create_all(uv_loop_t* loop, shared_ptr<
 }
 
 HCISocket::HCISocket(uv_loop_t* loop, shared_ptr<HCIFormat> format, uint16_t controller_id)
-    : HCISocket(loop, move(format), controller_id, Socket(AF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC | SOCK_NONBLOCK, BTPROTO_HCI))
+    : HCISocket(loop, move(format), controller_id, make_shared<Socket>(AF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC | SOCK_NONBLOCK, BTPROTO_HCI))
 {}
 
-HCISocket::HCISocket(uv_loop_t* loop, shared_ptr<HCIFormat> format, uint16_t controller_id, const Socket& hci_socket)
+HCISocket::HCISocket(uv_loop_t* loop, shared_ptr<HCIFormat> format, uint16_t controller_id, std::shared_ptr<Socket> hci_socket)
     : AbstractSocket(move(format)),
-      m_hci_socket(hci_socket) {
+      m_hci_socket(move(hci_socket)) {
   m_controller_id = controller_id;
   m_writable = true;
 
@@ -44,25 +43,25 @@ HCISocket::HCISocket(uv_loop_t* loop, shared_ptr<HCIFormat> format, uint16_t con
   set_filters();
 
   LOG.debug("Binding HCI socket...", "HCISocket");
-  m_hci_socket.bind(m_controller_id, HCI_CHANNEL_RAW);
+  m_hci_socket->bind(m_controller_id, HCI_CHANNEL_RAW);
 
   LOG.debug("Getting HCI controller address...", "HCISocket");
-  get_controller_address();
+  find_controller_address();
 
   LOG.debug("Setting up poller on HCI socket...", "HCISocket");
   m_poller = make_unique<uv_poll_t>();
   m_poller->data = this;
-  uv_poll_init_socket(loop, m_poller.get(), static_cast<uv_os_sock_t>(m_hci_socket.get_raw()));
+  uv_poll_init_socket(loop, m_poller.get(), static_cast<uv_os_sock_t>(m_hci_socket->get_raw()));
 
   LOG.debug("HCI socket created on " + Utils::format_bd_address(m_controller_address), "HCISocket");
 }
 
-bool HCISocket::get_controller_address() {
+bool HCISocket::find_controller_address() {
   struct Format::HCI::hci_dev_info di{};
   di.dev_id = m_controller_id;
 
   // To get the controller address
-  m_hci_socket.ioctl(HCIGETDEVINFO, (void *)&di);
+  m_hci_socket->ioctl(HCIGETDEVINFO, (void *)&di);
 
   copy(begin(di.bdaddr.b), end(di.bdaddr.b), m_controller_address.begin());
   return true;
@@ -77,7 +76,7 @@ bool HCISocket::set_filters() {
       0
   };
 
-  m_hci_socket.set_option(SOL_HCI, HCI_FILTER, &filter, sizeof(filter));
+  m_hci_socket->set_option(SOL_HCI, HCI_FILTER, &filter, sizeof(filter));
 }
 
 void HCISocket::connect_l2cap_socket(uint16_t connection_handle, const array<uint8_t, 6>& device_address, uint8_t device_address_type) {
@@ -110,7 +109,7 @@ bool HCISocket::send(const vector<uint8_t>& data) {
 
     LOG.debug("Sending data...", "HCISocket");
     LOG.debug(data, "HCISocket");
-    m_hci_socket.write(data);
+    m_hci_socket->write(data);
   }
 
   return true;
@@ -120,17 +119,17 @@ vector<uint8_t> HCISocket::receive() {
   // MSG_PEEK is used to not remove data in socket queue. Else, for unknown reason, all the data are consumed and we
   // can't read the payload afterwards...
   vector<uint8_t> type_code(1);
-  m_hci_socket.read(type_code, true);
+  m_hci_socket->read(type_code, true);
 
   size_t header_length = m_format->get_header_length(type_code.at(0));
 
   vector<uint8_t> header(header_length);
-  m_hci_socket.read(header, true);
+  m_hci_socket->read(header, true);
 
   size_t payload_length = m_format->extract_payload_length(header);
 
   vector<uint8_t> result(header_length + payload_length);
-  m_hci_socket.read(result);
+  m_hci_socket->read(result, false);
 
   return result;
 }
@@ -163,15 +162,18 @@ void HCISocket::poll(OnReceivedCallback on_received, OnErrorCallback on_error) {
   m_on_error = on_error;
 
   uv_poll_start(m_poller.get(), UV_READABLE | UV_WRITABLE, on_poll);
+  m_poll_started = true;
 }
 
 void HCISocket::set_writable(bool is_writable) {
   m_writable = is_writable;
 
-  if (m_writable) {
-    uv_poll_start(m_poller.get(), UV_READABLE, on_poll);
-  } else {
-    uv_poll_start(m_poller.get(), UV_READABLE | UV_WRITABLE, on_poll);
+  if (m_poll_started) {
+    if (m_writable) {
+      uv_poll_start(m_poller.get(), UV_READABLE, on_poll);
+    } else {
+      uv_poll_start(m_poller.get(), UV_READABLE | UV_WRITABLE, on_poll);
+    }
   }
 
   if (m_writable) {
@@ -189,6 +191,6 @@ HCISocket::~HCISocket() {
   m_l2cap_sockets.clear();
   LOG.debug("L2CAP sockets closed", "HCISocket");
 
-  m_hci_socket.close();
+  m_hci_socket->close();
   LOG.debug("HCI socket closed", "HCISocket");
 }

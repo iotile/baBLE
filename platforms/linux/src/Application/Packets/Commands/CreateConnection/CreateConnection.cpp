@@ -96,7 +96,7 @@ namespace Packet {
         m_current_type = final_type();
 
         PacketUuid response_uuid = get_response_uuid();
-        response_uuid.connection_handle = 0x00;
+        response_uuid.connection_handle = 0x0000;
         auto response_callback =
             [this](const shared_ptr<PacketRouter>& router, const shared_ptr<AbstractPacket>& packet) {
               return on_response_received(router, packet);

@@ -125,7 +125,20 @@ target_link_libraries(bable-bridge-linux bable)
 if (BUILD_TESTS)
     enable_testing()
 
-    add_executable(bable-bridge-linux-test tests/test_main.cpp tests/test_formats.cpp)
+    set(TEST_FILES
+            tests/test_main.cpp
+            tests/test_hci_format.cpp
+            tests/test_mgmt_format.cpp
+            tests/test_flatbuffers_format.cpp
+            tests/test_string_formats.cpp
+            tests/test_packet_uuid.cpp
+            tests/test_integration.cpp
+            tests/mocks/mock_socket.hpp
+            tests/mocks/mock_stdio_socket.hpp
+            tests/mocks/mock_hci_socket.hpp
+            tests/mocks/mock_mgmt_socket.hpp)
+
+    add_executable(bable-bridge-linux-test ${TEST_FILES})
     target_link_libraries(bable-bridge-linux-test bable)
 
     #### Include test dependencies ####

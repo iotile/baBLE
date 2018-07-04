@@ -17,6 +17,11 @@ Socket::Socket(sa_family_t domain, int type, int protocol) {
   }
 }
 
+Socket::Socket() {
+  m_domain = {};
+  m_socket = 0;
+}
+
 void Socket::bind(uint16_t device, uint16_t channel){
   struct sockaddr_hci addr {
       m_domain,
@@ -111,7 +116,7 @@ void Socket::connect(const array<uint8_t, 6>& address, uint8_t address_type, uin
       address_type
   };
 
-  int result = ::connect(m_socket, (struct sockaddr *)&addr, sizeof(addr)) == 0;
+  int result = ::connect(m_socket, (struct sockaddr *)&addr, sizeof(addr));
   if (result != 0) {
     throw Exceptions::BaBLEException(
         BaBLE::StatusCode::SocketError,

@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
 
   // Socket container
   LOG.info("Registering sockets into socket container...");
-  SocketContainer socket_container{};
+  SocketContainer socket_container;
   socket_container
       .register_socket(mgmt_socket)
       .register_socket(stdio_socket);

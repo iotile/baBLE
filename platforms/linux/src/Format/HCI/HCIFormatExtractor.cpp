@@ -136,7 +136,7 @@ Format::HCI::EIR HCIFormatExtractor::parse_eir(const vector<uint8_t>& data) {
 
       case Format::HCI::ReportType::ManufacturerSpecific:
       {
-        result.company_id = (*it << 8) | *(it + 1);
+        result.company_id = *(it + 1) << 8 | *it;
         field_length -= sizeof(result.company_id);
         it += sizeof(result.company_id);
 

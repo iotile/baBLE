@@ -11,7 +11,7 @@ class StdIOSocket : public AbstractSocket {
 public:
   using OnCloseCallback = std::function<void()>;
 
-  explicit StdIOSocket(uv_loop_t* loop, std::shared_ptr<AbstractFormat> format);
+  StdIOSocket(uv_loop_t* loop, std::shared_ptr<AbstractFormat> format);
 
   bool send(const std::vector<uint8_t>& data) override;
   void poll(OnReceivedCallback on_received, OnErrorCallback on_error) override;

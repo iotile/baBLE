@@ -8,22 +8,22 @@
 using namespace std;
 
 MGMTSocket::MGMTSocket(uv_loop_t* loop, shared_ptr<MGMTFormat> format)
-    : MGMTSocket(loop, move(format), Socket(AF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC | SOCK_NONBLOCK, BTPROTO_HCI))
+    : MGMTSocket(loop, move(format), make_shared<Socket>(AF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC | SOCK_NONBLOCK, BTPROTO_HCI))
 {}
 
-MGMTSocket::MGMTSocket(uv_loop_t* loop, shared_ptr<MGMTFormat> format, const Socket& socket)
+MGMTSocket::MGMTSocket(uv_loop_t* loop, shared_ptr<MGMTFormat> format, shared_ptr<Socket> socket)
     : AbstractSocket(move(format)),
-      m_socket(socket) {
+      m_socket(move(socket)) {
   m_header_length = m_format->get_header_length(0);
   m_writable = true;
 
   LOG.debug("Binding MGMT socket...", "MGMTSocket");
-  m_socket.bind(NON_CONTROLLER_ID, HCI_CHANNEL_CONTROL);
+  m_socket->bind(NON_CONTROLLER_ID, HCI_CHANNEL_CONTROL);
 
   LOG.debug("Setting up poller on MGMT socket...", "MGMTSocket");
   m_poller = make_unique<uv_poll_t>();
   m_poller->data = this;
-  uv_poll_init_socket(loop, m_poller.get(), static_cast<uv_os_sock_t>(m_socket.get_raw()));
+  uv_poll_init_socket(loop, m_poller.get(), static_cast<uv_os_sock_t>(m_socket->get_raw()));
 
   LOG.debug("MGMT socket created", "MGMTSocket");
 }
@@ -39,7 +39,7 @@ bool MGMTSocket::send(const vector<uint8_t>& data) {
 
     LOG.debug("Sending data...", "MGMTSocket");
     LOG.debug(data, "MGMTSocket");
-    m_socket.write(data);
+    m_socket->write(data);
   }
 
   return true;
@@ -49,12 +49,12 @@ vector<uint8_t> MGMTSocket::receive() {
   // MSG_PEEK is used to not remove data in socket queue. Else, for unknown reason, all the data are consumed and we
   // can't read the payload afterwards...
   vector<uint8_t> header(m_header_length);
-  m_socket.read(header, true);
+  m_socket->read(header, true);
 
   size_t payload_length = m_format->extract_payload_length(header);
 
   vector<uint8_t> result(m_header_length + payload_length);
-  m_socket.read(result);
+  m_socket->read(result, false);
 
   return result;
 }
@@ -87,15 +87,18 @@ void MGMTSocket::poll(OnReceivedCallback on_received, OnErrorCallback on_error) 
   m_on_error = move(on_error);
 
   uv_poll_start(m_poller.get(), UV_READABLE | UV_WRITABLE, on_poll);
+  m_poll_started = true;
 }
 
 void MGMTSocket::set_writable(bool is_writable) {
   m_writable = is_writable;
 
-  if (m_writable) {
-    uv_poll_start(m_poller.get(), UV_READABLE, on_poll);
-  } else {
-    uv_poll_start(m_poller.get(), UV_READABLE | UV_WRITABLE, on_poll);
+  if (m_poll_started) {
+    if (m_writable) {
+      uv_poll_start(m_poller.get(), UV_READABLE, on_poll);
+    } else {
+      uv_poll_start(m_poller.get(), UV_READABLE | UV_WRITABLE, on_poll);
+    }
   }
 
   if (m_writable) {
@@ -107,6 +110,6 @@ void MGMTSocket::set_writable(bool is_writable) {
 }
 
 MGMTSocket::~MGMTSocket() {
-  m_socket.close();
+  m_socket->close();
   LOG.debug("MGMT socket closed", "MGMTSocket");
 };

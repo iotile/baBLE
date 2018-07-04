@@ -7,8 +7,6 @@
 #include <sys/socket.h>
 #include <vector>
 
-// TODO: use this in HCISocket and MGMTSocket
-
 struct sockaddr_hci {
   sa_family_t     hci_family;
   unsigned short  hci_dev;
@@ -32,18 +30,21 @@ class Socket {
 public:
   Socket(sa_family_t domain, int type, int protocol);
 
-  void bind(uint16_t device, uint16_t channel);
-  void bind(const std::array<uint8_t, 6>& address, uint8_t address_type, uint16_t channel);
+  virtual void bind(uint16_t device, uint16_t channel);
+  virtual void bind(const std::array<uint8_t, 6>& address, uint8_t address_type, uint16_t channel);
 
-  void write(const std::vector<uint8_t>& data);
-  ssize_t read(std::vector<uint8_t>& data, bool peek = false);
+  virtual void write(const std::vector<uint8_t>& data);
+  virtual ssize_t read(std::vector<uint8_t>& data, bool peek);
 
-  void set_option(int level, int name, const void *val, socklen_t len);
-  void ioctl(uint64_t request, void* param);
-  void connect(const std::array<uint8_t, 6>& address, uint8_t address_type, uint16_t channel);
-  void close();
+  virtual void set_option(int level, int name, const void *val, socklen_t len);
+  virtual void ioctl(uint64_t request, void* param);
+  virtual void connect(const std::array<uint8_t, 6>& address, uint8_t address_type, uint16_t channel);
+  virtual void close();
 
   int get_raw();
+
+protected:
+  Socket();
 
 private:
   sa_family_t m_domain;

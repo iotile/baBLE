@@ -56,9 +56,11 @@ namespace Packet {
     vector<uint8_t> GetControllersList::serialize(MGMTFormatBuilder& builder) const {
       switch (m_waiting_response) {
         case Packet::Id::GetControllersIdsResponse:
+          builder.set_controller_id(m_controllers_ids_request_packet->get_controller_id());
           return m_controllers_ids_request_packet->serialize(builder);
 
         case Packet::Id::GetControllerInfoResponse:
+          builder.set_controller_id(m_controller_info_request_packet->get_controller_id());
           return m_controller_info_request_packet->serialize(builder);
 
         default:
@@ -98,7 +100,6 @@ namespace Packet {
         case Packet::Id::GetControllersIdsResponse: {
           m_controllers_ids_request_packet->translate();
           m_current_type = m_controllers_ids_request_packet->get_type();
-          set_controller_id(NON_CONTROLLER_ID);
           m_controllers_ids_request_packet->set_controller_id(NON_CONTROLLER_ID);
 
           PacketUuid uuid = m_controllers_ids_request_packet->get_response_uuid();
@@ -113,7 +114,6 @@ namespace Packet {
         case Packet::Id::GetControllerInfoResponse: {
           m_controller_info_request_packet->translate();
           m_current_type = m_controller_info_request_packet->get_type();
-          set_controller_id(m_controllers_ids.at(m_current_index));
           m_controller_info_request_packet->set_controller_id(m_controllers_ids.at(m_current_index));
 
           PacketUuid uuid = m_controller_info_request_packet->get_response_uuid();

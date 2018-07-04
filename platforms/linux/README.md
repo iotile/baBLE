@@ -9,11 +9,15 @@ This is the baBLE bridge for Linux, written in C++.
 ```bash
 # Install tools
 $ sudo apt install cmake make g++
+
 $ cd platforms/linux
 $ mkdir build && cd build
+
+# Use cmake to generate Makefiles
 $ cmake -G "Unix Makefiles" ..
 
-$ make -j <num_jobs>  # replace <num_jobs> by the number of CPU cores you have to speed up the compilation, else just use make
+# Compile using make (replace <num_jobs> by the number of CPU cores you have to speed up the compilation, else just use make)
+$ make -j <num_jobs>
 ```
 
 **Important**: you'll need `cmake>=3.5`, and `g++>=4.9`.
