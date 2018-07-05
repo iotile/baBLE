@@ -9,39 +9,38 @@ env:
 cache:
   pip: true
 
+matrix:
+  include:
+    - language: python
+      python:
+        - 2.7
+        - 3.6
+
+      install:
+        - pip install tox-travis
+
+      script: tox -r -c ${PYTHON_SRC_DIR}
+
+    - language: cpp
+      os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-4.9
+
+      install:
+        - mkdir platforms/linux/build
+        - cd platforms/linux/build
+        - cmake -G 'Unix Makefiles' -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=/usr/bin/gcc-4.9 -DCMAKE_CXX_COMPILER=/usr/bin/g++-4.9 -DBUILD_TESTS=ON ..
+        - make -j 2
+
+      script: env CTEST_OUTPUT_ON_FAILURE=1 make test
+
 jobs:
   include:
-    - stage: Test
-      matrix:
-        include:
-          - language: python
-            python:
-              - 2.7
-              - 3.6
-
-            install:
-              - pip install tox-travis
-
-            script: tox -r -c ${PYTHON_SRC_DIR}
-
-          - language: cpp
-            os: linux
-            addons:
-              apt:
-                sources:
-                  - ubuntu-toolchain-r-test
-                packages:
-                  - g++-4.9
-
-            install:
-              - mkdir platforms/linux/build
-              - cd platforms/linux/build
-              - cmake -G 'Unix Makefiles' -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=/usr/bin/gcc-4.9 -DCMAKE_CXX_COMPILER=/usr/bin/g++-4.9 -DBUILD_TESTS=ON ..
-              - make -j 2
-
-            script: env CTEST_OUTPUT_ON_FAILURE=1 make test
-
-    - stage: Deploy on Pypi
+    - stage: deploy on Pypi
       on:
         branch: master
         tags: true
