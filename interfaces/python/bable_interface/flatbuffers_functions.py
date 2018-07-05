@@ -120,7 +120,7 @@ def get_params(fb_packet):
                 continue
 
 
-def build_packet(payload_type, uuid="", controller_id=None, params=None):
+def build_packet(payload_type, uuid=None, controller_id=None, params=None):
     payload_data = get_payload_data(payload_type)
     payload_name = payload_data['name']
     payload_module = payload_data['module']
@@ -150,6 +150,9 @@ def build_packet(payload_type, uuid="", controller_id=None, params=None):
         getattr(payload_module, "{}Add{}".format(payload_name, param_name))(builder, param_value)
 
     payload = getattr(payload_module, "{}End".format(payload_name))(builder)
+
+    if uuid is None:
+        uuid = ""
 
     fb_uuid = builder.CreateString(uuid)
 

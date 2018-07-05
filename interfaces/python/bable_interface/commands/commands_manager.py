@@ -26,7 +26,9 @@ class CommandsManager(object):
 
         if not found:
             self.logger.info("Unexpected response received (uuid=%s)", packet_uuid)
-            return
+            return False
+
+        return True
 
     # Executed into the WorkingThread
     def register_callback(self, packet_uuid, callback, params=None, replace=False):
@@ -51,7 +53,7 @@ class CommandsManager(object):
                     if uuid.match(uuid_to_remove):
                         to_remove.append(index)
 
-            for index in to_remove:
+            for index in reversed(to_remove):
                 del self.callbacks[index]
 
     def send_packet(self, packet):

@@ -17,15 +17,15 @@ def start_scan(self, controller_id, on_device_found, on_scan_started, timeout=15
     @asyncio.coroutine
     def on_device_found_event(packet):
         result = packet.get_dict([
-            "controller_id",
-            "type",
-            "address",
-            "address_type",
-            "rssi",
-            "uuid",
-            "company_id",
-            "device_name",
-            ("manufacturer_data", bytes)
+            'controller_id',
+            'type',
+            'address',
+            'address_type',
+            'rssi',
+            'uuid',
+            'company_id',
+            'device_name',
+            ('manufacturer_data', bytes)
         ])
 
         on_device_found(True, result, None)
@@ -36,7 +36,7 @@ def start_scan(self, controller_id, on_device_found, on_scan_started, timeout=15
         self.remove_callback(packet.packet_uuid)
 
         if packet.status_code == StatusCode.Success:
-            on_scan_started(True, packet.get_dict(["controller_id"]), None)
+            on_scan_started(True, packet.get_dict(['controller_id']), None)
             future.set_result(True)
         else:
             self.remove_callback(PacketUuid(payload_type=Payload.DeviceFound, controller_id=controller_id))
@@ -54,7 +54,7 @@ def start_scan(self, controller_id, on_device_found, on_scan_started, timeout=15
     self.register_callback(
         request_packet.packet_uuid,
         callback=on_response_received,
-        params={"future": future}
+        params={'future': future}
     )
 
     self.send_packet(request_packet)
@@ -69,7 +69,7 @@ def start_scan(self, controller_id, on_device_found, on_scan_started, timeout=15
             PacketUuid(payload_type=Payload.DeviceFound, controller_id=controller_id)
         )
         on_scan_started(False, None, "Start scan timed out")
-        raise TimeoutError("Start scan timed out")
+        raise RuntimeError("Start scan timed out")
 
 
 @asyncio.coroutine
@@ -84,7 +84,7 @@ def stop_scan(self, controller_id, on_scan_stopped, timeout=15.0):
             self.remove_callback(
                 PacketUuid(payload_type=Payload.DeviceFound, controller_id=controller_id)
             )
-            on_scan_stopped(True, packet.get_dict(["controller_id"]), None)
+            on_scan_stopped(True, packet.get_dict(['controller_id']), None)
             future.set_result(True)
         else:
             error = BaBLEException(packet, "Failed to stop scan")
@@ -97,7 +97,7 @@ def stop_scan(self, controller_id, on_scan_stopped, timeout=15.0):
     self.register_callback(
         request_packet.packet_uuid,
         callback=on_response_received,
-        params={"future": future}
+        params={'future': future}
     )
 
     self.send_packet(request_packet)
@@ -109,7 +109,7 @@ def stop_scan(self, controller_id, on_scan_stopped, timeout=15.0):
     except asyncio.TimeoutError:
         self.remove_callback(request_packet.packet_uuid)
         on_scan_stopped(False, None, "Stop scan timed out")
-        raise TimeoutError("Stop scan timed out")
+        raise RuntimeError("Stop scan timed out")
 
 
 @asyncio.coroutine
@@ -122,7 +122,7 @@ def probe_services(self, controller_id, connection_handle, timeout=15.0):
 
         if packet.status_code == StatusCode.Success:
             services = packet.get(
-                name="services",
+                name='services',
                 format_function=lambda raw_services: [Service(raw_service) for raw_service in raw_services]
             )
 
@@ -133,7 +133,7 @@ def probe_services(self, controller_id, connection_handle, timeout=15.0):
     future = asyncio.Future()
     request_packet = Packet.build(ProbeServices, controller_id=controller_id, connection_handle=connection_handle)
 
-    self.register_callback(request_packet.packet_uuid, callback=on_response_received, params={"future": future})
+    self.register_callback(request_packet.packet_uuid, callback=on_response_received, params={'future': future})
 
     self.send_packet(request_packet)
 
@@ -143,7 +143,7 @@ def probe_services(self, controller_id, connection_handle, timeout=15.0):
         raise asyncio.Return(services)
     except asyncio.TimeoutError:
         self.remove_callback(request_packet.packet_uuid)
-        raise TimeoutError("Probe services timed out")
+        raise RuntimeError("Probe services timed out")
 
 
 @asyncio.coroutine
@@ -156,7 +156,7 @@ def probe_characteristics(self, controller_id, connection_handle, timeout=15.0):
 
         if packet.status_code == StatusCode.Success:
             characteristics = packet.get(
-                name="characteristics",
+                name='characteristics',
                 format_function=lambda raw_chars: [Characteristic(raw_char) for raw_char in raw_chars]
             )
 
@@ -171,7 +171,7 @@ def probe_characteristics(self, controller_id, connection_handle, timeout=15.0):
         connection_handle=connection_handle
     )
 
-    self.register_callback(request_packet.packet_uuid, callback=on_response_received, params={"future": future})
+    self.register_callback(request_packet.packet_uuid, callback=on_response_received, params={'future': future})
 
     self.send_packet(request_packet)
 
@@ -181,7 +181,7 @@ def probe_characteristics(self, controller_id, connection_handle, timeout=15.0):
         raise asyncio.Return(characteristics)
     except asyncio.TimeoutError:
         self.remove_callback(request_packet.packet_uuid)
-        raise TimeoutError("Probe characteristics timed out")
+        raise RuntimeError("Probe characteristics timed out")
 
 
 @asyncio.coroutine
@@ -199,9 +199,9 @@ def connect(self, controller_id, address, address_type, on_connected_with_info, 
         self.remove_callback(packet.packet_uuid)
 
         data = packet.get_dict([
-            "controller_id",
-            "connection_handle",
-            "reason"
+            'controller_id',
+            'connection_handle',
+            'reason'
         ])
         on_disconnected(True, data, None)
 
@@ -212,23 +212,23 @@ def connect(self, controller_id, address, address_type, on_connected_with_info, 
 
         if packet.status_code == StatusCode.Success:
             device = packet.get_dict([
-                "controller_id",
-                "connection_handle",
-                "address",
-                "address_type"
+                'controller_id',
+                'connection_handle',
+                'address',
+                'address_type'
             ])
 
             self.register_callback(
                 PacketUuid(payload_type=Payload.DeviceDisconnected,
                            controller_id=controller_id,
-                           connection_handle=device["connection_handle"]),
+                           connection_handle=device['connection_handle']),
                 callback=on_unexpected_disconnection
             )
 
-            device["services"] = yield From(self.probe_services(controller_id, device["connection_handle"]))
-            device["characteristics"] = yield From(self.probe_characteristics(
+            device['services'] = yield From(self.probe_services(controller_id, device['connection_handle']))
+            device['characteristics'] = yield From(self.probe_characteristics(
                 controller_id,
-                device["connection_handle"]
+                device['connection_handle']
             ))
 
             on_connected_with_info(True, device, None)
@@ -255,11 +255,11 @@ def connect(self, controller_id, address, address_type, on_connected_with_info, 
         Connect,
         controller_id=controller_id,
         address=address,
-        address_type=0 if address_type == "public" else 1
+        address_type=0 if address_type == 'public' else 1
     )
 
-    self.register_callback(request_packet.packet_uuid, callback=on_response_received, params={"future": future})
-    self.register_callback(connected_event_uuid, callback=on_connected, params={"future": future})
+    self.register_callback(request_packet.packet_uuid, callback=on_response_received, params={'future': future})
+    self.register_callback(connected_event_uuid, callback=on_connected, params={'future': future})
 
     self.send_packet(request_packet)
 
@@ -270,7 +270,7 @@ def connect(self, controller_id, address, address_type, on_connected_with_info, 
     except asyncio.TimeoutError:
         self.remove_callback(connected_event_uuid)
         on_connected_with_info(False, None, "Connection timed out")
-        raise TimeoutError("Connection timed out")
+        raise RuntimeError("Connection timed out")
 
 
 @asyncio.coroutine
@@ -289,9 +289,9 @@ def disconnect(self, controller_id, connection_handle, on_disconnected, timeout=
 
         if packet.status_code == StatusCode.Success:
             data = packet.get_dict([
-                "controller_id",
-                "connection_handle",
-                "reason"
+                'controller_id',
+                'connection_handle',
+                'reason'
             ])
 
             on_disconnected(True, data, None)
@@ -317,11 +317,11 @@ def disconnect(self, controller_id, connection_handle, on_disconnected, timeout=
     future = asyncio.Future()
     request_packet = Packet.build(Disconnect, controller_id=controller_id, connection_handle=connection_handle)
 
-    self.register_callback(request_packet.packet_uuid, callback=on_response_received, params={"future": future})
+    self.register_callback(request_packet.packet_uuid, callback=on_response_received, params={'future': future})
     self.register_callback(
         disconnected_event_uuid,
         callback=on_device_disconnected,
-        params={"future": future},
+        params={'future': future},
         replace=True
     )
 
@@ -334,7 +334,7 @@ def disconnect(self, controller_id, connection_handle, on_disconnected, timeout=
     except asyncio.TimeoutError:
         self.remove_callback(disconnected_event_uuid)
         on_disconnected(False, None, "Disconnection timed out")
-        raise TimeoutError("Disconnection timed out")
+        raise RuntimeError("Disconnection timed out")
 
 
 @asyncio.coroutine
@@ -356,7 +356,7 @@ def cancel_connection(self, controller_id, on_connection_cancelled, timeout=15.0
     future = asyncio.Future()
     request_packet = Packet.build(CancelConnection, controller_id=controller_id)
 
-    self.register_callback(request_packet.packet_uuid, callback=on_response_received, params={"future": future})
+    self.register_callback(request_packet.packet_uuid, callback=on_response_received, params={'future': future})
 
     self.send_packet(request_packet)
 
@@ -367,7 +367,7 @@ def cancel_connection(self, controller_id, on_connection_cancelled, timeout=15.0
     except asyncio.TimeoutError:
         self.remove_callback(request_packet.packet_uuid)
         on_connection_cancelled(False, None, "Cancel connection timed out")
-        raise TimeoutError("Cancel connection timed out")
+        raise RuntimeError("Cancel connection timed out")
 
 
 @asyncio.coroutine
@@ -379,7 +379,7 @@ def list_connected_devices(self, controller_id, timeout=15.0):
         self.remove_callback(packet.packet_uuid)
 
         if packet.status_code == StatusCode.Success:
-            devices = packet.get("devices")
+            devices = packet.get('devices')
 
             future.set_result(devices)
         else:
@@ -388,7 +388,7 @@ def list_connected_devices(self, controller_id, timeout=15.0):
     future = asyncio.Future()
     request_packet = Packet.build(GetConnectedDevices, controller_id=controller_id)
 
-    self.register_callback(request_packet.packet_uuid, callback=on_response_received, params={"future": future})
+    self.register_callback(request_packet.packet_uuid, callback=on_response_received, params={'future': future})
 
     self.send_packet(request_packet)
 
@@ -398,7 +398,7 @@ def list_connected_devices(self, controller_id, timeout=15.0):
         raise asyncio.Return(connected_devices)
     except asyncio.TimeoutError:
         self.remove_callback(request_packet.packet_uuid)
-        raise TimeoutError("List connected devices timed out")
+        raise RuntimeError("List connected devices timed out")
 
 
 @asyncio.coroutine
@@ -411,7 +411,7 @@ def list_controllers(self, timeout=15.0):
 
         if packet.status_code == StatusCode.Success:
             controllers = packet.get(
-                name="controllers",
+                name='controllers',
                 format_function=lambda raw_ctrls: [Controller(raw_ctrl) for raw_ctrl in raw_ctrls]
             )
 
@@ -425,7 +425,7 @@ def list_controllers(self, timeout=15.0):
     self.register_callback(
         request_packet.packet_uuid,
         callback=on_response_received,
-        params={"future": future}
+        params={'future': future}
     )
 
     self.send_packet(request_packet)
@@ -436,7 +436,7 @@ def list_controllers(self, timeout=15.0):
         raise asyncio.Return(controllers)
     except asyncio.TimeoutError:
         self.remove_callback(request_packet.packet_uuid)
-        raise TimeoutError("List controllers timed out")
+        raise RuntimeError("List controllers timed out")
 
 
 @asyncio.coroutine
@@ -449,10 +449,10 @@ def read(self, controller_id, connection_handle, attribute_handle, on_read, time
 
         if packet.status_code == StatusCode.Success:
             data = packet.get_dict([
-                "controller_id",
-                "connection_handle",
-                "attribute_handle",
-                ("value", bytes)
+                'controller_id',
+                'connection_handle',
+                'attribute_handle',
+                ('value', bytes)
             ])
 
             on_read(True, data, None)
@@ -474,7 +474,7 @@ def read(self, controller_id, connection_handle, attribute_handle, on_read, time
         attribute_handle=attribute_handle
     )
 
-    self.register_callback(request_packet.packet_uuid, callback=on_response_received, params={"future": future})
+    self.register_callback(request_packet.packet_uuid, callback=on_response_received, params={'future': future})
 
     self.send_packet(request_packet)
 
@@ -485,7 +485,7 @@ def read(self, controller_id, connection_handle, attribute_handle, on_read, time
     except asyncio.TimeoutError:
         self.remove_callback(request_packet.packet_uuid)
         on_read(False, None, "Read timed out")
-        raise TimeoutError("Read timed out")
+        raise RuntimeError("Read timed out")
 
 
 @asyncio.coroutine
@@ -498,9 +498,9 @@ def write(self, controller_id, connection_handle, attribute_handle, value, on_wr
 
         if packet.status_code == StatusCode.Success:
             data = packet.get_dict([
-                "controller_id",
-                "connection_handle",
-                "attribute_handle"
+                'controller_id',
+                'connection_handle',
+                'attribute_handle'
             ])
 
             on_written(True, data, None)
@@ -522,7 +522,7 @@ def write(self, controller_id, connection_handle, attribute_handle, value, on_wr
         value=bytes(value)
     )
 
-    self.register_callback(request_packet.packet_uuid, callback=on_response_received, params={"future": future})
+    self.register_callback(request_packet.packet_uuid, callback=on_response_received, params={'future': future})
 
     self.send_packet(request_packet)
 
@@ -533,7 +533,7 @@ def write(self, controller_id, connection_handle, attribute_handle, value, on_wr
     except asyncio.TimeoutError:
         self.remove_callback(request_packet.packet_uuid)
         on_written(False, None, "Write timed out")
-        raise TimeoutError("Write timed out")
+        raise RuntimeError("Write timed out")
 
 
 @asyncio.coroutine
@@ -563,20 +563,20 @@ def set_notification(self, state, controller_id, connection_handle, attribute_ha
     @asyncio.coroutine
     def on_notification_event(packet):
         result = packet.get_dict([
-            "connection_handle",
-            "attribute_handle",
-            ("value", bytes)
+            'connection_handle',
+            'attribute_handle',
+            ('value', bytes)
         ])
 
         on_notification_received(True, result, None)
 
     try:
         read_result = yield From(self.read(controller_id, connection_handle, attribute_handle, none_cb, timeout))
-    except (TimeoutError, BaBLEException) as err:
+    except (RuntimeError, BaBLEException) as err:
         on_notification_received(False, None, "Error while reading notification config (exception={})".format(err))
         raise RuntimeError("Error while reading notification config (exception={})".format(err))
 
-    current_state = struct.unpack("H", read_result["value"])[0]
+    current_state = struct.unpack('H', read_result['value'])[0]
 
     if state:
         self.register_callback(notification_event_uuid, callback=on_notification_event)
@@ -593,7 +593,7 @@ def set_notification(self, state, controller_id, connection_handle, attribute_ha
         returned_value = asyncio.Return(result)
         returned_value.raised = True  # To avoid the warning emitted in Return destructor ("... used without raise")
         raise returned_value
-    except (TimeoutError, BaBLEException) as err:
+    except (RuntimeError, BaBLEException) as err:
         if state:
             self.remove_callback(notification_event_uuid)
         on_notification_received(False, None, "Error while writing notification config (exception={})".format(err))
