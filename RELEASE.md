@@ -2,6 +2,11 @@
 
 All major changes in each released version of **baBLE** are listed here.
 
+## 1.1.0
+
+- Python
+  - Add `active_scan` parameter to `start_scan` to let the user choose to make either a passive or an active scan.
+
 ## 1.0.2
 
 - Improve READMEs
