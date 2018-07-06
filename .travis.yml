@@ -13,15 +13,16 @@ jobs:
   include:
     - stage: test
       language: python
-      python:
-        - 2.7
-        - 3.6
-
+      python: 2.7
       install:
         - pip install tox-travis
-
       script: tox -r -c ${PYTHON_SRC_DIR}
-
+    -
+      language: python
+      python: 3.6
+      install:
+        - pip install tox-travis
+      script: tox -r -c ${PYTHON_SRC_DIR}
     -
       language: cpp
       os: linux
@@ -31,50 +32,48 @@ jobs:
             - ubuntu-toolchain-r-test
           packages:
             - g++-4.9
-
       install:
         - mkdir platforms/linux/build
         - cd platforms/linux/build
         - cmake -G 'Unix Makefiles' -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=/usr/bin/gcc-4.9 -DCMAKE_CXX_COMPILER=/usr/bin/g++-4.9 -DBUILD_TESTS=ON ..
         - make -j 2
-
       script: env CTEST_OUTPUT_ON_FAILURE=1 make test
 
     - stage: deploy on Pypi
-      on:
-        branch: master
-        tags: true
-
       sudo: required
       services:
         - docker
       language: python
-      python:
-        - 2.7
-        - 3.6
-
+      python: 2.7
       install:
         - pip install --upgrade -r interfaces/python/build_requirements.txt
-
       script: skip
-
       before_deploy:
         - docker build -f tools/cpp-compilation/Dockerfile -t ${DOCKER_IMAGE_NAME} .
         - docker-compose -f tools/cpp-compilation/docker-compose.yml up
-
       deploy:
         - provider: script
           script: python tools/release.py --dry-run --build_sdist ${TRAVIS_TAG} ${PYTHON_SRC_DIR} ${CPP_BIN_DIR}
           skip_cleanup: true
-          on:
-            condition: $TRAVIS_PYTHON_VERSION = "2.7"
 
+    -
+      sudo: required
+      services:
+        - docker
+      language: python
+      python: 3.6
+      install:
+        - pip install --upgrade -r interfaces/python/build_requirements.txt
+      script: skip
+      before_deploy:
+        - docker build -f tools/cpp-compilation/Dockerfile -t ${DOCKER_IMAGE_NAME} .
+        - docker-compose -f tools/cpp-compilation/docker-compose.yml up
+      deploy:
         - provider: script
-          skip_cleanup: true
           script: python tools/release.py --dry-run ${TRAVIS_TAG} ${PYTHON_SRC_DIR} ${CPP_BIN_DIR}
-          on:
-            condition: $TRAVIS_PYTHON_VERSION = "3.6"
+          skip_cleanup: true
 
 stages:
   - test
-  - deploy on Pypi
+  - name: deploy on Pypi
+    if: branch = master AND tag IS present
