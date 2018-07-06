@@ -41,14 +41,11 @@ TEST_CASE("Format string to number", "[unit][utils][string]") {
   string num2 = "4783.5";
   REQUIRE(Utils::string_to_number<uint16_t>(num2) == 4783);
 
-  string num3 = "4783.5";
-  REQUIRE(Utils::string_to_number<float>(num3) == 4783.0);
+  string num3 = "test";
+  REQUIRE_THROWS_AS(Utils::string_to_number<uint16_t>(num3), Exceptions::BaBLEException);
 
-  string num4 = "test";
-  REQUIRE_THROWS_AS(Utils::string_to_number<uint16_t>(num4), Exceptions::BaBLEException);
-
-  string num5 = "0x12AF";
-  REQUIRE(Utils::string_to_number<uint16_t>(num5, 16) == 0x12AF);
+  string num4 = "0x12AF";
+  REQUIRE(Utils::string_to_number<uint16_t>(num4, 16) == 0x12AF);
 }
 
 TEST_CASE("Extract bluetooth device address from string", "[unit][utils][string]") {
