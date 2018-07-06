@@ -4,6 +4,7 @@
 #include <array>
 #include <sstream>
 #include <vector>
+#include <Log/Log.hpp>
 #include "utils/stream_formats.hpp"
 #include "Exceptions/BaBLEException.hpp"
 
@@ -72,6 +73,7 @@ namespace Utils {
   static T string_to_number(const std::string& str, int base = 10) {
     try {
       auto result = static_cast<T>(stoi(str, nullptr, base));
+      return result;
 
     } catch (const std::bad_cast& err) {
       throw Exceptions::BaBLEException(
