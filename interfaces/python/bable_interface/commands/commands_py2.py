@@ -12,7 +12,7 @@ from bable_interface.models import BaBLEException, Characteristic, Controller, P
 
 
 @asyncio.coroutine
-def start_scan(self, controller_id, on_device_found, on_scan_started, timeout=15.0):
+def start_scan(self, controller_id, active_scan, on_device_found, on_scan_started, timeout=15.0):
 
     @asyncio.coroutine
     def on_device_found_event(packet):
@@ -45,7 +45,7 @@ def start_scan(self, controller_id, on_device_found, on_scan_started, timeout=15
             future.set_exception(error)
 
     future = asyncio.Future()
-    request_packet = Packet.build(StartScan, controller_id=controller_id, active_scan=True)
+    request_packet = Packet.build(StartScan, controller_id=controller_id, active_scan=active_scan)
 
     self.register_callback(
         PacketUuid(payload_type=Payload.DeviceFound, controller_id=controller_id),

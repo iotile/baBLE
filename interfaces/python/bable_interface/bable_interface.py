@@ -131,10 +131,11 @@ class BaBLEInterface(object):
 
     #### Commands ####
 
-    def start_scan(self, on_device_found, controller_id=0, on_scan_started=none_cb, sync=True, timeout=15.0):
+    def start_scan(self, on_device_found, active_scan=True, controller_id=0, on_scan_started=none_cb, sync=True,
+                   timeout=15.0):
         return self._run_command(
             command_name='start_scan',
-            params=[controller_id, on_device_found, on_scan_started, timeout],
+            params=[controller_id, active_scan, on_device_found, on_scan_started, timeout],
             sync=sync
         )
 
