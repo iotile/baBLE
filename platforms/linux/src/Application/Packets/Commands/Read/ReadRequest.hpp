@@ -1,7 +1,7 @@
 #ifndef BABLE_LINUX_READREQUEST_HPP
 #define BABLE_LINUX_READREQUEST_HPP
 
-#include "../../Base/HostToControllerPacket.hpp"
+#include "Application/Packets/Base/HostToControllerPacket.hpp"
 
 namespace Packet {
 

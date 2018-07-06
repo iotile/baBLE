@@ -1,10 +1,5 @@
-#include <cerrno>
-#include <cstring>
-#include <sys/ioctl.h>
-#include <unistd.h>
 #include "HCISocket.hpp"
-#include "../../../Log/Log.hpp"
-#include "../../../utils/string_formats.hpp"
+#include "Log/Log.hpp"
 
 using namespace std;
 
@@ -12,7 +7,7 @@ using namespace std;
 vector<shared_ptr<HCISocket>> HCISocket::create_all(uv_loop_t* loop, shared_ptr<HCIFormat> hci_format) {
   vector<shared_ptr<HCISocket>> hci_sockets;
 
-  int sock = socket(AF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC, BTPROTO_HCI);
+  Socket sock(AF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC, BTPROTO_HCI);
 
   struct Format::HCI::hci_dev_list_req* dl;
   struct Format::HCI::hci_dev_req* dr;
@@ -22,9 +17,7 @@ vector<shared_ptr<HCISocket>> HCISocket::create_all(uv_loop_t* loop, shared_ptr<
 
   dl->dev_num = HCI_MAX_DEV;
 
-  if (ioctl(sock, HCIGETDEVLIST, dl) < 0) {
-    throw runtime_error("Can't get controllers list (using ioctl): " + string(strerror(errno)));
-  }
+  sock.ioctl(HCIGETDEVLIST, dl);
 
   for (int i = 0; i < dl->dev_num; i++, dr++) {
     shared_ptr<HCISocket> hci_socket = make_shared<HCISocket>(loop, hci_format, dr->dev_id);
@@ -37,114 +30,59 @@ vector<shared_ptr<HCISocket>> HCISocket::create_all(uv_loop_t* loop, shared_ptr<
 }
 
 HCISocket::HCISocket(uv_loop_t* loop, shared_ptr<HCIFormat> format, uint16_t controller_id)
-    : AbstractSocket(move(format)) {
+    : HCISocket(loop, move(format), controller_id, make_shared<Socket>(AF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC | SOCK_NONBLOCK, BTPROTO_HCI))
+{}
+
+HCISocket::HCISocket(uv_loop_t* loop, shared_ptr<HCIFormat> format, uint16_t controller_id, std::shared_ptr<Socket> hci_socket)
+    : AbstractSocket(move(format)),
+      m_hci_socket(move(hci_socket)) {
   m_controller_id = controller_id;
   m_writable = true;
 
-  m_hci_socket = socket(AF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC | SOCK_NONBLOCK, BTPROTO_HCI);
-  if (m_hci_socket < 0) {
-    throw Exceptions::BaBLEException(
-        BaBLE::StatusCode::SocketError,
-        "Error while creating the HCI socket: " + string(strerror(errno))
-    );
-  }
+  LOG.debug("Setting HCI filters...", "HCISocket");
+  set_filters();
 
-  if (!set_filter()) {
-    throw Exceptions::BaBLEException(
-        BaBLE::StatusCode::SocketError,
-        "Error while setting filters on the HCI socket: " + string(strerror(errno))
-    );
-  }
+  LOG.debug("Binding HCI socket...", "HCISocket");
+  m_hci_socket->bind(m_controller_id, HCI_CHANNEL_RAW);
 
-  if(!bind_hci_socket()) {
-    throw Exceptions::BaBLEException(
-        BaBLE::StatusCode::SocketError,
-        "Error while binding the HCI socket: " + string(strerror(errno))
-    );
-  }
+  LOG.debug("Getting HCI controller address...", "HCISocket");
+  find_controller_address();
 
-  if (!get_controller_address()) {
-    throw Exceptions::BaBLEException(
-        BaBLE::StatusCode::SocketError,
-        "Error while retrieving the Bluetooth controller address: " + string(strerror(errno))
-    );
-  }
-
-  LOG.debug("HCI socket created on " + Utils::format_bd_address(m_controller_address), "HCI socket");
-
+  LOG.debug("Setting up poller on HCI socket...", "HCISocket");
   m_poller = make_unique<uv_poll_t>();
   m_poller->data = this;
-  uv_poll_init_socket(loop, m_poller.get(), m_hci_socket);
+  uv_poll_init_socket(loop, m_poller.get(), static_cast<uv_os_sock_t>(m_hci_socket->get_raw()));
+
+  LOG.debug("HCI socket created on " + Utils::format_bd_address(m_controller_address), "HCISocket");
 }
 
-bool HCISocket::bind_hci_socket() {
-  struct Format::HCI::sockaddr_hci addr {
-      AF_BLUETOOTH,
-      m_controller_id,
-      HCI_CHANNEL_RAW
-  };
-
-  return bind(m_hci_socket, (struct sockaddr*) &addr, sizeof(addr)) == 0;
-}
-
-bool HCISocket::get_controller_address() {
+bool HCISocket::find_controller_address() {
   struct Format::HCI::hci_dev_info di{};
   di.dev_id = m_controller_id;
 
-  // TO GET THE ADDRESS OF THE CONTROLLER
-  if (ioctl(m_hci_socket, HCIGETDEVINFO, (void *)&di) < 0) {
-    return false;
-  }
+  // To get the controller address
+  m_hci_socket->ioctl(HCIGETDEVINFO, (void *)&di);
 
   copy(begin(di.bdaddr.b), end(di.bdaddr.b), m_controller_address.begin());
   return true;
 }
 
-bool HCISocket::set_filter() {
+bool HCISocket::set_filters() {
   // IMPORTANT: without these filters, nothing will be received on the HCI socket...
   struct Format::HCI::hci_filter filter {
-    (1 << Format::HCI::Type::Event) | (1 << Format::HCI::Type::AsyncData),
-    (1 << Format::HCI::EventCode::DisconnectComplete) | (1 << Format::HCI::EventCode::CommandComplete) | (1 << Format::HCI::EventCode::CommandStatus),
-    (1 << Format::HCI::EventCode::LEMeta - 32),
-    0
+      (1 << Format::HCI::Type::Event) | (1 << Format::HCI::Type::AsyncData),
+      (1 << Format::HCI::EventCode::DisconnectComplete) | (1 << Format::HCI::EventCode::CommandComplete) | (1 << Format::HCI::EventCode::CommandStatus),
+      (1 << Format::HCI::EventCode::LEMeta - 32),
+      0
   };
 
-  return setsockopt(m_hci_socket, SOL_HCI, HCI_FILTER, &filter, sizeof(filter)) == 0;
+  m_hci_socket->set_option(SOL_HCI, HCI_FILTER, &filter, sizeof(filter));
 }
 
 void HCISocket::connect_l2cap_socket(uint16_t connection_handle, const array<uint8_t, 6>& device_address, uint8_t device_address_type) {
-  uv_os_sock_t l2cap_socket = socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP);
-  if (l2cap_socket < 0) {
-    throw Exceptions::BaBLEException(
-        BaBLE::StatusCode::SocketError,
-        "Error while creating the L2CAP socket: " + string(strerror(errno))
-    );
-  }
-
-  struct Format::HCI::sockaddr_l2 addr{};
-  addr.l2_family = AF_BLUETOOTH;
-  copy(m_controller_address.begin(), m_controller_address.end(), begin(addr.l2_bdaddr.b));
-  addr.l2_cid = ATT_CID;
-  addr.l2_bdaddr_type = 0x01;
-
-  if (bind(l2cap_socket, (struct sockaddr*)&addr, sizeof(addr)) != 0){
-    throw Exceptions::BaBLEException(
-        BaBLE::StatusCode::SocketError,
-        "Error while binding L2CAP socket: " + string(strerror(errno))
-    );
-  }
-
-  addr.l2_family = AF_BLUETOOTH;
-  copy(device_address.begin(), device_address.end(), begin(addr.l2_bdaddr.b));
-  addr.l2_cid = ATT_CID;
-  addr.l2_bdaddr_type = device_address_type;
-
-  if (connect(l2cap_socket, (struct sockaddr *)&addr, sizeof(addr)) != 0){
-    throw Exceptions::BaBLEException(
-        BaBLE::StatusCode::SocketError,
-        "Error while connecting L2CAP socket: " + string(strerror(errno))
-    );
-  }
+  Socket l2cap_socket(AF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP);
+  l2cap_socket.bind(m_controller_address, 0x01, ATT_CID);
+  l2cap_socket.connect(device_address, device_address_type, ATT_CID);
 
   LOG.info("L2CAP socket connected.", "HCISocket");
   m_l2cap_sockets.emplace(connection_handle, l2cap_socket);
@@ -153,8 +91,8 @@ void HCISocket::connect_l2cap_socket(uint16_t connection_handle, const array<uin
 void HCISocket::disconnect_l2cap_socket(uint16_t connection_handle) {
   auto it = m_l2cap_sockets.find(connection_handle);
   if (it != m_l2cap_sockets.end()) {
-    uv_os_sock_t l2cap_socket = it->second;
-    close(l2cap_socket);
+    Socket& l2cap_socket = it->second;
+    l2cap_socket.close();
     m_l2cap_sockets.erase(it);
     LOG.info("L2CAP socket manually disconnected.", "HCISocket");
   }
@@ -169,57 +107,29 @@ bool HCISocket::send(const vector<uint8_t>& data) {
   } else {
     set_writable(false);
 
-    LOG.debug("Sending data...", "HCI socket");
-    LOG.debug(data, "HCI socket");
-    if (write(m_hci_socket, data.data(), data.size()) < 0) {
-      throw Exceptions::BaBLEException(
-          BaBLE::StatusCode::SocketError,
-          "Error occured while sending the packet through HCI socket: " +  string(strerror(errno))
-      );
-    }
+    LOG.debug("Sending data...", "HCISocket");
+    LOG.debug(data, "HCISocket");
+    m_hci_socket->write(data);
   }
 
   return true;
 }
 
 vector<uint8_t> HCISocket::receive() {
-  uint8_t type_code = 0;
-  ssize_t length_read;
-
-  length_read = recv(m_hci_socket, &type_code, sizeof(type_code), MSG_PEEK);
-  if (length_read != sizeof(type_code)) {
-    throw Exceptions::BaBLEException(
-        BaBLE::StatusCode::SocketError,
-        "Error while reading the HCI type code: " + string(strerror(errno))
-    );
-  }
-
-  size_t header_length = m_format->get_header_length(type_code);
-
-  vector<uint8_t> header(header_length);
-
   // MSG_PEEK is used to not remove data in socket queue. Else, for unknown reason, all the data are consumed and we
   // can't read the payload afterwards...
-  length_read = recv(m_hci_socket, header.data(), header.size(), MSG_PEEK);
+  vector<uint8_t> type_code(1);
+  m_hci_socket->read(type_code, true);
 
-  if (length_read != header_length) {
-    throw Exceptions::BaBLEException(
-        BaBLE::StatusCode::SocketError,
-        "Error while reading the HCI header: " + string(strerror(errno))
-    );
-  }
+  size_t header_length = m_format->get_header_length(type_code.at(0));
+
+  vector<uint8_t> header(header_length);
+  m_hci_socket->read(header, true);
 
   size_t payload_length = m_format->extract_payload_length(header);
 
   vector<uint8_t> result(header_length + payload_length);
-  length_read = read(m_hci_socket, result.data(), result.size());
-
-  if (length_read != header_length + payload_length) {
-    throw Exceptions::BaBLEException(
-        BaBLE::StatusCode::SocketError,
-        "Error while reading the HCI payload: " + string(strerror(errno))
-    );
-  }
+  m_hci_socket->read(result, false);
 
   return result;
 }
@@ -252,15 +162,18 @@ void HCISocket::poll(OnReceivedCallback on_received, OnErrorCallback on_error) {
   m_on_error = on_error;
 
   uv_poll_start(m_poller.get(), UV_READABLE | UV_WRITABLE, on_poll);
+  m_poll_started = true;
 }
 
 void HCISocket::set_writable(bool is_writable) {
   m_writable = is_writable;
 
-  if (m_writable) {
-    uv_poll_start(m_poller.get(), UV_READABLE, on_poll);
-  } else {
-    uv_poll_start(m_poller.get(), UV_READABLE | UV_WRITABLE, on_poll);
+  if (m_poll_started) {
+    if (m_writable) {
+      uv_poll_start(m_poller.get(), UV_READABLE, on_poll);
+    } else {
+      uv_poll_start(m_poller.get(), UV_READABLE | UV_WRITABLE, on_poll);
+    }
   }
 
   if (m_writable) {
@@ -273,11 +186,11 @@ void HCISocket::set_writable(bool is_writable) {
 
 HCISocket::~HCISocket() {
   for (auto& kv : m_l2cap_sockets) {
-    close(kv.second);
+    kv.second.close();
   }
   m_l2cap_sockets.clear();
-  LOG.debug("L2CAP sockets closed", "HCI socket");
+  LOG.debug("L2CAP sockets closed", "HCISocket");
 
-  close(m_hci_socket);
-  LOG.debug("HCI socket closed", "HCI socket");
+  m_hci_socket->close();
+  LOG.debug("HCI socket closed", "HCISocket");
 }

@@ -1,52 +1,79 @@
-language: python
-
 env:
   global:
     - DOCKER_IMAGE_NAME=bable-cpp-compiler
     - DOCKER_CONTAINER_NAME=bable
-    - DOCKER_CACHE_DIR=${HOME}/.docker-cache
-    - DOCKER_CACHE_FILE=${DOCKER_CACHE_DIR}/${DOCKER_IMAGE_NAME}.tar.gz
     - CPP_BIN_DIR=tmp
     - CPP_SRC_DIR=platforms/linux
     - PYTHON_SRC_DIR=interfaces/python
 
 cache:
   pip: true
-  directories:
-    - $DOCKER_CACHE_DIR
 
-python:
-  - 2.7
-  - 3.6
+jobs:
+  include:
+    - stage: test
+      language: python
+      python: 2.7
+      install:
+        - pip install tox-travis
+      script: tox -r -c ${PYTHON_SRC_DIR}
+    -
+      language: python
+      python: 3.6
+      install:
+        - pip install tox-travis
+      script: tox -r -c ${PYTHON_SRC_DIR}
+    -
+      language: cpp
+      os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-4.9
+      install:
+        - mkdir platforms/linux/build
+        - cd platforms/linux/build
+        - cmake -G 'Unix Makefiles' -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=/usr/bin/gcc-4.9 -DCMAKE_CXX_COMPILER=/usr/bin/g++-4.9 -DBUILD_TESTS=ON ..
+        - make -j 2
+      script: env CTEST_OUTPUT_ON_FAILURE=1 make test
 
-sudo: required
-services:
-  - docker
+    - stage: deploy on Pypi
+      sudo: required
+      services:
+        - docker
+      language: python
+      python: 2.7
+      install:
+        - pip install --upgrade -r interfaces/python/build_requirements.txt
+      script: skip
+      before_deploy:
+        - docker build -f tools/cpp-compilation/Dockerfile -t ${DOCKER_IMAGE_NAME} .
+        - docker-compose -f tools/cpp-compilation/docker-compose.yml up
+      deploy:
+        - provider: script
+          script: python tools/release.py --dry-run --build_sdist ${TRAVIS_TAG} ${PYTHON_SRC_DIR} ${CPP_BIN_DIR}
+          skip_cleanup: true
 
-install:
-  - pip install tox-travis
-  - pip install --upgrade -r interfaces/python/build_requirements.txt
+    -
+      sudo: required
+      services:
+        - docker
+      language: python
+      python: 3.6
+      install:
+        - pip install --upgrade -r interfaces/python/build_requirements.txt
+      script: skip
+      before_deploy:
+        - docker build -f tools/cpp-compilation/Dockerfile -t ${DOCKER_IMAGE_NAME} .
+        - docker-compose -f tools/cpp-compilation/docker-compose.yml up
+      deploy:
+        - provider: script
+          script: python tools/release.py --dry-run ${TRAVIS_TAG} ${PYTHON_SRC_DIR} ${CPP_BIN_DIR}
+          skip_cleanup: true
 
-script:
-  - echo "OK"
-
-before_deploy:
-  - docker build -f tools/cpp-compilation/Dockerfile -t ${DOCKER_IMAGE_NAME} .
-  - docker-compose -f tools/cpp-compilation/docker-compose.yml up
-
-deploy:
-  - provider: script
-    script: python tools/release.py --build_sdist ${TRAVIS_TAG} ${PYTHON_SRC_DIR} ${CPP_BIN_DIR}
-    skip_cleanup: true
-    on:
-      branch: master
-      tags: true
-      condition: $TRAVIS_PYTHON_VERSION = "2.7"
-
-  - provider: script
-    skip_cleanup: true
-    script: python tools/release.py ${TRAVIS_TAG} ${PYTHON_SRC_DIR} ${CPP_BIN_DIR}
-    on:
-      branch: master
-      tags: true
-      condition: $TRAVIS_PYTHON_VERSION = "3.6"
+stages:
+  - test
+  - name: deploy on Pypi
+    if: branch = master AND tag IS present

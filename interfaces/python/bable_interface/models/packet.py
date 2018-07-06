@@ -1,6 +1,6 @@
 import uuid
 from bable_interface.BaBLE.StatusCode import StatusCode
-from bable_interface.flatbuffer import build_packet, get_type, get_name, get_params, parse_packet, has_attribute
+from bable_interface.flatbuffers_functions import build_packet, get_type, get_name, get_params, parse_packet, has_attribute
 
 
 class PacketUuid(object):
@@ -13,6 +13,9 @@ class PacketUuid(object):
         self.connection_handle = connection_handle
         self.attribute_handle = attribute_handle
         self.uuid = uuid
+
+    def __str__(self):
+        return self.__repr__()
 
     def __repr__(self):
         return "<PacketUuid payload_type={}, controller_id={}, address={}, connection_handle={}, attribute_handle={}," \
@@ -80,11 +83,14 @@ class Packet(object):
     def extract(cls, raw_bytes):
         fb_packet = parse_packet(raw_bytes)
 
+        raw_native_class = fb_packet.NativeClass()
+        raw_uuid = fb_packet.Uuid()
+
         # Extract base packet data
         packet = cls(
             controller_id=fb_packet.ControllerId(),
             payload_type=fb_packet.PayloadType(),
-            native_class=fb_packet.NativeClass().decode(),
+            native_class=raw_native_class.decode() if raw_native_class is not None else None,
             native_status=fb_packet.NativeStatus(),
             status=fb_packet.Status()
         )
@@ -98,12 +104,12 @@ class Packet(object):
             address=packet.params.get('address'),
             connection_handle=packet.params.get('connection_handle'),
             attribute_handle=packet.params.get('attribute_handle'),
-            uuid=fb_packet.Uuid().decode()
+            uuid=raw_uuid.decode() if raw_uuid is not None else None
         )
 
         return packet
 
-    def __init__(self, controller_id=None, native_class=None, native_status=None, status=None, payload_type=None):
+    def __init__(self, payload_type, controller_id, native_class=None, native_status=None, status=None, **kwargs):
         self.controller_id = controller_id
         self.native_class = native_class
         self.native_status = native_status
@@ -112,7 +118,7 @@ class Packet(object):
 
         self.status = self._format_status(self.status_code)
         self.packet_uuid = PacketUuid(payload_type=payload_type, controller_id=controller_id)
-        self.params = {}
+        self.params = kwargs
 
     def __repr__(self):
         result = "<{} controller_id={}, status={}, uuid={}, "\
@@ -121,7 +127,7 @@ class Packet(object):
         for key, value in self.params.items():
             result += "{}={}, ".format(key, value)
 
-        return result[:-2] + ">"
+        return result[:-2] + '>'
 
     @property
     def full_status(self):

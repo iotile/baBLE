@@ -10,5 +10,9 @@
 # Python egg metadata
 /*.egg-info
 
+# Tests
+/.tox
+/.pytest_cache
+
 # Keep .gitkeep
 !.gitkeep

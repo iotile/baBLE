@@ -2,7 +2,7 @@
 #define BABLE_LINUX_FLATBUFFERSFORMATEXTRACTOR_HPP
 
 #include <Packet_generated.h>
-#include "../AbstractExtractor.hpp"
+#include "Format/AbstractExtractor.hpp"
 
 class FlatbuffersFormatExtractor : public AbstractExtractor {
 

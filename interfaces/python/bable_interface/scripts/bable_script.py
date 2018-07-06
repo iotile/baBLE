@@ -45,7 +45,10 @@ def main(argv=None):
               "Running the following command (need sudo): \n\t{}".format(command))
 
         result = os.system(command)
-        if result == 0:
-            print("Capabilities set with success. You can now run baBLE without sudo.")
+        if result != 0:
+            print("Error while setting capabilities.")
+            return 1
+
+        print("Capabilities set with success. You can now run baBLE without sudo.")
 
     return 0

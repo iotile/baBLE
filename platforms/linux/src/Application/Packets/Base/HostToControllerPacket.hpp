@@ -1,8 +1,8 @@
 #ifndef BABLE_LINUX_HOSTTOCONTROLLERPACKET_HPP
 #define BABLE_LINUX_HOSTTOCONTROLLERPACKET_HPP
 
-#include "../../PacketRouter/PacketRouter.hpp"
-#include "../../../Log/Log.hpp"
+#include "Application/PacketRouter/PacketRouter.hpp"
+#include "Log/Log.hpp"
 
 namespace Packet {
 

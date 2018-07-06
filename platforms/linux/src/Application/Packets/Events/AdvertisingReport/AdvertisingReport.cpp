@@ -1,6 +1,6 @@
 #include "AdvertisingReport.hpp"
-#include "../../../../Log/Log.hpp"
-#include "../../../../utils/string_formats.hpp"
+#include "Log/Log.hpp"
+#include "utils/string_formats.hpp"
 
 using namespace std;
 

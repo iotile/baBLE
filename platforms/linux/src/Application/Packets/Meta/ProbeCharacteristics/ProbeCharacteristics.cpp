@@ -1,7 +1,7 @@
 #include "ProbeCharacteristics.hpp"
-#include "../../Commands/ReadByType/ReadByTypeResponse.hpp"
-#include "../../Errors/ErrorResponse/ErrorResponse.hpp"
-#include "../../../../utils/string_formats.hpp"
+#include "Application/Packets/Commands/ReadByType/ReadByTypeResponse.hpp"
+#include "Application/Packets/Errors/ErrorResponse/ErrorResponse.hpp"
+#include "utils/string_formats.hpp"
 
 using namespace std;
 

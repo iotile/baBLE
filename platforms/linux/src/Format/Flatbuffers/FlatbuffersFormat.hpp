@@ -2,7 +2,7 @@
 #define BABLE_LINUX_FLATBUFFERSFORMAT_HPP
 
 #include <Packet_generated.h>
-#include "../AbstractFormat.hpp"
+#include "Format/AbstractFormat.hpp"
 #include "FlatbuffersFormatBuilder.hpp"
 #include "FlatbuffersFormatExtractor.hpp"
 

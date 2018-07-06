@@ -1,7 +1,7 @@
 #ifndef BABLE_LINUX_READBYTYPERESPONSE_HPP
 #define BABLE_LINUX_READBYTYPERESPONSE_HPP
 
-#include "../../Base/ControllerToHostPacket.hpp"
+#include "Application/Packets/Base/ControllerToHostPacket.hpp"
 
 namespace Packet {
 

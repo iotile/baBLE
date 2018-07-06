@@ -1,5 +1,5 @@
 #include "PacketRouter.hpp"
-#include "../../Log/Log.hpp"
+#include "Log/Log.hpp"
 
 using namespace std;
 
@@ -7,7 +7,7 @@ PacketRouter::PacketRouter(uv_loop_t* loop) {
   m_expiration_timer = make_unique<uv_timer_t>();
   m_expiration_timer->data = this;
   uv_timer_init(loop, m_expiration_timer.get());
-};
+}
 
 void PacketRouter::add_callback(Packet::PacketUuid waiting_uuid, shared_ptr<Packet::AbstractPacket> packet, const CallbackFunction& callback) {
   TimePoint inserted_time = chrono::steady_clock::now();

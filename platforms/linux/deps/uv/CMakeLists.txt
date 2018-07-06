@@ -2,60 +2,56 @@ cmake_minimum_required(VERSION 3.5)
 project(libuv)
 
 set(LIBUVDIR libuv)
+set(INCLUDEDIR ${LIBUVDIR}/include)
+set(SRCDIR ${LIBUVDIR}/src)
 
-include_directories(${LIBUVDIR}/include ${LIBUVDIR}/src)
+include_directories(${INCLUDEDIR} ${SRCDIR})
 
 set(SOURCES
-        ${LIBUVDIR}/include/uv.h
-        ${LIBUVDIR}/include/uv/errno.h
-        ${LIBUVDIR}/include/uv/linux.h
-        ${LIBUVDIR}/include/uv/threadpool.h
-        ${LIBUVDIR}/include/uv/tree.h
-        ${LIBUVDIR}/include/uv/unix.h
-        ${LIBUVDIR}/include/uv/version.h
-        ${LIBUVDIR}/src/fs-poll.c
-        ${LIBUVDIR}/src/heap-inl.h
-        ${LIBUVDIR}/src/inet.c
-        ${LIBUVDIR}/src/queue.h
-        ${LIBUVDIR}/src/threadpool.c
-        ${LIBUVDIR}/src/timer.c
-        ${LIBUVDIR}/src/uv-common.c
-        ${LIBUVDIR}/src/uv-common.h
-        ${LIBUVDIR}/src/uv-data-getter-setters.c
-        ${LIBUVDIR}/src/version.c
-        ${LIBUVDIR}/src/unix/async.c
-        ${LIBUVDIR}/src/unix/atomic-ops.h
-        ${LIBUVDIR}/src/unix/core.c
-        ${LIBUVDIR}/src/unix/dl.c
-        ${LIBUVDIR}/src/unix/fs.c
-        ${LIBUVDIR}/src/unix/getaddrinfo.c
-        ${LIBUVDIR}/src/unix/getnameinfo.c
-        ${LIBUVDIR}/src/unix/internal.h
-        ${LIBUVDIR}/src/unix/linux-core.c
-        ${LIBUVDIR}/src/unix/linux-inotify.c
-        ${LIBUVDIR}/src/unix/linux-syscalls.c
-        ${LIBUVDIR}/src/unix/linux-syscalls.h
-        ${LIBUVDIR}/src/unix/loop.c
-        ${LIBUVDIR}/src/unix/loop-watcher.c
-        ${LIBUVDIR}/src/unix/no-fsevents.c
-        ${LIBUVDIR}/src/unix/no-proctitle.c
-        ${LIBUVDIR}/src/unix/pipe.c
-        ${LIBUVDIR}/src/unix/poll.c
-        ${LIBUVDIR}/src/unix/process.c
-        ${LIBUVDIR}/src/unix/procfs-exepath.c
-        ${LIBUVDIR}/src/unix/proctitle.c
-        ${LIBUVDIR}/src/unix/signal.c
-        ${LIBUVDIR}/src/unix/spinlock.h
-        ${LIBUVDIR}/src/unix/stream.c
-        ${LIBUVDIR}/src/unix/sysinfo-loadavg.c
-        ${LIBUVDIR}/src/unix/sysinfo-memory.c
-        ${LIBUVDIR}/src/unix/tcp.c
-        ${LIBUVDIR}/src/unix/thread.c
-        ${LIBUVDIR}/src/unix/tty.c
-        ${LIBUVDIR}/src/unix/udp.c
+        ${SRCDIR}/fs-poll.c
+        ${SRCDIR}/heap-inl.h
+        ${SRCDIR}/inet.c
+        ${SRCDIR}/queue.h
+        ${SRCDIR}/threadpool.c
+        ${SRCDIR}/timer.c
+        ${SRCDIR}/uv-common.c
+        ${SRCDIR}/uv-common.h
+        ${SRCDIR}/uv-data-getter-setters.c
+        ${SRCDIR}/version.c
+        ${SRCDIR}/unix/async.c
+        ${SRCDIR}/unix/atomic-ops.h
+        ${SRCDIR}/unix/core.c
+        ${SRCDIR}/unix/dl.c
+        ${SRCDIR}/unix/fs.c
+        ${SRCDIR}/unix/getaddrinfo.c
+        ${SRCDIR}/unix/getnameinfo.c
+        ${SRCDIR}/unix/internal.h
+        ${SRCDIR}/unix/linux-core.c
+        ${SRCDIR}/unix/linux-inotify.c
+        ${SRCDIR}/unix/linux-syscalls.c
+        ${SRCDIR}/unix/linux-syscalls.h
+        ${SRCDIR}/unix/loop.c
+        ${SRCDIR}/unix/loop-watcher.c
+        ${SRCDIR}/unix/no-fsevents.c
+        ${SRCDIR}/unix/no-proctitle.c
+        ${SRCDIR}/unix/pipe.c
+        ${SRCDIR}/unix/poll.c
+        ${SRCDIR}/unix/process.c
+        ${SRCDIR}/unix/procfs-exepath.c
+        ${SRCDIR}/unix/proctitle.c
+        ${SRCDIR}/unix/signal.c
+        ${SRCDIR}/unix/spinlock.h
+        ${SRCDIR}/unix/stream.c
+        ${SRCDIR}/unix/sysinfo-loadavg.c
+        ${SRCDIR}/unix/sysinfo-memory.c
+        ${SRCDIR}/unix/tcp.c
+        ${SRCDIR}/unix/thread.c
+        ${SRCDIR}/unix/tty.c
+        ${SRCDIR}/unix/udp.c
         )
 
 add_library(uv ${SOURCES})
 
 find_package(Threads)
 target_link_libraries(uv ${CMAKE_THREAD_LIBS_INIT})
+target_include_directories(uv PUBLIC ${INCLUDEDIR})

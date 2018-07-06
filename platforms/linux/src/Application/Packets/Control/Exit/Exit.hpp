@@ -1,7 +1,7 @@
 #ifndef BABLE_LINUX_EXIT_HPP
 #define BABLE_LINUX_EXIT_HPP
 
-#include "../../Base/HostOnlyPacket.hpp"
+#include "Application/Packets/Base/HostOnlyPacket.hpp"
 
 namespace Packet {
 

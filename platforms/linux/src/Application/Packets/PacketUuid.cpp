@@ -34,7 +34,7 @@ namespace Packet {
       return false;
     }
 
-    if (connection_handle != 0) {
+    if (other.connection_handle != 0) {
       if (connection_handle != other.connection_handle) {
         return false;
       }

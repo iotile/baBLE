@@ -1,7 +1,7 @@
-#include "./AbstractPacket.hpp"
-#include "../PacketRouter/PacketRouter.hpp"
-#include "../../utils/stream_formats.hpp"
-#include "../../Exceptions/BaBLEException.hpp"
+#include "Application/Packets/AbstractPacket.hpp"
+#include "Application/PacketRouter/PacketRouter.hpp"
+#include "utils/stream_formats.hpp"
+#include "Exceptions/BaBLEException.hpp"
 
 using namespace std;
 

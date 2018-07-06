@@ -4,9 +4,9 @@ using namespace std;
 
 string _get_time_string() {
   time_t timestamp = time(nullptr);
-  tm local_time = *localtime(&timestamp);
+  tm* local_time = localtime(&timestamp);
   char result[20];
-  strftime (result, sizeof(result), "%y-%m-%d %H:%M:%S", &local_time);
+  strftime (result, sizeof(result), "%y-%m-%d %H:%M:%S", local_time);
 
   return string(result);
 }

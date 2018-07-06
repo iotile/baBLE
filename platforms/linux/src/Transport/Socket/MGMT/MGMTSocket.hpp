@@ -3,30 +3,31 @@
 
 #include <queue>
 #include <uv.h>
-
-#include "../../AbstractSocket.hpp"
-#include "../../../Format/MGMT/MGMTFormat.hpp"
+#include "Transport/Socket/Socket.hpp"
+#include "Transport/AbstractSocket.hpp"
+#include "Format/MGMT/MGMTFormat.hpp"
 
 class MGMTSocket : public AbstractSocket {
 
 public:
   explicit MGMTSocket(uv_loop_t* loop, std::shared_ptr<MGMTFormat> format);
+  explicit MGMTSocket(uv_loop_t* loop, std::shared_ptr<MGMTFormat> format, std::shared_ptr<Socket> socket);
 
   bool send(const std::vector<uint8_t>& data) override;
   void poll(OnReceivedCallback on_received, OnErrorCallback on_error) override;
 
   ~MGMTSocket() override;
 
-private:
+protected:
   static void on_poll(uv_poll_t* handle, int status, int events);
-
-  bool bind_socket();
-
-  std::vector<uint8_t> receive();
   void set_writable(bool is_writable);
 
+  std::shared_ptr<Socket> m_socket;
+
+private:
+  std::vector<uint8_t> receive();
+
   size_t m_header_length;
-  uv_os_sock_t m_socket;
 
   std::unique_ptr<uv_poll_t> m_poller;
 

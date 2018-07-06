@@ -25,19 +25,20 @@ The project is still in development.
 
 #### Bridges
 
-|        Platform       |  Status  |
-|-----------------------|----------|
-|   Linux (using Bluez) |    👍    |
-|   Mac                 |    👎    |
-|   Windows             |    👎    |
+|        Platform                                                                    |  Status  |
+|------------------------------------------------------------------------------------|----------|
+| [Linux (using Bluez)](https://github.com/iotile/baBLE/tree/master/platforms/linux) |    👍    |
+| Mac                                                                                |    👎    |
+| Windows                                                                            |    👎    |
 
 #### Interfaces
 
-|        Language       |  Status  |
-|-----------------------|----------|
-|   Python              |    👍    |
+|        Language                                                         |  Status  |
+|-------------------------------------------------------------------------|----------|
+| [Python](https://github.com/iotile/baBLE/tree/master/interfaces/python) |    👍    |
 
-Feel free to create a wrapper for your favorite language.
+
+Feel free to create an interface for your favorite language.
 
 
 ### License

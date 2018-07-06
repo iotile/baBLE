@@ -8,9 +8,13 @@ if sys.version_info < (3, 2):
     import struct
 
     def to_bytes(value, length, byteorder='big'):
-        struct_str = '>' if byteorder == 'big' else '<'
+        if not isinstance(value, int):
+            raise AttributeError("Cannot convert argument to integer")
+
         if value < 0:
-            raise ValueError("Can't convert negative values to bytes.")
+            raise OverflowError("Cannot convert negative values to bytes.")
+
+        struct_str = '>' if byteorder == 'big' else '<'
 
         if length == 1:
             struct_str += 'B'
@@ -23,7 +27,10 @@ if sys.version_info < (3, 2):
         else:
             raise ValueError("Invalid length.")
 
-        return struct.pack(struct_str, value)
+        try:
+            return struct.pack(struct_str, value)
+        except struct.error:
+            raise OverflowError("Value too big to convert")
 else:
     def to_bytes(value, length, byteorder='big'):
         return value.to_bytes(length, byteorder=byteorder)

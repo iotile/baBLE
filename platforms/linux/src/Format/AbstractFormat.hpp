@@ -2,7 +2,7 @@
 #define BABLE_LINUX_ABSTRACTFORMAT_HPP
 
 #include <memory>
-#include "../Application/Packets/constants.hpp"
+#include "Application/Packets/constants.hpp"
 #include "AbstractExtractor.hpp"
 
 class AbstractFormat {

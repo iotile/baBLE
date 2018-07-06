@@ -4,8 +4,8 @@
 #include <array>
 #include <sstream>
 #include <vector>
-#include "./stream_formats.hpp"
-#include "../Exceptions/BaBLEException.hpp"
+#include "utils/stream_formats.hpp"
+#include "Exceptions/BaBLEException.hpp"
 
 namespace Utils {
 
@@ -20,7 +20,7 @@ namespace Utils {
     }
 
     return bd_address.str();
-  };
+  }
 
   static std::string format_uuid(const std::vector<uint8_t>& uuid_vector) {
     std::stringstream uuid;
@@ -30,7 +30,7 @@ namespace Utils {
     }
 
     return uuid.str();
-  };
+  }
 
   template<typename T>
   static std::string format_bytes_array(const T& bytes) {
@@ -47,7 +47,7 @@ namespace Utils {
     stream << "]";
 
     return stream.str();
-  };
+  }
 
   template<typename T>
   static std::string bytes_to_string(const T& bytes) {
@@ -66,7 +66,7 @@ namespace Utils {
     }
 
     return result.str();
-  };
+  }
 
   template<typename T>
   static T string_to_number(const std::string& str, int base = 10) {
@@ -84,7 +84,7 @@ namespace Utils {
           "Given string is not a number: \"" + str + "\""
       );
     }
-  };
+  }
 
   static std::array<uint8_t, 6> extract_bd_address(const std::string& bd_address) {
     std::array<uint8_t, 6> bd_address_array{};
@@ -106,7 +106,7 @@ namespace Utils {
     }
 
     return bd_address_array;
-  };
+  }
 
 }
 
