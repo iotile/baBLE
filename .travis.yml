@@ -9,9 +9,10 @@ env:
 cache:
   pip: true
 
-matrix:
+jobs:
   include:
-    - language: python
+    - stage: test
+      language: python
       python:
         - 2.7
         - 3.6
@@ -21,7 +22,8 @@ matrix:
 
       script: tox -r -c ${PYTHON_SRC_DIR}
 
-    - language: cpp
+    -
+      language: cpp
       os: linux
       addons:
         apt:
@@ -38,8 +40,6 @@ matrix:
 
       script: env CTEST_OUTPUT_ON_FAILURE=1 make test
 
-jobs:
-  include:
     - stage: deploy on Pypi
       on:
         branch: master
