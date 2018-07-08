@@ -162,11 +162,17 @@ int main(int argc, char* argv[]) {
           }
 
           LOG.debug("DeviceConnected", "HCI poller");
-          hci_socket->connect_l2cap_socket(
-              device_connected_packet->get_connection_handle(),
-              device_connected_packet->get_raw_device_address(),
-              device_connected_packet->get_device_address_type()
-          );
+          try {
+            hci_socket->connect_l2cap_socket(
+                device_connected_packet->get_connection_handle(),
+                device_connected_packet->get_raw_device_address(),
+                device_connected_packet->get_device_address_type()
+            );
+          } catch (const Exceptions::BaBLEException& err) {
+            LOG.warning(err.get_message(), "HCISocket");
+            return;
+          }
+
         } else if (packet->get_id() == Packet::Id::DeviceDisconnected) {
           if (packet->get_status() != BaBLE::StatusCode::Success) {
             LOG.info("Unsuccessful DeviceDisconnected event ignored (because the device is not disconnected...)", "HCI poller");

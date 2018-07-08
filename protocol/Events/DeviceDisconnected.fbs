@@ -3,4 +3,5 @@ namespace BaBLE;
 table DeviceDisconnected {
   connection_handle:uint16;
   reason:string;
+  code:uint8;
 }

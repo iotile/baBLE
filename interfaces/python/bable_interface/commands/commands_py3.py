@@ -199,7 +199,8 @@ def connect(self, controller_id, address, address_type, on_connected_with_info, 
         data = packet.get_dict([
             'controller_id',
             'connection_handle',
-            'reason'
+            'reason',
+            'code'
         ])
         on_disconnected(True, data, None)
 
@@ -289,7 +290,8 @@ def disconnect(self, controller_id, connection_handle, on_disconnected, timeout=
             data = packet.get_dict([
                 'controller_id',
                 'connection_handle',
-                'reason'
+                'reason',
+                'code'
             ])
 
             on_disconnected(True, data, None)

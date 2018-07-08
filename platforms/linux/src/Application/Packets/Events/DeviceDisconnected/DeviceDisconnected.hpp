@@ -30,7 +30,7 @@ namespace Packet {
       const std::string stringify() const override;
 
     private:
-      uint8_t m_raw_reason;
+      uint8_t m_status_code;
       std::string m_reason;
     };
 

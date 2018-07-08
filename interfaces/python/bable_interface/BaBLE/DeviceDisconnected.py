@@ -32,7 +32,15 @@ class DeviceDisconnected(object):
             return self._tab.String(o + self._tab.Pos)
         return None
 
-def DeviceDisconnectedStart(builder): builder.StartObject(2)
+    # DeviceDisconnected
+    def Code(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Uint8Flags, o + self._tab.Pos)
+        return 0
+
+def DeviceDisconnectedStart(builder): builder.StartObject(3)
 def DeviceDisconnectedAddConnectionHandle(builder, connectionHandle): builder.PrependUint16Slot(0, connectionHandle, 0)
 def DeviceDisconnectedAddReason(builder, reason): builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(reason), 0)
+def DeviceDisconnectedAddCode(builder, code): builder.PrependUint8Slot(2, code, 0)
 def DeviceDisconnectedEnd(builder): return builder.EndObject()

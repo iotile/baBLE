@@ -1717,7 +1717,8 @@ inline flatbuffers::Offset<DeviceConnected> CreateDeviceConnectedDirect(
 struct DeviceDisconnected FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_CONNECTION_HANDLE = 4,
-    VT_REASON = 6
+    VT_REASON = 6,
+    VT_CODE = 8
   };
   uint16_t connection_handle() const {
     return GetField<uint16_t>(VT_CONNECTION_HANDLE, 0);
@@ -1725,11 +1726,15 @@ struct DeviceDisconnected FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const flatbuffers::String *reason() const {
     return GetPointer<const flatbuffers::String *>(VT_REASON);
   }
+  uint8_t code() const {
+    return GetField<uint8_t>(VT_CODE, 0);
+  }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint16_t>(verifier, VT_CONNECTION_HANDLE) &&
            VerifyOffset(verifier, VT_REASON) &&
            verifier.Verify(reason()) &&
+           VerifyField<uint8_t>(verifier, VT_CODE) &&
            verifier.EndTable();
   }
 };
@@ -1742,6 +1747,9 @@ struct DeviceDisconnectedBuilder {
   }
   void add_reason(flatbuffers::Offset<flatbuffers::String> reason) {
     fbb_.AddOffset(DeviceDisconnected::VT_REASON, reason);
+  }
+  void add_code(uint8_t code) {
+    fbb_.AddElement<uint8_t>(DeviceDisconnected::VT_CODE, code, 0);
   }
   explicit DeviceDisconnectedBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -1758,21 +1766,25 @@ struct DeviceDisconnectedBuilder {
 inline flatbuffers::Offset<DeviceDisconnected> CreateDeviceDisconnected(
     flatbuffers::FlatBufferBuilder &_fbb,
     uint16_t connection_handle = 0,
-    flatbuffers::Offset<flatbuffers::String> reason = 0) {
+    flatbuffers::Offset<flatbuffers::String> reason = 0,
+    uint8_t code = 0) {
   DeviceDisconnectedBuilder builder_(_fbb);
   builder_.add_reason(reason);
   builder_.add_connection_handle(connection_handle);
+  builder_.add_code(code);
   return builder_.Finish();
 }
 
 inline flatbuffers::Offset<DeviceDisconnected> CreateDeviceDisconnectedDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     uint16_t connection_handle = 0,
-    const char *reason = nullptr) {
+    const char *reason = nullptr,
+    uint8_t code = 0) {
   return BaBLE::CreateDeviceDisconnected(
       _fbb,
       connection_handle,
-      reason ? _fbb.CreateString(reason) : 0);
+      reason ? _fbb.CreateString(reason) : 0,
+      code);
 }
 
 struct DeviceFound FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
