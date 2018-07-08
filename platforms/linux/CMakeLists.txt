@@ -45,12 +45,11 @@ set(SOURCES_FILES
         src/Application/Packets/Commands/NotificationReceived/NotificationReceived.cpp
         src/Application/Packets/Commands/GetControllersIds/GetControllersIdsRequest.cpp
         src/Application/Packets/Commands/GetControllerInfo/GetControllerInfoRequest.cpp
-        src/Application/Packets/Commands/GetConnectedDevices/GetConnectedDevicesRequest.cpp
+        src/Application/Packets/Commands/GetConnectedDevices/GetConnectedDevices.cpp
         src/Application/Packets/Commands/ReadByType/ReadByTypeRequest.cpp
         src/Application/Packets/Commands/ReadByType/ReadByTypeResponse.cpp
         src/Application/Packets/Commands/ReadByGroupType/ReadByGroupTypeRequest.cpp
         src/Application/Packets/Commands/ReadByGroupType/ReadByGroupTypeResponse.cpp
-        src/Application/Packets/Commands/GetConnectedDevices/GetConnectedDevicesResponse.cpp
         src/Application/Packets/Commands/GetControllerInfo/GetControllerInfoResponse.cpp
         src/Application/Packets/Commands/GetControllersIds/GetControllersIdsResponse.cpp
         src/Application/Packets/Commands/Read/ReadResponse.cpp

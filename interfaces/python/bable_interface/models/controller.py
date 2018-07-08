@@ -2,7 +2,7 @@ class Controller(object):
 
     def __init__(self, raw_ctrl):
         self.id = raw_ctrl.Id()
-        self.address = raw_ctrl.Address()
+        self.address = raw_ctrl.Address().decode()
         self.name = raw_ctrl.Name()
         self.powered = raw_ctrl.Powered()
         self.connectable = raw_ctrl.Connectable()

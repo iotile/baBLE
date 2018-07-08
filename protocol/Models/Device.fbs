@@ -1,0 +1,6 @@
+namespace BaBLE;
+
+table Device {
+  connection_handle:uint16;
+  address:string;
+}

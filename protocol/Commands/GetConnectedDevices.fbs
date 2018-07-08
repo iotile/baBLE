@@ -1,5 +1,7 @@
+include "Models/Device.fbs";
+
 namespace BaBLE;
 
 table GetConnectedDevices {
-  devices:[string];
+  devices:[Device];
 }
