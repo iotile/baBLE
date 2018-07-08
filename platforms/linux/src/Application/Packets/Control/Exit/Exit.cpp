@@ -8,9 +8,7 @@ namespace Packet {
   namespace Control {
 
     Exit::Exit()
-        : HostOnlyPacket(Packet::Id::Exit, initial_packet_code()) {
-      m_native_class = "BaBLE";
-    }
+        : HostOnlyPacket(Packet::Id::Exit, initial_packet_code()) {}
 
     void Exit::unserialize(FlatbuffersFormatExtractor& extractor) {}
 

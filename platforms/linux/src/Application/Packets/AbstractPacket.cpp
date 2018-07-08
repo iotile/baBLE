@@ -47,7 +47,6 @@ namespace Packet {
           if(mgmt_extractor == nullptr) {
             throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't import data into packet: wrong extractor provided.");
           }
-          m_native_class = "MGMT";
           return unserialize(*mgmt_extractor);
         }
 
@@ -57,7 +56,6 @@ namespace Packet {
           if(hci_extractor == nullptr) {
             throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't import data into packet: wrong extractor provided.");
           }
-          m_native_class = "HCI";
           return unserialize(*hci_extractor);
         }
 
@@ -68,7 +66,6 @@ namespace Packet {
             throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't import data into packet: wrong extractor provided.");
           }
           m_uuid_request = fb_extractor->get_uuid_request();
-          m_native_class = "FLATBUFFERS";
           return unserialize(*fb_extractor);
         }
 

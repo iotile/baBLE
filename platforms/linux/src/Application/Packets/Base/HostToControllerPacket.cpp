@@ -13,6 +13,7 @@ namespace Packet {
 
   HostToControllerPacket::HostToControllerPacket(Packet::Id id, Packet::Type type, uint16_t packet_code, bool waiting_response)
     : AbstractPacket(id, initial_type(), type, packet_code) {
+    m_native_class = "BaBLE";
     m_response_packet_code = m_packet_code;
     m_waiting_response = waiting_response;
   }

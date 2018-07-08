@@ -9,7 +9,6 @@ namespace Packet {
 
     BaBLEError::BaBLEError(const Exceptions::BaBLEException& exception)
         : HostOnlyPacket(Packet::Id::BaBLEError, initial_packet_code()) {
-      m_native_class = "BaBLE";
       m_status = exception.get_type();
       set_status(static_cast<uint8_t>(m_status), false);
 

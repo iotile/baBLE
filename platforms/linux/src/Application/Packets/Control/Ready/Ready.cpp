@@ -8,9 +8,7 @@ namespace Packet {
   namespace Control {
 
     Ready::Ready()
-        : HostOnlyPacket(Packet::Id::Ready, initial_packet_code()) {
-      m_native_class = "BaBLE";
-    }
+        : HostOnlyPacket(Packet::Id::Ready, initial_packet_code()) {}
 
     vector<uint8_t> Ready::serialize(FlatbuffersFormatBuilder& builder) const {
       auto payload = BaBLE::CreateReady(builder);
