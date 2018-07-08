@@ -6,7 +6,7 @@ from bable_interface.BaBLE import StartScan, StopScan, ProbeServices, ProbeChara
 from bable_interface.BaBLE.StatusCode import StatusCode
 from bable_interface.BaBLE.Payload import Payload
 from bable_interface.utils import none_cb, to_bytes
-from bable_interface.models import BaBLEException, Characteristic, Controller, Packet, PacketUuid, Service
+from bable_interface.models import BaBLEException, Characteristic, Controller, Device, Packet, PacketUuid, Service
 
 
 @asyncio.coroutine
@@ -377,7 +377,10 @@ def list_connected_devices(self, controller_id, timeout=15.0):
         self.remove_callback(packet.packet_uuid)
 
         if packet.status_code == StatusCode.Success:
-            devices = packet.get('devices')
+            devices = packet.get(
+                name='devices',
+                format_function=lambda raw_devs: [Device(raw_dev) for raw_dev in raw_devs]
+            )
 
             future.set_result(devices)
         else:

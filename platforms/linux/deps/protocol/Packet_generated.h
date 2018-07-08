@@ -16,6 +16,8 @@ struct GetControllersIds;
 
 struct GetControllerInfo;
 
+struct Device;
+
 struct GetConnectedDevices;
 
 struct StartScan;
@@ -616,18 +618,79 @@ inline flatbuffers::Offset<GetControllerInfo> CreateGetControllerInfo(
   return builder_.Finish();
 }
 
+struct Device FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_CONNECTION_HANDLE = 4,
+    VT_ADDRESS = 6
+  };
+  uint16_t connection_handle() const {
+    return GetField<uint16_t>(VT_CONNECTION_HANDLE, 0);
+  }
+  const flatbuffers::String *address() const {
+    return GetPointer<const flatbuffers::String *>(VT_ADDRESS);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint16_t>(verifier, VT_CONNECTION_HANDLE) &&
+           VerifyOffset(verifier, VT_ADDRESS) &&
+           verifier.Verify(address()) &&
+           verifier.EndTable();
+  }
+};
+
+struct DeviceBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_connection_handle(uint16_t connection_handle) {
+    fbb_.AddElement<uint16_t>(Device::VT_CONNECTION_HANDLE, connection_handle, 0);
+  }
+  void add_address(flatbuffers::Offset<flatbuffers::String> address) {
+    fbb_.AddOffset(Device::VT_ADDRESS, address);
+  }
+  explicit DeviceBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  DeviceBuilder &operator=(const DeviceBuilder &);
+  flatbuffers::Offset<Device> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<Device>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<Device> CreateDevice(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t connection_handle = 0,
+    flatbuffers::Offset<flatbuffers::String> address = 0) {
+  DeviceBuilder builder_(_fbb);
+  builder_.add_address(address);
+  builder_.add_connection_handle(connection_handle);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<Device> CreateDeviceDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t connection_handle = 0,
+    const char *address = nullptr) {
+  return BaBLE::CreateDevice(
+      _fbb,
+      connection_handle,
+      address ? _fbb.CreateString(address) : 0);
+}
+
 struct GetConnectedDevices FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_DEVICES = 4
   };
-  const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *devices() const {
-    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *>(VT_DEVICES);
+  const flatbuffers::Vector<flatbuffers::Offset<Device>> *devices() const {
+    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<Device>> *>(VT_DEVICES);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_DEVICES) &&
            verifier.Verify(devices()) &&
-           verifier.VerifyVectorOfStrings(devices()) &&
+           verifier.VerifyVectorOfTables(devices()) &&
            verifier.EndTable();
   }
 };
@@ -635,7 +698,7 @@ struct GetConnectedDevices FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table 
 struct GetConnectedDevicesBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_devices(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> devices) {
+  void add_devices(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<Device>>> devices) {
     fbb_.AddOffset(GetConnectedDevices::VT_DEVICES, devices);
   }
   explicit GetConnectedDevicesBuilder(flatbuffers::FlatBufferBuilder &_fbb)
@@ -652,7 +715,7 @@ struct GetConnectedDevicesBuilder {
 
 inline flatbuffers::Offset<GetConnectedDevices> CreateGetConnectedDevices(
     flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> devices = 0) {
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<Device>>> devices = 0) {
   GetConnectedDevicesBuilder builder_(_fbb);
   builder_.add_devices(devices);
   return builder_.Finish();
@@ -660,10 +723,10 @@ inline flatbuffers::Offset<GetConnectedDevices> CreateGetConnectedDevices(
 
 inline flatbuffers::Offset<GetConnectedDevices> CreateGetConnectedDevicesDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    const std::vector<flatbuffers::Offset<flatbuffers::String>> *devices = nullptr) {
+    const std::vector<flatbuffers::Offset<Device>> *devices = nullptr) {
   return BaBLE::CreateGetConnectedDevices(
       _fbb,
-      devices ? _fbb.CreateVector<flatbuffers::Offset<flatbuffers::String>>(*devices) : 0);
+      devices ? _fbb.CreateVector<flatbuffers::Offset<Device>>(*devices) : 0);
 }
 
 struct StartScan FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {

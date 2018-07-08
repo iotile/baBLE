@@ -22,9 +22,14 @@ class GetConnectedDevices(object):
     def Devices(self, j):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(4))
         if o != 0:
-            a = self._tab.Vector(o)
-            return self._tab.String(a + flatbuffers.number_types.UOffsetTFlags.py_type(j * 4))
-        return ""
+            x = self._tab.Vector(o)
+            x += flatbuffers.number_types.UOffsetTFlags.py_type(j) * 4
+            x = self._tab.Indirect(x)
+            from .Device import Device
+            obj = Device()
+            obj.Init(self._tab.Bytes, x)
+            return obj
+        return None
 
     # GetConnectedDevices
     def DevicesLength(self):

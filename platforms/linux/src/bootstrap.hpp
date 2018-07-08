@@ -22,8 +22,7 @@
 #include "Application/Packets/Commands/Write/WriteResponse.hpp"
 #include "Application/Packets/Commands/NotificationReceived/NotificationReceived.hpp"
 #include "Application/Packets/Commands/WriteWithoutResponse/WriteWithoutResponse.hpp"
-#include "Application/Packets/Commands/GetConnectedDevices/GetConnectedDevicesRequest.hpp"
-#include "Application/Packets/Commands/GetConnectedDevices/GetConnectedDevicesResponse.hpp"
+#include "Application/Packets/Commands/GetConnectedDevices/GetConnectedDevices.hpp"
 #include "Application/Packets/Commands/CreateConnection/CreateConnection.hpp"
 #include "Application/Packets/Commands/CancelConnection/CancelConnectionRequest.hpp"
 #include "Application/Packets/Events/DeviceConnected/DeviceConnected.hpp"
@@ -51,7 +50,6 @@ namespace Bootstrap {
     mgmt_packet_builder
       .register_command<Packet::Commands::GetControllersIdsResponse>()
       .register_command<Packet::Commands::GetControllerInfoResponse>()
-      .register_command<Packet::Commands::GetConnectedDevicesResponse>()
       .register_command<Packet::Commands::SetPoweredResponse>()
       .register_command<Packet::Commands::SetDiscoverableResponse>()
       .register_command<Packet::Commands::SetConnectableResponse>()
@@ -93,7 +91,7 @@ namespace Bootstrap {
     stdio_packet_builder
       .register_command<Packet::Commands::GetControllersIdsRequest>()
       .register_command<Packet::Commands::GetControllerInfoRequest>()
-      .register_command<Packet::Commands::GetConnectedDevicesRequest>()
+      .register_command<Packet::Commands::GetConnectedDevices>()
       .register_command<Packet::Commands::SetPoweredRequest>()
       .register_command<Packet::Commands::SetDiscoverableRequest>()
       .register_command<Packet::Commands::SetConnectableRequest>()

@@ -17,7 +17,9 @@
 
 #define HCIGETDEVLIST _IOR('H', 210, int)
 #define HCIGETDEVINFO _IOR('H', 211, int)
+#define HCIGETCONNLIST _IOR('H', 212, int)
 #define HCI_MAX_DEV 16
+#define HCI_MAX_CONN 16
 
 // BLE only supports ATT Channel ID for L2CAP
 #define ATT_CID 4
@@ -81,6 +83,21 @@ namespace Format {
       uint32_t sco_rx;
       uint32_t byte_rx;
       uint32_t byte_tx;
+    };
+
+    struct hci_conn_info {
+      uint16_t handle;
+      bdaddr_t bdaddr;
+      uint8_t  type;
+      uint8_t  out;
+      uint16_t state;
+      uint32_t link_mode;
+    };
+
+    struct hci_conn_list_req {
+      uint16_t dev_id;
+      uint16_t conn_num;
+      struct hci_conn_info conn_info[0];
     };
 
     // Structure representing the Extended Inquiry Response data
@@ -252,6 +269,12 @@ namespace Format {
       InsufficientEncryption= 0x0F,
       UnsupportedGroupType= 0x10,
       InsufficientResources= 0x11
+    };
+
+    // Structure representing a device
+    struct Device {
+      uint16_t connection_handle = 0;
+      std::array<uint8_t, 6> address{};
     };
 
     // Structure representing a GATT service

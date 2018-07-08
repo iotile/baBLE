@@ -12,19 +12,28 @@ vector<shared_ptr<HCISocket>> HCISocket::create_all(uv_loop_t* loop, shared_ptr<
   struct Format::HCI::hci_dev_list_req* dl;
   struct Format::HCI::hci_dev_req* dr;
 
-  dl = (Format::HCI::hci_dev_list_req*)calloc(HCI_MAX_DEV * sizeof(*dr) + sizeof(*dl), 1);
-  dr = dl->dev_req;
-
-  dl->dev_num = HCI_MAX_DEV;
-
-  sock.ioctl(HCIGETDEVLIST, dl);
-
-  for (int i = 0; i < dl->dev_num; i++, dr++) {
-    shared_ptr<HCISocket> hci_socket = make_shared<HCISocket>(loop, hci_format, dr->dev_id);
-    hci_sockets.push_back(hci_socket);
+  dl = (Format::HCI::hci_dev_list_req*)malloc(HCI_MAX_DEV * sizeof(*dr) + sizeof(*dl));
+  if (dl == nullptr) {
+    throw runtime_error("Can't allocate memory to get HCI controllers list.");
   }
 
-  free(dl);
+  try {
+    dr = dl->dev_req;
+    dl->dev_num = HCI_MAX_DEV;
+
+    sock.ioctl(HCIGETDEVLIST, dl);
+
+    for (int i = 0; i < dl->dev_num; i++, dr++) {
+      shared_ptr<HCISocket> hci_socket = make_shared<HCISocket>(loop, hci_format, dr->dev_id);
+      hci_sockets.push_back(hci_socket);
+    }
+
+    free(dl);
+
+  } catch (const std::exception& err) {
+    free(dl);
+    throw;
+  }
 
   return hci_sockets;
 }
