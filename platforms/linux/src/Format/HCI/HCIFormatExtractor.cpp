@@ -114,6 +114,7 @@ Format::HCI::EIR HCIFormatExtractor::parse_eir(const vector<uint8_t>& data) {
 
     field_length--;
 
+    // TODO: currently only read 1 UUID but multiple can be provided at once
     switch(type) {
       case Format::HCI::ReportType::Flags:
         result.flags = *it;
@@ -121,17 +122,22 @@ Format::HCI::EIR HCIFormatExtractor::parse_eir(const vector<uint8_t>& data) {
 
       case Format::HCI::ReportType::IncompleteUUID16ServiceClass:
       case Format::HCI::ReportType::UUID16ServiceClass:
-        result.uuid.assign(it, it + 4);
+        result.uuid.assign(it, it + 2);
         break;
 
       case Format::HCI::ReportType::IncompleteUUID32ServiceClass:
       case Format::HCI::ReportType::UUID32ServiceClass:
-        result.uuid.assign(it, it + 8);
+        result.uuid.assign(it, it + 4);
         break;
 
       case Format::HCI::ReportType::IncompleteUUID128ServiceClass:
       case Format::HCI::ReportType::UUID128ServiceClass:
         result.uuid.assign(it, it + 16);
+        break;
+
+      case Format::HCI::ReportType::UUID16ServiceData:
+        result.uuid.assign(it, it + 2);
+        // TODO: service data ignored
         break;
 
       case Format::HCI::ReportType::ManufacturerSpecific:
@@ -158,7 +164,7 @@ Format::HCI::EIR HCIFormatExtractor::parse_eir(const vector<uint8_t>& data) {
         break;
 
       default:
-        LOG.warning("Unknown EIR type received: " + to_string(type));
+        LOG.debug("Unknown EIR type received: " + to_string(type));
         break;
     }
 
