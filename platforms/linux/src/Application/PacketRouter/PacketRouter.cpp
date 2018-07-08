@@ -32,6 +32,8 @@ void PacketRouter::remove_callback(Packet::PacketUuid uuid) {
       break;
     }
   }
+
+  remove_callback_timestamp(uuid);
 }
 
 shared_ptr<Packet::AbstractPacket> PacketRouter::route(const shared_ptr<PacketRouter>& router, shared_ptr<Packet::AbstractPacket> received_packet) {
@@ -65,12 +67,12 @@ void PacketRouter::expire_waiting_packets(uint64_t expiration_duration_ms) {
 
   auto it_last_expired = m_timestamps.upper_bound(expiration_start_time);
   if (it_last_expired == m_timestamps.begin()) {
-    LOG.debug("No packet to expire.", "PacketBuilder");
+    LOG.debug("Waiting packets but none to expire.", "PacketBuilder");
     return;
   }
 
   if (it_last_expired == m_timestamps.end()) {
-    LOG.warning("Expiring all waiting packets", "PacketBuilder");
+    LOG.info("Expiring all waiting packets", "PacketBuilder");
 
     LOG.debug("Waiting packets UUID: ", "PacketBuilder");
     for (auto& kv : m_timestamps) {
@@ -84,7 +86,7 @@ void PacketRouter::expire_waiting_packets(uint64_t expiration_duration_ms) {
 
   auto callback_it = m_callbacks.begin();
   for (auto it = m_timestamps.begin(); it != it_last_expired; ++it) {
-    LOG.warning("Expiring packet (" + to_string(it->second.response_packet_code) + ")", "PacketBuilder");
+    LOG.info("Expiring packet (" + to_string(it->second.response_packet_code) + ")", "PacketBuilder");
     while (callback_it != m_callbacks.end()) {
       if (get<0>(*callback_it) == it->second) {
         m_callbacks.erase(callback_it);
