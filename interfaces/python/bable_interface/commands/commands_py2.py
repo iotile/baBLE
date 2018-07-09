@@ -14,6 +14,20 @@ from bable_interface.models import BaBLEException, Characteristic, Controller, D
 @asyncio.coroutine
 def start_scan(self, controller_id, active_scan, on_device_found, on_scan_started, timeout=15.0):
 
+    if isinstance(on_device_found, (tuple, list)):
+        on_device_found_cb = on_device_found[0]
+        on_device_found_params = on_device_found[1:]
+    else:
+        on_device_found_cb = on_device_found
+        on_device_found_params = []
+
+    if isinstance(on_scan_started, (tuple, list)):
+        on_scan_started_cb = on_scan_started[0]
+        on_scan_started_params = on_scan_started[1:]
+    else:
+        on_scan_started_cb = on_scan_started
+        on_scan_started_params = []
+
     @asyncio.coroutine
     def on_device_found_event(packet):
         result = packet.get_dict([
@@ -28,7 +42,7 @@ def start_scan(self, controller_id, active_scan, on_device_found, on_scan_starte
             ('manufacturer_data', bytes)
         ])
 
-        on_device_found(True, result, None)
+        on_device_found_cb(True, result, None, *on_device_found_params)
 
     @asyncio.coroutine
     def on_response_received(packet, future):
@@ -36,12 +50,12 @@ def start_scan(self, controller_id, active_scan, on_device_found, on_scan_starte
         self.remove_callback(packet.packet_uuid)
 
         if packet.status_code == StatusCode.Success:
-            on_scan_started(True, packet.get_dict(['controller_id']), None)
+            on_scan_started_cb(True, packet.get_dict(['controller_id']), None, *on_scan_started_params)
             future.set_result(True)
         else:
             self.remove_callback(PacketUuid(payload_type=Payload.DeviceFound, controller_id=controller_id))
             error = BaBLEException(packet, "Failed to start scan")
-            on_scan_started(False, None, error)
+            on_scan_started_cb(False, None, error, *on_scan_started_params)
             future.set_exception(error)
 
     future = asyncio.Future()
@@ -68,12 +82,19 @@ def start_scan(self, controller_id, active_scan, on_device_found, on_scan_starte
             request_packet.packet_uuid,
             PacketUuid(payload_type=Payload.DeviceFound, controller_id=controller_id)
         )
-        on_scan_started(False, None, "Start scan timed out")
+        on_scan_started_cb(False, None, "Start scan timed out", *on_scan_started_params)
         raise RuntimeError("Start scan timed out")
 
 
 @asyncio.coroutine
 def stop_scan(self, controller_id, on_scan_stopped, timeout=15.0):
+
+    if isinstance(on_scan_stopped, (tuple, list)):
+        on_scan_stopped_cb = on_scan_stopped[0]
+        on_scan_stopped_params = on_scan_stopped[1:]
+    else:
+        on_scan_stopped_cb = on_scan_stopped
+        on_scan_stopped_params = []
 
     @asyncio.coroutine
     def on_response_received(packet, future):
@@ -84,11 +105,11 @@ def stop_scan(self, controller_id, on_scan_stopped, timeout=15.0):
             self.remove_callback(
                 PacketUuid(payload_type=Payload.DeviceFound, controller_id=controller_id)
             )
-            on_scan_stopped(True, packet.get_dict(['controller_id']), None)
+            on_scan_stopped_cb(True, packet.get_dict(['controller_id']), None, *on_scan_stopped_params)
             future.set_result(True)
         else:
             error = BaBLEException(packet, "Failed to stop scan")
-            on_scan_stopped(False, None, error)
+            on_scan_stopped_cb(False, None, error, *on_scan_stopped_params)
             future.set_exception(error)
 
     future = asyncio.Future()
@@ -108,7 +129,7 @@ def stop_scan(self, controller_id, on_scan_stopped, timeout=15.0):
         raise asyncio.Return(result)
     except asyncio.TimeoutError:
         self.remove_callback(request_packet.packet_uuid)
-        on_scan_stopped(False, None, "Stop scan timed out")
+        on_scan_stopped_cb(False, None, "Stop scan timed out", *on_scan_stopped_params)
         raise RuntimeError("Stop scan timed out")
 
 
@@ -193,6 +214,20 @@ def connect(self, controller_id, address, address_type, on_connected_with_info, 
         address=address
     )
 
+    if isinstance(on_connected_with_info, (tuple, list)):
+        on_connected_cb = on_connected_with_info[0]
+        on_connected_params = on_connected_with_info[1:]
+    else:
+        on_connected_cb = on_connected_with_info
+        on_connected_params = []
+
+    if isinstance(on_disconnected, (tuple, list)):
+        on_disconnected_cb = on_disconnected[0]
+        on_disconnected_params = on_disconnected[1:]
+    else:
+        on_disconnected_cb = on_disconnected
+        on_disconnected_params = []
+
     @asyncio.coroutine
     def on_unexpected_disconnection(packet):
         self.logger.info("Unexpected disconnection event received with status={}".format(packet.status))
@@ -204,7 +239,7 @@ def connect(self, controller_id, address, address_type, on_connected_with_info, 
             'reason',
             'code'
         ])
-        on_disconnected(True, data, None)
+        on_disconnected_cb(True, data, None, *on_disconnected_params)
 
     @asyncio.coroutine
     def on_connected(packet, future):
@@ -232,12 +267,12 @@ def connect(self, controller_id, address, address_type, on_connected_with_info, 
                 device['connection_handle']
             ))
 
-            on_connected_with_info(True, device, None)
+            on_connected_cb(True, device, None, *on_connected_params)
 
             future.set_result(device)
         else:
             error = BaBLEException(packet, "Failed to connect", address=address)
-            on_connected_with_info(False, None, error)
+            on_connected_cb(False, None, error, *on_connected_params)
             future.set_exception(error)
 
     @asyncio.coroutine
@@ -248,7 +283,7 @@ def connect(self, controller_id, address, address_type, on_connected_with_info, 
         if packet.status_code != StatusCode.Success:
             self.remove_callback(connected_event_uuid)
             error = BaBLEException(packet, "Failed to connect", address=address)
-            on_connected_with_info(False, None, error)
+            on_connected_cb(False, None, error, *on_connected_params)
             future.set_exception(error)
 
     future = asyncio.Future()
@@ -270,7 +305,7 @@ def connect(self, controller_id, address, address_type, on_connected_with_info, 
         raise asyncio.Return(result)
     except asyncio.TimeoutError:
         self.remove_callback(connected_event_uuid)
-        on_connected_with_info(False, None, "Connection timed out")
+        on_connected_cb(False, None, "Connection timed out", *on_connected_params)
         raise RuntimeError("Connection timed out")
 
 
@@ -282,6 +317,13 @@ def disconnect(self, controller_id, connection_handle, on_disconnected, timeout=
         controller_id=controller_id,
         connection_handle=connection_handle
     )
+
+    if isinstance(on_disconnected, (tuple, list)):
+        on_disconnected_cb = on_disconnected[0]
+        on_disconnected_params = on_disconnected[1:]
+    else:
+        on_disconnected_cb = on_disconnected
+        on_disconnected_params = []
 
     @asyncio.coroutine
     def on_device_disconnected(packet, future):
@@ -296,12 +338,12 @@ def disconnect(self, controller_id, connection_handle, on_disconnected, timeout=
                 'code'
             ])
 
-            on_disconnected(True, data, None)
+            on_disconnected_cb(True, data, None, *on_disconnected_params)
 
             future.set_result(data)
         else:
             error = BaBLEException(packet, "Failed to disconnect")
-            on_disconnected(False, None, error)
+            on_disconnected_cb(False, None, error, *on_disconnected_params)
             future.set_exception(error)
 
     @asyncio.coroutine
@@ -313,7 +355,7 @@ def disconnect(self, controller_id, connection_handle, on_disconnected, timeout=
             self.remove_callback(disconnected_event_uuid)
 
             error = BaBLEException(packet, "Failed to disconnect")
-            on_disconnected(False, None, error)
+            on_disconnected_cb(False, None, error, *on_disconnected_params)
             future.set_exception(error)
 
     future = asyncio.Future()
@@ -335,12 +377,19 @@ def disconnect(self, controller_id, connection_handle, on_disconnected, timeout=
         raise asyncio.Return(result)
     except asyncio.TimeoutError:
         self.remove_callback(disconnected_event_uuid)
-        on_disconnected(False, None, "Disconnection timed out")
+        on_disconnected_cb(False, None, "Disconnection timed out", *on_disconnected_params)
         raise RuntimeError("Disconnection timed out")
 
 
 @asyncio.coroutine
 def cancel_connection(self, controller_id, on_connection_cancelled, timeout=15.0):
+
+    if isinstance(on_connection_cancelled, (tuple, list)):
+        on_connection_cancelled_cb = on_connection_cancelled[0]
+        on_connection_cancelled_params = on_connection_cancelled[1:]
+    else:
+        on_connection_cancelled_cb = on_connection_cancelled
+        on_connection_cancelled_params = []
 
     @asyncio.coroutine
     def on_response_received(packet, future):
@@ -348,11 +397,11 @@ def cancel_connection(self, controller_id, on_connection_cancelled, timeout=15.0
         self.remove_callback(packet.packet_uuid)
 
         if packet.status_code == StatusCode.Success:
-            on_connection_cancelled(True, None, None)
+            on_connection_cancelled_cb(True, None, None, *on_connection_cancelled_params)
             future.set_result(True)
         else:
             error = BaBLEException(packet, "Failed to cancel connection")
-            on_connection_cancelled(False, None, error)
+            on_connection_cancelled_cb(False, None, error, *on_connection_cancelled_params)
             future.set_exception(error)
 
     future = asyncio.Future()
@@ -368,7 +417,7 @@ def cancel_connection(self, controller_id, on_connection_cancelled, timeout=15.0
         raise asyncio.Return(result)
     except asyncio.TimeoutError:
         self.remove_callback(request_packet.packet_uuid)
-        on_connection_cancelled(False, None, "Cancel connection timed out")
+        on_connection_cancelled_cb(False, None, "Cancel connection timed out", *on_connection_cancelled_params)
         raise RuntimeError("Cancel connection timed out")
 
 
@@ -447,6 +496,13 @@ def list_controllers(self, timeout=15.0):
 @asyncio.coroutine
 def read(self, controller_id, connection_handle, attribute_handle, on_read, timeout=15.0):
 
+    if isinstance(on_read, (tuple, list)):
+        on_read_cb = on_read[0]
+        on_read_params = on_read[1:]
+    else:
+        on_read_cb = on_read
+        on_read_params = []
+
     @asyncio.coroutine
     def on_response_received(packet, future):
         self.logger.debug("Read response received with status={}".format(packet.status))
@@ -460,14 +516,14 @@ def read(self, controller_id, connection_handle, attribute_handle, on_read, time
                 ('value', bytes)
             ])
 
-            on_read(True, data, None)
+            on_read_cb(True, data, None, *on_read_params)
 
             future.set_result(data)
         else:
             error = BaBLEException(packet, "Failed to read value",
                                    connection_handle=connection_handle,
                                    attribute_handle=attribute_handle)
-            on_read(False, None, error)
+            on_read_cb(False, None, error, *on_read_params)
 
             future.set_exception(error)
 
@@ -489,12 +545,19 @@ def read(self, controller_id, connection_handle, attribute_handle, on_read, time
         raise asyncio.Return(result)
     except asyncio.TimeoutError:
         self.remove_callback(request_packet.packet_uuid)
-        on_read(False, None, "Read timed out")
+        on_read_cb(False, None, "Read timed out", *on_read_params)
         raise RuntimeError("Read timed out")
 
 
 @asyncio.coroutine
 def write(self, controller_id, connection_handle, attribute_handle, value, on_written, timeout=15.0):
+
+    if isinstance(on_written, (tuple, list)):
+        on_written_cb = on_written[0]
+        on_written_params = on_written[1:]
+    else:
+        on_written_cb = on_written
+        on_written_params = []
 
     @asyncio.coroutine
     def on_response_received(packet, future):
@@ -508,14 +571,14 @@ def write(self, controller_id, connection_handle, attribute_handle, value, on_wr
                 'attribute_handle'
             ])
 
-            on_written(True, data, None)
+            on_written_cb(True, data, None, *on_written_params)
 
             future.set_result(data)
         else:
             error = BaBLEException(packet, "Failed to write value",
                                    connection_handle=connection_handle,
                                    attribute_handle=attribute_handle)
-            on_written(False, None, error)
+            on_written_cb(False, None, error, *on_written_params)
             future.set_exception(error)
 
     future = asyncio.Future()
@@ -537,7 +600,7 @@ def write(self, controller_id, connection_handle, attribute_handle, value, on_wr
         raise asyncio.Return(result)
     except asyncio.TimeoutError:
         self.remove_callback(request_packet.packet_uuid)
-        on_written(False, None, "Write timed out")
+        on_written_cb(False, None, "Write timed out", *on_written_params)
         raise RuntimeError("Write timed out")
 
 
@@ -565,6 +628,13 @@ def set_notification(self, state, controller_id, connection_handle, attribute_ha
                                          connection_handle=connection_handle,
                                          attribute_handle=attribute_handle)
 
+    if isinstance(on_notification_received, (tuple, list)):
+        on_notification_received_cb = on_notification_received[0]
+        on_notification_received_params = on_notification_received[1:]
+    else:
+        on_notification_received_cb = on_notification_received
+        on_notification_received_params = []
+
     @asyncio.coroutine
     def on_notification_event(packet):
         result = packet.get_dict([
@@ -573,12 +643,17 @@ def set_notification(self, state, controller_id, connection_handle, attribute_ha
             ('value', bytes)
         ])
 
-        on_notification_received(True, result, None)
+        on_notification_received_cb(True, result, None, *on_notification_received_params)
 
     try:
         read_result = yield From(self.read(controller_id, connection_handle, attribute_handle, none_cb, timeout))
     except (RuntimeError, BaBLEException) as err:
-        on_notification_received(False, None, "Error while reading notification config (exception={})".format(err))
+        on_notification_received_cb(
+            False,
+            None,
+            "Error while reading notification configuration (exception={})".format(err),
+            *on_notification_received_params
+        )
         raise RuntimeError("Error while reading notification config (exception={})".format(err))
 
     current_state = struct.unpack('H', read_result['value'])[0]
@@ -601,8 +676,13 @@ def set_notification(self, state, controller_id, connection_handle, attribute_ha
     except (RuntimeError, BaBLEException) as err:
         if state:
             self.remove_callback(notification_event_uuid)
-        on_notification_received(False, None, "Error while writing notification config (exception={})".format(err))
-        raise RuntimeError("Error while writing notification config (exception={})".format(err))
+            on_notification_received_cb(
+                False,
+                None,
+                "Error while writing notification configuration (exception={})".format(err),
+                *on_notification_received_params
+            )
+            raise RuntimeError("Error while writing notification config (exception={})".format(err))
 
 
 @asyncio.coroutine
