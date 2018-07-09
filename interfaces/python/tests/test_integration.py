@@ -16,6 +16,11 @@ def test_integration(bridge_subprocess, mock_uuid):
         assert success is True
         device_found_event.set()
 
+    def on_device_found_with_params(success, result, failure_reason, param_test):
+        assert success is True
+        assert param_test == 'Test'
+        device_found_event.set()
+
     def on_error(status, message):
         assert status[0] == 'Success'
         assert message == 'Test'
@@ -48,7 +53,7 @@ def test_integration(bridge_subprocess, mock_uuid):
     assert result is None
     assert device_found_event.wait(timeout=5.0)
 
-    result = bable.start_scan(on_device_found=on_device_found, timeout=5.0, sync=True)
+    result = bable.start_scan(on_device_found=[on_device_found_with_params, 'Test'], timeout=5.0, sync=True)
     assert result is True
 
     response_packet.controller_id = 1
