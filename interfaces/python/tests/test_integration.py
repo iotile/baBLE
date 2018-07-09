@@ -8,6 +8,7 @@ from bable_interface.BaBLE import DeviceFound, StartScan, Payload
 @pytest.mark.timeout(20)
 @pytest.mark.parametrize('mock_uuid', ['test'], indirect=True)
 def test_integration(bridge_subprocess, mock_uuid):
+    """ Test a full use case. """
     device_found_event = threading.Event()
     error_received_event = threading.Event()
     bable = bable_interface.BaBLEInterface()
@@ -39,8 +40,9 @@ def test_integration(bridge_subprocess, mock_uuid):
 
     bable.start(on_error=on_error)
 
+    # Test timeout: should raise a RuntimeError because no response is received before expiration
     with pytest.raises(RuntimeError):
-        bable.start_scan(on_device_found=on_device_found, timeout=0.5, sync=True)
+        bable.start_scan(on_device_found=on_device_found, timeout=0.2, sync=True)
 
     def on_start_scan(*packets):
         def send_response():
@@ -49,13 +51,17 @@ def test_integration(bridge_subprocess, mock_uuid):
         return send_response
 
     bridge_subprocess.on_receive(Payload.Payload.StartScan, on_start_scan(response_packet, event_packet))
+
+    # Test asynchronous start scan
     result = bable.start_scan(on_device_found=on_device_found, timeout=5.0, sync=False)
     assert result is None
     assert device_found_event.wait(timeout=5.0)
 
+    # Test synchronous start scan
     result = bable.start_scan(on_device_found=[on_device_found_with_params, 'Test'], timeout=5.0, sync=True)
     assert result is True
 
+    # Test with controller id
     response_packet.controller_id = 1
     event_packet.controller_id = 1
     device_found_event.clear()
@@ -64,6 +70,7 @@ def test_integration(bridge_subprocess, mock_uuid):
     assert result is True
     assert device_found_event.wait(timeout=5.0)
 
+    # Test if error packet is received
     error_packet = Packet(
         payload_type=Payload.Payload.BaBLEError,
         controller_id=0,

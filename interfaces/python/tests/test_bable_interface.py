@@ -5,9 +5,11 @@ import pytest
 
 @pytest.mark.timeout(10)
 def test_start_stop(bridge_subprocess):
+    """ Test to start and stop the bable interface. """
     bable = bable_interface.BaBLEInterface()
     assert bable.started is False
 
+    # Try to run a command without starting the bable interface.
     with pytest.raises(RuntimeError):
         bable.start_scan(none_cb)
 
@@ -22,11 +24,13 @@ def test_start_stop(bridge_subprocess):
 
 @pytest.mark.timeout(10)
 def test_restart(bridge_subprocess):
+    """ Test to restart the bable interface after stop. """
     bable = bable_interface.BaBLEInterface()
 
     bable.start()
     bable.stop()
 
+    # Need to reset to emulate the subprocess closing (clear internal variables)
     bridge_subprocess.reset()
 
     bable.start()
@@ -37,6 +41,7 @@ def test_restart(bridge_subprocess):
 
 @pytest.mark.timeout(10)
 def test_stop_not_started(bridge_subprocess):
+    """ Test to stop a not started bable interface. """
     bable = bable_interface.BaBLEInterface()
 
     with pytest.raises(RuntimeError):
@@ -45,6 +50,7 @@ def test_stop_not_started(bridge_subprocess):
 
 @pytest.mark.timeout(10)
 def test_start_twice(bridge_subprocess):
+    """ Test to start the bable interface multiple times. """
     bable = bable_interface.BaBLEInterface()
 
     bable.start()
