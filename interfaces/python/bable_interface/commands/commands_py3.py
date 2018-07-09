@@ -244,34 +244,41 @@ def connect(self, controller_id, address, address_type, on_connected_with_info, 
         self.logger.debug("Device connected event received with status={}".format(packet.status))
         self.remove_callback(packet.packet_uuid)
 
-        if packet.status_code == StatusCode.Success:
-            device = packet.get_dict([
-                'controller_id',
-                'connection_handle',
-                'address',
-                'address_type'
-            ])
+        if packet.status_code != StatusCode.Success:
+            error = BaBLEException(packet, "Failed to connect", address=address)
+            on_connected_cb(False, None, error, *on_connected_params)
+            future.set_exception(error)
+            return
 
-            self.register_callback(
-                PacketUuid(payload_type=Payload.DeviceDisconnected,
-                           controller_id=controller_id,
-                           connection_handle=device['connection_handle']),
-                callback=on_unexpected_disconnection
-            )
+        device = packet.get_dict([
+            'controller_id',
+            'connection_handle',
+            'address',
+            'address_type'
+        ])
 
+        self.register_callback(
+            PacketUuid(payload_type=Payload.DeviceDisconnected,
+                       controller_id=controller_id,
+                       connection_handle=device['connection_handle']),
+            callback=on_unexpected_disconnection
+        )
+
+        try:
             device['services'] = yield from self.probe_services(controller_id, device['connection_handle'])
             device['characteristics'] = yield from self.probe_characteristics(
                 controller_id,
                 device['connection_handle']
             )
-
-            on_connected_cb(True, device, None, *on_connected_params)
-
-            future.set_result(device)
-        else:
-            error = BaBLEException(packet, "Failed to connect", address=address)
+        except Exception as err:
+            yield from self.disconnect(controller_id, device['connection_handle'], none_cb)
+            error = BaBLEException(packet, "Failed to probe GATT", address=address, exception=err)
             on_connected_cb(False, None, error, *on_connected_params)
             future.set_exception(error)
+            return
+
+        on_connected_cb(True, device, None, *on_connected_params)
+        future.set_result(device)
 
     @asyncio.coroutine
     def on_response_received(packet, future):
