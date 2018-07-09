@@ -14,7 +14,7 @@ TEST_CASE("FlatbuffersFormat", "[unit][format][flatbuffers]") {
 }
 
 TEST_CASE("FlatbuffersFormatExtractor with command packet", "[unit][format][flatbuffers]") {
-  /* Raw bytes represents this :
+  /* Raw bytes representing this Flatbuffers packet:
        CancelConnection BaBLE command
          UUID: "0002"
          Controller ID: 0
@@ -24,6 +24,7 @@ TEST_CASE("FlatbuffersFormatExtractor with command packet", "[unit][format][flat
                                     0x04, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x30, 0x30, 0x30, 0x32, 0x00, 0x00,
                                     0x00, 0x00, 0x04, 0x00, 0x04, 0x00, 0x04, 0x00, 0x00, 0x00 };
 
+  // This packet is valid, so it should not throw an error during verification
   REQUIRE_NOTHROW(FlatbuffersFormatExtractor::verify(received_data));
 
   FlatbuffersFormat fb_format;
@@ -32,7 +33,7 @@ TEST_CASE("FlatbuffersFormatExtractor with command packet", "[unit][format][flat
   );
 
   REQUIRE(fb_extractor != nullptr);
-  REQUIRE_THROWS(fb_extractor->extract_payload_length(received_data));
+  REQUIRE_THROWS(fb_extractor->extract_payload_length(received_data));  // Can't extract payload lenght from Flatbuffers
   REQUIRE(fb_extractor->get_controller_id() == 0);
   REQUIRE(fb_extractor->get_uuid_request() == "0002");
   REQUIRE(fb_extractor->get_packet_code() == static_cast<uint16_t>(BaBLE::Payload::CancelConnection));

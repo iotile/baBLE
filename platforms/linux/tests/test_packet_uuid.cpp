@@ -21,6 +21,7 @@ TEST_CASE("PacketUuid should match", "[unit][packetuuid]") {
       Format::HCI::AttributeCode::ReadByTypeRequest  // Request packet code
   );
 
+  // Same as the prevous response_uuid, but the response and request packet code are both equal to ReadByTypeResponse
   Packet::PacketUuid response_uuid2(
       Packet::Type::HCI,  // Packet type
       0, // Controller ID

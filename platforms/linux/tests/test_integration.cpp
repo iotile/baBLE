@@ -17,6 +17,7 @@
 
 using namespace std;
 
+// Test a full use case sending Flatbuffers and MGMT packets, and receiving Flatbuffers packets
 TEST_CASE("Integration (with mocked socket) - MGMT meta packet", "[integration][mgmt]") {
   // Create loop
   uv_loop_t* loop = uv_default_loop();
@@ -49,6 +50,7 @@ TEST_CASE("Integration (with mocked socket) - MGMT meta packet", "[integration][
   stdio_packet_builder
       .register_command<Packet::Meta::GetControllersList>();
 
+  // Callback called if an error occured in polling function
   auto on_error = [&stdio_socket, &socket_container](const Exceptions::BaBLEException& err) {
     FAIL("Error received");
   };
@@ -89,7 +91,7 @@ TEST_CASE("Integration (with mocked socket) - MGMT meta packet", "[integration][
   socket_container.send(ready_packet);
   REQUIRE(stdio_socket->get_num_write_buffers() == 1);
 
-  // Verify that packet send is correct
+  // Verify that packet sent is correct
   shared_ptr<AbstractExtractor> fb_extractor = fb_format->create_extractor(stdio_socket->get_write_buffer(0));
   REQUIRE(fb_extractor->get_packet_code() == static_cast<uint16_t>(BaBLE::Payload::Ready));
   REQUIRE(fb_extractor->get_controller_id() == NON_CONTROLLER_ID);
@@ -153,6 +155,7 @@ TEST_CASE("Integration (with mocked socket) - MGMT meta packet", "[integration][
   REQUIRE(payload->controllers()->Get(0)->name()->str() == "arch-laptop-1");
 }
 
+// Test a full use case sending Flatbuffers and HCI packets, and receiving Flatbuffers packets
 TEST_CASE("Integration (with mocked socket) - HCI packet", "[integration][hci]") {
   string controller_address = "11:22:33:44:55:66";
 
@@ -235,18 +238,24 @@ TEST_CASE("Integration (with mocked socket) - HCI packet", "[integration][hci]")
       0x0040, // Connection handle
       0x0003  // Attribute handle
   );
+
+  // Simulate a Flatbuffers packet received with a Read request inside. It will automatically send the matching HCI packet
   stdio_socket->simulate_read(fb_builder.build(payload_request, BaBLE::Payload::Read));
   REQUIRE(hci_socket->get_raw()->get_num_write_buffers() == 1);
 
+  // Read the HCI packet sent (Read request)
   shared_ptr<AbstractExtractor> hci_extractor = hci_format->create_extractor(hci_socket->get_raw()->get_write_buffer(0));
   REQUIRE(hci_extractor->get_packet_code() == Format::HCI::AttributeCode::ReadRequest);
 
+  // Simulate an HCI Read response
   vector<uint8_t> hci_response{0x02, 0x40, 0x20, 0x0a, 0x00, 0x06, 0x00, 0x04, 0x00, 0x0b, 0x62, 0x61, 0x42, 0x4C, 0x45};
-
   hci_socket->simulate_read(hci_response);
   REQUIRE(hci_socket->get_raw()->get_num_write_buffers() == 1);
+
+  // Verify that the response has been correctly sent to StdIO
   REQUIRE(stdio_socket->get_num_write_buffers() == 1);
 
+  // Verify that the Flatbuffers packet contains the response as expected
   shared_ptr<AbstractExtractor> fb_extractor = fb_format->create_extractor(stdio_socket->get_write_buffer(0));
   REQUIRE(fb_extractor->get_packet_code() == static_cast<uint16_t>(BaBLE::Payload::Read));
   REQUIRE(fb_extractor->get_controller_id() == 0);

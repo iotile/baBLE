@@ -10,6 +10,7 @@ TEST_CASE("MGMTFormat", "[unit][format][mgmt]") {
   REQUIRE(mgmt_format.get_packet_type() == Packet::Type::MGMT);
 
   Format::MGMT::EventCode type_code;
+  // Test command packets
   type_code = Format::MGMT::EventCode::CommandComplete;
   REQUIRE(mgmt_format.get_header_length(type_code) == Format::MGMT::header_length);
   REQUIRE(mgmt_format.is_command(type_code) == true);
@@ -20,6 +21,7 @@ TEST_CASE("MGMTFormat", "[unit][format][mgmt]") {
   REQUIRE(mgmt_format.is_command(type_code) == true);
   REQUIRE(mgmt_format.is_event(type_code) == false);
 
+  // Test an event packet
   type_code = Format::MGMT::EventCode::IndexAdded;
   REQUIRE(mgmt_format.get_header_length(type_code) == Format::MGMT::header_length);
   REQUIRE(mgmt_format.is_command(type_code) == false);
@@ -27,7 +29,7 @@ TEST_CASE("MGMTFormat", "[unit][format][mgmt]") {
 }
 
 TEST_CASE("MGMTFormatExtractor with event packet", "[unit][format][mgmt]") {
-  /* Raw bytes represents this :
+  /* Raw bytes representing this MGMT packet:
       MGMT Index Added event
        Controller ID: 1
   */
@@ -38,6 +40,7 @@ TEST_CASE("MGMTFormatExtractor with event packet", "[unit][format][mgmt]") {
       mgmt_format.create_extractor(received_data)
   );
 
+  // Test extracting information from header
   REQUIRE(mgmt_extractor != nullptr);
   REQUIRE(mgmt_extractor->extract_payload_length(received_data) == 0);
   REQUIRE(mgmt_extractor->get_packet_code() == Format::MGMT::EventCode::IndexAdded);
@@ -45,7 +48,7 @@ TEST_CASE("MGMTFormatExtractor with event packet", "[unit][format][mgmt]") {
 }
 
 TEST_CASE("MGMTFormatExtractor with command packet", "[unit][format][mgmt]") {
-  /* Raw bytes represents this :
+  /* Raw bytes representing this MGMT packet:
        MGMT Command Complete Response
        Controller ID: 0
        SetPowered command
@@ -66,7 +69,7 @@ TEST_CASE("MGMTFormatExtractor with command packet", "[unit][format][mgmt]") {
 TEST_CASE("MGMTFormatBuilder", "[unit][format][mgmt]") {
   MGMTFormatBuilder mgmt_builder(0);
   mgmt_builder
-      .set_opcode(Format::MGMT::CommandCode::SetPowered)
+      .set_opcode(Format::MGMT::CommandCode::SetPowered)  // Opcode
       .add<bool>(true);  // Powered
 
   vector<uint8_t> result = mgmt_builder.build();
