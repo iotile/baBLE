@@ -34,7 +34,7 @@ def start_scan(self, controller_id, active_scan, on_device_found, on_scan_starte
             'controller_id',
             'type',
             'address',
-            'address_type',
+            ('address_type', lambda value: 'public' if value == 0 else 'random'),
             'rssi',
             'uuid',
             'company_id',
@@ -256,7 +256,7 @@ def connect(self, controller_id, address, address_type, on_connected_with_info, 
             'controller_id',
             'connection_handle',
             'address',
-            'address_type'
+            ('address_type', lambda value: 'public' if value == 0 else 'random')
         ])
 
         self.register_callback(
