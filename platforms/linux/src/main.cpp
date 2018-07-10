@@ -12,7 +12,7 @@
 #include "Application/Packets/Control/Ready/Ready.hpp"
 #include "Exceptions/BaBLEException.hpp"
 #include "utils/options_parser.hpp"
-#include "bootstrap.hpp"
+#include "registration.hpp"
 
 using namespace std;
 
@@ -76,13 +76,13 @@ int main(int argc, char* argv[]) {
   // PacketBuilder
   LOG.debug("Registering packets into packet builder...");
   PacketBuilder mgmt_packet_builder(mgmt_format);
-  Bootstrap::register_mgmt_packets(mgmt_packet_builder);
+  register_mgmt_packets(mgmt_packet_builder);
 
   PacketBuilder hci_packet_builder(hci_format);
-  Bootstrap::register_hci_packets(hci_packet_builder);
+  register_hci_packets(hci_packet_builder);
 
   PacketBuilder stdio_packet_builder(fb_format);
-  Bootstrap::register_stdio_packets(stdio_packet_builder);
+  register_stdio_packets(stdio_packet_builder);
 
   // Poll sockets
   LOG.debug("Creating socket pollers...");

@@ -102,7 +102,7 @@ set(SOURCES_FILES
         src/Transport/Socket/MGMT/MGMTSocket.cpp
         src/Transport/Socket/StdIO/StdIOSocket.cpp
         src/Transport/Socket/HCI/HCISocket.cpp
-        src/bootstrap.hpp
+        src/registration.hpp
         src/Exceptions/BaBLEException.cpp)
 add_library(bable ${SOURCES_FILES})
 target_include_directories(bable PUBLIC src)
