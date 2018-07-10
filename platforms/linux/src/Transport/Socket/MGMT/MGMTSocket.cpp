@@ -69,7 +69,6 @@ void MGMTSocket::on_poll(uv_poll_t* handle, int status, int events) {
 
   try {
     if (events & UV_READABLE) {
-      LOG.debug("Reading data...", "MGMTSocket");
       vector<uint8_t> received_payload = mgmt_socket->receive();
       mgmt_socket->m_on_received(received_payload, mgmt_socket->m_format);
 

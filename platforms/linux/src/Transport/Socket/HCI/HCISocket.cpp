@@ -153,7 +153,6 @@ void HCISocket::on_poll(uv_poll_t* handle, int status, int events) {
 
   try {
     if (events & UV_READABLE) {
-      LOG.debug("Reading data...", "HCISocket");
       vector<uint8_t> received_payload = hci_socket->receive();
       hci_socket->m_on_received(received_payload, hci_socket->m_format);
 

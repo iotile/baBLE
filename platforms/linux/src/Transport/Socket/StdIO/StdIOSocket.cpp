@@ -25,7 +25,6 @@ bool StdIOSocket::send(const vector<uint8_t>& data) {
   fwrite(data.data(), sizeof(uint8_t), data.size(), stdout);
 
   fflush(stdout);
-  LOG.debug("Data sent.", "StdIOSocket");
   return true;
 }
 
@@ -46,13 +45,12 @@ void StdIOSocket::on_poll(uv_stream_t* stream, ssize_t nread, const uv_buf_t* bu
     LOG.error("Error while polling input: " + string(uv_err_name(error_code)));
 
   } else if (nread > 0) {
-    LOG.debug("Readable data...", "StdIOSocket");
     auto remaining_data_length = static_cast<size_t>(nread);
     auto remaining_data = reinterpret_cast<uint8_t*>(buf->base);
 
     while (remaining_data_length > 0) {
       try {
-        LOG.debug("Remaining data: " + to_string(remaining_data_length), "StdIOSocket");
+//        LOG.debug("Remaining data: " + to_string(remaining_data_length), "StdIOSocket");
         if (!stdio_socket->receive(remaining_data, remaining_data_length)) {
           return;
         }

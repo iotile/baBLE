@@ -101,13 +101,11 @@ int main(int argc, char* argv[]) {
       if (packet == nullptr) {
         return;
       }
-      LOG.debug("Packet built", "MGMT poller");
 
       packet = packet_router->route(packet_router, packet);
       packet->prepare(packet_router);
 
       socket_container.send(packet);
-      LOG.debug("Packet sent", "MGMT poller");
     },
     on_error
   );
@@ -124,7 +122,6 @@ int main(int argc, char* argv[]) {
         if (packet == nullptr) {
           return;
         }
-        LOG.debug("Packet built", "HCI poller");
 
         // This part is needed due to a bug since Linux Kernel v4 : we have to create manually the L2CAP socket, else
         // we'll be disconnected after sending one packet.
@@ -169,7 +166,6 @@ int main(int argc, char* argv[]) {
         packet->prepare(packet_router);
 
         socket_container.send(packet);
-        LOG.debug("Packet sent", "HCI poller");
       },
       on_error
     );
@@ -183,12 +179,9 @@ int main(int argc, char* argv[]) {
       if (packet == nullptr) {
         return;
       }
-      LOG.debug("Packet built", "BABLE poller");
 
       packet->prepare(packet_router);
-
       socket_container.send(packet);
-      LOG.debug("Packet sent", "BABLE poller");
 
       if (packet->get_id() == Packet::Id::Exit) {
         LOG.debug("Received Exit packet. Cleanly stopping loop...");
