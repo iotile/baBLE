@@ -49,4 +49,9 @@ def camel_to_snake(word):
     return ALL_CAP_REGEX.sub(r'\1_\2', word).lower()
 
 
+if sys.version_info < (3, 0):
+    string_types = (str, unicode)
+else:
+    string_types = str
+
 MAGIC_CODE = b'\xCA\xFE'

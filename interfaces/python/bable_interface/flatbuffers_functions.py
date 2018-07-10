@@ -8,7 +8,7 @@ from .BaBLE import Packet, BaBLEError, CancelConnection, Connect, ControllerAdde
     GetControllerInfo, GetControllersIds, NotificationReceived, ProbeCharacteristics, ProbeServices, \
     Read, Ready, SetConnectable, SetDiscoverable, SetPowered, StartScan, StopScan, Write, WriteWithoutResponse
 from .BaBLE.Payload import Payload
-from .utils import to_bytes, MAGIC_CODE, snake_to_camel, camel_to_snake
+from .utils import to_bytes, MAGIC_CODE, snake_to_camel, camel_to_snake, string_types
 
 
 PAYLOADS = {}
@@ -132,7 +132,7 @@ def build_packet(payload_type, uuid=None, controller_id=None, params=None):
         for param_name, param_value in params.items():
             param_name = snake_to_camel(param_name)
 
-            if isinstance(param_value, str):
+            if isinstance(param_value, string_types):
                 fb_params[param_name] = builder.CreateString(param_value)
 
             elif isinstance(param_value, (tuple, list, bytes)):
