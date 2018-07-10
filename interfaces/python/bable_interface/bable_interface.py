@@ -7,7 +7,7 @@ from .BaBLE import Payload, Exit
 from .threads import WorkingThread, ReceivingThread
 from .commands import CommandsManager
 from .utils import none_cb
-from .models import Packet
+from .models import Packet, PacketUuid
 
 
 class BaBLEInterface(object):
@@ -62,7 +62,7 @@ class BaBLEInterface(object):
 
         self.commands_manager = CommandsManager(self.subprocess)
 
-        self.receiving_thread = ReceivingThread(self.on_receive, self.subprocess.stdout)
+        self.receiving_thread = ReceivingThread(self._on_receive, self.subprocess.stdout)
         self.receiving_thread.setDaemon(True)
         self.receiving_thread.start()
 
@@ -86,7 +86,7 @@ class BaBLEInterface(object):
         if self.receiving_thread.isAlive():
             self.logger.warning("Timeout while waiting for receiving thread to stop...")
 
-    def on_receive(self, packet):
+    def _on_receive(self, packet):
         if packet.payload_type == Payload.Payload.Ready:
             self.subprocess_ready_event.set()
             return
@@ -209,17 +209,19 @@ class BaBLEInterface(object):
             sync=sync
         )
 
-    def enable_notification(self, connection_handle, attribute_handle, on_notification_received=none_cb,
-                            controller_id=0, sync=True, timeout=15.0):
+    def enable_notification(self, connection_handle, attribute_handle, on_notification_set=none_cb,
+                            on_notification_received=none_cb, controller_id=0, sync=True, timeout=15.0):
         return self._run_command(
             command_name='set_notification',
-            params=[True, controller_id, connection_handle, attribute_handle, on_notification_received, timeout],
+            params=[True, controller_id, connection_handle, attribute_handle, on_notification_set,
+                    on_notification_received, timeout],
             sync=sync
         )
 
-    def disable_notification(self, connection_handle, attribute_handle, controller_id=0, sync=True, timeout=15.0):
+    def disable_notification(self, connection_handle, attribute_handle, on_notification_set=none_cb, controller_id=0,
+                             sync=True, timeout=15.0):
         return self._run_command(
             command_name='set_notification',
-            params=[False, controller_id, connection_handle, attribute_handle, timeout],
+            params=[False, controller_id, connection_handle, attribute_handle, on_notification_set, none_cb, timeout],
             sync=sync
         )

@@ -625,13 +625,20 @@ def write_without_response(self, controller_id, connection_handle, attribute_han
 
 
 @asyncio.coroutine
-def set_notification(self, state, controller_id, connection_handle, attribute_handle, on_notification_received,
-                     timeout=15.0):
+def set_notification(self, state, controller_id, connection_handle, attribute_handle, on_notification_set,
+                     on_notification_received, timeout=15.0):
 
     notification_event_uuid = PacketUuid(payload_type=Payload.NotificationReceived,
                                          controller_id=controller_id,
                                          connection_handle=connection_handle,
                                          attribute_handle=attribute_handle)
+
+    if isinstance(on_notification_set, (tuple, list)):
+        on_notification_set_cb = on_notification_set[0]
+        on_notification_set_params = on_notification_set[1:]
+    else:
+        on_notification_set_cb = on_notification_set
+        on_notification_set_params = []
 
     if isinstance(on_notification_received, (tuple, list)):
         on_notification_received_cb = on_notification_received[0]
@@ -653,11 +660,11 @@ def set_notification(self, state, controller_id, connection_handle, attribute_ha
     try:
         read_result = yield from self.read(controller_id, connection_handle, attribute_handle, none_cb, timeout)
     except Exception as err:
-        on_notification_received_cb(
+        on_notification_set_cb(
             False,
             None,
             "Error while reading notification configuration (exception={})".format(err),
-            *on_notification_received_params
+            *on_notification_set_params
         )
         raise RuntimeError("Error while reading notification configuration (exception={})".format(err))
 
@@ -670,19 +677,24 @@ def set_notification(self, state, controller_id, connection_handle, attribute_ha
         self.remove_callback(notification_event_uuid)
         new_state = current_state & 0xFFFE
 
+    if new_state == current_state:
+        on_notification_set_cb(True, read_result, None, *on_notification_set_params)
+        return read_result
+
     value = to_bytes(new_state, 2, byteorder='little')
 
     try:
         result = yield from self.write(controller_id, connection_handle, attribute_handle, value, none_cb, timeout)
+        on_notification_set_cb(True, result, None, *on_notification_set_params)
         return result
     except Exception as err:
         if state:
             self.remove_callback(notification_event_uuid)
-        on_notification_received_cb(
+        on_notification_set_cb(
             False,
             None,
             "Error while writing notification configuration (exception={})".format(err),
-            *on_notification_received_params
+            *on_notification_set_params
         )
         raise RuntimeError("Error while writing notification configuration (exception={})".format(err))
 
