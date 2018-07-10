@@ -27,6 +27,9 @@ set(SOURCES_FILES
         src/utils/colors.hpp
         src/utils/stream_formats.hpp
         src/utils/string_formats.hpp
+        src/utils/string_formats.cpp
+        src/utils/options_parser.hpp
+        src/utils/options_parser.cpp
         src/Log/Log.cpp
         src/Log/Loggable.hpp
         src/Application/Packets/constants.hpp

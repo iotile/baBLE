@@ -1,4 +1,5 @@
 #include <uv.h>
+#include <csignal>
 #include "Log/Log.hpp"
 #include "Application/PacketBuilder/PacketBuilder.hpp"
 #include "Application/PacketRouter/PacketRouter.hpp"
@@ -10,9 +11,8 @@
 #include "Application/Packets/Errors/BaBLEError/BaBLEError.hpp"
 #include "Application/Packets/Control/Ready/Ready.hpp"
 #include "Exceptions/BaBLEException.hpp"
+#include "utils/options_parser.hpp"
 #include "bootstrap.hpp"
-
-#define EXPIRATION_DURATION_MS (60 * 1000)
 
 using namespace std;
 
@@ -26,61 +26,42 @@ void cleanly_stop_loop(uv_loop_t* loop) {
   LOG.debug("Handles stopped.");
 }
 
-void parse_options(int argc, char* argv[]) {
-  for (int i = 1; i < argc; i++) {
-    string option_name = string(argv[i]);
-    if (option_name == "--version") {
-      fprintf(stdout, "%s\n", VERSION);
-      exit(0);
-    } else if (option_name == "--help") {
-      fprintf(stdout, "usage: bable-bridge-linux [--version] [--logging <LEVEL>]\n"
-                      "options:\n"
-                      "  --version    display version of bable-linux-bridge\n"
-                      "  --logging    set logging level to LEVEL (values: DEBUG|INFO|WARNING|ERROR|CRITICAL|NOTSET)\n");
-      exit(0);
-    } else if (option_name == "--logging") {
-      if (i + 1 < argc) {
-        LOG.set_level(string(argv[++i]));
-      } else {
-        throw invalid_argument("Invalid option: --logging option requires one argument");
-      }
-    } else {
-      throw invalid_argument("Unknown option given: " + option_name);
-    }
-  }
-}
-
 int main(int argc, char* argv[]) {
-  parse_options(argc, argv);
+  map<string, int> options = Utils::parse_options(argc, argv);
 
   // Create loop
   uv_loop_t* loop = uv_default_loop();
   uv_loop_init(loop);
   LOG.debug("Loop created.");
 
-  // Stop on SIGINT signal
+  // Handle SIGINT signal
   uv_signal_t stop_signal;
-  uv_signal_init(loop, &stop_signal);
-  uv_signal_start(&stop_signal, [](uv_signal_t* handle, int signum) {
-    LOG.warning("Stop signal received...", "Signal");
-    cleanly_stop_loop(handle->loop);
-  }, SIGINT);
-  LOG.debug("SIGINT signal handled.");
+  if (options.at("handle_sigint")) {
+    uv_signal_init(loop, &stop_signal);
+    uv_signal_start(&stop_signal, [](uv_signal_t* handle, int signum) {
+      LOG.warning("Stop signal received...", "Signal");
+      cleanly_stop_loop(handle->loop);
+    }, SIGINT);
+    LOG.debug("SIGINT signal handled");
+  } else {
+    signal(SIGINT, SIG_IGN);
+    LOG.debug("SIGINT signal ignored");
+  }
 
   // Formats
-  LOG.info("Creating formats...");
+  LOG.debug("Creating formats...");
   shared_ptr<HCIFormat> hci_format = make_shared<HCIFormat>();
   shared_ptr<MGMTFormat> mgmt_format = make_shared<MGMTFormat>();
   shared_ptr<FlatbuffersFormat> fb_format = make_shared<FlatbuffersFormat>();
 
   // Sockets
-  LOG.info("Creating sockets...");
+  LOG.debug("Creating sockets...");
   shared_ptr<MGMTSocket> mgmt_socket = make_shared<MGMTSocket>(loop, mgmt_format);
   shared_ptr<StdIOSocket> stdio_socket = make_shared<StdIOSocket>(loop, fb_format);
   vector<shared_ptr<HCISocket>> hci_sockets = HCISocket::create_all(loop, hci_format);
 
   // Socket container
-  LOG.info("Registering sockets into socket container...");
+  LOG.debug("Registering sockets into socket container...");
   SocketContainer socket_container;
   socket_container
       .register_socket(mgmt_socket)
@@ -93,7 +74,7 @@ int main(int argc, char* argv[]) {
   shared_ptr<PacketRouter> packet_router = make_shared<PacketRouter>(loop);
 
   // PacketBuilder
-  LOG.info("Registering packets into packet builder...");
+  LOG.debug("Registering packets into packet builder...");
   PacketBuilder mgmt_packet_builder(mgmt_format);
   Bootstrap::register_mgmt_packets(mgmt_packet_builder);
 
@@ -104,7 +85,7 @@ int main(int argc, char* argv[]) {
   Bootstrap::register_stdio_packets(stdio_packet_builder);
 
   // Poll sockets
-  LOG.info("Creating socket pollers...");
+  LOG.debug("Creating socket pollers...");
 
   auto on_error = [&stdio_socket, &socket_container](const Exceptions::BaBLEException& err) {
     LOG.error(err.get_message(), "Error");
@@ -123,10 +104,7 @@ int main(int argc, char* argv[]) {
       LOG.debug("Packet built", "MGMT poller");
 
       packet = packet_router->route(packet_router, packet);
-      LOG.debug("Packet routed", "MGMT poller");
-
       packet->prepare(packet_router);
-      LOG.debug("Packet prepared to be sent", "MGMT poller");
 
       socket_container.send(packet);
       LOG.debug("Packet sent", "MGMT poller");
@@ -161,7 +139,6 @@ int main(int argc, char* argv[]) {
             throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast packet to DeviceConnected packet");
           }
 
-          LOG.debug("DeviceConnected", "HCI poller");
           try {
             hci_socket->connect_l2cap_socket(
                 device_connected_packet->get_connection_handle(),
@@ -184,16 +161,12 @@ int main(int argc, char* argv[]) {
             throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast packet to DeviceDisconnected packet");
           }
 
-          LOG.debug("DeviceDisconnected", "HCI poller");
           hci_socket->disconnect_l2cap_socket(device_disconnected_packet->get_connection_handle());
         }
 
         // Check if there are packets waiting for a response
         packet = packet_router->route(packet_router, packet);
-        LOG.debug("Packet routed", "HCI poller");
-
         packet->prepare(packet_router);
-        LOG.debug("Packet prepared to be sent", "HCI poller");
 
         socket_container.send(packet);
         LOG.debug("Packet sent", "HCI poller");
@@ -213,7 +186,6 @@ int main(int argc, char* argv[]) {
       LOG.debug("Packet built", "BABLE poller");
 
       packet->prepare(packet_router);
-      LOG.debug("Packet prepared to be sent", "BABLE poller");
 
       socket_container.send(packet);
       LOG.debug("Packet sent", "BABLE poller");
@@ -230,19 +202,18 @@ int main(int argc, char* argv[]) {
   });
 
   // Removed all expired waiting response
-  LOG.info("Creating expiration timer...");
-  packet_router->start_expiration_timer(EXPIRATION_DURATION_MS);
+  LOG.debug("Creating expiration timer...");
+  packet_router->start_expiration_timer(static_cast<uint64_t>(options.at("expiration_time")));
 
   // Send Ready packet to indicate that BaBLE has started and is ready to receive commands
-  LOG.info("Sending Ready packet...");
+  LOG.debug("Sending Ready packet...");
   shared_ptr<Packet::Control::Ready> ready_packet = make_shared<Packet::Control::Ready>();
   socket_container.send(ready_packet);
 
   // Start the loop
-  LOG.info("Starting loop...");
-
+  LOG.info("Starting baBLE bridge loop...");
   uv_run(loop, UV_RUN_DEFAULT);
-  LOG.info("Loop stopped.");
+  LOG.info("Loop stopped");
 
   // Close and clean the loop
   int result = uv_loop_close(loop);

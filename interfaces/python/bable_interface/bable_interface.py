@@ -28,7 +28,7 @@ class BaBLEInterface(object):
 
         self.on_error = None
 
-    def start(self, on_error=None, use_path=False):
+    def start(self, on_error=None, use_path=False, exit_on_sigint=True):
         if self.started:
             raise RuntimeError("BaBLEInterface already running")
 
@@ -39,8 +39,12 @@ class BaBLEInterface(object):
         else:
             bable_bridge_path = os.path.join(os.path.dirname(__file__), 'bin', 'bable-bridge-linux')
 
+        command = [bable_bridge_path, '--logging', logging_lvl]
+        if not exit_on_sigint:
+            command.append("--disable-signal")
+
         self.subprocess = subprocess.Popen(
-            [bable_bridge_path, '--logging', logging_lvl],
+            command,
             stdout=subprocess.PIPE, stdin=subprocess.PIPE,
             bufsize=0,
             universal_newlines=False
