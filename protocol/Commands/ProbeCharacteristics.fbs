@@ -4,5 +4,7 @@ namespace BaBLE;
 
 table ProbeCharacteristics {
   connection_handle:uint16;
+  start_handle:uint16=0x0001;
+  end_handle:uint16=0xFFFF;
   characteristics:[Characteristic];
 }

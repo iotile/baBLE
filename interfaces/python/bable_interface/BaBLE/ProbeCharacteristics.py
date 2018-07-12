@@ -26,8 +26,22 @@ class ProbeCharacteristics(object):
         return 0
 
     # ProbeCharacteristics
-    def Characteristics(self, j):
+    def StartHandle(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Uint16Flags, o + self._tab.Pos)
+        return 1
+
+    # ProbeCharacteristics
+    def EndHandle(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Uint16Flags, o + self._tab.Pos)
+        return 65535
+
+    # ProbeCharacteristics
+    def Characteristics(self, j):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
         if o != 0:
             x = self._tab.Vector(o)
             x += flatbuffers.number_types.UOffsetTFlags.py_type(j) * 4
@@ -40,13 +54,15 @@ class ProbeCharacteristics(object):
 
     # ProbeCharacteristics
     def CharacteristicsLength(self):
-        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
         if o != 0:
             return self._tab.VectorLen(o)
         return 0
 
-def ProbeCharacteristicsStart(builder): builder.StartObject(2)
+def ProbeCharacteristicsStart(builder): builder.StartObject(4)
 def ProbeCharacteristicsAddConnectionHandle(builder, connectionHandle): builder.PrependUint16Slot(0, connectionHandle, 0)
-def ProbeCharacteristicsAddCharacteristics(builder, characteristics): builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(characteristics), 0)
+def ProbeCharacteristicsAddStartHandle(builder, startHandle): builder.PrependUint16Slot(1, startHandle, 1)
+def ProbeCharacteristicsAddEndHandle(builder, endHandle): builder.PrependUint16Slot(2, endHandle, 65535)
+def ProbeCharacteristicsAddCharacteristics(builder, characteristics): builder.PrependUOffsetTRelativeSlot(3, flatbuffers.number_types.UOffsetTFlags.py_type(characteristics), 0)
 def ProbeCharacteristicsStartCharacteristicsVector(builder, numElems): return builder.StartVector(4, numElems, 4)
 def ProbeCharacteristicsEnd(builder): return builder.EndObject()

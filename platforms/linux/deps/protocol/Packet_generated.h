@@ -1582,10 +1582,18 @@ inline flatbuffers::Offset<Characteristic> CreateCharacteristicDirect(
 struct ProbeCharacteristics FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_CONNECTION_HANDLE = 4,
-    VT_CHARACTERISTICS = 6
+    VT_START_HANDLE = 6,
+    VT_END_HANDLE = 8,
+    VT_CHARACTERISTICS = 10
   };
   uint16_t connection_handle() const {
     return GetField<uint16_t>(VT_CONNECTION_HANDLE, 0);
+  }
+  uint16_t start_handle() const {
+    return GetField<uint16_t>(VT_START_HANDLE, 1);
+  }
+  uint16_t end_handle() const {
+    return GetField<uint16_t>(VT_END_HANDLE, 65535);
   }
   const flatbuffers::Vector<flatbuffers::Offset<Characteristic>> *characteristics() const {
     return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<Characteristic>> *>(VT_CHARACTERISTICS);
@@ -1593,6 +1601,8 @@ struct ProbeCharacteristics FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint16_t>(verifier, VT_CONNECTION_HANDLE) &&
+           VerifyField<uint16_t>(verifier, VT_START_HANDLE) &&
+           VerifyField<uint16_t>(verifier, VT_END_HANDLE) &&
            VerifyOffset(verifier, VT_CHARACTERISTICS) &&
            verifier.Verify(characteristics()) &&
            verifier.VerifyVectorOfTables(characteristics()) &&
@@ -1605,6 +1615,12 @@ struct ProbeCharacteristicsBuilder {
   flatbuffers::uoffset_t start_;
   void add_connection_handle(uint16_t connection_handle) {
     fbb_.AddElement<uint16_t>(ProbeCharacteristics::VT_CONNECTION_HANDLE, connection_handle, 0);
+  }
+  void add_start_handle(uint16_t start_handle) {
+    fbb_.AddElement<uint16_t>(ProbeCharacteristics::VT_START_HANDLE, start_handle, 1);
+  }
+  void add_end_handle(uint16_t end_handle) {
+    fbb_.AddElement<uint16_t>(ProbeCharacteristics::VT_END_HANDLE, end_handle, 65535);
   }
   void add_characteristics(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<Characteristic>>> characteristics) {
     fbb_.AddOffset(ProbeCharacteristics::VT_CHARACTERISTICS, characteristics);
@@ -1624,9 +1640,13 @@ struct ProbeCharacteristicsBuilder {
 inline flatbuffers::Offset<ProbeCharacteristics> CreateProbeCharacteristics(
     flatbuffers::FlatBufferBuilder &_fbb,
     uint16_t connection_handle = 0,
+    uint16_t start_handle = 1,
+    uint16_t end_handle = 65535,
     flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<Characteristic>>> characteristics = 0) {
   ProbeCharacteristicsBuilder builder_(_fbb);
   builder_.add_characteristics(characteristics);
+  builder_.add_end_handle(end_handle);
+  builder_.add_start_handle(start_handle);
   builder_.add_connection_handle(connection_handle);
   return builder_.Finish();
 }
@@ -1634,10 +1654,14 @@ inline flatbuffers::Offset<ProbeCharacteristics> CreateProbeCharacteristics(
 inline flatbuffers::Offset<ProbeCharacteristics> CreateProbeCharacteristicsDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     uint16_t connection_handle = 0,
+    uint16_t start_handle = 1,
+    uint16_t end_handle = 65535,
     const std::vector<flatbuffers::Offset<Characteristic>> *characteristics = nullptr) {
   return BaBLE::CreateProbeCharacteristics(
       _fbb,
       connection_handle,
+      start_handle,
+      end_handle,
       characteristics ? _fbb.CreateVector<flatbuffers::Offset<Characteristic>>(*characteristics) : 0);
 }
 

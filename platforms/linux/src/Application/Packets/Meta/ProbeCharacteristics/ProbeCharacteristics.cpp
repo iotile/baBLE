@@ -23,9 +23,12 @@ namespace Packet {
       auto payload = extractor.get_payload<const BaBLE::ProbeCharacteristics*>();
 
       m_connection_handle = payload->connection_handle();
+      m_start_handle = payload->start_handle();
+      m_end_handle = payload->end_handle();
 
       m_read_by_type_request_packet->set_controller_id(m_controller_id);
       m_read_by_type_request_packet->set_connection_handle(m_connection_handle);
+      m_read_by_type_request_packet->set_handles(m_start_handle, m_end_handle);
     }
 
     vector<uint8_t> ProbeCharacteristics::serialize(FlatbuffersFormatBuilder& builder) const {
@@ -62,7 +65,13 @@ namespace Packet {
       }
 
       auto characteristics_vector = builder.CreateVector(characteristics);
-      auto payload = BaBLE::CreateProbeCharacteristics(builder, m_connection_handle, characteristics_vector);
+      auto payload = BaBLE::CreateProbeCharacteristics(
+          builder,
+          m_connection_handle,
+          m_start_handle,
+          m_end_handle,
+          characteristics_vector
+      );
 
       return builder.build(payload, BaBLE::Payload::ProbeCharacteristics);
     }
@@ -140,23 +149,23 @@ namespace Packet {
         m_characteristics.insert(m_characteristics.end(), new_characteristics.begin(), new_characteristics.end());
 
         uint16_t last_ending_handle = read_by_type_response_packet->get_last_ending_handle();
-        if (last_ending_handle == 0xFFFF) {
+        if (last_ending_handle == m_end_handle) {
           m_waiting_char_declaration = false;
           m_waiting_char_configuration = true;
         } else {
           m_waiting_char_declaration = true;
-          m_read_by_type_request_packet->set_handles(static_cast<uint16_t>(last_ending_handle + 1), 0xFFFF);
+          m_read_by_type_request_packet->set_handles(static_cast<uint16_t>(last_ending_handle + 1), m_end_handle);
         }
       } else {
         m_characteristics_config.insert(m_characteristics_config.end(), new_characteristics.begin(), new_characteristics.end());
 
         uint16_t last_ending_handle = read_by_type_response_packet->get_last_ending_handle();
-        if (last_ending_handle == 0xFFFF) {
+        if (last_ending_handle == m_end_handle) {
           m_waiting_char_configuration = false;
           _merge_characteristics();
         } else {
           m_waiting_char_configuration = true;
-          m_read_by_type_request_packet->set_handles(static_cast<uint16_t>(last_ending_handle + 1), 0xFFFF);
+          m_read_by_type_request_packet->set_handles(static_cast<uint16_t>(last_ending_handle + 1), m_end_handle);
         }
       }
 
@@ -193,7 +202,7 @@ namespace Packet {
         m_waiting_char_declaration = false;
         m_waiting_char_configuration = true;
         m_read_by_type_request_packet->set_gatt_uuid(Format::HCI::GattUUID::ClientCharacteristicConfiguration);
-        m_read_by_type_request_packet->set_handles(0x0001, 0xFFFF);
+        m_read_by_type_request_packet->set_handles(m_start_handle, m_end_handle);
 
       } else {
         // 2nd step done
