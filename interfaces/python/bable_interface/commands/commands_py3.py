@@ -625,13 +625,16 @@ def write_without_response(self, controller_id, connection_handle, attribute_han
 
 
 @asyncio.coroutine
-def set_notification(self, state, controller_id, connection_handle, attribute_handle, on_notification_set,
+def set_notification(self, enabled, controller_id, connection_handle, characteristic, on_notification_set,
                      on_notification_received, timeout=15.0):
+
+    if not isinstance(characteristic, Characteristic):
+        raise ValueError("Characteristic parameter must be a 'bable_interface.models.Characteristic' object")
 
     notification_event_uuid = PacketUuid(payload_type=Payload.NotificationReceived,
                                          controller_id=controller_id,
                                          connection_handle=connection_handle,
-                                         attribute_handle=attribute_handle)
+                                         attribute_handle=characteristic.value_handle)
 
     if isinstance(on_notification_set, (tuple, list)):
         on_notification_set_cb = on_notification_set[0]
@@ -658,7 +661,7 @@ def set_notification(self, state, controller_id, connection_handle, attribute_ha
         on_notification_received_cb(True, result, None, *on_notification_received_params)
 
     try:
-        read_result = yield from self.read(controller_id, connection_handle, attribute_handle, none_cb, timeout)
+        read_result = yield from self.read(controller_id, connection_handle, characteristic.config_handle, none_cb, timeout)
     except Exception as err:
         on_notification_set_cb(
             False,
@@ -670,7 +673,7 @@ def set_notification(self, state, controller_id, connection_handle, attribute_ha
 
     current_state = struct.unpack('H', read_result['value'])[0]
 
-    if state:
+    if enabled:
         self.register_callback(notification_event_uuid, callback=on_notification_event)
         new_state = current_state | 1
     else:
@@ -684,11 +687,11 @@ def set_notification(self, state, controller_id, connection_handle, attribute_ha
     value = to_bytes(new_state, 2, byteorder='little')
 
     try:
-        result = yield from self.write(controller_id, connection_handle, attribute_handle, value, none_cb, timeout)
+        result = yield from self.write(controller_id, connection_handle, characteristic.config_handle, value, none_cb, timeout)
         on_notification_set_cb(True, result, None, *on_notification_set_params)
         return result
     except Exception as err:
-        if state:
+        if enabled:
             self.remove_callback(notification_event_uuid)
         on_notification_set_cb(
             False,

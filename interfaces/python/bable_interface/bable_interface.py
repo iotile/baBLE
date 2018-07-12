@@ -41,7 +41,7 @@ class BaBLEInterface(object):
 
         command = [bable_bridge_path, '--logging', logging_lvl]
         if not exit_on_sigint:
-            command.append("--disable-signal")
+            command.append('--disable-signal')
 
         self.subprocess = subprocess.Popen(
             command,
@@ -208,19 +208,11 @@ class BaBLEInterface(object):
             sync=sync
         )
 
-    def enable_notification(self, connection_handle, attribute_handle, on_notification_set=none_cb,
-                            on_notification_received=none_cb, controller_id=0, sync=True, timeout=15.0):
+    def set_notification(self, enabled, connection_handle, characteristic, on_notification_set=none_cb,
+                         on_notification_received=none_cb, controller_id=0, sync=True, timeout=15.0):
         return self._run_command(
             command_name='set_notification',
-            params=[True, controller_id, connection_handle, attribute_handle, on_notification_set,
+            params=[enabled, controller_id, connection_handle, characteristic, on_notification_set,
                     on_notification_received, timeout],
-            sync=sync
-        )
-
-    def disable_notification(self, connection_handle, attribute_handle, on_notification_set=none_cb, controller_id=0,
-                             sync=True, timeout=15.0):
-        return self._run_command(
-            command_name='set_notification',
-            params=[False, controller_id, connection_handle, attribute_handle, on_notification_set, none_cb, timeout],
             sync=sync
         )
