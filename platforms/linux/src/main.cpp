@@ -144,7 +144,7 @@ int main(int argc, char* argv[]) {
             );
           } catch (const Exceptions::BaBLEException& err) {
             LOG.warning(err.get_message(), "HCISocket");
-            return;
+            packet->set_status(Format::HCI::ConnectionFailedEstablished);
           }
 
         } else if (packet->get_id() == Packet::Id::DeviceDisconnected) {
