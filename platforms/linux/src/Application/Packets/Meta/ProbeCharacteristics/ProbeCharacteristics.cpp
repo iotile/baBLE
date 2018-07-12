@@ -218,7 +218,7 @@ namespace Packet {
 
       for (auto config_char : m_characteristics_config) {
         while (config_char.config_handle > it->value_handle) {
-          if(++it == m_characteristics.end()) return;
+          if(++it == m_characteristics.end()) break;
         }
 
         prev(it)->config_handle = config_char.config_handle;
