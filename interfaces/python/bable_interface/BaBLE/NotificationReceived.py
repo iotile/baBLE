@@ -29,8 +29,8 @@ class NotificationReceived(object):
     def AttributeHandle(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(6))
         if o != 0:
-            return self._tab.String(o + self._tab.Pos)
-        return None
+            return self._tab.Get(flatbuffers.number_types.Uint16Flags, o + self._tab.Pos)
+        return 0
 
     # NotificationReceived
     def Value(self, j):
@@ -56,7 +56,7 @@ class NotificationReceived(object):
 
 def NotificationReceivedStart(builder): builder.StartObject(3)
 def NotificationReceivedAddConnectionHandle(builder, connectionHandle): builder.PrependUint16Slot(0, connectionHandle, 0)
-def NotificationReceivedAddAttributeHandle(builder, attributeHandle): builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(attributeHandle), 0)
+def NotificationReceivedAddAttributeHandle(builder, attributeHandle): builder.PrependUint16Slot(1, attributeHandle, 0)
 def NotificationReceivedAddValue(builder, value): builder.PrependUOffsetTRelativeSlot(2, flatbuffers.number_types.UOffsetTFlags.py_type(value), 0)
 def NotificationReceivedStartValueVector(builder, numElems): return builder.StartVector(1, numElems, 1)
 def NotificationReceivedEnd(builder): return builder.EndObject()

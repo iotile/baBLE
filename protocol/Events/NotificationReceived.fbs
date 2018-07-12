@@ -2,6 +2,6 @@ namespace BaBLE;
 
 table NotificationReceived {
   connection_handle:uint16;
-  attribute_handle:string;
+  attribute_handle:uint16;
   value:[uint8];
 }

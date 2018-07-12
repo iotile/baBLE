@@ -1988,8 +1988,8 @@ struct NotificationReceived FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table
   uint16_t connection_handle() const {
     return GetField<uint16_t>(VT_CONNECTION_HANDLE, 0);
   }
-  const flatbuffers::String *attribute_handle() const {
-    return GetPointer<const flatbuffers::String *>(VT_ATTRIBUTE_HANDLE);
+  uint16_t attribute_handle() const {
+    return GetField<uint16_t>(VT_ATTRIBUTE_HANDLE, 0);
   }
   const flatbuffers::Vector<uint8_t> *value() const {
     return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_VALUE);
@@ -1997,8 +1997,7 @@ struct NotificationReceived FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint16_t>(verifier, VT_CONNECTION_HANDLE) &&
-           VerifyOffset(verifier, VT_ATTRIBUTE_HANDLE) &&
-           verifier.Verify(attribute_handle()) &&
+           VerifyField<uint16_t>(verifier, VT_ATTRIBUTE_HANDLE) &&
            VerifyOffset(verifier, VT_VALUE) &&
            verifier.Verify(value()) &&
            verifier.EndTable();
@@ -2011,8 +2010,8 @@ struct NotificationReceivedBuilder {
   void add_connection_handle(uint16_t connection_handle) {
     fbb_.AddElement<uint16_t>(NotificationReceived::VT_CONNECTION_HANDLE, connection_handle, 0);
   }
-  void add_attribute_handle(flatbuffers::Offset<flatbuffers::String> attribute_handle) {
-    fbb_.AddOffset(NotificationReceived::VT_ATTRIBUTE_HANDLE, attribute_handle);
+  void add_attribute_handle(uint16_t attribute_handle) {
+    fbb_.AddElement<uint16_t>(NotificationReceived::VT_ATTRIBUTE_HANDLE, attribute_handle, 0);
   }
   void add_value(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> value) {
     fbb_.AddOffset(NotificationReceived::VT_VALUE, value);
@@ -2032,7 +2031,7 @@ struct NotificationReceivedBuilder {
 inline flatbuffers::Offset<NotificationReceived> CreateNotificationReceived(
     flatbuffers::FlatBufferBuilder &_fbb,
     uint16_t connection_handle = 0,
-    flatbuffers::Offset<flatbuffers::String> attribute_handle = 0,
+    uint16_t attribute_handle = 0,
     flatbuffers::Offset<flatbuffers::Vector<uint8_t>> value = 0) {
   NotificationReceivedBuilder builder_(_fbb);
   builder_.add_value(value);
@@ -2044,12 +2043,12 @@ inline flatbuffers::Offset<NotificationReceived> CreateNotificationReceived(
 inline flatbuffers::Offset<NotificationReceived> CreateNotificationReceivedDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     uint16_t connection_handle = 0,
-    const char *attribute_handle = nullptr,
+    uint16_t attribute_handle = 0,
     const std::vector<uint8_t> *value = nullptr) {
   return BaBLE::CreateNotificationReceived(
       _fbb,
       connection_handle,
-      attribute_handle ? _fbb.CreateString(attribute_handle) : 0,
+      attribute_handle,
       value ? _fbb.CreateVector<uint8_t>(*value) : 0);
 }
 
