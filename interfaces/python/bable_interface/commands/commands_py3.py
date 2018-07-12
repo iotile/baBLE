@@ -76,10 +76,10 @@ def start_scan(self, controller_id, active_scan, on_device_found, on_scan_starte
         result = yield from asyncio.wait_for(future, timeout=timeout)
         return result
     except asyncio.TimeoutError:
-        self.remove_callback(
+        self.remove_callback([
             request_packet.packet_uuid,
             PacketUuid(payload_type=Payload.DeviceFound, controller_id=controller_id)
-        )
+        ])
         on_scan_started_cb(False, None, "Start scan timed out", *on_scan_started_params)
         raise RuntimeError("Start scan timed out")
 
@@ -100,9 +100,7 @@ def stop_scan(self, controller_id, on_scan_stopped, timeout=15.0):
         self.remove_callback(packet.packet_uuid)
 
         if packet.status_code == StatusCode.Success:
-            self.remove_callback(
-                PacketUuid(payload_type=Payload.DeviceFound, controller_id=controller_id)
-            )
+            self.remove_callback(PacketUuid(payload_type=Payload.DeviceFound, controller_id=controller_id))
             on_scan_stopped_cb(True, packet.get_dict(['controller_id']), None, *on_scan_stopped_params)
             future.set_result(True)
         else:
@@ -237,6 +235,10 @@ def connect(self, controller_id, address, address_type, on_connected_with_info, 
             'reason',
             'code'
         ])
+        self.remove_callback(
+            PacketUuid(controller_id=controller_id, connection_handle=data['connection_handle']),
+            match_connection_only=True
+        )
         on_disconnected_cb(True, data, None, *on_disconnected_params)
 
     @asyncio.coroutine
@@ -343,6 +345,10 @@ def disconnect(self, controller_id, connection_handle, on_disconnected, timeout=
                 'code'
             ])
 
+            self.remove_callback(
+                PacketUuid(controller_id=controller_id, connection_handle=connection_handle),
+                match_connection_only=True
+            )
             on_disconnected_cb(True, data, None, *on_disconnected_params)
 
             future.set_result(data)

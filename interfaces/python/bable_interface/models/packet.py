@@ -28,7 +28,10 @@ class PacketUuid(object):
         self.attribute_handle = attribute_handle
         self.uuid = uuid
 
-    def match(self, other):
+    def match(self, other, match_connection_only=False):
+        if match_connection_only:
+            return self.controller_id == other.controller_id and self.connection_handle == other.connection_handle
+
         if self.uuid is not None:
             return self.uuid == other.uuid
 
@@ -167,30 +170,30 @@ class Packet(object):
     @staticmethod
     def _format_status(status):
         if status == StatusCode.Success:
-            result = "Success"
+            result = 'Success'
         elif status == StatusCode.SocketError:
-            result = "SocketError"
+            result = 'SocketError'
         elif status == StatusCode.NotFound:
-            result = "NotFound"
+            result = 'NotFound'
         elif status == StatusCode.WrongFormat:
-            result = "WrongFormat"
+            result = 'WrongFormat'
         elif status == StatusCode.InvalidCommand:
-            result = "InvalidCommand"
+            result = 'InvalidCommand'
         elif status == StatusCode.Unknown:
-            result = "Unknown"
+            result = 'Unknown'
         elif status == StatusCode.Rejected:
-            result = "Rejected"
+            result = 'Rejected'
         elif status == StatusCode.Denied:
-            result = "Denied"
+            result = 'Denied'
         elif status == StatusCode.Cancelled:
-            result = "Cancelled"
+            result = 'Cancelled'
         elif status == StatusCode.NotPowered:
-            result = "NotPowered"
+            result = 'NotPowered'
         elif status == StatusCode.Failed:
-            result = "Failed"
+            result = 'Failed'
         elif status == StatusCode.NotConnected:
-            result = "NotConnected"
+            result = 'NotConnected'
         else:
-            result = "-"
+            result = '-'
 
         return result

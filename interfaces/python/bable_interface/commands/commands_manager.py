@@ -44,13 +44,16 @@ class CommandsManager(object):
             self.callbacks.append((packet_uuid, callback_with_args))
 
     # Executed into the WorkingThread
-    def remove_callback(self, *packet_uuids):
+    def remove_callback(self, packet_uuids, match_connection_only=False):
         to_remove = []
+
+        if not isinstance(packet_uuids, (list, tuple)):
+            packet_uuids = [packet_uuids]
 
         with self.callback_lock:
             for index, (uuid, _) in enumerate(self.callbacks):
                 for uuid_to_remove in packet_uuids:
-                    if uuid.match(uuid_to_remove):
+                    if uuid.match(uuid_to_remove, match_connection_only):
                         to_remove.append(index)
 
             for index in reversed(to_remove):
