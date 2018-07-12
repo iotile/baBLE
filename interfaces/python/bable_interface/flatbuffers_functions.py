@@ -113,8 +113,6 @@ def get_params(fb_packet):
             try:
                 result = method_fn()
                 attribute_name = camel_to_snake(method_name)
-                if isinstance(result, bytes):
-                    result = result.decode()
                 yield attribute_name, result
             except TypeError:
                 continue
