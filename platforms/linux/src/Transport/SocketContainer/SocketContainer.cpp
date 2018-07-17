@@ -11,6 +11,19 @@ SocketContainer& SocketContainer::register_socket(shared_ptr<AbstractSocket> soc
   return *this;
 }
 
+shared_ptr<AbstractSocket> SocketContainer::get_socket(Packet::Type packet_type, uint16_t controller_id) {
+  auto key = make_tuple(packet_type, controller_id);
+  auto it = m_sockets.find(key);
+  if (it == m_sockets.end()) {
+    throw Exceptions::BaBLEException(
+        BaBLE::StatusCode::NotFound,
+        "Can't find socket in SocketContainer"
+    );
+  }
+
+  return it->second;
+}
+
 bool SocketContainer::send(const shared_ptr<Packet::AbstractPacket>& packet) {
   Packet::Type packet_type = packet->get_type();
 

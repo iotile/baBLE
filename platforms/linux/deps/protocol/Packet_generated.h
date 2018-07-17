@@ -50,6 +50,8 @@ struct Characteristic;
 
 struct ProbeCharacteristics;
 
+struct SetGATTTable;
+
 struct DeviceConnected;
 
 struct DeviceDisconnected;
@@ -84,25 +86,26 @@ enum class Payload : uint8_t {
   Read = 10,
   SetConnectable = 11,
   SetDiscoverable = 12,
-  SetPowered = 13,
-  StartScan = 14,
-  StopScan = 15,
-  Write = 16,
-  WriteWithoutResponse = 17,
-  ControllerAdded = 18,
-  ControllerRemoved = 19,
-  DeviceConnected = 20,
-  DeviceDisconnected = 21,
-  DeviceFound = 22,
-  NotificationReceived = 23,
-  BaBLEError = 24,
-  Exit = 25,
-  Ready = 26,
+  SetGATTTable = 13,
+  SetPowered = 14,
+  StartScan = 15,
+  StopScan = 16,
+  Write = 17,
+  WriteWithoutResponse = 18,
+  ControllerAdded = 19,
+  ControllerRemoved = 20,
+  DeviceConnected = 21,
+  DeviceDisconnected = 22,
+  DeviceFound = 23,
+  NotificationReceived = 24,
+  BaBLEError = 25,
+  Exit = 26,
+  Ready = 27,
   MIN = NONE,
   MAX = Ready
 };
 
-inline const Payload (&EnumValuesPayload())[27] {
+inline const Payload (&EnumValuesPayload())[28] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::CancelConnection,
@@ -117,6 +120,7 @@ inline const Payload (&EnumValuesPayload())[27] {
     Payload::Read,
     Payload::SetConnectable,
     Payload::SetDiscoverable,
+    Payload::SetGATTTable,
     Payload::SetPowered,
     Payload::StartScan,
     Payload::StopScan,
@@ -150,6 +154,7 @@ inline const char * const *EnumNamesPayload() {
     "Read",
     "SetConnectable",
     "SetDiscoverable",
+    "SetGATTTable",
     "SetPowered",
     "StartScan",
     "StopScan",
@@ -224,6 +229,10 @@ template<> struct PayloadTraits<SetConnectable> {
 
 template<> struct PayloadTraits<SetDiscoverable> {
   static const Payload enum_value = Payload::SetDiscoverable;
+};
+
+template<> struct PayloadTraits<SetGATTTable> {
+  static const Payload enum_value = Payload::SetGATTTable;
 };
 
 template<> struct PayloadTraits<SetPowered> {
@@ -1665,6 +1674,70 @@ inline flatbuffers::Offset<ProbeCharacteristics> CreateProbeCharacteristicsDirec
       characteristics ? _fbb.CreateVector<flatbuffers::Offset<Characteristic>>(*characteristics) : 0);
 }
 
+struct SetGATTTable FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_SERVICES = 4,
+    VT_CHARACTERISTICS = 6
+  };
+  const flatbuffers::Vector<flatbuffers::Offset<Service>> *services() const {
+    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<Service>> *>(VT_SERVICES);
+  }
+  const flatbuffers::Vector<flatbuffers::Offset<Characteristic>> *characteristics() const {
+    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<Characteristic>> *>(VT_CHARACTERISTICS);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_SERVICES) &&
+           verifier.Verify(services()) &&
+           verifier.VerifyVectorOfTables(services()) &&
+           VerifyOffset(verifier, VT_CHARACTERISTICS) &&
+           verifier.Verify(characteristics()) &&
+           verifier.VerifyVectorOfTables(characteristics()) &&
+           verifier.EndTable();
+  }
+};
+
+struct SetGATTTableBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_services(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<Service>>> services) {
+    fbb_.AddOffset(SetGATTTable::VT_SERVICES, services);
+  }
+  void add_characteristics(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<Characteristic>>> characteristics) {
+    fbb_.AddOffset(SetGATTTable::VT_CHARACTERISTICS, characteristics);
+  }
+  explicit SetGATTTableBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  SetGATTTableBuilder &operator=(const SetGATTTableBuilder &);
+  flatbuffers::Offset<SetGATTTable> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<SetGATTTable>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<SetGATTTable> CreateSetGATTTable(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<Service>>> services = 0,
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<Characteristic>>> characteristics = 0) {
+  SetGATTTableBuilder builder_(_fbb);
+  builder_.add_characteristics(characteristics);
+  builder_.add_services(services);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<SetGATTTable> CreateSetGATTTableDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    const std::vector<flatbuffers::Offset<Service>> *services = nullptr,
+    const std::vector<flatbuffers::Offset<Characteristic>> *characteristics = nullptr) {
+  return BaBLE::CreateSetGATTTable(
+      _fbb,
+      services ? _fbb.CreateVector<flatbuffers::Offset<Service>>(*services) : 0,
+      characteristics ? _fbb.CreateVector<flatbuffers::Offset<Characteristic>>(*characteristics) : 0);
+}
+
 struct DeviceConnected FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_CONNECTION_HANDLE = 4,
@@ -2237,6 +2310,9 @@ struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const SetDiscoverable *payload_as_SetDiscoverable() const {
     return payload_type() == Payload::SetDiscoverable ? static_cast<const SetDiscoverable *>(payload()) : nullptr;
   }
+  const SetGATTTable *payload_as_SetGATTTable() const {
+    return payload_type() == Payload::SetGATTTable ? static_cast<const SetGATTTable *>(payload()) : nullptr;
+  }
   const SetPowered *payload_as_SetPowered() const {
     return payload_type() == Payload::SetPowered ? static_cast<const SetPowered *>(payload()) : nullptr;
   }
@@ -2353,6 +2429,10 @@ template<> inline const SetConnectable *Packet::payload_as<SetConnectable>() con
 
 template<> inline const SetDiscoverable *Packet::payload_as<SetDiscoverable>() const {
   return payload_as_SetDiscoverable();
+}
+
+template<> inline const SetGATTTable *Packet::payload_as<SetGATTTable>() const {
+  return payload_as_SetGATTTable();
 }
 
 template<> inline const SetPowered *Packet::payload_as<SetPowered>() const {
@@ -2538,6 +2618,10 @@ inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *obj, Payl
     }
     case Payload::SetDiscoverable: {
       auto ptr = reinterpret_cast<const SetDiscoverable *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::SetGATTTable: {
+      auto ptr = reinterpret_cast<const SetGATTTable *>(obj);
       return verifier.VerifyTable(ptr);
     }
     case Payload::SetPowered: {

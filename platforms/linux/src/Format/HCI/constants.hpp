@@ -34,6 +34,7 @@ namespace Format {
     const std::size_t command_header_length = 4;
     const std::size_t async_data_header_length = 10;
     const std::size_t event_header_length = 3;
+    const std::size_t acl_mtu = 23;  // FIXME: mtu hardcoded (get from negociation using HCI)
 
     struct hci_filter {
       uint32_t type_mask;

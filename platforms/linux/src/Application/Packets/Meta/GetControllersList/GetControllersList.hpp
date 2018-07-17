@@ -39,8 +39,8 @@ namespace Packet {
       Packet::Id m_waiting_response;
       uint16_t m_current_index;
 
-      std::shared_ptr<Packet::Commands::GetControllerInfoRequest> m_controller_info_request_packet;
-      std::shared_ptr<Packet::Commands::GetControllersIdsRequest> m_controllers_ids_request_packet;
+      std::shared_ptr<Commands::GetControllerInfoRequest> m_controller_info_request_packet;
+      std::shared_ptr<Commands::GetControllersIdsRequest> m_controllers_ids_request_packet;
 
       std::vector<Format::MGMT::Controller> m_controllers;
       std::vector<uint16_t> m_controllers_ids;

@@ -31,10 +31,10 @@ namespace Packet {
       return result.str();
     }
 
-    shared_ptr<Packet::AbstractPacket> CancelConnectionRequest::on_response_received(const std::shared_ptr<PacketRouter>& router,
-                                                                           const shared_ptr<Packet::AbstractPacket>& packet) {
+    shared_ptr<AbstractPacket> CancelConnectionRequest::on_response_received(const std::shared_ptr<PacketRouter>& router,
+                                                                           const shared_ptr<AbstractPacket>& packet) {
       LOG.debug("Response received", "CancelConnectionRequest");
-      auto command_complete_packet = dynamic_pointer_cast<Packet::Events::CommandComplete>(packet);
+      auto command_complete_packet = dynamic_pointer_cast<Events::CommandComplete>(packet);
       if (command_complete_packet == nullptr) {
         throw Exceptions::BaBLEException(
             BaBLE::StatusCode::Failed,
@@ -52,7 +52,7 @@ namespace Packet {
         );
       }
 
-      shared_ptr<Packet::Commands::CancelConnectionResponse> response_packet = make_shared<Packet::Commands::CancelConnectionResponse>();
+      shared_ptr<Commands::CancelConnectionResponse> response_packet = make_shared<Commands::CancelConnectionResponse>();
       response_packet->set_status(result.at(0), true, "HCI");
       response_packet->set_uuid_request(m_uuid_request);
       response_packet->set_controller_id(m_controller_id);

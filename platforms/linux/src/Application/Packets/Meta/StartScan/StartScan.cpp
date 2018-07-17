@@ -9,8 +9,8 @@ namespace Packet {
 
     StartScan::StartScan(bool active_scan)
         : HostOnlyPacket(Packet::Id::StartScan, initial_packet_code()) {
-      m_set_scan_params_packet = std::make_shared<Packet::Commands::SetScanParameters>(active_scan);
-      m_set_scan_enable_packet = std::make_shared<Packet::Commands::SetScanEnable>(true);
+      m_set_scan_params_packet = std::make_shared<Commands::SetScanParameters>(active_scan);
+      m_set_scan_enable_packet = std::make_shared<Commands::SetScanEnable>(true);
 
       m_waiting_response = Packet::Id::SetScanParameters;
 
@@ -64,7 +64,7 @@ namespace Packet {
 
           PacketUuid uuid = m_set_scan_params_packet->get_response_uuid();
           auto callback =
-              [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {
+              [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<AbstractPacket> packet) {
                 return on_set_scan_params_response_received(router, packet);
               };
           router->add_callback(uuid, shared_from(this), callback);
@@ -77,7 +77,7 @@ namespace Packet {
 
           PacketUuid uuid = m_set_scan_enable_packet->get_response_uuid();
           auto callback =
-              [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<Packet::AbstractPacket> packet) {
+              [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<AbstractPacket> packet) {
                 return on_set_scan_enable_response_received(router, packet);
               };
           router->add_callback(uuid, shared_from(this), callback);
@@ -94,7 +94,7 @@ namespace Packet {
                                                                                const shared_ptr<AbstractPacket>& packet) {
       LOG.debug("Set scan params response received", "StartScan");
 
-      m_set_scan_params_packet = dynamic_pointer_cast<Packet::Commands::SetScanParameters>(
+      m_set_scan_params_packet = dynamic_pointer_cast<Commands::SetScanParameters>(
           m_set_scan_params_packet->on_response_received(router, packet)
       );
       if (m_set_scan_params_packet == nullptr) {
@@ -118,7 +118,7 @@ namespace Packet {
     shared_ptr<AbstractPacket> StartScan::on_set_scan_enable_response_received(const std::shared_ptr<PacketRouter>& router,
                                                                                const std::shared_ptr<AbstractPacket>& packet) {
       LOG.debug("Set scan enable response received", "StartScan");
-      m_set_scan_enable_packet = dynamic_pointer_cast<Packet::Commands::SetScanEnable>(
+      m_set_scan_enable_packet = dynamic_pointer_cast<Commands::SetScanEnable>(
           m_set_scan_enable_packet->on_response_received(router, packet)
       );
       if (m_set_scan_enable_packet == nullptr) {

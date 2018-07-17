@@ -19,9 +19,13 @@ public:
 
   bool send(const std::vector<uint8_t>& data) override;
   void poll(OnReceivedCallback on_received, OnErrorCallback on_error) override;
+  void handle_packet(std::shared_ptr<Packet::AbstractPacket> packet) override;
 
   void connect_l2cap_socket(uint16_t connection_handle, const std::array<uint8_t, 6>& device_address, uint8_t device_address_type);
   void disconnect_l2cap_socket(uint16_t connection_handle);
+
+  void set_gatt_table(const std::vector<Format::HCI::Service>& services, const std::vector<Format::HCI::Characteristic>& characteristics);
+  std::vector<Format::HCI::Service> get_services() const;
 
   std::string get_controller_address() {
     return Utils::format_bd_address(m_controller_address);
@@ -48,6 +52,9 @@ private:
 
   std::queue<std::vector<uint8_t>> m_send_queue;
   bool m_writable;
+
+  std::vector<Format::HCI::Service> m_services;
+  std::vector<Format::HCI::Characteristic> m_characteristics;
 
 };
 

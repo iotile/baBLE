@@ -32,8 +32,8 @@ namespace Packet {
     private:
       bool m_waiting_response;
 
-      std::shared_ptr<Packet::Commands::SetScanParameters> m_set_scan_params_packet;
-      std::shared_ptr<Packet::Commands::SetScanEnable> m_set_scan_enable_packet;
+      std::shared_ptr<Commands::SetScanParameters> m_set_scan_params_packet;
+      std::shared_ptr<Commands::SetScanEnable> m_set_scan_enable_packet;
 
     };
 

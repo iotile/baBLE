@@ -70,7 +70,7 @@ void MGMTSocket::on_poll(uv_poll_t* handle, int status, int events) {
   try {
     if (events & UV_READABLE) {
       vector<uint8_t> received_payload = mgmt_socket->receive();
-      mgmt_socket->m_on_received(received_payload, mgmt_socket->m_format);
+      mgmt_socket->m_on_received(received_payload, mgmt_socket);
 
     } else if (events & UV_WRITABLE) {
       mgmt_socket->set_writable(true);
@@ -111,4 +111,6 @@ void MGMTSocket::set_writable(bool is_writable) {
 MGMTSocket::~MGMTSocket() {
   m_socket->close();
   LOG.debug("MGMT socket closed", "MGMTSocket");
-};
+}
+
+void MGMTSocket::handle_packet(std::shared_ptr<Packet::AbstractPacket> packet) {};

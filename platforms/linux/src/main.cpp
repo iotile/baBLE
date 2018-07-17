@@ -94,8 +94,8 @@ int main(int argc, char* argv[]) {
   };
 
   mgmt_socket->poll(
-    [&mgmt_packet_builder, &packet_router, &socket_container](const vector<uint8_t>& received_data, const shared_ptr<AbstractFormat>& format) {
-      shared_ptr<AbstractExtractor> extractor = format->create_extractor(received_data);
+    [&mgmt_packet_builder, &packet_router, &socket_container](const vector<uint8_t>& received_data, AbstractSocket* socket) {
+      shared_ptr<AbstractExtractor> extractor = socket->format()->create_extractor(received_data);
 
       shared_ptr<Packet::AbstractPacket> packet = mgmt_packet_builder.build(extractor);
       if (packet == nullptr) {
@@ -112,10 +112,10 @@ int main(int argc, char* argv[]) {
 
   for (auto& hci_socket : hci_sockets) {
     hci_socket->poll(
-      [&hci_socket, &hci_packet_builder, &packet_router, &socket_container](const vector<uint8_t>& received_data, const shared_ptr<AbstractFormat>& format) {
+      [&hci_packet_builder, &packet_router, &socket_container](const vector<uint8_t>& received_data, AbstractSocket* socket) {
         // Create extractor from raw bytes received
-        shared_ptr<AbstractExtractor> extractor = format->create_extractor(received_data);
-        extractor->set_controller_id(hci_socket->get_controller_id());
+        shared_ptr<AbstractExtractor> extractor = socket->format()->create_extractor(received_data);
+        extractor->set_controller_id(socket->get_controller_id());
 
         // Build packet
         shared_ptr<Packet::AbstractPacket> packet = hci_packet_builder.build(extractor);
@@ -123,43 +123,7 @@ int main(int argc, char* argv[]) {
           return;
         }
 
-        // This part is needed due to a bug since Linux Kernel v4 : we have to create manually the L2CAP socket, else
-        // we'll be disconnected after sending one packet.
-        if (packet->get_id() == Packet::Id::DeviceConnected) {
-          if (packet->get_status() != BaBLE::StatusCode::Success) {
-            LOG.info("Unsuccessful DeviceConnected event ignored (because the device is not connected...)", "HCI poller");
-            return;
-          }
-
-          auto device_connected_packet = dynamic_pointer_cast<Packet::Events::DeviceConnected>(packet);
-          if (device_connected_packet == nullptr) {
-            throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast packet to DeviceConnected packet");
-          }
-
-          try {
-            hci_socket->connect_l2cap_socket(
-                device_connected_packet->get_connection_handle(),
-                device_connected_packet->get_raw_device_address(),
-                device_connected_packet->get_device_address_type()
-            );
-          } catch (const Exceptions::BaBLEException& err) {
-            LOG.warning(err.get_message(), "HCISocket");
-            packet->set_status(Format::HCI::ConnectionFailedEstablished);
-          }
-
-        } else if (packet->get_id() == Packet::Id::DeviceDisconnected) {
-          if (packet->get_status() != BaBLE::StatusCode::Success) {
-            LOG.info("Unsuccessful DeviceDisconnected event ignored (because the device is not disconnected...)", "HCI poller");
-            return;
-          }
-
-          auto device_disconnected_packet = dynamic_pointer_cast<Packet::Events::DeviceDisconnected>(packet);
-          if (device_disconnected_packet == nullptr) {
-            throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast packet to DeviceDisconnected packet");
-          }
-
-          hci_socket->disconnect_l2cap_socket(device_disconnected_packet->get_connection_handle());
-        }
+        socket->handle_packet(packet);
 
         // Check if there are packets waiting for a response
         packet = packet_router->route(packet_router, packet);
@@ -172,12 +136,27 @@ int main(int argc, char* argv[]) {
   }
 
   stdio_socket->poll(
-    [&stdio_packet_builder, &packet_router, &socket_container, &loop](const vector<uint8_t>& received_data, const shared_ptr<AbstractFormat>& format) {
-      shared_ptr<AbstractExtractor> extractor = format->create_extractor(received_data);
+    [&stdio_packet_builder, &packet_router, &socket_container, &loop](const vector<uint8_t>& received_data, AbstractSocket* socket) {
+      shared_ptr<AbstractExtractor> extractor = socket->format()->create_extractor(received_data);
 
       shared_ptr<Packet::AbstractPacket> packet = stdio_packet_builder.build(extractor);
       if (packet == nullptr) {
         return;
+      }
+
+      if (packet->get_id() == Packet::Id::SetGATTTable) {
+        auto setgatttable_packet = dynamic_pointer_cast<Packet::Control::SetGATTTable>(packet);
+        if (setgatttable_packet == nullptr) {
+          throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast packet to SetGATTTable packet");
+        }
+
+        shared_ptr<AbstractSocket> base_socket = socket_container.get_socket(Packet::Type::HCI, packet->get_controller_id());
+        auto hci_socket = dynamic_pointer_cast<HCISocket>(base_socket);
+        if (hci_socket == nullptr) {
+          throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast socket to HCISocket packet");
+        }
+
+        hci_socket->set_gatt_table(setgatttable_packet->get_services(), setgatttable_packet->get_characteristics());
       }
 
       packet->prepare(packet_router);

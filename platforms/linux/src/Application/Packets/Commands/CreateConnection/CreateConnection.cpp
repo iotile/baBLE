@@ -17,8 +17,8 @@ namespace Packet {
       m_peer_address_type = address_type;
       m_address = address;
       m_own_address_type = 0x00; // Public address type
-      m_connection_interval_min = 0x0018; // 30ms
-      m_connection_interval_max = 0x0028; // 50ms
+      m_connection_interval_min = 0x0006; // 7.5ms
+      m_connection_interval_max = 0x0018; // 30ms
       m_connection_latency = 0x0000;
       m_supervision_timeout = 0x002A; // 0.42s
       m_min_ce_length = 0x0000;
@@ -107,8 +107,8 @@ namespace Packet {
       }
     }
 
-    shared_ptr<Packet::AbstractPacket> CreateConnection::on_response_received(const std::shared_ptr<PacketRouter>& router,
-                                                                              const shared_ptr<Packet::AbstractPacket>& packet) {
+    shared_ptr<AbstractPacket> CreateConnection::on_response_received(const std::shared_ptr<PacketRouter>& router,
+                                                                              const shared_ptr<AbstractPacket>& packet) {
       LOG.debug("Response received", "CreateConnection");
       import_status(packet);
       m_response_received = true;

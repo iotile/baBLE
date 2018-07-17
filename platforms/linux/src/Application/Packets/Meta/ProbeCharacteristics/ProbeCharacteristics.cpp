@@ -14,7 +14,7 @@ namespace Packet {
       m_waiting_char_declaration = true;
       m_waiting_char_configuration = false;
 
-      m_read_by_type_request_packet = make_shared<Packet::Commands::ReadByTypeRequest>(
+      m_read_by_type_request_packet = make_shared<Commands::ReadByTypeRequest>(
           Format::HCI::GattUUID::CharacteristicDeclaration
       );
     }
@@ -44,8 +44,8 @@ namespace Packet {
         bool read = (characteristic.properties & 1 << 1) > 0;
         bool broadcast = (characteristic.properties & 1 << 0) > 0;
 
-        bool notification_enabled = (characteristic.configuration & 1 << 0) > 0;
         bool indication_enabled = (characteristic.configuration & 1 << 1) > 0;
+        bool notification_enabled = (characteristic.configuration & 1 << 0) > 0;
 
         auto characteristic_offset = BaBLE::CreateCharacteristic(
             builder,
@@ -109,14 +109,14 @@ namespace Packet {
 
         PacketUuid response_uuid = m_read_by_type_request_packet->get_response_uuid();
         auto response_callback =
-            [this](const shared_ptr<PacketRouter>& router, shared_ptr<Packet::AbstractPacket> packet) {
+            [this](const shared_ptr<PacketRouter>& router, shared_ptr<AbstractPacket> packet) {
               return on_read_by_type_response_received(router, packet);
             };
 
         PacketUuid error_uuid = m_read_by_type_request_packet->get_response_uuid();
         error_uuid.response_packet_code = Format::HCI::AttributeCode::ErrorResponse;
         auto error_callback =
-            [this](const shared_ptr<PacketRouter>& router, shared_ptr<Packet::AbstractPacket> packet) {
+            [this](const shared_ptr<PacketRouter>& router, shared_ptr<AbstractPacket> packet) {
               return on_error_response_received(router, packet);
             };
 
@@ -134,7 +134,7 @@ namespace Packet {
       error_uuid.response_packet_code = Format::HCI::AttributeCode::ErrorResponse;
       router->remove_callback(error_uuid);
 
-      auto read_by_type_response_packet = dynamic_pointer_cast<Packet::Commands::ReadByTypeResponse>(packet);
+      auto read_by_type_response_packet = dynamic_pointer_cast<Commands::ReadByTypeResponse>(packet);
       if (read_by_type_response_packet == nullptr) {
         throw Exceptions::BaBLEException(
             BaBLE::StatusCode::Failed,
@@ -179,7 +179,7 @@ namespace Packet {
       response_uuid.response_packet_code = Format::HCI::AttributeCode::ReadByTypeResponse;
       router->remove_callback(response_uuid);
 
-      auto error_packet = dynamic_pointer_cast<Packet::Errors::ErrorResponse>(packet);
+      auto error_packet = dynamic_pointer_cast<Errors::ErrorResponse>(packet);
       if (error_packet == nullptr) {
         throw Exceptions::BaBLEException(
             BaBLE::StatusCode::Failed,

@@ -14,7 +14,8 @@
 #include "Application/Packets/Commands/GetControllersIds/GetControllersIdsResponse.hpp"
 #include "Application/Packets/Commands/GetControllerInfo/GetControllerInfoRequest.hpp"
 #include "Application/Packets/Commands/GetControllerInfo/GetControllerInfoResponse.hpp"
-#include "Application/Packets/Commands/ReadByGroupType/ReadByGroupTypeResponse.hpp"
+#include "Application/Packets/Commands/ReadByGroupType/Central/ReadByGroupTypeResponse.hpp"
+#include "Application/Packets/Commands/ReadByGroupType/Peripheral/ReadByGroupType.hpp"
 #include "Application/Packets/Commands/ReadByType/ReadByTypeResponse.hpp"
 #include "Application/Packets/Commands/Read/ReadRequest.hpp"
 #include "Application/Packets/Commands/Read/ReadResponse.hpp"
@@ -32,6 +33,7 @@
 #include "Application/Packets/Events/AdvertisingReport/AdvertisingReport.hpp"
 #include "Application/Packets/Events/CommandComplete/CommandComplete.hpp"
 #include "Application/Packets/Events/CommandStatus/CommandStatus.hpp"
+#include "Application/Packets/Control/SetGATTTable/SetGATTTable.hpp"
 #include "Application/Packets/Control/Exit/Exit.hpp"
 #include "Application/Packets/Control/Ready/Ready.hpp"
 #include "Application/Packets/Errors/ErrorResponse/ErrorResponse.hpp"
@@ -69,7 +71,8 @@ void register_hci_packets(PacketBuilder& hci_packet_builder) {
     .register_command<Packet::Commands::ReadResponse>()
     .register_command<Packet::Commands::WriteResponse>()
     .register_command<Packet::Commands::NotificationReceived>()
-    .register_command<Packet::Commands::ReadByGroupTypeResponse>()
+    .register_command<Packet::Commands::Central::ReadByGroupTypeResponse>()
+    .register_command<Packet::Commands::Peripheral::ReadByGroupType>()
     .register_command<Packet::Commands::ReadByTypeResponse>()
     .register_command<Packet::Errors::ErrorResponse>()
     .register_event<Packet::Events::DeviceConnected>()
@@ -102,6 +105,7 @@ void register_stdio_packets(PacketBuilder& stdio_packet_builder) {
     .register_command<Packet::Meta::StopScan>()
     .register_command<Packet::Meta::ProbeServices>()
     .register_command<Packet::Meta::ProbeCharacteristics>()
+    .register_command<Packet::Control::SetGATTTable>()
     .register_command<Packet::Control::Exit>();
 }
 

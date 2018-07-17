@@ -16,6 +16,8 @@ namespace Utils {
 
   std::string format_uuid(const std::vector<uint8_t>& uuid_vector);
 
+  std::vector<uint8_t> extract_uuid(const std::string& uuid);
+
   template<typename T>
   std::string format_bytes_array(const T& bytes) {
     std::stringstream stream;

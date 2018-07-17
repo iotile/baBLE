@@ -1,4 +1,7 @@
 #include "HCISocket.hpp"
+#include "Application/Packets/Events/DeviceConnected/DeviceConnected.hpp"
+#include "Application/Packets/Events/DeviceDisconnected/DeviceDisconnected.hpp"
+#include "Application/Packets/Commands/ReadByGroupType/Peripheral/ReadByGroupType.hpp"
 #include "Log/Log.hpp"
 
 using namespace std;
@@ -107,6 +110,23 @@ void HCISocket::disconnect_l2cap_socket(uint16_t connection_handle) {
   }
 }
 
+void HCISocket::set_gatt_table(const vector<Format::HCI::Service>& services, const vector<Format::HCI::Characteristic>& characteristics) {
+  m_services = services;
+  m_characteristics = characteristics;
+
+  for (auto& service : m_services) {
+    LOG.critical("Service {handle=" + to_string(service.handle) + ", group end handle=" + to_string(service.group_end_handle) + ", uuid=" + Utils::bytes_to_string(service.uuid) + "}");
+  }
+
+  for (auto& characteristic : m_characteristics) {
+    LOG.critical("Characteristic {handle=" + to_string(characteristic.handle) + ", value handle=" + to_string(characteristic.value_handle) + "}");
+  }
+}
+
+vector<Format::HCI::Service> HCISocket::get_services() const {
+  return m_services;
+}
+
 bool HCISocket::send(const vector<uint8_t>& data) {
   if (!m_writable) {
     LOG.debug("Already sending a message. Queuing...", "HCISocket");
@@ -154,7 +174,7 @@ void HCISocket::on_poll(uv_poll_t* handle, int status, int events) {
   try {
     if (events & UV_READABLE) {
       vector<uint8_t> received_payload = hci_socket->receive();
-      hci_socket->m_on_received(received_payload, hci_socket->m_format);
+      hci_socket->m_on_received(received_payload, hci_socket);
 
     } else if (events & UV_WRITABLE) {
       hci_socket->set_writable(true);
@@ -166,8 +186,8 @@ void HCISocket::on_poll(uv_poll_t* handle, int status, int events) {
 }
 
 void HCISocket::poll(OnReceivedCallback on_received, OnErrorCallback on_error) {
-  m_on_received = on_received;
-  m_on_error = on_error;
+  m_on_received = move(on_received);
+  m_on_error = move(on_error);
 
   uv_poll_start(m_poller.get(), UV_READABLE | UV_WRITABLE, on_poll);
   m_poll_started = true;
@@ -201,4 +221,65 @@ HCISocket::~HCISocket() {
 
   m_hci_socket->close();
   LOG.debug("HCI socket closed", "HCISocket");
+}
+
+void HCISocket::handle_packet(std::shared_ptr<Packet::AbstractPacket> packet) {
+  switch(packet->get_id()) {
+    // This part is needed due to a bug since Linux Kernel v4 : we have to create manually the L2CAP socket, else
+    // we'll be disconnected after sending one packet.
+    case Packet::Id::DeviceConnected:
+    {
+      if (packet->get_status() != BaBLE::StatusCode::Success) {
+        LOG.info("Unsuccessful DeviceConnected event ignored (because the device is not connected...)", "HCI poller");
+        return;
+      }
+
+      auto device_connected_packet = dynamic_pointer_cast<Packet::Events::DeviceConnected>(packet);
+      if (device_connected_packet == nullptr) {
+        throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast packet to DeviceConnected packet");
+      }
+
+      try {
+        connect_l2cap_socket(
+            device_connected_packet->get_connection_handle(),
+            device_connected_packet->get_raw_device_address(),
+            device_connected_packet->get_device_address_type()
+        );
+      } catch (const Exceptions::BaBLEException& err) {
+        LOG.warning(err.get_message(), "HCISocket");
+        packet->set_status(Format::HCI::ConnectionFailedEstablished);
+      }
+      break;
+    }
+
+    case Packet::Id::DeviceDisconnected:
+    {
+      if (packet->get_status() != BaBLE::StatusCode::Success) {
+        LOG.info("Unsuccessful DeviceDisconnected event ignored (because the device is not disconnected...)", "HCI poller");
+        return;
+      }
+
+      auto device_disconnected_packet = dynamic_pointer_cast<Packet::Events::DeviceDisconnected>(packet);
+      if (device_disconnected_packet == nullptr) {
+        throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast packet to DeviceDisconnected packet");
+      }
+
+      disconnect_l2cap_socket(device_disconnected_packet->get_connection_handle());
+      break;
+    }
+
+    case Packet::Id::ReadByGroupTypeRequest:
+    {
+      auto request_packet = dynamic_pointer_cast<Packet::Commands::Peripheral::ReadByGroupType>(packet);
+      if (request_packet == nullptr) {
+        throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast packet to ReadByGroup packet");
+      }
+
+      request_packet->set_services(get_services());
+      break;
+    }
+
+    default:
+      break;
+  }
 }

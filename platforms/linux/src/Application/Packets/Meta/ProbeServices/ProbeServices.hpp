@@ -2,7 +2,7 @@
 #define BABLE_LINUX_PROBESERVICES_HPP
 
 #include "Application/Packets/Base/HostOnlyPacket.hpp"
-#include "Application/Packets/Commands/ReadByGroupType/ReadByGroupTypeRequest.hpp"
+#include "Application/Packets/Commands/ReadByGroupType/Central/ReadByGroupTypeRequest.hpp"
 
 namespace Packet {
 
@@ -33,7 +33,7 @@ namespace Packet {
     private:
       bool m_waiting_services;
 
-      std::shared_ptr<Packet::Commands::ReadByGroupTypeRequest> m_read_by_type_group_request_packet;
+      std::shared_ptr<Commands::Central::ReadByGroupTypeRequest> m_read_by_type_group_request_packet;
       std::vector<Format::HCI::Service> m_services;
 
     };

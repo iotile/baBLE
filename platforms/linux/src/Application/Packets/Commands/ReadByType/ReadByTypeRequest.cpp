@@ -54,14 +54,14 @@ namespace Packet {
       PacketUuid error_uuid = get_uuid();
       error_uuid.response_packet_code = Format::HCI::AttributeCode::ErrorResponse;
       auto error_callback =
-          [this](const shared_ptr<PacketRouter>& router, shared_ptr<Packet::AbstractPacket> packet) {
+          [this](const shared_ptr<PacketRouter>& router, shared_ptr<AbstractPacket> packet) {
             return on_error_response_received(router, packet);
           };
       router->add_callback(error_uuid, shared_from(this), error_callback);
     }
 
-    shared_ptr<Packet::AbstractPacket> ReadByTypeRequest::on_response_received(const shared_ptr<PacketRouter>& router,
-                                                                               const shared_ptr<Packet::AbstractPacket>& packet) {
+    shared_ptr<AbstractPacket> ReadByTypeRequest::on_response_received(const shared_ptr<PacketRouter>& router,
+                                                                               const shared_ptr<AbstractPacket>& packet) {
       LOG.debug("Response received", "ReadByTypeRequest");
       PacketUuid error_uuid = get_uuid();
       error_uuid.response_packet_code = Format::HCI::AttributeCode::ErrorResponse;
@@ -70,13 +70,13 @@ namespace Packet {
       return HostToControllerPacket::on_response_received(router, packet);
     }
 
-    shared_ptr<Packet::AbstractPacket> ReadByTypeRequest::on_error_response_received(const shared_ptr<PacketRouter>& router,
+    shared_ptr<AbstractPacket> ReadByTypeRequest::on_error_response_received(const shared_ptr<PacketRouter>& router,
                                                                                      const shared_ptr<AbstractPacket>& packet) {
       LOG.debug("ErrorResponse received", "ReadByTypeRequest");
       PacketUuid response_uuid = get_response_uuid();
       router->remove_callback(response_uuid);
 
-      shared_ptr<Packet::Commands::ReadByTypeResponse> response_packet = make_shared<Packet::Commands::ReadByTypeResponse>();
+      shared_ptr<Commands::ReadByTypeResponse> response_packet = make_shared<Commands::ReadByTypeResponse>();
       response_packet->import_status(packet);
       response_packet->set_uuid_request(m_uuid_request);
       response_packet->set_controller_id(m_controller_id);

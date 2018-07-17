@@ -38,6 +38,7 @@ set(SOURCES_FILES
         src/Application/Packets/Base/HostToControllerPacket.cpp
         src/Application/Packets/Base/ControllerToHostPacket.cpp
         src/Application/Packets/Base/HostOnlyPacket.hpp
+        src/Application/Packets/Base/ControllerOnlyPacket.hpp
         src/Application/Packets/Commands/Disconnect/Disconnect.cpp
         src/Application/Packets/Commands/SetPowered/SetPoweredRequest.cpp
         src/Application/Packets/Commands/SetDiscoverable/SetDiscoverableRequest.cpp
@@ -51,8 +52,9 @@ set(SOURCES_FILES
         src/Application/Packets/Commands/GetConnectedDevices/GetConnectedDevices.cpp
         src/Application/Packets/Commands/ReadByType/ReadByTypeRequest.cpp
         src/Application/Packets/Commands/ReadByType/ReadByTypeResponse.cpp
-        src/Application/Packets/Commands/ReadByGroupType/ReadByGroupTypeRequest.cpp
-        src/Application/Packets/Commands/ReadByGroupType/ReadByGroupTypeResponse.cpp
+        src/Application/Packets/Commands/ReadByGroupType/Central/ReadByGroupTypeRequest.cpp
+        src/Application/Packets/Commands/ReadByGroupType/Central/ReadByGroupTypeResponse.cpp
+        src/Application/Packets/Commands/ReadByGroupType/Peripheral/ReadByGroupType.cpp
         src/Application/Packets/Commands/GetControllerInfo/GetControllerInfoResponse.cpp
         src/Application/Packets/Commands/GetControllersIds/GetControllersIdsResponse.cpp
         src/Application/Packets/Commands/Read/ReadResponse.cpp
@@ -103,7 +105,10 @@ set(SOURCES_FILES
         src/Transport/Socket/StdIO/StdIOSocket.cpp
         src/Transport/Socket/HCI/HCISocket.cpp
         src/registration.hpp
-        src/Exceptions/BaBLEException.cpp)
+        src/Exceptions/BaBLEException.cpp
+
+        src/Application/Packets/Control/SetGATTTable/SetGATTTable.cpp
+        src/Application/Packets/Commands/ReadByType/Peripheral/ReadByType.cpp)
 add_library(bable ${SOURCES_FILES})
 target_include_directories(bable PUBLIC src)
 

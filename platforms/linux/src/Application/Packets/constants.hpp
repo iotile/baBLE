@@ -46,6 +46,7 @@ namespace Packet {
     SetConnectableResponse,
     SetDiscoverableRequest,
     SetDiscoverableResponse,
+    SetGATTTable,
     SetPoweredRequest,
     SetPoweredResponse,
     SetScanEnable,

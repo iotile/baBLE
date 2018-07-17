@@ -1,0 +1,11 @@
+// Only on Linux
+
+namespace BaBLE;
+
+table SetAdvertising {
+  state:bool;
+  uuids:[string];
+  name:string;
+  adv_manufacturer_data:[uint8];
+  scan_manufacturer_data:[uint8];
+}

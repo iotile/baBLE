@@ -11,8 +11,8 @@ namespace Packet {
 
     GetControllersList::GetControllersList()
         : HostOnlyPacket(Packet::Id::GetControllersList, initial_packet_code()) {
-      m_controller_info_request_packet = make_shared<Packet::Commands::GetControllerInfoRequest>();
-      m_controllers_ids_request_packet = make_shared<Packet::Commands::GetControllersIdsRequest>();
+      m_controller_info_request_packet = make_shared<Commands::GetControllerInfoRequest>();
+      m_controllers_ids_request_packet = make_shared<Commands::GetControllersIdsRequest>();
 
       m_waiting_response = Packet::Id::GetControllersIdsResponse;
       m_current_index = 0;
@@ -104,7 +104,7 @@ namespace Packet {
 
           PacketUuid uuid = m_controllers_ids_request_packet->get_response_uuid();
           auto callback =
-              [this](const shared_ptr<PacketRouter>& router, shared_ptr<Packet::AbstractPacket> packet) {
+              [this](const shared_ptr<PacketRouter>& router, shared_ptr<AbstractPacket> packet) {
                 return on_controllers_ids_response_received(router, packet);
               };
           router->add_callback(uuid, shared_from(this), callback);
@@ -118,7 +118,7 @@ namespace Packet {
 
           PacketUuid uuid = m_controller_info_request_packet->get_response_uuid();
           auto callback =
-              [this](const shared_ptr<PacketRouter>& router, shared_ptr<Packet::AbstractPacket> packet) {
+              [this](const shared_ptr<PacketRouter>& router, shared_ptr<AbstractPacket> packet) {
                 return on_controller_info_response_received(router, packet);
               };
           router->add_callback(uuid, shared_from(this), callback);
@@ -135,7 +135,7 @@ namespace Packet {
                                                                                         const shared_ptr<AbstractPacket>& packet) {
       LOG.debug("Controllers ids response received", "GetControllersList");
 
-      auto controllers_ids_response_packet = dynamic_pointer_cast<Packet::Commands::GetControllersIdsResponse>(packet);
+      auto controllers_ids_response_packet = dynamic_pointer_cast<Commands::GetControllersIdsResponse>(packet);
       if (controllers_ids_response_packet == nullptr) {
         throw Exceptions::BaBLEException(
             BaBLE::StatusCode::Failed,
@@ -168,7 +168,7 @@ namespace Packet {
                                                                                         const shared_ptr<AbstractPacket>& packet) {
       LOG.debug("Controller info response received", "GetControllersList");
 
-      auto controller_info_response_packet = dynamic_pointer_cast<Packet::Commands::GetControllerInfoResponse>(packet);
+      auto controller_info_response_packet = dynamic_pointer_cast<Commands::GetControllerInfoResponse>(packet);
       if (controller_info_response_packet == nullptr) {
         throw Exceptions::BaBLEException(
             BaBLE::StatusCode::Failed,

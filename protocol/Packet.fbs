@@ -15,6 +15,7 @@ include "./Commands/Write.fbs";
 include "./Commands/WriteWithoutResponse.fbs";
 include "./Commands/ProbeServices.fbs";
 include "./Commands/ProbeCharacteristics.fbs";
+include "./Commands/SetGATTTable.fbs";
 include "./Events/DeviceConnected.fbs";
 include "./Events/DeviceDisconnected.fbs";
 include "./Events/DeviceFound.fbs";
@@ -40,6 +41,7 @@ union Payload {
   Read,
   SetConnectable,
   SetDiscoverable,
+  SetGATTTable,
   SetPowered,
   StartScan,
   StopScan,

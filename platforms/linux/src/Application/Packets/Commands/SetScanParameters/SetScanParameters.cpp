@@ -56,10 +56,10 @@ namespace Packet {
       return result.str();
     }
 
-    shared_ptr<Packet::AbstractPacket> SetScanParameters::on_response_received(const std::shared_ptr<PacketRouter>& router,
-                                                                         const shared_ptr<Packet::AbstractPacket>& packet) {
+    shared_ptr<AbstractPacket> SetScanParameters::on_response_received(const std::shared_ptr<PacketRouter>& router,
+                                                                         const shared_ptr<AbstractPacket>& packet) {
       LOG.debug("Response received", "SetScanParameters");
-      auto response_packet = dynamic_pointer_cast<Packet::Events::CommandComplete>(packet);
+      auto response_packet = dynamic_pointer_cast<Events::CommandComplete>(packet);
       if (response_packet == nullptr) {
         throw Exceptions::BaBLEException(
             BaBLE::StatusCode::Failed,

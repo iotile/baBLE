@@ -65,7 +65,7 @@ void StdIOSocket::on_poll(uv_stream_t* stream, ssize_t nread, const uv_buf_t* bu
         remaining_data_length -= consumed_data_length;
         remaining_data += consumed_data_length;
 
-        stdio_socket->m_on_received(stdio_socket->m_payload, stdio_socket->m_format);
+        stdio_socket->m_on_received(stdio_socket->m_payload, stdio_socket);
       } catch (const Exceptions::BaBLEException& err) {
         stdio_socket->m_on_error(err);
       }
@@ -149,3 +149,5 @@ void StdIOSocket::clear() {
   m_payload.clear();
   m_payload.shrink_to_fit();
 }
+
+void StdIOSocket::handle_packet(std::shared_ptr<Packet::AbstractPacket> packet) {}

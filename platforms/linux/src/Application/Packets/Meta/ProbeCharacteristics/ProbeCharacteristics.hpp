@@ -39,7 +39,7 @@ namespace Packet {
       uint16_t m_start_handle;
       uint16_t m_end_handle;
 
-      std::shared_ptr<Packet::Commands::ReadByTypeRequest> m_read_by_type_request_packet;
+      std::shared_ptr<Commands::ReadByTypeRequest> m_read_by_type_request_packet;
       std::vector<Format::HCI::Characteristic> m_characteristics;
       std::vector<Format::HCI::Characteristic> m_characteristics_config;
 

@@ -31,9 +31,9 @@ namespace Packet {
       const std::string stringify() const override;
 
       void prepare(const std::shared_ptr<PacketRouter>& router) override;
-      std::shared_ptr<Packet::AbstractPacket> on_response_received(const std::shared_ptr<PacketRouter>& router,
+      std::shared_ptr<AbstractPacket> on_response_received(const std::shared_ptr<PacketRouter>& router,
                                                                    const std::shared_ptr<AbstractPacket>& packet) override;
-      std::shared_ptr<Packet::AbstractPacket> on_error_response_received(const std::shared_ptr<PacketRouter>& router,
+      std::shared_ptr<AbstractPacket> on_error_response_received(const std::shared_ptr<PacketRouter>& router,
                                                                          const std::shared_ptr<AbstractPacket>& packet);
 
       void set_handles(uint16_t starting_handle, uint16_t ending_handle);
