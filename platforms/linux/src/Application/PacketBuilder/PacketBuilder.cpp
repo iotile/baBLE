@@ -18,6 +18,10 @@ PacketBuilder& PacketBuilder::set_ignored_packets(unordered_set<uint16_t> ignore
 
 // To build packets
 shared_ptr<Packet::AbstractPacket> PacketBuilder::build(shared_ptr<AbstractExtractor> extractor) {
+  if (!extractor->is_valid()) {
+    return nullptr;
+  }
+
   uint16_t type_code = extractor->get_type_code();
 
   if (m_building_format->is_command(type_code)) {
@@ -52,6 +56,7 @@ shared_ptr<Packet::AbstractPacket> PacketBuilder::build_packet(shared_ptr<Abstra
 
   PacketConstructor fn = it->second;
   shared_ptr<Packet::AbstractPacket> packet = fn();
+  LOG.debug(*packet, "PacketBuilder");
   packet->from_bytes(extractor);
   return packet;
 }

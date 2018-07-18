@@ -36,7 +36,7 @@ namespace Packet {
       private:
         uint16_t m_starting_handle;
         uint16_t m_ending_handle;
-        uint16_t m_uuid;
+        std::vector<uint8_t> m_uuid;
 
         Format::HCI::AttributeErrorCode m_error;
 

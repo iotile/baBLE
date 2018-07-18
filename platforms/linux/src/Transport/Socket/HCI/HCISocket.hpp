@@ -26,6 +26,7 @@ public:
 
   void set_gatt_table(const std::vector<Format::HCI::Service>& services, const std::vector<Format::HCI::Characteristic>& characteristics);
   std::vector<Format::HCI::Service> get_services() const;
+  std::vector<Format::HCI::Characteristic> get_characteristics() const;
 
   std::string get_controller_address() {
     return Utils::format_bd_address(m_controller_address);

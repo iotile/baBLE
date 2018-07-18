@@ -10,13 +10,17 @@
 #include "Application/Packets/Commands/SetDiscoverable/SetDiscoverableResponse.hpp"
 #include "Application/Packets/Commands/SetConnectable/SetConnectableRequest.hpp"
 #include "Application/Packets/Commands/SetConnectable/SetConnectableResponse.hpp"
+#include "Application/Packets/Commands/SetAdvertising/SetAdvertisingRequest.hpp"
+#include "Application/Packets/Commands/SetAdvertising/SetAdvertisingResponse.hpp"
 #include "Application/Packets/Commands/GetControllersIds/GetControllersIdsRequest.hpp"
 #include "Application/Packets/Commands/GetControllersIds/GetControllersIdsResponse.hpp"
 #include "Application/Packets/Commands/GetControllerInfo/GetControllerInfoRequest.hpp"
 #include "Application/Packets/Commands/GetControllerInfo/GetControllerInfoResponse.hpp"
 #include "Application/Packets/Commands/ReadByGroupType/Central/ReadByGroupTypeResponse.hpp"
 #include "Application/Packets/Commands/ReadByGroupType/Peripheral/ReadByGroupType.hpp"
-#include "Application/Packets/Commands/ReadByType/ReadByTypeResponse.hpp"
+#include "Application/Packets/Commands/ReadByType/Peripheral/ReadByTypeRequest.hpp"
+#include "Application/Packets/Commands/ReadByType/Peripheral/ReadByTypeResponse.hpp"
+#include "Application/Packets/Commands/ReadByType/Central/ReadByTypeResponse.hpp"
 #include "Application/Packets/Commands/Read/ReadRequest.hpp"
 #include "Application/Packets/Commands/Read/ReadResponse.hpp"
 #include "Application/Packets/Commands/Write/WriteRequest.hpp"
@@ -51,6 +55,7 @@ void register_mgmt_packets(PacketBuilder& mgmt_packet_builder) {
     .register_command<Packet::Commands::SetPoweredResponse>()
     .register_command<Packet::Commands::SetDiscoverableResponse>()
     .register_command<Packet::Commands::SetConnectableResponse>()
+    .register_command<Packet::Commands::SetAdvertisingResponse>()
     .register_event<Packet::Events::ControllerAdded>()
     .register_event<Packet::Events::ControllerRemoved>()
     .set_ignored_packets({
@@ -73,7 +78,8 @@ void register_hci_packets(PacketBuilder& hci_packet_builder) {
     .register_command<Packet::Commands::NotificationReceived>()
     .register_command<Packet::Commands::Central::ReadByGroupTypeResponse>()
     .register_command<Packet::Commands::Peripheral::ReadByGroupType>()
-    .register_command<Packet::Commands::ReadByTypeResponse>()
+    .register_command<Packet::Commands::Central::ReadByTypeResponse>()
+    .register_command<Packet::Commands::Peripheral::ReadByTypeRequest>()
     .register_command<Packet::Errors::ErrorResponse>()
     .register_event<Packet::Events::DeviceConnected>()
     .register_event<Packet::Events::DeviceDisconnected>()
@@ -81,7 +87,9 @@ void register_hci_packets(PacketBuilder& hci_packet_builder) {
     .register_event<Packet::Events::CommandComplete>()
     .register_event<Packet::Events::CommandStatus>()
     .set_ignored_packets({
-      Format::HCI::SubEventCode::LEReadRemoteUsedFeaturesComplete
+      Format::HCI::SubEventCode::LEReadRemoteUsedFeaturesComplete,
+      Format::HCI::SubEventCode::LEConnectionUpdateComplete,
+      Format::HCI::CommandCode::ConnectionParameterUpdateRequest
     });
 }
 
@@ -94,12 +102,14 @@ void register_stdio_packets(PacketBuilder& stdio_packet_builder) {
     .register_command<Packet::Commands::SetPoweredRequest>()
     .register_command<Packet::Commands::SetDiscoverableRequest>()
     .register_command<Packet::Commands::SetConnectableRequest>()
+    .register_command<Packet::Commands::SetAdvertisingRequest>()
     .register_command<Packet::Commands::CreateConnection>()
     .register_command<Packet::Commands::CancelConnectionRequest>()
     .register_command<Packet::Commands::Disconnect>()
     .register_command<Packet::Commands::ReadRequest>()
     .register_command<Packet::Commands::WriteRequest>()
     .register_command<Packet::Commands::WriteWithoutResponse>()
+    .register_command<Packet::Commands::Peripheral::ReadByTypeResponse>()
     .register_command<Packet::Meta::GetControllersList>()
     .register_command<Packet::Meta::StartScan>()
     .register_command<Packet::Meta::StopScan>()

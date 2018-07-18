@@ -17,7 +17,7 @@ namespace Packet {
     }
 
     void WriteRequest::unserialize(FlatbuffersFormatExtractor& extractor) {
-      auto payload = extractor.get_payload<const BaBLE::Write*>();
+      auto payload = extractor.get_payload<const BaBLE::WriteCentral*>();
 
       m_connection_handle = payload->connection_handle();
       m_attribute_handle = payload->attribute_handle();

@@ -15,7 +15,7 @@ namespace Packet {
       };
 
       static const uint16_t initial_packet_code() {
-        return static_cast<uint16_t>(BaBLE::Payload::WriteWithoutResponse);
+        return static_cast<uint16_t>(BaBLE::Payload::WriteWithoutResponseCentral);
       };
 
       static const uint16_t final_packet_code() {

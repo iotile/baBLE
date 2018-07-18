@@ -233,14 +233,14 @@ TEST_CASE("Integration (with mocked socket) - HCI packet", "[integration][hci]")
 
   // Build a ReadRequest
   FlatbuffersFormatBuilder fb_builder(0, "test", "TEST");
-  auto payload_request = BaBLE::CreateRead(
+  auto payload_request = BaBLE::CreateReadCentral(
       fb_builder,
       0x0040, // Connection handle
       0x0003  // Attribute handle
   );
 
   // Simulate a Flatbuffers packet received with a Read request inside. It will automatically send the matching HCI packet
-  stdio_socket->simulate_read(fb_builder.build(payload_request, BaBLE::Payload::Read));
+  stdio_socket->simulate_read(fb_builder.build(payload_request, BaBLE::Payload::ReadCentral));
   REQUIRE(hci_socket->get_raw()->get_num_write_buffers() == 1);
 
   // Read the HCI packet sent (Read request)
@@ -257,10 +257,10 @@ TEST_CASE("Integration (with mocked socket) - HCI packet", "[integration][hci]")
 
   // Verify that the Flatbuffers packet contains the response as expected
   shared_ptr<AbstractExtractor> fb_extractor = fb_format->create_extractor(stdio_socket->get_write_buffer(0));
-  REQUIRE(fb_extractor->get_packet_code() == static_cast<uint16_t>(BaBLE::Payload::Read));
+  REQUIRE(fb_extractor->get_packet_code() == static_cast<uint16_t>(BaBLE::Payload::ReadCentral));
   REQUIRE(fb_extractor->get_controller_id() == 0);
 
-  auto payload_response = static_pointer_cast<FlatbuffersFormatExtractor>(fb_extractor)->get_payload<const BaBLE::Read*>();
+  auto payload_response = static_pointer_cast<FlatbuffersFormatExtractor>(fb_extractor)->get_payload<const BaBLE::ReadCentral*>();
   REQUIRE(payload_response->connection_handle() == 0x0040);
   REQUIRE(payload_response->attribute_handle() == 0x0003);
 

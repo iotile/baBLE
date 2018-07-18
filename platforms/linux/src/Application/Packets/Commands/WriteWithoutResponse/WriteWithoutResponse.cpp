@@ -14,7 +14,7 @@ namespace Packet {
     }
 
     void WriteWithoutResponse::unserialize(FlatbuffersFormatExtractor& extractor) {
-      auto payload = extractor.get_payload<const BaBLE::WriteWithoutResponse*>();
+      auto payload = extractor.get_payload<const BaBLE::WriteWithoutResponseCentral*>();
 
       m_connection_handle = payload->connection_handle();
       m_attribute_handle = payload->attribute_handle();

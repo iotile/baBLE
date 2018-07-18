@@ -2,7 +2,7 @@
 #define BABLE_LINUX_PROBECHARACTERISTICS_HPP
 
 #include "Application/Packets/Base/HostOnlyPacket.hpp"
-#include "Application/Packets/Commands/ReadByType/ReadByTypeRequest.hpp"
+#include "Application/Packets/Commands/ReadByType/Central/ReadByTypeRequest.hpp"
 
 namespace Packet {
 
@@ -39,7 +39,7 @@ namespace Packet {
       uint16_t m_start_handle;
       uint16_t m_end_handle;
 
-      std::shared_ptr<Commands::ReadByTypeRequest> m_read_by_type_request_packet;
+      std::shared_ptr<Commands::Central::ReadByTypeRequest> m_read_by_type_request_packet;
       std::vector<Format::HCI::Characteristic> m_characteristics;
       std::vector<Format::HCI::Characteristic> m_characteristics_config;
 

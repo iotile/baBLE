@@ -2,6 +2,7 @@
 #include "Exceptions/BaBLEException.hpp"
 
 AbstractExtractor::AbstractExtractor(const std::vector<uint8_t>& data) {
+  m_valid = true;
   m_type_code = 0;
   m_packet_code = 0;
   m_controller_id = NON_CONTROLLER_ID;

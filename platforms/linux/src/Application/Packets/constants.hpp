@@ -42,6 +42,8 @@ namespace Packet {
     ReadByTypeRequest,
     ReadByTypeResponse,
     Ready,
+    SetAdvertisingRequest,
+    SetAdvertisingResponse,
     SetConnectableRequest,
     SetConnectableResponse,
     SetDiscoverableRequest,

@@ -157,6 +157,7 @@ namespace Format {
     enum SubEventCode {
       LEConnectionComplete= (EventCode::LEMeta << 8) | 0x01,
       LEAdvertisingReport= (EventCode::LEMeta << 8) | 0x02,
+      LEConnectionUpdateComplete= (EventCode::LEMeta << 8) | 0x03,
       LEReadRemoteUsedFeaturesComplete= (EventCode::LEMeta << 8) | 0x04
     };
 
@@ -165,7 +166,8 @@ namespace Format {
       SetScanEnable = 0x200C,
       LECreateConnection = 0x200D,
       LECreateConnectionCancel = 0x200E,
-      Disconnect = 0x0406
+      Disconnect = 0x0406,
+      ConnectionParameterUpdateRequest = 0x0012
     };
 
     enum AttributeCode {

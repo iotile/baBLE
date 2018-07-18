@@ -1,3 +1,4 @@
+#include <Application/Packets/Commands/ReadByType/Peripheral/ReadByTypeRequest.hpp>
 #include "HCISocket.hpp"
 #include "Application/Packets/Events/DeviceConnected/DeviceConnected.hpp"
 #include "Application/Packets/Events/DeviceDisconnected/DeviceDisconnected.hpp"
@@ -113,18 +114,14 @@ void HCISocket::disconnect_l2cap_socket(uint16_t connection_handle) {
 void HCISocket::set_gatt_table(const vector<Format::HCI::Service>& services, const vector<Format::HCI::Characteristic>& characteristics) {
   m_services = services;
   m_characteristics = characteristics;
-
-  for (auto& service : m_services) {
-    LOG.critical("Service {handle=" + to_string(service.handle) + ", group end handle=" + to_string(service.group_end_handle) + ", uuid=" + Utils::bytes_to_string(service.uuid) + "}");
-  }
-
-  for (auto& characteristic : m_characteristics) {
-    LOG.critical("Characteristic {handle=" + to_string(characteristic.handle) + ", value handle=" + to_string(characteristic.value_handle) + "}");
-  }
 }
 
 vector<Format::HCI::Service> HCISocket::get_services() const {
   return m_services;
+}
+
+vector<Format::HCI::Characteristic> HCISocket::get_characteristics() const {
+  return m_characteristics;
 }
 
 bool HCISocket::send(const vector<uint8_t>& data) {
@@ -174,6 +171,8 @@ void HCISocket::on_poll(uv_poll_t* handle, int status, int events) {
   try {
     if (events & UV_READABLE) {
       vector<uint8_t> received_payload = hci_socket->receive();
+      LOG.debug("Data received", "HCISocket");
+      LOG.debug(received_payload, "HCISocket");
       hci_socket->m_on_received(received_payload, hci_socket);
 
     } else if (events & UV_WRITABLE) {
@@ -276,6 +275,17 @@ void HCISocket::handle_packet(std::shared_ptr<Packet::AbstractPacket> packet) {
       }
 
       request_packet->set_services(get_services());
+      break;
+    }
+
+    case Packet::Id::ReadByTypeRequest:
+    {
+      auto request_packet = dynamic_pointer_cast<Packet::Commands::Peripheral::ReadByTypeRequest>(packet);
+      if (request_packet == nullptr) {
+        throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast packet to ReadByTypeRequest packet");
+      }
+
+      request_packet->set_characteristics(get_characteristics());
       break;
     }
 

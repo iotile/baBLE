@@ -10,12 +10,16 @@ include "./Commands/Disconnect.fbs";
 include "./Commands/SetPowered.fbs";
 include "./Commands/SetDiscoverable.fbs";
 include "./Commands/SetConnectable.fbs";
-include "./Commands/Read.fbs";
-include "./Commands/Write.fbs";
-include "./Commands/WriteWithoutResponse.fbs";
+include "./Commands/ReadCentral.fbs";
+include "./Commands/ReadPeripheral.fbs";
+include "./Commands/WriteCentral.fbs";
+include "./Commands/WritePeripheral.fbs";
+include "./Commands/WriteWithoutResponseCentral.fbs";
+include "./Commands/WriteWithoutResponsePeripheral.fbs";
 include "./Commands/ProbeServices.fbs";
 include "./Commands/ProbeCharacteristics.fbs";
 include "./Commands/SetGATTTable.fbs";
+include "./Commands/SetAdvertising.fbs";
 include "./Events/DeviceConnected.fbs";
 include "./Events/DeviceDisconnected.fbs";
 include "./Events/DeviceFound.fbs";
@@ -38,15 +42,19 @@ union Payload {
   GetControllersList,
   ProbeCharacteristics,
   ProbeServices,
-  Read,
+  ReadCentral,
+  ReadPeripheral,
+  SetAdvertising,
   SetConnectable,
   SetDiscoverable,
   SetGATTTable,
   SetPowered,
   StartScan,
   StopScan,
-  Write,
-  WriteWithoutResponse,
+  WriteCentral,
+  WritePeripheral,
+  WriteWithoutResponseCentral,
+  WriteWithoutResponsePeripheral,
 
   // Events
   ControllerAdded,

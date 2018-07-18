@@ -1,6 +1,6 @@
 namespace BaBLE;
 
-table Read {
+table WriteCentral {
   connection_handle:uint16;
   attribute_handle:uint16;
   value:[uint8];

@@ -14,7 +14,6 @@ namespace Packet {
           : ControllerOnlyPacket(Packet::Id::ReadByGroupTypeRequest, initial_type(), initial_packet_code(), final_packet_code()) {
         m_starting_handle = 0x0001;
         m_ending_handle = 0xFFFF;
-        m_uuid = 0;
         m_error = Format::HCI::AttributeErrorCode::None;
 
         m_length_per_service = 0;
@@ -73,7 +72,7 @@ namespace Packet {
       void ReadByGroupType::unserialize(HCIFormatExtractor& extractor) {
         m_starting_handle = extractor.get_value<uint16_t>();
         m_ending_handle = extractor.get_value<uint16_t>();
-        m_uuid = extractor.get_value<uint16_t>();
+        m_uuid = extractor.get_vector<uint8_t>();
 
         if (m_starting_handle < 0x0001 || m_starting_handle > m_ending_handle) {
           LOG.warning("Invalid handle received: starting_handle=" + to_string(m_starting_handle) + ", ending_handle=" + to_string(m_ending_handle));
@@ -81,17 +80,23 @@ namespace Packet {
           return;
         }
 
-        if (m_uuid != Format::HCI::GattUUID::PrimaryServiceDeclaration) {
-          LOG.warning("'ReadByTypeRequest' with not handled uuid: " + to_string(m_uuid));
+        try {
+          uint16_t uuid_num = Utils::uuid_to_number(m_uuid);
+
+          if (uuid_num != Format::HCI::GattUUID::PrimaryServiceDeclaration) {
+            LOG.warning("'ReadByGroupTypeRequest' with not handled uuid: " + to_string(uuid_num));
+            m_error = Format::HCI::AttributeErrorCode::UnsupportedGroupType;
+          }
+        } catch (const invalid_argument& err) {
+          LOG.warning("Can't convert UUID to number: UUID too long, size=" + to_string(m_uuid.size()));
           m_error = Format::HCI::AttributeErrorCode::UnsupportedGroupType;
-          return;
         }
       }
 
       const string ReadByGroupType::stringify() const {
         stringstream result;
 
-        result << "<ReadByGroupType> "
+        result << "<ReadByGroupType (Peripheral)> "
                << AbstractPacket::stringify() << ", ";
 
         for (auto it = m_services.begin(); it != m_services.end(); ++it) {

@@ -48,7 +48,7 @@ namespace Packet {
       const string ReadByGroupTypeResponse::stringify() const {
         stringstream result;
 
-        result << "<ReadByGroupTypeResponse> "
+        result << "<ReadByGroupTypeResponse (Central)> "
                << AbstractPacket::stringify() << ", "
                << "Last group end handle: " << to_string(m_last_group_end_handle) << ", ";
 

@@ -18,6 +18,7 @@ namespace Format {
       GetConnections = 0x0015,
       StartScan = 0x0023,
       StopScan = 0x0024,
+      SetAdvertising = 0x0029,
       AddDevice = 0x0033,
       RemoveDevice = 0x0034
     };

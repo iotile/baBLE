@@ -31,13 +31,13 @@ namespace Packet {
       m_packet_code = m_final_packet_code;
     };
 
-    std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const {
+    std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override {
       builder.set_opcode(m_packet_code);
 
       return {};
     };
 
-    std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const {
+    std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override {
       builder.set_opcode(m_packet_code);
 
       return {};

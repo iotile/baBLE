@@ -203,6 +203,7 @@ void HCIFormatExtractor::parse_header(const vector<uint8_t>& data) {
       if (m_data_length > 0) {
         m_data_length -= 1; // To consider opcode as part of the header
       }
+      m_valid = static_cast<uint16_t>(data.at(8) << 8 | data.at(7)) == ATT_CID;
       m_packet_code = static_cast<uint16_t>(data.at(9));
       break;
 

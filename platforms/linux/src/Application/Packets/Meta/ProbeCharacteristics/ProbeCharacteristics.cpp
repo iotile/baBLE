@@ -1,5 +1,5 @@
 #include "ProbeCharacteristics.hpp"
-#include "Application/Packets/Commands/ReadByType/ReadByTypeResponse.hpp"
+#include "Application/Packets/Commands/ReadByType/Central/ReadByTypeResponse.hpp"
 #include "Application/Packets/Errors/ErrorResponse/ErrorResponse.hpp"
 #include "utils/string_formats.hpp"
 
@@ -14,7 +14,7 @@ namespace Packet {
       m_waiting_char_declaration = true;
       m_waiting_char_configuration = false;
 
-      m_read_by_type_request_packet = make_shared<Commands::ReadByTypeRequest>(
+      m_read_by_type_request_packet = make_shared<Commands::Central::ReadByTypeRequest>(
           Format::HCI::GattUUID::CharacteristicDeclaration
       );
     }
@@ -134,7 +134,7 @@ namespace Packet {
       error_uuid.response_packet_code = Format::HCI::AttributeCode::ErrorResponse;
       router->remove_callback(error_uuid);
 
-      auto read_by_type_response_packet = dynamic_pointer_cast<Commands::ReadByTypeResponse>(packet);
+      auto read_by_type_response_packet = dynamic_pointer_cast<Commands::Central::ReadByTypeResponse>(packet);
       if (read_by_type_response_packet == nullptr) {
         throw Exceptions::BaBLEException(
             BaBLE::StatusCode::Failed,

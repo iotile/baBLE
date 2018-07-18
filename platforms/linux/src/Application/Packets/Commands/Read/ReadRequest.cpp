@@ -16,7 +16,7 @@ namespace Packet {
     }
 
     void ReadRequest::unserialize(FlatbuffersFormatExtractor& extractor) {
-      auto payload = extractor.get_payload<const BaBLE::Read*>();
+      auto payload = extractor.get_payload<const BaBLE::ReadCentral*>();
 
       m_connection_handle = payload->connection_handle();
       m_attribute_handle = payload->attribute_handle();

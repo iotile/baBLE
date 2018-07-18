@@ -13,13 +13,13 @@ namespace Packet {
     void WriteResponse::unserialize(HCIFormatExtractor& extractor) {}
 
     vector<uint8_t> WriteResponse::serialize(FlatbuffersFormatBuilder& builder) const {
-      auto payload = BaBLE::CreateWrite(
+      auto payload = BaBLE::CreateWriteCentral(
           builder,
           m_connection_handle,
           m_attribute_handle
       );
 
-      return builder.build(payload, BaBLE::Payload::Write);
+      return builder.build(payload, BaBLE::Payload::WriteCentral);
     }
 
     const string WriteResponse::stringify() const {

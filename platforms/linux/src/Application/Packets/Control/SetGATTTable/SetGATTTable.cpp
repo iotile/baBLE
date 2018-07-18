@@ -47,7 +47,7 @@ namespace Packet {
             raw_characteristic->handle(),
             properties,
             raw_characteristic->value_handle(),
-            raw_characteristic->config_handle(),  // TODO: add condition if not config handle ?
+            raw_characteristic->config_handle(),
             configuration,
             Utils::extract_uuid(raw_characteristic->uuid()->str())  // TODO: verify if uuid order is ok
         };

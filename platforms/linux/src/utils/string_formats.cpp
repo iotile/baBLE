@@ -27,6 +27,23 @@ namespace Utils {
     return uuid.str();
   }
 
+
+  uint16_t uuid_to_number(const vector<uint8_t>& uuid_vector) {
+    if (uuid_vector.size() != 2) {
+      throw invalid_argument("Given UUID is not a 2-bytes UUID. Can't convert it to number.");
+    }
+
+    uint16_t result;
+
+    if (__BYTE_ORDER == __LITTLE_ENDIAN) {
+      result = uuid_vector.at(1) << 8 | uuid_vector.at(0);
+    } else {
+      result = uuid_vector.at(0) << 8 | uuid_vector.at(1);
+    }
+
+    return result;
+  }
+
   array<uint8_t, 6> extract_bd_address(const string& bd_address) {
     array<uint8_t, 6> bd_address_array{};
 
@@ -63,7 +80,7 @@ namespace Utils {
 
     for (size_t i = 0; i < uuid_size; i += 2) {
       string byte_str = uuid.substr(i, 2);
-      uint8_t byte = string_to_number<uint8_t>(byte_str, 16);
+      auto byte = string_to_number<uint8_t>(byte_str, 16);
       uuid_vector.push_back(byte);
     }
 

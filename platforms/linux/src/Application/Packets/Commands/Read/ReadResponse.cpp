@@ -19,14 +19,14 @@ namespace Packet {
 
     vector<uint8_t> ReadResponse::serialize(FlatbuffersFormatBuilder& builder) const {
       auto data_read = builder.CreateVector(m_data_read);
-      auto payload = BaBLE::CreateRead(
+      auto payload = BaBLE::CreateReadCentral(
           builder,
           m_connection_handle,
           m_attribute_handle,
           data_read
       );
 
-      return builder.build(payload, BaBLE::Payload::Read);
+      return builder.build(payload, BaBLE::Payload::ReadCentral);
     }
 
     const std::string ReadResponse::stringify() const {

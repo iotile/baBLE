@@ -36,11 +36,17 @@ struct SetDiscoverable;
 
 struct SetConnectable;
 
-struct Read;
+struct ReadCentral;
 
-struct Write;
+struct ReadPeripheral;
 
-struct WriteWithoutResponse;
+struct WriteCentral;
+
+struct WritePeripheral;
+
+struct WriteWithoutResponseCentral;
+
+struct WriteWithoutResponsePeripheral;
 
 struct Service;
 
@@ -51,6 +57,8 @@ struct Characteristic;
 struct ProbeCharacteristics;
 
 struct SetGATTTable;
+
+struct SetAdvertising;
 
 struct DeviceConnected;
 
@@ -83,29 +91,33 @@ enum class Payload : uint8_t {
   GetControllersList = 7,
   ProbeCharacteristics = 8,
   ProbeServices = 9,
-  Read = 10,
-  SetConnectable = 11,
-  SetDiscoverable = 12,
-  SetGATTTable = 13,
-  SetPowered = 14,
-  StartScan = 15,
-  StopScan = 16,
-  Write = 17,
-  WriteWithoutResponse = 18,
-  ControllerAdded = 19,
-  ControllerRemoved = 20,
-  DeviceConnected = 21,
-  DeviceDisconnected = 22,
-  DeviceFound = 23,
-  NotificationReceived = 24,
-  BaBLEError = 25,
-  Exit = 26,
-  Ready = 27,
+  ReadCentral = 10,
+  ReadPeripheral = 11,
+  SetAdvertising = 12,
+  SetConnectable = 13,
+  SetDiscoverable = 14,
+  SetGATTTable = 15,
+  SetPowered = 16,
+  StartScan = 17,
+  StopScan = 18,
+  WriteCentral = 19,
+  WritePeripheral = 20,
+  WriteWithoutResponseCentral = 21,
+  WriteWithoutResponsePeripheral = 22,
+  ControllerAdded = 23,
+  ControllerRemoved = 24,
+  DeviceConnected = 25,
+  DeviceDisconnected = 26,
+  DeviceFound = 27,
+  NotificationReceived = 28,
+  BaBLEError = 29,
+  Exit = 30,
+  Ready = 31,
   MIN = NONE,
   MAX = Ready
 };
 
-inline const Payload (&EnumValuesPayload())[28] {
+inline const Payload (&EnumValuesPayload())[32] {
   static const Payload values[] = {
     Payload::NONE,
     Payload::CancelConnection,
@@ -117,15 +129,19 @@ inline const Payload (&EnumValuesPayload())[28] {
     Payload::GetControllersList,
     Payload::ProbeCharacteristics,
     Payload::ProbeServices,
-    Payload::Read,
+    Payload::ReadCentral,
+    Payload::ReadPeripheral,
+    Payload::SetAdvertising,
     Payload::SetConnectable,
     Payload::SetDiscoverable,
     Payload::SetGATTTable,
     Payload::SetPowered,
     Payload::StartScan,
     Payload::StopScan,
-    Payload::Write,
-    Payload::WriteWithoutResponse,
+    Payload::WriteCentral,
+    Payload::WritePeripheral,
+    Payload::WriteWithoutResponseCentral,
+    Payload::WriteWithoutResponsePeripheral,
     Payload::ControllerAdded,
     Payload::ControllerRemoved,
     Payload::DeviceConnected,
@@ -151,15 +167,19 @@ inline const char * const *EnumNamesPayload() {
     "GetControllersList",
     "ProbeCharacteristics",
     "ProbeServices",
-    "Read",
+    "ReadCentral",
+    "ReadPeripheral",
+    "SetAdvertising",
     "SetConnectable",
     "SetDiscoverable",
     "SetGATTTable",
     "SetPowered",
     "StartScan",
     "StopScan",
-    "Write",
-    "WriteWithoutResponse",
+    "WriteCentral",
+    "WritePeripheral",
+    "WriteWithoutResponseCentral",
+    "WriteWithoutResponsePeripheral",
     "ControllerAdded",
     "ControllerRemoved",
     "DeviceConnected",
@@ -219,8 +239,16 @@ template<> struct PayloadTraits<ProbeServices> {
   static const Payload enum_value = Payload::ProbeServices;
 };
 
-template<> struct PayloadTraits<Read> {
-  static const Payload enum_value = Payload::Read;
+template<> struct PayloadTraits<ReadCentral> {
+  static const Payload enum_value = Payload::ReadCentral;
+};
+
+template<> struct PayloadTraits<ReadPeripheral> {
+  static const Payload enum_value = Payload::ReadPeripheral;
+};
+
+template<> struct PayloadTraits<SetAdvertising> {
+  static const Payload enum_value = Payload::SetAdvertising;
 };
 
 template<> struct PayloadTraits<SetConnectable> {
@@ -247,12 +275,20 @@ template<> struct PayloadTraits<StopScan> {
   static const Payload enum_value = Payload::StopScan;
 };
 
-template<> struct PayloadTraits<Write> {
-  static const Payload enum_value = Payload::Write;
+template<> struct PayloadTraits<WriteCentral> {
+  static const Payload enum_value = Payload::WriteCentral;
 };
 
-template<> struct PayloadTraits<WriteWithoutResponse> {
-  static const Payload enum_value = Payload::WriteWithoutResponse;
+template<> struct PayloadTraits<WritePeripheral> {
+  static const Payload enum_value = Payload::WritePeripheral;
+};
+
+template<> struct PayloadTraits<WriteWithoutResponseCentral> {
+  static const Payload enum_value = Payload::WriteWithoutResponseCentral;
+};
+
+template<> struct PayloadTraits<WriteWithoutResponsePeripheral> {
+  static const Payload enum_value = Payload::WriteWithoutResponsePeripheral;
 };
 
 template<> struct PayloadTraits<ControllerAdded> {
@@ -1065,7 +1101,7 @@ inline flatbuffers::Offset<SetConnectable> CreateSetConnectable(
   return builder_.Finish();
 }
 
-struct Read FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct ReadCentral FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_CONNECTION_HANDLE = 4,
     VT_ATTRIBUTE_HANDLE = 6,
@@ -1090,55 +1126,55 @@ struct Read FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
 };
 
-struct ReadBuilder {
+struct ReadCentralBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
   void add_connection_handle(uint16_t connection_handle) {
-    fbb_.AddElement<uint16_t>(Read::VT_CONNECTION_HANDLE, connection_handle, 0);
+    fbb_.AddElement<uint16_t>(ReadCentral::VT_CONNECTION_HANDLE, connection_handle, 0);
   }
   void add_attribute_handle(uint16_t attribute_handle) {
-    fbb_.AddElement<uint16_t>(Read::VT_ATTRIBUTE_HANDLE, attribute_handle, 0);
+    fbb_.AddElement<uint16_t>(ReadCentral::VT_ATTRIBUTE_HANDLE, attribute_handle, 0);
   }
   void add_value(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> value) {
-    fbb_.AddOffset(Read::VT_VALUE, value);
+    fbb_.AddOffset(ReadCentral::VT_VALUE, value);
   }
-  explicit ReadBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  explicit ReadCentralBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  ReadBuilder &operator=(const ReadBuilder &);
-  flatbuffers::Offset<Read> Finish() {
+  ReadCentralBuilder &operator=(const ReadCentralBuilder &);
+  flatbuffers::Offset<ReadCentral> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<Read>(end);
+    auto o = flatbuffers::Offset<ReadCentral>(end);
     return o;
   }
 };
 
-inline flatbuffers::Offset<Read> CreateRead(
+inline flatbuffers::Offset<ReadCentral> CreateReadCentral(
     flatbuffers::FlatBufferBuilder &_fbb,
     uint16_t connection_handle = 0,
     uint16_t attribute_handle = 0,
     flatbuffers::Offset<flatbuffers::Vector<uint8_t>> value = 0) {
-  ReadBuilder builder_(_fbb);
+  ReadCentralBuilder builder_(_fbb);
   builder_.add_value(value);
   builder_.add_attribute_handle(attribute_handle);
   builder_.add_connection_handle(connection_handle);
   return builder_.Finish();
 }
 
-inline flatbuffers::Offset<Read> CreateReadDirect(
+inline flatbuffers::Offset<ReadCentral> CreateReadCentralDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     uint16_t connection_handle = 0,
     uint16_t attribute_handle = 0,
     const std::vector<uint8_t> *value = nullptr) {
-  return BaBLE::CreateRead(
+  return BaBLE::CreateReadCentral(
       _fbb,
       connection_handle,
       attribute_handle,
       value ? _fbb.CreateVector<uint8_t>(*value) : 0);
 }
 
-struct Write FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct ReadPeripheral FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_CONNECTION_HANDLE = 4,
     VT_ATTRIBUTE_HANDLE = 6,
@@ -1163,55 +1199,55 @@ struct Write FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
 };
 
-struct WriteBuilder {
+struct ReadPeripheralBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
   void add_connection_handle(uint16_t connection_handle) {
-    fbb_.AddElement<uint16_t>(Write::VT_CONNECTION_HANDLE, connection_handle, 0);
+    fbb_.AddElement<uint16_t>(ReadPeripheral::VT_CONNECTION_HANDLE, connection_handle, 0);
   }
   void add_attribute_handle(uint16_t attribute_handle) {
-    fbb_.AddElement<uint16_t>(Write::VT_ATTRIBUTE_HANDLE, attribute_handle, 0);
+    fbb_.AddElement<uint16_t>(ReadPeripheral::VT_ATTRIBUTE_HANDLE, attribute_handle, 0);
   }
   void add_value(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> value) {
-    fbb_.AddOffset(Write::VT_VALUE, value);
+    fbb_.AddOffset(ReadPeripheral::VT_VALUE, value);
   }
-  explicit WriteBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  explicit ReadPeripheralBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  WriteBuilder &operator=(const WriteBuilder &);
-  flatbuffers::Offset<Write> Finish() {
+  ReadPeripheralBuilder &operator=(const ReadPeripheralBuilder &);
+  flatbuffers::Offset<ReadPeripheral> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<Write>(end);
+    auto o = flatbuffers::Offset<ReadPeripheral>(end);
     return o;
   }
 };
 
-inline flatbuffers::Offset<Write> CreateWrite(
+inline flatbuffers::Offset<ReadPeripheral> CreateReadPeripheral(
     flatbuffers::FlatBufferBuilder &_fbb,
     uint16_t connection_handle = 0,
     uint16_t attribute_handle = 0,
     flatbuffers::Offset<flatbuffers::Vector<uint8_t>> value = 0) {
-  WriteBuilder builder_(_fbb);
+  ReadPeripheralBuilder builder_(_fbb);
   builder_.add_value(value);
   builder_.add_attribute_handle(attribute_handle);
   builder_.add_connection_handle(connection_handle);
   return builder_.Finish();
 }
 
-inline flatbuffers::Offset<Write> CreateWriteDirect(
+inline flatbuffers::Offset<ReadPeripheral> CreateReadPeripheralDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     uint16_t connection_handle = 0,
     uint16_t attribute_handle = 0,
     const std::vector<uint8_t> *value = nullptr) {
-  return BaBLE::CreateWrite(
+  return BaBLE::CreateReadPeripheral(
       _fbb,
       connection_handle,
       attribute_handle,
       value ? _fbb.CreateVector<uint8_t>(*value) : 0);
 }
 
-struct WriteWithoutResponse FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct WriteCentral FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_CONNECTION_HANDLE = 4,
     VT_ATTRIBUTE_HANDLE = 6,
@@ -1236,48 +1272,267 @@ struct WriteWithoutResponse FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table
   }
 };
 
-struct WriteWithoutResponseBuilder {
+struct WriteCentralBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
   void add_connection_handle(uint16_t connection_handle) {
-    fbb_.AddElement<uint16_t>(WriteWithoutResponse::VT_CONNECTION_HANDLE, connection_handle, 0);
+    fbb_.AddElement<uint16_t>(WriteCentral::VT_CONNECTION_HANDLE, connection_handle, 0);
   }
   void add_attribute_handle(uint16_t attribute_handle) {
-    fbb_.AddElement<uint16_t>(WriteWithoutResponse::VT_ATTRIBUTE_HANDLE, attribute_handle, 0);
+    fbb_.AddElement<uint16_t>(WriteCentral::VT_ATTRIBUTE_HANDLE, attribute_handle, 0);
   }
   void add_value(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> value) {
-    fbb_.AddOffset(WriteWithoutResponse::VT_VALUE, value);
+    fbb_.AddOffset(WriteCentral::VT_VALUE, value);
   }
-  explicit WriteWithoutResponseBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  explicit WriteCentralBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  WriteWithoutResponseBuilder &operator=(const WriteWithoutResponseBuilder &);
-  flatbuffers::Offset<WriteWithoutResponse> Finish() {
+  WriteCentralBuilder &operator=(const WriteCentralBuilder &);
+  flatbuffers::Offset<WriteCentral> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<WriteWithoutResponse>(end);
+    auto o = flatbuffers::Offset<WriteCentral>(end);
     return o;
   }
 };
 
-inline flatbuffers::Offset<WriteWithoutResponse> CreateWriteWithoutResponse(
+inline flatbuffers::Offset<WriteCentral> CreateWriteCentral(
     flatbuffers::FlatBufferBuilder &_fbb,
     uint16_t connection_handle = 0,
     uint16_t attribute_handle = 0,
     flatbuffers::Offset<flatbuffers::Vector<uint8_t>> value = 0) {
-  WriteWithoutResponseBuilder builder_(_fbb);
+  WriteCentralBuilder builder_(_fbb);
   builder_.add_value(value);
   builder_.add_attribute_handle(attribute_handle);
   builder_.add_connection_handle(connection_handle);
   return builder_.Finish();
 }
 
-inline flatbuffers::Offset<WriteWithoutResponse> CreateWriteWithoutResponseDirect(
+inline flatbuffers::Offset<WriteCentral> CreateWriteCentralDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     uint16_t connection_handle = 0,
     uint16_t attribute_handle = 0,
     const std::vector<uint8_t> *value = nullptr) {
-  return BaBLE::CreateWriteWithoutResponse(
+  return BaBLE::CreateWriteCentral(
+      _fbb,
+      connection_handle,
+      attribute_handle,
+      value ? _fbb.CreateVector<uint8_t>(*value) : 0);
+}
+
+struct WritePeripheral FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_CONNECTION_HANDLE = 4,
+    VT_ATTRIBUTE_HANDLE = 6,
+    VT_VALUE = 8
+  };
+  uint16_t connection_handle() const {
+    return GetField<uint16_t>(VT_CONNECTION_HANDLE, 0);
+  }
+  uint16_t attribute_handle() const {
+    return GetField<uint16_t>(VT_ATTRIBUTE_HANDLE, 0);
+  }
+  const flatbuffers::Vector<uint8_t> *value() const {
+    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_VALUE);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint16_t>(verifier, VT_CONNECTION_HANDLE) &&
+           VerifyField<uint16_t>(verifier, VT_ATTRIBUTE_HANDLE) &&
+           VerifyOffset(verifier, VT_VALUE) &&
+           verifier.Verify(value()) &&
+           verifier.EndTable();
+  }
+};
+
+struct WritePeripheralBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_connection_handle(uint16_t connection_handle) {
+    fbb_.AddElement<uint16_t>(WritePeripheral::VT_CONNECTION_HANDLE, connection_handle, 0);
+  }
+  void add_attribute_handle(uint16_t attribute_handle) {
+    fbb_.AddElement<uint16_t>(WritePeripheral::VT_ATTRIBUTE_HANDLE, attribute_handle, 0);
+  }
+  void add_value(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> value) {
+    fbb_.AddOffset(WritePeripheral::VT_VALUE, value);
+  }
+  explicit WritePeripheralBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  WritePeripheralBuilder &operator=(const WritePeripheralBuilder &);
+  flatbuffers::Offset<WritePeripheral> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<WritePeripheral>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<WritePeripheral> CreateWritePeripheral(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t connection_handle = 0,
+    uint16_t attribute_handle = 0,
+    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> value = 0) {
+  WritePeripheralBuilder builder_(_fbb);
+  builder_.add_value(value);
+  builder_.add_attribute_handle(attribute_handle);
+  builder_.add_connection_handle(connection_handle);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<WritePeripheral> CreateWritePeripheralDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t connection_handle = 0,
+    uint16_t attribute_handle = 0,
+    const std::vector<uint8_t> *value = nullptr) {
+  return BaBLE::CreateWritePeripheral(
+      _fbb,
+      connection_handle,
+      attribute_handle,
+      value ? _fbb.CreateVector<uint8_t>(*value) : 0);
+}
+
+struct WriteWithoutResponseCentral FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_CONNECTION_HANDLE = 4,
+    VT_ATTRIBUTE_HANDLE = 6,
+    VT_VALUE = 8
+  };
+  uint16_t connection_handle() const {
+    return GetField<uint16_t>(VT_CONNECTION_HANDLE, 0);
+  }
+  uint16_t attribute_handle() const {
+    return GetField<uint16_t>(VT_ATTRIBUTE_HANDLE, 0);
+  }
+  const flatbuffers::Vector<uint8_t> *value() const {
+    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_VALUE);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint16_t>(verifier, VT_CONNECTION_HANDLE) &&
+           VerifyField<uint16_t>(verifier, VT_ATTRIBUTE_HANDLE) &&
+           VerifyOffset(verifier, VT_VALUE) &&
+           verifier.Verify(value()) &&
+           verifier.EndTable();
+  }
+};
+
+struct WriteWithoutResponseCentralBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_connection_handle(uint16_t connection_handle) {
+    fbb_.AddElement<uint16_t>(WriteWithoutResponseCentral::VT_CONNECTION_HANDLE, connection_handle, 0);
+  }
+  void add_attribute_handle(uint16_t attribute_handle) {
+    fbb_.AddElement<uint16_t>(WriteWithoutResponseCentral::VT_ATTRIBUTE_HANDLE, attribute_handle, 0);
+  }
+  void add_value(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> value) {
+    fbb_.AddOffset(WriteWithoutResponseCentral::VT_VALUE, value);
+  }
+  explicit WriteWithoutResponseCentralBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  WriteWithoutResponseCentralBuilder &operator=(const WriteWithoutResponseCentralBuilder &);
+  flatbuffers::Offset<WriteWithoutResponseCentral> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<WriteWithoutResponseCentral>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<WriteWithoutResponseCentral> CreateWriteWithoutResponseCentral(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t connection_handle = 0,
+    uint16_t attribute_handle = 0,
+    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> value = 0) {
+  WriteWithoutResponseCentralBuilder builder_(_fbb);
+  builder_.add_value(value);
+  builder_.add_attribute_handle(attribute_handle);
+  builder_.add_connection_handle(connection_handle);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<WriteWithoutResponseCentral> CreateWriteWithoutResponseCentralDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t connection_handle = 0,
+    uint16_t attribute_handle = 0,
+    const std::vector<uint8_t> *value = nullptr) {
+  return BaBLE::CreateWriteWithoutResponseCentral(
+      _fbb,
+      connection_handle,
+      attribute_handle,
+      value ? _fbb.CreateVector<uint8_t>(*value) : 0);
+}
+
+struct WriteWithoutResponsePeripheral FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_CONNECTION_HANDLE = 4,
+    VT_ATTRIBUTE_HANDLE = 6,
+    VT_VALUE = 8
+  };
+  uint16_t connection_handle() const {
+    return GetField<uint16_t>(VT_CONNECTION_HANDLE, 0);
+  }
+  uint16_t attribute_handle() const {
+    return GetField<uint16_t>(VT_ATTRIBUTE_HANDLE, 0);
+  }
+  const flatbuffers::Vector<uint8_t> *value() const {
+    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_VALUE);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint16_t>(verifier, VT_CONNECTION_HANDLE) &&
+           VerifyField<uint16_t>(verifier, VT_ATTRIBUTE_HANDLE) &&
+           VerifyOffset(verifier, VT_VALUE) &&
+           verifier.Verify(value()) &&
+           verifier.EndTable();
+  }
+};
+
+struct WriteWithoutResponsePeripheralBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_connection_handle(uint16_t connection_handle) {
+    fbb_.AddElement<uint16_t>(WriteWithoutResponsePeripheral::VT_CONNECTION_HANDLE, connection_handle, 0);
+  }
+  void add_attribute_handle(uint16_t attribute_handle) {
+    fbb_.AddElement<uint16_t>(WriteWithoutResponsePeripheral::VT_ATTRIBUTE_HANDLE, attribute_handle, 0);
+  }
+  void add_value(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> value) {
+    fbb_.AddOffset(WriteWithoutResponsePeripheral::VT_VALUE, value);
+  }
+  explicit WriteWithoutResponsePeripheralBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  WriteWithoutResponsePeripheralBuilder &operator=(const WriteWithoutResponsePeripheralBuilder &);
+  flatbuffers::Offset<WriteWithoutResponsePeripheral> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<WriteWithoutResponsePeripheral>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<WriteWithoutResponsePeripheral> CreateWriteWithoutResponsePeripheral(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t connection_handle = 0,
+    uint16_t attribute_handle = 0,
+    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> value = 0) {
+  WriteWithoutResponsePeripheralBuilder builder_(_fbb);
+  builder_.add_value(value);
+  builder_.add_attribute_handle(attribute_handle);
+  builder_.add_connection_handle(connection_handle);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<WriteWithoutResponsePeripheral> CreateWriteWithoutResponsePeripheralDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t connection_handle = 0,
+    uint16_t attribute_handle = 0,
+    const std::vector<uint8_t> *value = nullptr) {
+  return BaBLE::CreateWriteWithoutResponsePeripheral(
       _fbb,
       connection_handle,
       attribute_handle,
@@ -1736,6 +1991,107 @@ inline flatbuffers::Offset<SetGATTTable> CreateSetGATTTableDirect(
       _fbb,
       services ? _fbb.CreateVector<flatbuffers::Offset<Service>>(*services) : 0,
       characteristics ? _fbb.CreateVector<flatbuffers::Offset<Characteristic>>(*characteristics) : 0);
+}
+
+struct SetAdvertising FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_STATE = 4,
+    VT_UUIDS = 6,
+    VT_NAME = 8,
+    VT_ADV_MANUFACTURER_DATA = 10,
+    VT_SCAN_MANUFACTURER_DATA = 12
+  };
+  bool state() const {
+    return GetField<uint8_t>(VT_STATE, 0) != 0;
+  }
+  const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *uuids() const {
+    return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>> *>(VT_UUIDS);
+  }
+  const flatbuffers::String *name() const {
+    return GetPointer<const flatbuffers::String *>(VT_NAME);
+  }
+  const flatbuffers::Vector<uint8_t> *adv_manufacturer_data() const {
+    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_ADV_MANUFACTURER_DATA);
+  }
+  const flatbuffers::Vector<uint8_t> *scan_manufacturer_data() const {
+    return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_SCAN_MANUFACTURER_DATA);
+  }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint8_t>(verifier, VT_STATE) &&
+           VerifyOffset(verifier, VT_UUIDS) &&
+           verifier.Verify(uuids()) &&
+           verifier.VerifyVectorOfStrings(uuids()) &&
+           VerifyOffset(verifier, VT_NAME) &&
+           verifier.Verify(name()) &&
+           VerifyOffset(verifier, VT_ADV_MANUFACTURER_DATA) &&
+           verifier.Verify(adv_manufacturer_data()) &&
+           VerifyOffset(verifier, VT_SCAN_MANUFACTURER_DATA) &&
+           verifier.Verify(scan_manufacturer_data()) &&
+           verifier.EndTable();
+  }
+};
+
+struct SetAdvertisingBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_state(bool state) {
+    fbb_.AddElement<uint8_t>(SetAdvertising::VT_STATE, static_cast<uint8_t>(state), 0);
+  }
+  void add_uuids(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> uuids) {
+    fbb_.AddOffset(SetAdvertising::VT_UUIDS, uuids);
+  }
+  void add_name(flatbuffers::Offset<flatbuffers::String> name) {
+    fbb_.AddOffset(SetAdvertising::VT_NAME, name);
+  }
+  void add_adv_manufacturer_data(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> adv_manufacturer_data) {
+    fbb_.AddOffset(SetAdvertising::VT_ADV_MANUFACTURER_DATA, adv_manufacturer_data);
+  }
+  void add_scan_manufacturer_data(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> scan_manufacturer_data) {
+    fbb_.AddOffset(SetAdvertising::VT_SCAN_MANUFACTURER_DATA, scan_manufacturer_data);
+  }
+  explicit SetAdvertisingBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  SetAdvertisingBuilder &operator=(const SetAdvertisingBuilder &);
+  flatbuffers::Offset<SetAdvertising> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = flatbuffers::Offset<SetAdvertising>(end);
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<SetAdvertising> CreateSetAdvertising(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    bool state = false,
+    flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> uuids = 0,
+    flatbuffers::Offset<flatbuffers::String> name = 0,
+    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> adv_manufacturer_data = 0,
+    flatbuffers::Offset<flatbuffers::Vector<uint8_t>> scan_manufacturer_data = 0) {
+  SetAdvertisingBuilder builder_(_fbb);
+  builder_.add_scan_manufacturer_data(scan_manufacturer_data);
+  builder_.add_adv_manufacturer_data(adv_manufacturer_data);
+  builder_.add_name(name);
+  builder_.add_uuids(uuids);
+  builder_.add_state(state);
+  return builder_.Finish();
+}
+
+inline flatbuffers::Offset<SetAdvertising> CreateSetAdvertisingDirect(
+    flatbuffers::FlatBufferBuilder &_fbb,
+    bool state = false,
+    const std::vector<flatbuffers::Offset<flatbuffers::String>> *uuids = nullptr,
+    const char *name = nullptr,
+    const std::vector<uint8_t> *adv_manufacturer_data = nullptr,
+    const std::vector<uint8_t> *scan_manufacturer_data = nullptr) {
+  return BaBLE::CreateSetAdvertising(
+      _fbb,
+      state,
+      uuids ? _fbb.CreateVector<flatbuffers::Offset<flatbuffers::String>>(*uuids) : 0,
+      name ? _fbb.CreateString(name) : 0,
+      adv_manufacturer_data ? _fbb.CreateVector<uint8_t>(*adv_manufacturer_data) : 0,
+      scan_manufacturer_data ? _fbb.CreateVector<uint8_t>(*scan_manufacturer_data) : 0);
 }
 
 struct DeviceConnected FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
@@ -2301,8 +2657,14 @@ struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const ProbeServices *payload_as_ProbeServices() const {
     return payload_type() == Payload::ProbeServices ? static_cast<const ProbeServices *>(payload()) : nullptr;
   }
-  const Read *payload_as_Read() const {
-    return payload_type() == Payload::Read ? static_cast<const Read *>(payload()) : nullptr;
+  const ReadCentral *payload_as_ReadCentral() const {
+    return payload_type() == Payload::ReadCentral ? static_cast<const ReadCentral *>(payload()) : nullptr;
+  }
+  const ReadPeripheral *payload_as_ReadPeripheral() const {
+    return payload_type() == Payload::ReadPeripheral ? static_cast<const ReadPeripheral *>(payload()) : nullptr;
+  }
+  const SetAdvertising *payload_as_SetAdvertising() const {
+    return payload_type() == Payload::SetAdvertising ? static_cast<const SetAdvertising *>(payload()) : nullptr;
   }
   const SetConnectable *payload_as_SetConnectable() const {
     return payload_type() == Payload::SetConnectable ? static_cast<const SetConnectable *>(payload()) : nullptr;
@@ -2322,11 +2684,17 @@ struct Packet FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   const StopScan *payload_as_StopScan() const {
     return payload_type() == Payload::StopScan ? static_cast<const StopScan *>(payload()) : nullptr;
   }
-  const Write *payload_as_Write() const {
-    return payload_type() == Payload::Write ? static_cast<const Write *>(payload()) : nullptr;
+  const WriteCentral *payload_as_WriteCentral() const {
+    return payload_type() == Payload::WriteCentral ? static_cast<const WriteCentral *>(payload()) : nullptr;
   }
-  const WriteWithoutResponse *payload_as_WriteWithoutResponse() const {
-    return payload_type() == Payload::WriteWithoutResponse ? static_cast<const WriteWithoutResponse *>(payload()) : nullptr;
+  const WritePeripheral *payload_as_WritePeripheral() const {
+    return payload_type() == Payload::WritePeripheral ? static_cast<const WritePeripheral *>(payload()) : nullptr;
+  }
+  const WriteWithoutResponseCentral *payload_as_WriteWithoutResponseCentral() const {
+    return payload_type() == Payload::WriteWithoutResponseCentral ? static_cast<const WriteWithoutResponseCentral *>(payload()) : nullptr;
+  }
+  const WriteWithoutResponsePeripheral *payload_as_WriteWithoutResponsePeripheral() const {
+    return payload_type() == Payload::WriteWithoutResponsePeripheral ? static_cast<const WriteWithoutResponsePeripheral *>(payload()) : nullptr;
   }
   const ControllerAdded *payload_as_ControllerAdded() const {
     return payload_type() == Payload::ControllerAdded ? static_cast<const ControllerAdded *>(payload()) : nullptr;
@@ -2419,8 +2787,16 @@ template<> inline const ProbeServices *Packet::payload_as<ProbeServices>() const
   return payload_as_ProbeServices();
 }
 
-template<> inline const Read *Packet::payload_as<Read>() const {
-  return payload_as_Read();
+template<> inline const ReadCentral *Packet::payload_as<ReadCentral>() const {
+  return payload_as_ReadCentral();
+}
+
+template<> inline const ReadPeripheral *Packet::payload_as<ReadPeripheral>() const {
+  return payload_as_ReadPeripheral();
+}
+
+template<> inline const SetAdvertising *Packet::payload_as<SetAdvertising>() const {
+  return payload_as_SetAdvertising();
 }
 
 template<> inline const SetConnectable *Packet::payload_as<SetConnectable>() const {
@@ -2447,12 +2823,20 @@ template<> inline const StopScan *Packet::payload_as<StopScan>() const {
   return payload_as_StopScan();
 }
 
-template<> inline const Write *Packet::payload_as<Write>() const {
-  return payload_as_Write();
+template<> inline const WriteCentral *Packet::payload_as<WriteCentral>() const {
+  return payload_as_WriteCentral();
 }
 
-template<> inline const WriteWithoutResponse *Packet::payload_as<WriteWithoutResponse>() const {
-  return payload_as_WriteWithoutResponse();
+template<> inline const WritePeripheral *Packet::payload_as<WritePeripheral>() const {
+  return payload_as_WritePeripheral();
+}
+
+template<> inline const WriteWithoutResponseCentral *Packet::payload_as<WriteWithoutResponseCentral>() const {
+  return payload_as_WriteWithoutResponseCentral();
+}
+
+template<> inline const WriteWithoutResponsePeripheral *Packet::payload_as<WriteWithoutResponsePeripheral>() const {
+  return payload_as_WriteWithoutResponsePeripheral();
 }
 
 template<> inline const ControllerAdded *Packet::payload_as<ControllerAdded>() const {
@@ -2608,8 +2992,16 @@ inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *obj, Payl
       auto ptr = reinterpret_cast<const ProbeServices *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case Payload::Read: {
-      auto ptr = reinterpret_cast<const Read *>(obj);
+    case Payload::ReadCentral: {
+      auto ptr = reinterpret_cast<const ReadCentral *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::ReadPeripheral: {
+      auto ptr = reinterpret_cast<const ReadPeripheral *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::SetAdvertising: {
+      auto ptr = reinterpret_cast<const SetAdvertising *>(obj);
       return verifier.VerifyTable(ptr);
     }
     case Payload::SetConnectable: {
@@ -2636,12 +3028,20 @@ inline bool VerifyPayload(flatbuffers::Verifier &verifier, const void *obj, Payl
       auto ptr = reinterpret_cast<const StopScan *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case Payload::Write: {
-      auto ptr = reinterpret_cast<const Write *>(obj);
+    case Payload::WriteCentral: {
+      auto ptr = reinterpret_cast<const WriteCentral *>(obj);
       return verifier.VerifyTable(ptr);
     }
-    case Payload::WriteWithoutResponse: {
-      auto ptr = reinterpret_cast<const WriteWithoutResponse *>(obj);
+    case Payload::WritePeripheral: {
+      auto ptr = reinterpret_cast<const WritePeripheral *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::WriteWithoutResponseCentral: {
+      auto ptr = reinterpret_cast<const WriteWithoutResponseCentral *>(obj);
+      return verifier.VerifyTable(ptr);
+    }
+    case Payload::WriteWithoutResponsePeripheral: {
+      auto ptr = reinterpret_cast<const WriteWithoutResponsePeripheral *>(obj);
       return verifier.VerifyTable(ptr);
     }
     case Payload::ControllerAdded: {
