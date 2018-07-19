@@ -41,7 +41,7 @@ namespace Packet {
 
         free(cl);
 
-      } catch (const std::exception& err) {
+      } catch (const exception& err) {
         free(cl);
         throw;
       }

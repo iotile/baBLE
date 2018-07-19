@@ -26,7 +26,7 @@ namespace Packet {
       return builder.build(Format::HCI::Type::Command);
     }
 
-    const std::string SetScanEnable::stringify() const {
+    const string SetScanEnable::stringify() const {
       stringstream result;
 
       result << "<SetScanEnable> "
@@ -37,8 +37,8 @@ namespace Packet {
       return result.str();
     }
 
-    shared_ptr<AbstractPacket> SetScanEnable::on_response_received(const std::shared_ptr<PacketRouter>& router,
-                                                                               const shared_ptr<AbstractPacket>& packet) {
+    shared_ptr<AbstractPacket> SetScanEnable::on_response_received(const shared_ptr<PacketRouter>& router,
+                                                                   const shared_ptr<AbstractPacket>& packet) {
       LOG.debug("Response received", "SetScanEnable");
       auto response_packet = dynamic_pointer_cast<Events::CommandComplete>(packet);
       if (response_packet == nullptr) {

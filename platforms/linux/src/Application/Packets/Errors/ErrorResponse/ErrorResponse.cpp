@@ -63,7 +63,7 @@ namespace Packet {
       }
     }
 
-    const std::string ErrorResponse::stringify() const {
+    const string ErrorResponse::stringify() const {
       stringstream result;
 
       result << "<ErrorResponse> "

@@ -20,6 +20,8 @@ namespace Utils {
 
   std::vector<uint8_t> extract_uuid(const std::string& uuid);
 
+  std::vector<uint8_t> string_to_bytes(const std::string& uuid);
+
   template<typename T>
   std::string format_bytes_array(const T& bytes) {
     std::stringstream stream;

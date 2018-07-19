@@ -29,7 +29,7 @@ namespace Packet {
       return builder.build(payload, BaBLE::Payload::ReadCentral);
     }
 
-    const std::string ReadResponse::stringify() const {
+    const string ReadResponse::stringify() const {
       stringstream result;
 
       result << "<ReadResponse> "

@@ -7,7 +7,7 @@ namespace Packet {
 
   namespace Commands {
 
-    CreateConnection::CreateConnection(const std::string& address, uint8_t address_type)
+    CreateConnection::CreateConnection(const string& address, uint8_t address_type)
         : HostToControllerPacket(Packet::Id::CreateConnection, final_type(), final_packet_code()) {
       m_response_packet_code = Format::HCI::EventCode::CommandStatus;
 
@@ -70,7 +70,7 @@ namespace Packet {
       return builder.build(payload, BaBLE::Payload::Connect);
     }
 
-    const std::string CreateConnection::stringify() const {
+    const string CreateConnection::stringify() const {
       stringstream result;
 
       result << "<CreateConnection> "
@@ -107,7 +107,7 @@ namespace Packet {
       }
     }
 
-    shared_ptr<AbstractPacket> CreateConnection::on_response_received(const std::shared_ptr<PacketRouter>& router,
+    shared_ptr<AbstractPacket> CreateConnection::on_response_received(const shared_ptr<PacketRouter>& router,
                                                                               const shared_ptr<AbstractPacket>& packet) {
       LOG.debug("Response received", "CreateConnection");
       import_status(packet);

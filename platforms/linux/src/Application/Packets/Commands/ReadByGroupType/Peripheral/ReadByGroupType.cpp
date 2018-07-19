@@ -19,7 +19,7 @@ namespace Packet {
         m_length_per_service = 0;
       }
 
-      void ReadByGroupType::set_services(const std::vector<Format::HCI::Service>& services) {
+      void ReadByGroupType::set_services(const vector<Format::HCI::Service>& services) {
         if (m_error != Format::HCI::AttributeErrorCode::None) {
           return;
         }

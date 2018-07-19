@@ -20,7 +20,7 @@ namespace Packet {
         m_length_per_characteristic = 0;
       }
 
-      void ReadByTypeRequest::set_characteristics(const std::vector<Format::HCI::Characteristic>& characteristics) {
+      void ReadByTypeRequest::set_characteristics(const vector<Format::HCI::Characteristic>& characteristics) {
         if (m_error != Format::HCI::AttributeErrorCode::None) {
           return;
         }

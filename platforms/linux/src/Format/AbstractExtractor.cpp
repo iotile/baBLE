@@ -1,7 +1,9 @@
 #include "AbstractExtractor.hpp"
 #include "Exceptions/BaBLEException.hpp"
 
-AbstractExtractor::AbstractExtractor(const std::vector<uint8_t>& data) {
+using namespace std;
+
+AbstractExtractor::AbstractExtractor(const vector<uint8_t>& data) {
   m_valid = true;
   m_type_code = 0;
   m_packet_code = 0;
@@ -55,8 +57,8 @@ template uint32_t AbstractExtractor::get_value<uint32_t>();
 template char AbstractExtractor::get_value<char>();
 
 template<typename T>
-std::vector<T> AbstractExtractor::get_vector(size_t length) {
-  std::vector<T> result(length);
+vector<T> AbstractExtractor::get_vector(size_t length) {
+  vector<T> result(length);
 
   for (auto& value : result) {
     value = get_value<T>();
@@ -64,12 +66,12 @@ std::vector<T> AbstractExtractor::get_vector(size_t length) {
 
   return result;
 }
-template std::vector<uint8_t> AbstractExtractor::get_vector<uint8_t>();
-template std::vector<uint16_t> AbstractExtractor::get_vector<uint16_t>();
+template vector<uint8_t> AbstractExtractor::get_vector<uint8_t>();
+template vector<uint16_t> AbstractExtractor::get_vector<uint16_t>();
 
 template<typename T>
-std::vector<T> AbstractExtractor::get_vector() {
-  std::vector<T> result;
+vector<T> AbstractExtractor::get_vector() {
+  vector<T> result;
 
   while (true) {
     try {
@@ -82,12 +84,12 @@ std::vector<T> AbstractExtractor::get_vector() {
 
   return result;
 }
-template std::vector<uint8_t> AbstractExtractor::get_vector<uint8_t>(size_t);
-template std::vector<uint16_t> AbstractExtractor::get_vector<uint16_t>(size_t);
+template vector<uint8_t> AbstractExtractor::get_vector<uint8_t>(size_t);
+template vector<uint16_t> AbstractExtractor::get_vector<uint16_t>(size_t);
 
 void AbstractExtractor::set_data_pointer(size_t value) {
   if (value < 0 || value > m_data.size()) {
-    throw std::invalid_argument("Trying to set a new data pointer value which is out of bonds.");
+    throw invalid_argument("Trying to set a new data pointer value which is out of bonds.");
   }
 
   if (value == m_data.size()) {

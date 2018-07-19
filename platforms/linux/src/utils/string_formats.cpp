@@ -87,4 +87,10 @@ namespace Utils {
     return uuid_vector;
   }
 
+  std::vector<uint8_t> string_to_bytes(const std::string& str_data) {
+    vector<uint8_t> str_bytes(str_data.begin(), str_data.end());
+
+    return str_bytes;
+  }
+
 }

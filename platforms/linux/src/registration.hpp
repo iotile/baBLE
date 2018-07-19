@@ -10,8 +10,6 @@
 #include "Application/Packets/Commands/SetDiscoverable/SetDiscoverableResponse.hpp"
 #include "Application/Packets/Commands/SetConnectable/SetConnectableRequest.hpp"
 #include "Application/Packets/Commands/SetConnectable/SetConnectableResponse.hpp"
-#include "Application/Packets/Commands/SetAdvertising/SetAdvertisingRequest.hpp"
-#include "Application/Packets/Commands/SetAdvertising/SetAdvertisingResponse.hpp"
 #include "Application/Packets/Commands/GetControllersIds/GetControllersIdsRequest.hpp"
 #include "Application/Packets/Commands/GetControllersIds/GetControllersIdsResponse.hpp"
 #include "Application/Packets/Commands/GetControllerInfo/GetControllerInfoRequest.hpp"
@@ -41,6 +39,7 @@
 #include "Application/Packets/Control/Exit/Exit.hpp"
 #include "Application/Packets/Control/Ready/Ready.hpp"
 #include "Application/Packets/Errors/ErrorResponse/ErrorResponse.hpp"
+#include "Application/Packets/Meta/SetAdvertising/SetAdvertising.hpp"
 #include "Application/Packets/Meta/StartScan/StartScan.hpp"
 #include "Application/Packets/Meta/StopScan/StopScan.hpp"
 #include "Application/Packets/Meta/GetControllersList/GetControllersList.hpp"
@@ -55,7 +54,6 @@ void register_mgmt_packets(PacketBuilder& mgmt_packet_builder) {
     .register_command<Packet::Commands::SetPoweredResponse>()
     .register_command<Packet::Commands::SetDiscoverableResponse>()
     .register_command<Packet::Commands::SetConnectableResponse>()
-    .register_command<Packet::Commands::SetAdvertisingResponse>()
     .register_event<Packet::Events::ControllerAdded>()
     .register_event<Packet::Events::ControllerRemoved>()
     .set_ignored_packets({
@@ -102,7 +100,6 @@ void register_stdio_packets(PacketBuilder& stdio_packet_builder) {
     .register_command<Packet::Commands::SetPoweredRequest>()
     .register_command<Packet::Commands::SetDiscoverableRequest>()
     .register_command<Packet::Commands::SetConnectableRequest>()
-    .register_command<Packet::Commands::SetAdvertisingRequest>()
     .register_command<Packet::Commands::CreateConnection>()
     .register_command<Packet::Commands::CancelConnectionRequest>()
     .register_command<Packet::Commands::Disconnect>()
@@ -111,6 +108,7 @@ void register_stdio_packets(PacketBuilder& stdio_packet_builder) {
     .register_command<Packet::Commands::WriteWithoutResponse>()
     .register_command<Packet::Commands::Peripheral::ReadByTypeResponse>()
     .register_command<Packet::Meta::GetControllersList>()
+    .register_command<Packet::Meta::SetAdvertising>()
     .register_command<Packet::Meta::StartScan>()
     .register_command<Packet::Meta::StopScan>()
     .register_command<Packet::Meta::ProbeServices>()

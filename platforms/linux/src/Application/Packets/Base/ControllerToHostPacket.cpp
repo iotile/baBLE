@@ -1,5 +1,7 @@
 #include "ControllerToHostPacket.hpp"
 
+using namespace std;
+
 namespace Packet {
 
   ControllerToHostPacket::ControllerToHostPacket(Packet::Id id, Packet::Type type, uint16_t initial_packet_code,
@@ -26,7 +28,7 @@ namespace Packet {
     }
   }
 
-  void ControllerToHostPacket::prepare(const std::shared_ptr<PacketRouter>& router) {
+  void ControllerToHostPacket::prepare(const shared_ptr<PacketRouter>& router) {
     AbstractPacket::translate();
     m_packet_code = m_final_packet_code;
   }

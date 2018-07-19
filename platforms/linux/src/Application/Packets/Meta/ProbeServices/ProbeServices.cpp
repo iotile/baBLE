@@ -127,7 +127,7 @@ namespace Packet {
 
     shared_ptr<AbstractPacket> ProbeServices::on_error_response_received(const shared_ptr<PacketRouter>& router,
                                                                          const shared_ptr<AbstractPacket>& packet) {
-      LOG.debug("Error received", "ProbeCharacteristics");
+      LOG.debug("Error received", "ProbeServices");
       PacketUuid response_uuid = m_read_by_type_group_request_packet->get_response_uuid();
       response_uuid.response_packet_code = Format::HCI::AttributeCode::ReadByGroupTypeResponse;
       router->remove_callback(response_uuid);

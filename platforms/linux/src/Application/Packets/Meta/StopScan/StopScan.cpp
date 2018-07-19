@@ -9,7 +9,7 @@ namespace Packet {
 
     StopScan::StopScan()
         : HostOnlyPacket(Packet::Id::StopScan, initial_packet_code()) {
-      m_set_scan_enable_packet = std::make_shared<Commands::SetScanEnable>(false);
+      m_set_scan_enable_packet = make_shared<Commands::SetScanEnable>(false);
 
       m_waiting_response = true;
     }
@@ -28,11 +28,11 @@ namespace Packet {
       if (m_waiting_response) {
         return m_set_scan_enable_packet->serialize(builder);
       } else {
-        throw std::runtime_error("Can't serialize 'StopScan' to HCI.");
+        throw runtime_error("Can't serialize 'StopScan' to HCI.");
       }
     }
 
-    const std::string StopScan::stringify() const {
+    const string StopScan::stringify() const {
       stringstream result;
 
       result << "<StopScan> "
@@ -41,14 +41,14 @@ namespace Packet {
       return result.str();
     }
 
-    void StopScan::prepare(const std::shared_ptr<PacketRouter>& router) {
+    void StopScan::prepare(const shared_ptr<PacketRouter>& router) {
       if (m_waiting_response) {
         m_set_scan_enable_packet->translate();
         m_current_type = m_set_scan_enable_packet->get_type();
 
         PacketUuid uuid = m_set_scan_enable_packet->get_response_uuid();
         auto callback =
-            [this](const std::shared_ptr<PacketRouter>& router, std::shared_ptr<AbstractPacket> packet) {
+            [this](const shared_ptr<PacketRouter>& router, shared_ptr<AbstractPacket> packet) {
               return on_set_scan_enable_response_received(router, packet);
             };
         router->add_callback(uuid, shared_from(this), callback);
@@ -57,8 +57,8 @@ namespace Packet {
       }
     }
 
-    shared_ptr<AbstractPacket> StopScan::on_set_scan_enable_response_received(const std::shared_ptr<PacketRouter>& router,
-                                                                               const std::shared_ptr<AbstractPacket>& packet) {
+    shared_ptr<AbstractPacket> StopScan::on_set_scan_enable_response_received(const shared_ptr<PacketRouter>& router,
+                                                                              const shared_ptr<AbstractPacket>& packet) {
       LOG.debug("Set scan enable response received", "StopScan");
       m_set_scan_enable_packet = dynamic_pointer_cast<Commands::SetScanEnable>(
           m_set_scan_enable_packet->on_response_received(router, packet)

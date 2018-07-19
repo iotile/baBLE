@@ -22,7 +22,7 @@ namespace Packet {
       return builder.build(Format::HCI::Type::Command);
     }
 
-    const std::string CancelConnectionRequest::stringify() const {
+    const string CancelConnectionRequest::stringify() const {
       stringstream result;
 
       result << "<CancelConnectionRequest> "
@@ -31,8 +31,8 @@ namespace Packet {
       return result.str();
     }
 
-    shared_ptr<AbstractPacket> CancelConnectionRequest::on_response_received(const std::shared_ptr<PacketRouter>& router,
-                                                                           const shared_ptr<AbstractPacket>& packet) {
+    shared_ptr<AbstractPacket> CancelConnectionRequest::on_response_received(const shared_ptr<PacketRouter>& router,
+                                                                             const shared_ptr<AbstractPacket>& packet) {
       LOG.debug("Response received", "CancelConnectionRequest");
       auto command_complete_packet = dynamic_pointer_cast<Events::CommandComplete>(packet);
       if (command_complete_packet == nullptr) {

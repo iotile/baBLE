@@ -150,4 +150,4 @@ void StdIOSocket::clear() {
   m_payload.shrink_to_fit();
 }
 
-void StdIOSocket::handle_packet(std::shared_ptr<Packet::AbstractPacket> packet) {}
+void StdIOSocket::handle_packet(shared_ptr<Packet::AbstractPacket> packet) {}

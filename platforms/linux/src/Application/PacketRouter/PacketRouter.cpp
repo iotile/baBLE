@@ -39,6 +39,12 @@ void PacketRouter::remove_callback(Packet::PacketUuid uuid) {
 shared_ptr<Packet::AbstractPacket> PacketRouter::route(const shared_ptr<PacketRouter>& router, shared_ptr<Packet::AbstractPacket> received_packet) {
   Packet::PacketUuid received_uuid = received_packet->get_uuid();
 
+//  LOG.critical("Connection handle: " + to_string(received_uuid.connection_handle) +
+//      "Request packet code: " + to_string(received_uuid.request_packet_code) +
+//      "Response packet code: " + to_string(received_uuid.response_packet_code) +
+//      "Controller id: " + to_string(received_uuid.controller_id) +
+//      "Packet type: " + to_string(static_cast<uint16_t>(received_uuid.packet_type)), "PacketRouter");
+
   for (auto callback_it = router->m_callbacks.begin(); callback_it != router->m_callbacks.end(); ++callback_it) {
     Packet::PacketUuid uuid = get<0>(*callback_it);
     if (received_uuid.match(uuid)) {

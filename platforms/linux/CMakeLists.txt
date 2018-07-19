@@ -60,8 +60,7 @@ set(SOURCES_FILES
         src/Application/Packets/Commands/GetControllersIds/GetControllersIdsResponse.cpp
         src/Application/Packets/Commands/SetConnectable/SetConnectableRequest.cpp
         src/Application/Packets/Commands/SetConnectable/SetConnectableResponse.cpp
-        src/Application/Packets/Commands/SetAdvertising/SetAdvertisingRequest.cpp
-        src/Application/Packets/Commands/SetAdvertising/SetAdvertisingResponse.cpp
+        src/Application/Packets/Commands/SetAdvertiseEnable/SetAdvertiseEnable.cpp
         src/Application/Packets/Commands/SetDiscoverable/SetDiscoverableRequest.cpp
         src/Application/Packets/Commands/SetDiscoverable/SetDiscoverableResponse.cpp
         src/Application/Packets/Commands/Write/WriteRequest.cpp
@@ -71,6 +70,12 @@ set(SOURCES_FILES
         src/Application/Packets/Commands/CreateConnection/CreateConnection.cpp
         src/Application/Packets/Commands/CancelConnection/CancelConnectionRequest.cpp
         src/Application/Packets/Commands/CancelConnection/CancelConnectionResponse.cpp
+        src/Application/Packets/Commands/SetAdvertisingData/SetAdvertisingData.cpp
+        src/Application/Packets/Commands/SetAdvertisingData/SetAdvertisingData.hpp
+        src/Application/Packets/Commands/SetScanResponse/SetScanResponse.cpp
+        src/Application/Packets/Commands/SetScanResponse/SetScanResponse.hpp
+        src/Application/Packets/Commands/SetAdvertisingParameters/SetAdvertisingParameters.cpp
+        src/Application/Packets/Commands/SetAdvertisingParameters/SetAdvertisingParameters.hpp
         src/Application/Packets/Events/CommandComplete/CommandComplete.cpp
         src/Application/Packets/Events/DeviceConnected/DeviceConnected.cpp
         src/Application/Packets/Events/DeviceDisconnected/DeviceDisconnected.cpp
@@ -85,6 +90,8 @@ set(SOURCES_FILES
         src/Application/Packets/Meta/ProbeCharacteristics/ProbeCharacteristics.cpp
         src/Application/Packets/Meta/StartScan/StartScan.cpp
         src/Application/Packets/Meta/StopScan/StopScan.cpp
+        src/Application/Packets/Meta/SetAdvertising/SetAdvertising.cpp
+        src/Application/Packets/Meta/SetAdvertising/SetAdvertising.hpp
         src/Application/Packets/Control/SetGATTTable/SetGATTTable.cpp
         src/Application/Packets/Control/Ready/Ready.cpp
         src/Application/Packets/Control/Exit/Exit.cpp

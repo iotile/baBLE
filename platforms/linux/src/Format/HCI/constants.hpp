@@ -36,6 +36,8 @@ namespace Format {
     const std::size_t event_header_length = 3;
     const std::size_t acl_mtu = 23;  // FIXME: mtu hardcoded (get from negociation using HCI)
 
+    const std::size_t advertising_data_length = 31;
+
     struct hci_filter {
       uint32_t type_mask;
       uint32_t event_mask1;
@@ -162,6 +164,10 @@ namespace Format {
     };
 
     enum CommandCode {
+      LESetAdvertisingParameters = 0x2006,
+      LESetAdvertisingData = 0x2008,
+      LESetScanResponse = 0x2009,
+      LESetAdvertiseEnable = 0x200A,
       SetScanParameters = 0x200B,
       SetScanEnable = 0x200C,
       LECreateConnection = 0x200D,

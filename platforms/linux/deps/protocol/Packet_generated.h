@@ -1998,8 +1998,9 @@ struct SetAdvertising FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_STATE = 4,
     VT_UUIDS = 6,
     VT_NAME = 8,
-    VT_ADV_MANUFACTURER_DATA = 10,
-    VT_SCAN_MANUFACTURER_DATA = 12
+    VT_COMPANY_ID = 10,
+    VT_ADV_MANUFACTURER_DATA = 12,
+    VT_SCAN_MANUFACTURER_DATA = 14
   };
   bool state() const {
     return GetField<uint8_t>(VT_STATE, 0) != 0;
@@ -2009,6 +2010,9 @@ struct SetAdvertising FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   }
   const flatbuffers::String *name() const {
     return GetPointer<const flatbuffers::String *>(VT_NAME);
+  }
+  uint16_t company_id() const {
+    return GetField<uint16_t>(VT_COMPANY_ID, 0);
   }
   const flatbuffers::Vector<uint8_t> *adv_manufacturer_data() const {
     return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_ADV_MANUFACTURER_DATA);
@@ -2024,6 +2028,7 @@ struct SetAdvertising FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            verifier.VerifyVectorOfStrings(uuids()) &&
            VerifyOffset(verifier, VT_NAME) &&
            verifier.Verify(name()) &&
+           VerifyField<uint16_t>(verifier, VT_COMPANY_ID) &&
            VerifyOffset(verifier, VT_ADV_MANUFACTURER_DATA) &&
            verifier.Verify(adv_manufacturer_data()) &&
            VerifyOffset(verifier, VT_SCAN_MANUFACTURER_DATA) &&
@@ -2043,6 +2048,9 @@ struct SetAdvertisingBuilder {
   }
   void add_name(flatbuffers::Offset<flatbuffers::String> name) {
     fbb_.AddOffset(SetAdvertising::VT_NAME, name);
+  }
+  void add_company_id(uint16_t company_id) {
+    fbb_.AddElement<uint16_t>(SetAdvertising::VT_COMPANY_ID, company_id, 0);
   }
   void add_adv_manufacturer_data(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> adv_manufacturer_data) {
     fbb_.AddOffset(SetAdvertising::VT_ADV_MANUFACTURER_DATA, adv_manufacturer_data);
@@ -2067,6 +2075,7 @@ inline flatbuffers::Offset<SetAdvertising> CreateSetAdvertising(
     bool state = false,
     flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<flatbuffers::String>>> uuids = 0,
     flatbuffers::Offset<flatbuffers::String> name = 0,
+    uint16_t company_id = 0,
     flatbuffers::Offset<flatbuffers::Vector<uint8_t>> adv_manufacturer_data = 0,
     flatbuffers::Offset<flatbuffers::Vector<uint8_t>> scan_manufacturer_data = 0) {
   SetAdvertisingBuilder builder_(_fbb);
@@ -2074,6 +2083,7 @@ inline flatbuffers::Offset<SetAdvertising> CreateSetAdvertising(
   builder_.add_adv_manufacturer_data(adv_manufacturer_data);
   builder_.add_name(name);
   builder_.add_uuids(uuids);
+  builder_.add_company_id(company_id);
   builder_.add_state(state);
   return builder_.Finish();
 }
@@ -2083,6 +2093,7 @@ inline flatbuffers::Offset<SetAdvertising> CreateSetAdvertisingDirect(
     bool state = false,
     const std::vector<flatbuffers::Offset<flatbuffers::String>> *uuids = nullptr,
     const char *name = nullptr,
+    uint16_t company_id = 0,
     const std::vector<uint8_t> *adv_manufacturer_data = nullptr,
     const std::vector<uint8_t> *scan_manufacturer_data = nullptr) {
   return BaBLE::CreateSetAdvertising(
@@ -2090,6 +2101,7 @@ inline flatbuffers::Offset<SetAdvertising> CreateSetAdvertisingDirect(
       state,
       uuids ? _fbb.CreateVector<flatbuffers::Offset<flatbuffers::String>>(*uuids) : 0,
       name ? _fbb.CreateString(name) : 0,
+      company_id,
       adv_manufacturer_data ? _fbb.CreateVector<uint8_t>(*adv_manufacturer_data) : 0,
       scan_manufacturer_data ? _fbb.CreateVector<uint8_t>(*scan_manufacturer_data) : 0);
 }

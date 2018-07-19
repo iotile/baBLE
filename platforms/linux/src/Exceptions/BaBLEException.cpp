@@ -22,7 +22,7 @@ namespace Exceptions {
     return m_message;
   }
 
-  void BaBLEException::set_uuid_request(const std::string& uuid_request) {
+  void BaBLEException::set_uuid_request(const string& uuid_request) {
     m_uuid_request = uuid_request;
   }
   

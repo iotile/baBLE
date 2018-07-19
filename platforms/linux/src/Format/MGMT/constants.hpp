@@ -20,7 +20,8 @@ namespace Format {
       StopScan = 0x0024,
       SetAdvertising = 0x0029,
       AddDevice = 0x0033,
-      RemoveDevice = 0x0034
+      RemoveDevice = 0x0034,
+      AddAdvertising = 0x003E
     };
 
     enum EventCode {

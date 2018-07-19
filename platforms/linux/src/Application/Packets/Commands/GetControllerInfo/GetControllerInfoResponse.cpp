@@ -40,6 +40,7 @@ namespace Packet {
       bool connectable = (m_controller_info.current_settings & 1 << 1) > 0;
       bool discoverable = (m_controller_info.current_settings & 1 << 3) > 0;
       bool low_energy = (m_controller_info.current_settings & 9) > 0;
+      // TODO: add advertising
 
       auto controller = BaBLE::CreateController(
           builder,

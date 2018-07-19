@@ -17,7 +17,7 @@ namespace Packet {
       return builder.build(payload, BaBLE::Payload::CancelConnection);
     }
 
-    const std::string CancelConnectionResponse::stringify() const {
+    const string CancelConnectionResponse::stringify() const {
       stringstream result;
 
       result << "<CancelConnectionResponse> "

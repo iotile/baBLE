@@ -48,7 +48,7 @@ namespace Packet {
   }
 
   shared_ptr<AbstractPacket> HostToControllerPacket::on_response_received(const shared_ptr<PacketRouter>& router,
-                                                                                  const shared_ptr<AbstractPacket>& packet) {
+                                                                          const shared_ptr<AbstractPacket>& packet) {
     LOG.debug("Response received", "RequestPacket");
     packet->set_uuid_request(m_uuid_request);
     return packet;

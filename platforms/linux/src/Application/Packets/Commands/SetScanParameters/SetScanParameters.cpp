@@ -42,7 +42,7 @@ namespace Packet {
       return builder.build(Format::HCI::Type::Command);
     }
 
-    const std::string SetScanParameters::stringify() const {
+    const string SetScanParameters::stringify() const {
       stringstream result;
 
       result << "<SetScanParameters> "
@@ -56,7 +56,7 @@ namespace Packet {
       return result.str();
     }
 
-    shared_ptr<AbstractPacket> SetScanParameters::on_response_received(const std::shared_ptr<PacketRouter>& router,
+    shared_ptr<AbstractPacket> SetScanParameters::on_response_received(const shared_ptr<PacketRouter>& router,
                                                                          const shared_ptr<AbstractPacket>& packet) {
       LOG.debug("Response received", "SetScanParameters");
       auto response_packet = dynamic_pointer_cast<Events::CommandComplete>(packet);

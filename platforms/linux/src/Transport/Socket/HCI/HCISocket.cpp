@@ -34,7 +34,7 @@ vector<shared_ptr<HCISocket>> HCISocket::create_all(uv_loop_t* loop, shared_ptr<
 
     free(dl);
 
-  } catch (const std::exception& err) {
+  } catch (const exception& err) {
     free(dl);
     throw;
   }
@@ -46,7 +46,7 @@ HCISocket::HCISocket(uv_loop_t* loop, shared_ptr<HCIFormat> format, uint16_t con
     : HCISocket(loop, move(format), controller_id, make_shared<Socket>(AF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC | SOCK_NONBLOCK, BTPROTO_HCI))
 {}
 
-HCISocket::HCISocket(uv_loop_t* loop, shared_ptr<HCIFormat> format, uint16_t controller_id, std::shared_ptr<Socket> hci_socket)
+HCISocket::HCISocket(uv_loop_t* loop, shared_ptr<HCIFormat> format, uint16_t controller_id, shared_ptr<Socket> hci_socket)
     : AbstractSocket(move(format)),
       m_hci_socket(move(hci_socket)) {
   m_controller_id = controller_id;
@@ -222,7 +222,7 @@ HCISocket::~HCISocket() {
   LOG.debug("HCI socket closed", "HCISocket");
 }
 
-void HCISocket::handle_packet(std::shared_ptr<Packet::AbstractPacket> packet) {
+void HCISocket::handle_packet(shared_ptr<Packet::AbstractPacket> packet) {
   switch(packet->get_id()) {
     // This part is needed due to a bug since Linux Kernel v4 : we have to create manually the L2CAP socket, else
     // we'll be disconnected after sending one packet.

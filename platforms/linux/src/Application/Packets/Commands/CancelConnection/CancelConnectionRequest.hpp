@@ -30,7 +30,7 @@ namespace Packet {
       const std::string stringify() const override;
 
       std::shared_ptr<AbstractPacket> on_response_received(const std::shared_ptr<PacketRouter>& router,
-                                                                   const std::shared_ptr<AbstractPacket>& packet) override;
+                                                           const std::shared_ptr<AbstractPacket>& packet) override;
 
     };
 

@@ -113,4 +113,4 @@ MGMTSocket::~MGMTSocket() {
   LOG.debug("MGMT socket closed", "MGMTSocket");
 }
 
-void MGMTSocket::handle_packet(std::shared_ptr<Packet::AbstractPacket> packet) {};
+void MGMTSocket::handle_packet(shared_ptr<Packet::AbstractPacket> packet) {};

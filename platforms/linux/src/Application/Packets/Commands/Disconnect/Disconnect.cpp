@@ -62,8 +62,8 @@ namespace Packet {
       }
     }
 
-    shared_ptr<AbstractPacket> Disconnect::on_response_received(const std::shared_ptr<PacketRouter>& router,
-                                                                        const shared_ptr<AbstractPacket>& packet) {
+    shared_ptr<AbstractPacket> Disconnect::on_response_received(const shared_ptr<PacketRouter>& router,
+                                                                const shared_ptr<AbstractPacket>& packet) {
       LOG.debug("Response received", "Disconnect");
       import_status(packet);
       m_response_received = true;
