@@ -56,7 +56,6 @@ shared_ptr<Packet::AbstractPacket> PacketBuilder::build_packet(shared_ptr<Abstra
 
   PacketConstructor fn = it->second;
   shared_ptr<Packet::AbstractPacket> packet = fn();
-  LOG.debug(*packet, "PacketBuilder");
   packet->from_bytes(extractor);
   return packet;
 }

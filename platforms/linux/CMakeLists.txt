@@ -76,6 +76,8 @@ set(SOURCES_FILES
         src/Application/Packets/Commands/SetScanResponse/SetScanResponse.hpp
         src/Application/Packets/Commands/SetAdvertisingParameters/SetAdvertisingParameters.cpp
         src/Application/Packets/Commands/SetAdvertisingParameters/SetAdvertisingParameters.hpp
+        src/Application/Packets/Commands/FindInformation/Peripheral/FindInformation.cpp
+        src/Application/Packets/Commands/FindInformation/Peripheral/FindInformation.hpp
         src/Application/Packets/Events/CommandComplete/CommandComplete.cpp
         src/Application/Packets/Events/DeviceConnected/DeviceConnected.cpp
         src/Application/Packets/Events/DeviceDisconnected/DeviceDisconnected.cpp

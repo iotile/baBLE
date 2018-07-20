@@ -9,10 +9,10 @@ namespace Packet {
 
     namespace Peripheral {
 
-      ReadByTypeRequest::ReadByTypeRequest()
+      ReadByTypeRequest::ReadByTypeRequest(uint16_t starting_handle, uint16_t ending_handle)
           : ControllerToHostPacket(Packet::Id::ReadByTypeRequest, initial_type(), initial_packet_code(), final_packet_code()) {
-        m_starting_handle = 0x0001;
-        m_ending_handle = 0xFFFF;
+        m_starting_handle = starting_handle;
+        m_ending_handle = ending_handle;
         m_error = Format::HCI::AttributeErrorCode::None;
 
         m_read_attribute = false;
@@ -36,9 +36,7 @@ namespace Packet {
           uint8_t total_length = 2;  // 1 byte for opcode + 1 byte for length
 
           for (auto& characteristic : characteristics) {
-            if (characteristic.handle >= m_starting_handle && characteristic.value_handle <= m_ending_handle
-                && (characteristic.config_handle == 0 || characteristic.config_handle <= m_ending_handle)
-                ) {
+            if (characteristic.handle >= m_starting_handle && characteristic.handle <= m_ending_handle) {
 
               if (m_uuid_num == Format::HCI::GattUUID::CharacteristicDeclaration) {
                 if (m_length_per_characteristic == 0) {
@@ -53,7 +51,7 @@ namespace Packet {
                 total_length += 4;  // 2 bytes for handle + 2 bytes for configuration
               }
 
-              if (total_length > Format::HCI::acl_mtu) break;
+              if (total_length > ATT_MTU) break;
 
               m_characteristics.push_back(characteristic);
             }
@@ -69,7 +67,7 @@ namespace Packet {
         if (m_error != Format::HCI::AttributeErrorCode::None) {
           builder
               .set_opcode(Format::HCI::AttributeCode::ErrorResponse)
-              .add(static_cast<uint8_t>(m_packet_code))
+              .add(static_cast<uint8_t>(initial_packet_code()))
               .add(m_starting_handle)
               .add(m_error);
         } else {

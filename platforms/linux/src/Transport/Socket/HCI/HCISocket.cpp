@@ -1,8 +1,9 @@
-#include <Application/Packets/Commands/ReadByType/Peripheral/ReadByTypeRequest.hpp>
 #include "HCISocket.hpp"
 #include "Application/Packets/Events/DeviceConnected/DeviceConnected.hpp"
 #include "Application/Packets/Events/DeviceDisconnected/DeviceDisconnected.hpp"
 #include "Application/Packets/Commands/ReadByGroupType/Peripheral/ReadByGroupType.hpp"
+#include "Application/Packets/Commands/ReadByType/Peripheral/ReadByTypeRequest.hpp"
+#include "Application/Packets/Commands/FindInformation/Peripheral/FindInformation.hpp"
 #include "Log/Log.hpp"
 
 using namespace std;
@@ -55,7 +56,7 @@ HCISocket::HCISocket(uv_loop_t* loop, shared_ptr<HCIFormat> format, uint16_t con
   LOG.debug("Setting HCI filters...", "HCISocket");
   set_filters();
 
-  LOG.debug("Binding HCI socket...", "HCISocket");
+  LOG.debug("Binding HCI socket to controller #" + to_string(m_controller_id) + "...", "HCISocket");
   m_hci_socket->bind(m_controller_id, HCI_CHANNEL_RAW);
 
   LOG.debug("Getting HCI controller address...", "HCISocket");
@@ -133,8 +134,8 @@ bool HCISocket::send(const vector<uint8_t>& data) {
   } else {
     set_writable(false);
 
-    LOG.debug("Sending data...", "HCISocket");
-    LOG.debug(data, "HCISocket");
+//    LOG.debug("Sending data...", "HCISocket");
+//    LOG.debug(data, "HCISocket");
     m_hci_socket->write(data);
   }
 
@@ -171,8 +172,8 @@ void HCISocket::on_poll(uv_poll_t* handle, int status, int events) {
   try {
     if (events & UV_READABLE) {
       vector<uint8_t> received_payload = hci_socket->receive();
-      LOG.debug("Data received", "HCISocket");
-      LOG.debug(received_payload, "HCISocket");
+//      LOG.debug("Data received", "HCISocket");
+//      LOG.debug(received_payload, "HCISocket");
       hci_socket->m_on_received(received_payload, hci_socket);
 
     } else if (events & UV_WRITABLE) {
@@ -286,6 +287,17 @@ void HCISocket::handle_packet(shared_ptr<Packet::AbstractPacket> packet) {
       }
 
       request_packet->set_characteristics(get_characteristics());
+      break;
+    }
+
+    case Packet::Id::FindInformation:
+    {
+      auto request_packet = dynamic_pointer_cast<Packet::Commands::Peripheral::FindInformation>(packet);
+      if (request_packet == nullptr) {
+        throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast packet to FindInformation packet");
+      }
+
+      request_packet->set_gatt_table(get_services(), get_characteristics());
       break;
     }
 

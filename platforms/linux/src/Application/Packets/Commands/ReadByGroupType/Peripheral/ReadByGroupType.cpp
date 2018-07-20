@@ -10,10 +10,10 @@ namespace Packet {
 
     namespace Peripheral {
 
-      ReadByGroupType::ReadByGroupType()
+      ReadByGroupType::ReadByGroupType(uint16_t starting_handle, uint16_t ending_handle)
           : ControllerOnlyPacket(Packet::Id::ReadByGroupTypeRequest, initial_type(), initial_packet_code(), final_packet_code()) {
-        m_starting_handle = 0x0001;
-        m_ending_handle = 0xFFFF;
+        m_starting_handle = starting_handle;
+        m_ending_handle = ending_handle;
         m_error = Format::HCI::AttributeErrorCode::None;
 
         m_length_per_service = 0;
@@ -27,7 +27,7 @@ namespace Packet {
         uint8_t total_length = 2;  // 1 byte for opcode + 1 byte for length
 
         for (auto& service : services) {
-          if (service.handle >= m_starting_handle && service.group_end_handle <= m_ending_handle){
+          if (service.handle >= m_starting_handle && service.handle <= m_ending_handle){
             if (m_length_per_service == 0) {
               m_length_per_service = static_cast<uint8_t>(service.uuid.size() + 4);  // 2bytes for handle + 2bytes for group end handle
             }
@@ -35,7 +35,7 @@ namespace Packet {
             if (m_length_per_service != service.uuid.size() + 4) break;
 
             total_length += m_length_per_service;
-            if (total_length > Format::HCI::acl_mtu) break;
+            if (total_length > ATT_MTU) break;
 
             m_services.push_back(service);
           }
@@ -50,7 +50,7 @@ namespace Packet {
         if (m_error != Format::HCI::AttributeErrorCode::None) {
           builder
               .set_opcode(Format::HCI::AttributeCode::ErrorResponse)
-              .add(static_cast<uint8_t>(m_packet_code))
+              .add(static_cast<uint8_t>(initial_packet_code()))
               .add(m_starting_handle)
               .add(m_error);
         } else {

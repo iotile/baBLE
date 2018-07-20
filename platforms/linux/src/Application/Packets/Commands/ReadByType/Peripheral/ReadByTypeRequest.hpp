@@ -24,7 +24,7 @@ namespace Packet {
           return static_cast<uint16_t>(BaBLE::Payload::ReadPeripheral);
         };
 
-        ReadByTypeRequest();
+        explicit ReadByTypeRequest(uint16_t starting_handle = 0x0001, uint16_t ending_handle = 0xFFFF);
 
         void unserialize(HCIFormatExtractor& extractor) override;
 

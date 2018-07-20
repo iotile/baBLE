@@ -9,6 +9,7 @@
 
 // Channels
 #define HCI_CHANNEL_RAW 0
+#define HCI_CHANNEL_USER 1
 #define HCI_CHANNEL_CONTROL 3
 
 // For filter
@@ -24,6 +25,9 @@
 // BLE only supports ATT Channel ID for L2CAP
 #define ATT_CID 4
 
+// Default and minimal MTU for attributes
+#define ATT_MTU 23  // TODO: update mtu after negiciation using HCI)
+
 // Misc.
 #define NON_CONTROLLER_ID 0xFFFF
 
@@ -34,7 +38,6 @@ namespace Format {
     const std::size_t command_header_length = 4;
     const std::size_t async_data_header_length = 10;
     const std::size_t event_header_length = 3;
-    const std::size_t acl_mtu = 23;  // FIXME: mtu hardcoded (get from negociation using HCI)
 
     const std::size_t advertising_data_length = 31;
 
@@ -178,6 +181,8 @@ namespace Format {
 
     enum AttributeCode {
       ErrorResponse= 0x01,
+      FindInformationRequest= 0x04,
+      FindInformationResponse= 0x05,
       ReadByTypeRequest= 0x08,
       ReadByTypeResponse= 0x09,
       ReadRequest= 0x0A,

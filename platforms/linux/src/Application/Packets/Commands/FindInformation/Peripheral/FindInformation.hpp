@@ -1,6 +1,7 @@
-#ifndef BABLE_LINUX_PERIPHERAL_READBYGROUPTYPE_HPP
-#define BABLE_LINUX_PERIPHERAL_READBYGROUPTYPE_HPP
+#ifndef BABLE_FINDINFORMATION_HPP
+#define BABLE_FINDINFORMATION_HPP
 
+#include <map>
 #include "Application/Packets/Base/ControllerOnlyPacket.hpp"
 
 namespace Packet {
@@ -9,7 +10,7 @@ namespace Packet {
 
     namespace Peripheral {
 
-      class ReadByGroupType : public ControllerOnlyPacket {
+      class FindInformation : public ControllerOnlyPacket {
 
       public:
         static const Packet::Type initial_type() {
@@ -17,31 +18,30 @@ namespace Packet {
         };
 
         static const uint16_t initial_packet_code() {
-          return Format::HCI::AttributeCode::ReadByGroupTypeRequest;
+          return Format::HCI::AttributeCode::FindInformationRequest;
         };
 
         static const uint16_t final_packet_code() {
-          return Format::HCI::AttributeCode::ReadByGroupTypeResponse;
+          return Format::HCI::AttributeCode::FindInformationResponse;
         };
 
-        explicit ReadByGroupType(uint16_t starting_handle = 0x0001, uint16_t ending_handle = 0xFFFF);
+        explicit FindInformation(uint16_t starting_handle = 0x0001, uint16_t ending_handle = 0xFFFF);
 
         void unserialize(HCIFormatExtractor& extractor) override;
         std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
 
         const std::string stringify() const override;
 
-        void set_services(const std::vector<Format::HCI::Service>& services);
+        void set_gatt_table(const std::vector<Format::HCI::Service>& services, const std::vector<Format::HCI::Characteristic>& characteristics);
 
       private:
         uint16_t m_starting_handle;
         uint16_t m_ending_handle;
-        std::vector<uint8_t> m_uuid;
+        uint8_t m_format;
 
         Format::HCI::AttributeErrorCode m_error;
 
-        std::vector<Format::HCI::Service> m_services;
-        uint8_t m_length_per_service;
+        std::map<uint16_t, std::vector<uint8_t>> m_info;
       };
 
     }
@@ -49,6 +49,4 @@ namespace Packet {
   }
 
 }
-
-
-#endif //BABLE_LINUX_PERIPHERAL_READBYGROUPTYPE_HPP
+#endif //BABLE_FINDINFORMATION_HPP
