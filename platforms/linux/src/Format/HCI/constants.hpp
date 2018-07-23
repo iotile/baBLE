@@ -183,6 +183,8 @@ namespace Format {
       ErrorResponse= 0x01,
       FindInformationRequest= 0x04,
       FindInformationResponse= 0x05,
+      FindByTypeRequest= 0x06,
+      FindByTypeResponse= 0x07,
       ReadByTypeRequest= 0x08,
       ReadByTypeResponse= 0x09,
       ReadRequest= 0x0A,

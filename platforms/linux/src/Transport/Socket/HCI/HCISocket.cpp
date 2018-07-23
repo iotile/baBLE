@@ -4,6 +4,7 @@
 #include "Application/Packets/Commands/ReadByGroupType/Peripheral/ReadByGroupType.hpp"
 #include "Application/Packets/Commands/ReadByType/Peripheral/ReadByTypeRequest.hpp"
 #include "Application/Packets/Commands/FindInformation/Peripheral/FindInformation.hpp"
+#include "Application/Packets/Commands/FindByType/Peripheral/FindByType.hpp"
 #include "Log/Log.hpp"
 
 using namespace std;
@@ -298,6 +299,17 @@ void HCISocket::handle_packet(shared_ptr<Packet::AbstractPacket> packet) {
       }
 
       request_packet->set_gatt_table(get_services(), get_characteristics());
+      break;
+    }
+
+    case Packet::Id::FindByType:
+    {
+      auto request_packet = dynamic_pointer_cast<Packet::Commands::Peripheral::FindByType>(packet);
+      if (request_packet == nullptr) {
+        throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast packet to FindByType packet");
+      }
+
+      request_packet->set_services(get_services());
       break;
     }
 

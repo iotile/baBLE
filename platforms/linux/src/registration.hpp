@@ -20,6 +20,7 @@
 #include "Application/Packets/Commands/ReadByType/Peripheral/ReadByTypeResponse.hpp"
 #include "Application/Packets/Commands/ReadByType/Central/ReadByTypeResponse.hpp"
 #include "Application/Packets/Commands/FindInformation/Peripheral/FindInformation.hpp"
+#include "Application/Packets/Commands/FindByType/Peripheral/FindByType.hpp"
 #include "Application/Packets/Commands/Read/ReadRequest.hpp"
 #include "Application/Packets/Commands/Read/ReadResponse.hpp"
 #include "Application/Packets/Commands/Write/WriteRequest.hpp"
@@ -80,6 +81,7 @@ void register_hci_packets(PacketBuilder& hci_packet_builder) {
     .register_command<Packet::Commands::Central::ReadByTypeResponse>()
     .register_command<Packet::Commands::Peripheral::ReadByTypeRequest>()
     .register_command<Packet::Commands::Peripheral::FindInformation>()
+    .register_command<Packet::Commands::Peripheral::FindByType>()
     .register_command<Packet::Errors::ErrorResponse>()
     .register_event<Packet::Events::DeviceConnected>()
     .register_event<Packet::Events::DeviceDisconnected>()

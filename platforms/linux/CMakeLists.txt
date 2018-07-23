@@ -119,7 +119,8 @@ set(SOURCES_FILES
         src/Transport/Socket/StdIO/StdIOSocket.cpp
         src/Transport/Socket/HCI/HCISocket.cpp
         src/registration.hpp
-        src/Exceptions/BaBLEException.cpp)
+        src/Exceptions/BaBLEException.cpp
+        src/Application/Packets/Commands/FindByType/Peripheral/FindByType.cpp)
 add_library(bable ${SOURCES_FILES})
 target_include_directories(bable PUBLIC src)
 

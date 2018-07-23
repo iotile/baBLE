@@ -1,7 +1,6 @@
-#ifndef BABLE_FINDINFORMATION_HPP
-#define BABLE_FINDINFORMATION_HPP
+#ifndef BABLE_FINDBYTYPE_HPP
+#define BABLE_FINDBYTYPE_HPP
 
-#include <map>
 #include "Application/Packets/Base/ControllerOnlyPacket.hpp"
 
 namespace Packet {
@@ -10,7 +9,7 @@ namespace Packet {
 
     namespace Peripheral {
 
-      class FindInformation : public ControllerOnlyPacket {
+      class FindByType : public ControllerOnlyPacket {
 
       public:
         static const Packet::Type initial_type() {
@@ -18,30 +17,31 @@ namespace Packet {
         };
 
         static const uint16_t initial_packet_code() {
-          return Format::HCI::AttributeCode::FindInformationRequest;
+          return Format::HCI::AttributeCode::FindByTypeRequest;
         };
 
         static const uint16_t final_packet_code() {
-          return Format::HCI::AttributeCode::FindInformationResponse;
+          return Format::HCI::AttributeCode::FindByTypeResponse;
         };
 
-        explicit FindInformation(uint16_t starting_handle = 0x0001, uint16_t ending_handle = 0xFFFF);
+        explicit FindByType(uint16_t starting_handle = 0x0001, uint16_t ending_handle = 0xFFFF);
 
         void unserialize(HCIFormatExtractor& extractor) override;
         std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
 
         const std::string stringify() const override;
 
-        void set_gatt_table(const std::vector<Format::HCI::Service>& services, const std::vector<Format::HCI::Characteristic>& characteristics);
+        void set_services(const std::vector<Format::HCI::Service>& services);
 
       private:
         uint16_t m_starting_handle;
         uint16_t m_ending_handle;
-        uint8_t m_format;
+        uint16_t m_uuid_num;
+        std::vector<uint8_t> m_value;
 
         Format::HCI::AttributeErrorCode m_error;
 
-        std::map<uint16_t, std::vector<uint8_t>> m_info;
+        std::vector<Format::HCI::Service> m_services;
       };
 
     }
@@ -50,4 +50,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_FINDINFORMATION_HPP
+#endif //BABLE_FINDBYTYPE_HPP

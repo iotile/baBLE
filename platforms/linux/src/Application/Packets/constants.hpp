@@ -26,6 +26,7 @@ namespace Packet {
     Disconnect,
     ErrorResponse,
     Exit,
+    FindByType,
     FindInformation,
     GetConnectedDevices,
     GetControllerInfoRequest,

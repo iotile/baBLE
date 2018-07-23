@@ -118,7 +118,10 @@ namespace Packet {
         stringstream result;
 
         result << "<FindInformation (Peripheral)> "
-               << AbstractPacket::stringify() << ", ";
+               << AbstractPacket::stringify() << ", "
+               << "Starting handle: " << to_string(m_starting_handle) << ", "
+               << "Ending handle: " << to_string(m_ending_handle) << ", "
+               << "Format: " << to_string(m_format) << ", ";
 
         for (auto it = m_info.begin(); it != m_info.end(); ++it) {
           result << "{ Handle: " << to_string(it->first) << ", "

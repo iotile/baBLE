@@ -56,8 +56,8 @@ TEST_CASE("Integration (with mocked socket) - MGMT meta packet", "[integration][
   };
 
   mgmt_socket->poll(
-      [&mgmt_packet_builder, &packet_router, &socket_container](const vector<uint8_t>& received_data, const shared_ptr<AbstractFormat>& format) {
-        shared_ptr<AbstractExtractor> extractor = format->create_extractor(received_data);
+      [&mgmt_packet_builder, &packet_router, &socket_container](const vector<uint8_t>& received_data, AbstractSocket* socket) {
+        shared_ptr<AbstractExtractor> extractor = socket->format()->create_extractor(received_data);
 
         shared_ptr<Packet::AbstractPacket> packet = mgmt_packet_builder.build(extractor);
         if (packet == nullptr) {
@@ -72,8 +72,8 @@ TEST_CASE("Integration (with mocked socket) - MGMT meta packet", "[integration][
   );
 
   stdio_socket->poll(
-      [&stdio_packet_builder, &packet_router, &socket_container](const vector<uint8_t>& received_data, const shared_ptr<AbstractFormat>& format) {
-        shared_ptr<AbstractExtractor> extractor = format->create_extractor(received_data);
+      [&stdio_packet_builder, &packet_router, &socket_container](const vector<uint8_t>& received_data, AbstractSocket* socket) {
+        shared_ptr<AbstractExtractor> extractor = socket->format()->create_extractor(received_data);
 
         shared_ptr<Packet::AbstractPacket> packet = stdio_packet_builder.build(extractor);
         if (packet == nullptr) {
@@ -198,8 +198,8 @@ TEST_CASE("Integration (with mocked socket) - HCI packet", "[integration][hci]")
   };
 
   hci_socket->poll(
-      [&hci_socket, &hci_packet_builder, &packet_router, &socket_container](const vector<uint8_t>& received_data, const shared_ptr<AbstractFormat>& format) {
-        shared_ptr<AbstractExtractor> extractor = format->create_extractor(received_data);
+      [&hci_socket, &hci_packet_builder, &packet_router, &socket_container](const vector<uint8_t>& received_data, AbstractSocket* socket) {
+        shared_ptr<AbstractExtractor> extractor = socket->format()->create_extractor(received_data);
         extractor->set_controller_id(hci_socket->get_controller_id());
 
         shared_ptr<Packet::AbstractPacket> packet = hci_packet_builder.build(extractor);
@@ -214,8 +214,8 @@ TEST_CASE("Integration (with mocked socket) - HCI packet", "[integration][hci]")
   );
 
   stdio_socket->poll(
-      [&stdio_packet_builder, &packet_router, &socket_container](const vector<uint8_t>& received_data, const shared_ptr<AbstractFormat>& format) {
-        shared_ptr<AbstractExtractor> extractor = format->create_extractor(received_data);
+      [&stdio_packet_builder, &packet_router, &socket_container](const vector<uint8_t>& received_data, AbstractSocket* socket) {
+        shared_ptr<AbstractExtractor> extractor = socket->format()->create_extractor(received_data);
 
         shared_ptr<Packet::AbstractPacket> packet = stdio_packet_builder.build(extractor);
         if (packet == nullptr) {

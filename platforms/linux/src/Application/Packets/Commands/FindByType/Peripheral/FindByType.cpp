@@ -1,6 +1,6 @@
 #include <algorithm>
 #include "utils/string_formats.hpp"
-#include "ReadByGroupType.hpp"
+#include "FindByType.hpp"
 
 using namespace std;
 
@@ -10,31 +10,23 @@ namespace Packet {
 
     namespace Peripheral {
 
-      ReadByGroupType::ReadByGroupType(uint16_t starting_handle, uint16_t ending_handle)
-          : ControllerOnlyPacket(Packet::Id::ReadByGroupTypeRequest, initial_type(), initial_packet_code(), final_packet_code()) {
+      FindByType::FindByType(uint16_t starting_handle, uint16_t ending_handle)
+          : ControllerOnlyPacket(Packet::Id::FindByType, initial_type(), initial_packet_code(), final_packet_code()) {
         m_starting_handle = starting_handle;
         m_ending_handle = ending_handle;
+        m_uuid_num = Format::HCI::GattUUID::PrimaryServiceDeclaration;
         m_error = Format::HCI::AttributeErrorCode::None;
-
-        m_length_per_service = 0;
       }
 
-      void ReadByGroupType::set_services(const vector<Format::HCI::Service>& services) {
+      void FindByType::set_services(const vector<Format::HCI::Service>& services) {
         if (m_error != Format::HCI::AttributeErrorCode::None) {
           return;
         }
 
-        uint8_t total_length = 2;  // 1 byte for opcode + 1 byte for length
-
+        uint8_t total_length = 1;  // 1 byte for opcode
         for (auto& service : services) {
-          if (service.handle >= m_starting_handle && service.handle <= m_ending_handle){
-            if (m_length_per_service == 0) {
-              m_length_per_service = static_cast<uint8_t>(service.uuid.size() + 4);  // 2bytes for handle + 2bytes for group end handle
-            }
-
-            if (m_length_per_service != service.uuid.size() + 4) break;
-
-            total_length += m_length_per_service;
+          if (service.handle >= m_starting_handle && service.handle <= m_ending_handle && service.uuid == m_value){
+            total_length += 4;
             if (total_length > ATT_MTU) break;
 
             m_services.push_back(service);
@@ -46,7 +38,7 @@ namespace Packet {
         }
       }
 
-      vector<uint8_t> ReadByGroupType::serialize(HCIFormatBuilder& builder) const {
+      vector<uint8_t> FindByType::serialize(HCIFormatBuilder& builder) const {
         if (m_error != Format::HCI::AttributeErrorCode::None) {
           builder
               .set_opcode(Format::HCI::AttributeCode::ErrorResponse)
@@ -56,23 +48,21 @@ namespace Packet {
         } else {
           ControllerOnlyPacket::serialize(builder);
 
-          builder.add(m_length_per_service);
-
           for (auto& service : m_services) {
             builder
                 .add(service.handle)
-                .add(service.group_end_handle)
-                .add(service.uuid);
+                .add(service.group_end_handle);
           }
         }
 
         return builder.build(Format::HCI::Type::AsyncData);
       }
 
-      void ReadByGroupType::unserialize(HCIFormatExtractor& extractor) {
+      void FindByType::unserialize(HCIFormatExtractor& extractor) {
         m_starting_handle = extractor.get_value<uint16_t>();
         m_ending_handle = extractor.get_value<uint16_t>();
-        m_uuid = extractor.get_vector<uint8_t>();
+        m_uuid_num = extractor.get_value<uint16_t>();
+        m_value = extractor.get_vector<uint8_t>();
 
         if (m_starting_handle < 0x0001 || m_starting_handle > m_ending_handle) {
           LOG.warning("Invalid handle received: starting_handle=" + to_string(m_starting_handle) + ", ending_handle=" + to_string(m_ending_handle));
@@ -80,27 +70,21 @@ namespace Packet {
           return;
         }
 
-        try {
-          uint16_t uuid_num = Utils::uuid_to_number(m_uuid);
-
-          if (uuid_num != Format::HCI::GattUUID::PrimaryServiceDeclaration) {
-            LOG.warning("'ReadByGroupTypeRequest' with not handled uuid: " + to_string(uuid_num));
-            m_error = Format::HCI::AttributeErrorCode::UnsupportedGroupType;
-          }
-        } catch (const invalid_argument& err) {
-          LOG.warning("Can't convert UUID to number: UUID too long, size=" + to_string(m_uuid.size()));
+        if (m_uuid_num != Format::HCI::GattUUID::PrimaryServiceDeclaration) {
+          LOG.warning("'FindByTypeRequest' with not handled uuid: " + to_string(m_uuid_num));
           m_error = Format::HCI::AttributeErrorCode::UnsupportedGroupType;
         }
       }
 
-      const string ReadByGroupType::stringify() const {
+      const string FindByType::stringify() const {
         stringstream result;
 
-        result << "<ReadByGroupType (Peripheral)> "
+        result << "<FindByType (Peripheral)> "
                << AbstractPacket::stringify() << ", "
                << "Starting handle: " << to_string(m_starting_handle) << ", "
                << "Ending handle: " << to_string(m_ending_handle) << ", "
-               << "UUID: " << Utils::format_uuid(m_uuid) << ", ";
+               << "UUID: " << to_string(m_uuid_num) << ", "
+               << "Value: " << Utils::format_uuid(m_value) << ", ";
 
         for (auto it = m_services.begin(); it != m_services.end(); ++it) {
           result << "{ Handle: " << to_string(it->handle) << ", "

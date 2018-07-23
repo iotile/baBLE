@@ -140,7 +140,10 @@ namespace Packet {
         stringstream result;
 
         result << "<ReadByTypeRequest (Peripheral)> "
-               << AbstractPacket::stringify() << ", ";
+               << AbstractPacket::stringify() << ", "
+               << "Starting handle: " << to_string(m_starting_handle) << ", "
+               << "Ending handle: " << to_string(m_ending_handle) << ", "
+               << "UUID: " << Utils::format_uuid(m_uuid) << ", ";
 
         for (auto it = m_characteristics.begin(); it != m_characteristics.end(); ++it) {
           result << "{ Handle: " << to_string(it->handle) << ", "
