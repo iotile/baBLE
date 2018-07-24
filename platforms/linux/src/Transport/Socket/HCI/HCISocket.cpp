@@ -1,10 +1,5 @@
 #include "HCISocket.hpp"
-#include "Application/Packets/Events/DeviceConnected/DeviceConnected.hpp"
-#include "Application/Packets/Events/DeviceDisconnected/DeviceDisconnected.hpp"
-#include "Application/Packets/Commands/ReadByGroupType/Peripheral/ReadByGroupType.hpp"
-#include "Application/Packets/Commands/ReadByType/Peripheral/ReadByTypeRequest.hpp"
-#include "Application/Packets/Commands/FindInformation/Peripheral/FindInformation.hpp"
-#include "Application/Packets/Commands/FindByType/Peripheral/FindByType.hpp"
+#include "utils/string_formats.hpp"
 #include "Log/Log.hpp"
 
 using namespace std;
@@ -126,6 +121,10 @@ vector<Format::HCI::Characteristic> HCISocket::get_characteristics() const {
   return m_characteristics;
 }
 
+string HCISocket::get_controller_address() {
+  return Utils::format_bd_address(m_controller_address);
+}
+
 bool HCISocket::send(const vector<uint8_t>& data) {
   if (!m_writable) {
     LOG.debug("Already sending a message. Queuing...", "HCISocket");
@@ -213,7 +212,7 @@ void HCISocket::set_writable(bool is_writable) {
   }
 }
 
-HCISocket::~HCISocket() {
+void HCISocket::close() {
   for (auto& kv : m_l2cap_sockets) {
     kv.second.close();
   }
@@ -224,96 +223,6 @@ HCISocket::~HCISocket() {
   LOG.debug("HCI socket closed", "HCISocket");
 }
 
-void HCISocket::handle_packet(shared_ptr<Packet::AbstractPacket> packet) {
-  switch(packet->get_id()) {
-    // This part is needed due to a bug since Linux Kernel v4 : we have to create manually the L2CAP socket, else
-    // we'll be disconnected after sending one packet.
-    case Packet::Id::DeviceConnected:
-    {
-      if (packet->get_status() != BaBLE::StatusCode::Success) {
-        LOG.info("Unsuccessful DeviceConnected event ignored (because the device is not connected...)", "HCI poller");
-        return;
-      }
-
-      auto device_connected_packet = dynamic_pointer_cast<Packet::Events::DeviceConnected>(packet);
-      if (device_connected_packet == nullptr) {
-        throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast packet to DeviceConnected packet");
-      }
-
-      try {
-        connect_l2cap_socket(
-            device_connected_packet->get_connection_handle(),
-            device_connected_packet->get_raw_device_address(),
-            device_connected_packet->get_device_address_type()
-        );
-      } catch (const Exceptions::BaBLEException& err) {
-        LOG.warning(err.get_message(), "HCISocket");
-        packet->set_status(Format::HCI::ConnectionFailedEstablished);
-      }
-      break;
-    }
-
-    case Packet::Id::DeviceDisconnected:
-    {
-      if (packet->get_status() != BaBLE::StatusCode::Success) {
-        LOG.info("Unsuccessful DeviceDisconnected event ignored (because the device is not disconnected...)", "HCI poller");
-        return;
-      }
-
-      auto device_disconnected_packet = dynamic_pointer_cast<Packet::Events::DeviceDisconnected>(packet);
-      if (device_disconnected_packet == nullptr) {
-        throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast packet to DeviceDisconnected packet");
-      }
-
-      disconnect_l2cap_socket(device_disconnected_packet->get_connection_handle());
-      break;
-    }
-
-    case Packet::Id::ReadByGroupTypeRequest:
-    {
-      auto request_packet = dynamic_pointer_cast<Packet::Commands::Peripheral::ReadByGroupType>(packet);
-      if (request_packet == nullptr) {
-        throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast packet to ReadByGroup packet");
-      }
-
-      request_packet->set_services(get_services());
-      break;
-    }
-
-    case Packet::Id::ReadByTypeRequest:
-    {
-      auto request_packet = dynamic_pointer_cast<Packet::Commands::Peripheral::ReadByTypeRequest>(packet);
-      if (request_packet == nullptr) {
-        throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast packet to ReadByTypeRequest packet");
-      }
-
-      request_packet->set_characteristics(get_characteristics());
-      break;
-    }
-
-    case Packet::Id::FindInformation:
-    {
-      auto request_packet = dynamic_pointer_cast<Packet::Commands::Peripheral::FindInformation>(packet);
-      if (request_packet == nullptr) {
-        throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast packet to FindInformation packet");
-      }
-
-      request_packet->set_gatt_table(get_services(), get_characteristics());
-      break;
-    }
-
-    case Packet::Id::FindByType:
-    {
-      auto request_packet = dynamic_pointer_cast<Packet::Commands::Peripheral::FindByType>(packet);
-      if (request_packet == nullptr) {
-        throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast packet to FindByType packet");
-      }
-
-      request_packet->set_services(get_services());
-      break;
-    }
-
-    default:
-      break;
-  }
+HCISocket::~HCISocket() {
+  close();
 }

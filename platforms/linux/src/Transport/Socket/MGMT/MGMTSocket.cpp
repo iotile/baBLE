@@ -110,9 +110,11 @@ void MGMTSocket::set_writable(bool is_writable) {
   }
 }
 
-MGMTSocket::~MGMTSocket() {
+void MGMTSocket::close() {
   m_socket->close();
   LOG.debug("MGMT socket closed", "MGMTSocket");
 }
 
-void MGMTSocket::handle_packet(shared_ptr<Packet::AbstractPacket> packet) {};
+MGMTSocket::~MGMTSocket() {
+  close();
+}

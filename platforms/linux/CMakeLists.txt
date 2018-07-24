@@ -18,9 +18,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -funsigned-char")
 # To strip debug info on release
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -s")
 
-# To link statically the libraries (libuv)
-link_libraries("-static -static-libgcc")
-
 ############## CREATE LIBRARY ###############
 ## Build executable from sources files
 set(SOURCES_FILES
@@ -42,8 +39,8 @@ set(SOURCES_FILES
         src/Application/Packets/Commands/Disconnect/Disconnect.cpp
         src/Application/Packets/Commands/SetPowered/SetPoweredRequest.cpp
         src/Application/Packets/Commands/SetPowered/SetPoweredResponse.cpp
-        src/Application/Packets/Commands/Read/ReadRequest.cpp
-        src/Application/Packets/Commands/Read/ReadResponse.cpp
+        src/Application/Packets/Commands/Read/Central/ReadRequest.cpp
+        src/Application/Packets/Commands/Read/Central/ReadResponse.cpp
         src/Application/Packets/Commands/WriteWithoutResponse/WriteWithoutResponse.cpp
         src/Application/Packets/Commands/NotificationReceived/NotificationReceived.cpp
         src/Application/Packets/Commands/GetControllersIds/GetControllersIdsRequest.cpp
@@ -138,7 +135,7 @@ target_include_directories(bable PUBLIC deps/protocol)
 
 ############## CREATE EXECUTABLE ###############
 add_executable(bable-bridge-linux src/main.cpp)
-target_link_libraries(bable-bridge-linux bable)
+target_link_libraries(bable-bridge-linux bable -static)  # Statically linked
 
 ########## CREATE TEST (IF ENABLED) ############
 if (BUILD_TESTS)

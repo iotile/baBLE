@@ -21,13 +21,7 @@ namespace Packet {
 
       const std::string stringify() const override;
 
-      inline std::vector<Format::HCI::Service> get_services() const {
-        return m_services;
-      }
-
-      inline std::vector<Format::HCI::Characteristic> get_characteristics() const {
-        return m_characteristics;
-      }
+      void set_socket(AbstractSocket* socket) override;
 
     private:
       std::vector<Format::HCI::Service> m_services;

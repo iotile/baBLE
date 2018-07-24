@@ -15,9 +15,9 @@ public:
 
   bool send(const std::vector<uint8_t>& data) override;
   void poll(OnReceivedCallback on_received, OnErrorCallback on_error) override;
-  void handle_packet(std::shared_ptr<Packet::AbstractPacket> packet) override;
 
   void on_close(OnCloseCallback on_close);
+  void close();
 
 protected:
   static void on_poll(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf);

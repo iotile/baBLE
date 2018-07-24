@@ -1,6 +1,7 @@
 #include <sstream>
 #include "utils/string_formats.hpp"
 #include "SetGATTTable.hpp"
+#include "Transport/Socket/HCI/HCISocket.hpp"
 
 using namespace std;
 
@@ -60,6 +61,19 @@ namespace Packet {
       auto payload = BaBLE::CreateSetGATTTable(builder);
 
       return builder.build(payload, BaBLE::Payload::SetGATTTable);
+    }
+
+    void SetGATTTable::set_socket(AbstractSocket* socket) {
+      if (socket == nullptr) {
+        throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "SetGATTTable needs the socket to set its GATT table", m_uuid_request);
+      }
+
+      auto hci_socket = dynamic_cast<HCISocket*>(socket);
+      if (hci_socket == nullptr) {
+        throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast socket to HCISocket packet");
+      }
+
+      hci_socket->set_gatt_table(m_services, m_characteristics);
     }
 
     const string SetGATTTable::stringify() const {

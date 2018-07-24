@@ -1,7 +1,6 @@
 #ifndef BABLE_LINUX_ABSTRACTSOCKET_HPP
 #define BABLE_LINUX_ABSTRACTSOCKET_HPP
 
-#include "Application/Packets/AbstractPacket.hpp"
 #include "Format/AbstractFormat.hpp"
 #include "Exceptions/BaBLEException.hpp"
 
@@ -31,7 +30,7 @@ public:
   virtual bool send(const std::vector<uint8_t>& data) = 0;
   virtual void poll(OnReceivedCallback on_received, OnErrorCallback on_error) = 0;
 
-  virtual void handle_packet(std::shared_ptr<Packet::AbstractPacket> packet) = 0;
+  virtual void close() = 0;
 
   virtual ~AbstractSocket() = default;
 

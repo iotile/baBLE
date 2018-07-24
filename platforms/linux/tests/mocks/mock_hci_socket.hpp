@@ -2,6 +2,7 @@
 #define BABLE_MOCK_HCI_SOCKET_HPP
 
 #include "Transport/Socket/HCI/HCISocket.hpp"
+#include "mock_socket.hpp"
 
 class MockHCISocket : public HCISocket {
 

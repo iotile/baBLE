@@ -1,5 +1,6 @@
-#include "utils/string_formats.hpp"
 #include "ReadByTypeRequest.hpp"
+#include "utils/string_formats.hpp"
+#include "Transport/Socket/HCI/HCISocket.hpp"
 
 using namespace std;
 
@@ -18,49 +19,6 @@ namespace Packet {
         m_read_attribute = false;
         m_uuid_num = 0;
         m_length_per_characteristic = 0;
-      }
-
-      void ReadByTypeRequest::set_characteristics(const vector<Format::HCI::Characteristic>& characteristics) {
-        if (m_error != Format::HCI::AttributeErrorCode::None) {
-          return;
-        }
-
-        if (m_read_attribute) {
-          for (auto& characteristic : characteristics) {
-            if (characteristic.uuid == m_uuid) {
-              m_characteristics.push_back(characteristic);
-              break;
-            }
-          }
-        } else {
-          uint8_t total_length = 2;  // 1 byte for opcode + 1 byte for length
-
-          for (auto& characteristic : characteristics) {
-            if (characteristic.handle >= m_starting_handle && characteristic.handle <= m_ending_handle) {
-
-              if (m_uuid_num == Format::HCI::GattUUID::CharacteristicDeclaration) {
-                if (m_length_per_characteristic == 0) {
-                  m_length_per_characteristic = static_cast<uint8_t>(characteristic.uuid.size() + 5);  // 2 bytes for handle + 1 byte for properties + 2 bytes for value handle
-                }
-
-                if (m_length_per_characteristic != characteristic.uuid.size() + 5) break;
-
-                total_length += m_length_per_characteristic;
-
-              } else {
-                total_length += 4;  // 2 bytes for handle + 2 bytes for configuration
-              }
-
-              if (total_length > ATT_MTU) break;
-
-              m_characteristics.push_back(characteristic);
-            }
-          }
-        }
-
-        if (m_characteristics.empty()) {
-          m_error = Format::HCI::AttributeErrorCode::AttributeNotFound;
-        }
       }
 
       vector<uint8_t> ReadByTypeRequest::serialize(HCIFormatBuilder& builder) const {
@@ -133,6 +91,54 @@ namespace Packet {
           m_final_type = Packet::Type::HCI;
         } else {
           ControllerToHostPacket::prepare(router);
+        }
+      }
+
+      void ReadByTypeRequest::set_socket(AbstractSocket* socket) {
+        auto hci_socket = dynamic_cast<HCISocket*>(socket);
+        if (hci_socket == nullptr) {
+          throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast socket to HCISocket packet");
+        }
+
+        if (m_error != Format::HCI::AttributeErrorCode::None) {
+          return;
+        }
+
+        if (m_read_attribute) {
+          for (auto& characteristic : hci_socket->get_characteristics()) {
+            if (characteristic.uuid == m_uuid) {
+              m_characteristics.push_back(characteristic);
+              break;
+            }
+          }
+        } else {
+          uint8_t total_length = 2;  // 1 byte for opcode + 1 byte for length
+
+          for (auto& characteristic : hci_socket->get_characteristics()) {
+            if (characteristic.handle >= m_starting_handle && characteristic.handle <= m_ending_handle) {
+
+              if (m_uuid_num == Format::HCI::GattUUID::CharacteristicDeclaration) {
+                if (m_length_per_characteristic == 0) {
+                  m_length_per_characteristic = static_cast<uint8_t>(characteristic.uuid.size() + 5);  // 2 bytes for handle + 1 byte for properties + 2 bytes for value handle
+                }
+
+                if (m_length_per_characteristic != characteristic.uuid.size() + 5) break;
+
+                total_length += m_length_per_characteristic;
+
+              } else {
+                total_length += 4;  // 2 bytes for handle + 2 bytes for configuration
+              }
+
+              if (total_length > ATT_MTU) break;
+
+              m_characteristics.push_back(characteristic);
+            }
+          }
+        }
+
+        if (m_characteristics.empty()) {
+          m_error = Format::HCI::AttributeErrorCode::AttributeNotFound;
         }
       }
 

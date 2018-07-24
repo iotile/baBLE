@@ -11,7 +11,7 @@ SocketContainer& SocketContainer::register_socket(shared_ptr<AbstractSocket> soc
   return *this;
 }
 
-shared_ptr<AbstractSocket> SocketContainer::get_socket(Packet::Type packet_type, uint16_t controller_id) {
+shared_ptr<AbstractSocket> SocketContainer::get_socket(Packet::Type packet_type, uint16_t controller_id) const {
   auto key = make_tuple(packet_type, controller_id);
   auto it = m_sockets.find(key);
   if (it == m_sockets.end()) {

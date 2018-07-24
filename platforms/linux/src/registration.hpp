@@ -21,8 +21,8 @@
 #include "Application/Packets/Commands/ReadByType/Central/ReadByTypeResponse.hpp"
 #include "Application/Packets/Commands/FindInformation/Peripheral/FindInformation.hpp"
 #include "Application/Packets/Commands/FindByType/Peripheral/FindByType.hpp"
-#include "Application/Packets/Commands/Read/ReadRequest.hpp"
-#include "Application/Packets/Commands/Read/ReadResponse.hpp"
+#include "Application/Packets/Commands/Read/Central/ReadRequest.hpp"
+#include "Application/Packets/Commands/Read/Central/ReadResponse.hpp"
 #include "Application/Packets/Commands/Write/WriteRequest.hpp"
 #include "Application/Packets/Commands/Write/WriteResponse.hpp"
 #include "Application/Packets/Commands/NotificationReceived/NotificationReceived.hpp"
@@ -73,7 +73,7 @@ void register_mgmt_packets(PacketBuilder& mgmt_packet_builder) {
 // HCI
 void register_hci_packets(PacketBuilder& hci_packet_builder) {
   hci_packet_builder
-    .register_command<Packet::Commands::ReadResponse>()
+    .register_command<Packet::Commands::Central::ReadResponse>()
     .register_command<Packet::Commands::WriteResponse>()
     .register_command<Packet::Commands::NotificationReceived>()
     .register_command<Packet::Commands::Central::ReadByGroupTypeResponse>()
@@ -107,7 +107,7 @@ void register_stdio_packets(PacketBuilder& stdio_packet_builder) {
     .register_command<Packet::Commands::CreateConnection>()
     .register_command<Packet::Commands::CancelConnectionRequest>()
     .register_command<Packet::Commands::Disconnect>()
-    .register_command<Packet::Commands::ReadRequest>()
+    .register_command<Packet::Commands::Central::ReadRequest>()
     .register_command<Packet::Commands::WriteRequest>()
     .register_command<Packet::Commands::WriteWithoutResponse>()
     .register_command<Packet::Commands::Peripheral::ReadByTypeResponse>()

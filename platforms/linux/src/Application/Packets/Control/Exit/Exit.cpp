@@ -18,6 +18,10 @@ namespace Packet {
       return builder.build(payload, BaBLE::Payload::Exit);
     }
 
+    void Exit::set_socket(AbstractSocket* socket) {
+      socket->close();
+    }
+
     const string Exit::stringify() const {
       stringstream result;
 

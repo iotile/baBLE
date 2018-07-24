@@ -1,6 +1,6 @@
-#include <algorithm>
-#include "utils/string_formats.hpp"
 #include "FindByType.hpp"
+#include "utils/string_formats.hpp"
+#include "Transport/Socket/HCI/HCISocket.hpp"
 
 using namespace std;
 
@@ -16,26 +16,6 @@ namespace Packet {
         m_ending_handle = ending_handle;
         m_uuid_num = Format::HCI::GattUUID::PrimaryServiceDeclaration;
         m_error = Format::HCI::AttributeErrorCode::None;
-      }
-
-      void FindByType::set_services(const vector<Format::HCI::Service>& services) {
-        if (m_error != Format::HCI::AttributeErrorCode::None) {
-          return;
-        }
-
-        uint8_t total_length = 1;  // 1 byte for opcode
-        for (auto& service : services) {
-          if (service.handle >= m_starting_handle && service.handle <= m_ending_handle && service.uuid == m_value){
-            total_length += 4;
-            if (total_length > ATT_MTU) break;
-
-            m_services.push_back(service);
-          }
-        }
-
-        if (m_services.empty()) {
-          m_error = Format::HCI::AttributeErrorCode::AttributeNotFound;
-        }
       }
 
       vector<uint8_t> FindByType::serialize(HCIFormatBuilder& builder) const {
@@ -73,6 +53,31 @@ namespace Packet {
         if (m_uuid_num != Format::HCI::GattUUID::PrimaryServiceDeclaration) {
           LOG.warning("'FindByTypeRequest' with not handled uuid: " + to_string(m_uuid_num));
           m_error = Format::HCI::AttributeErrorCode::UnsupportedGroupType;
+        }
+      }
+
+      void FindByType::set_socket(AbstractSocket* socket) {
+        auto hci_socket = dynamic_cast<HCISocket*>(socket);
+        if (hci_socket == nullptr) {
+          throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast socket to HCISocket packet");
+        }
+
+        if (m_error != Format::HCI::AttributeErrorCode::None) {
+          return;
+        }
+
+        uint8_t total_length = 1;  // 1 byte for opcode
+        for (auto& service : hci_socket->get_services()) {
+          if (service.handle >= m_starting_handle && service.handle <= m_ending_handle && service.uuid == m_value){
+            total_length += 4;
+            if (total_length > ATT_MTU) break;
+
+            m_services.push_back(service);
+          }
+        }
+
+        if (m_services.empty()) {
+          m_error = Format::HCI::AttributeErrorCode::AttributeNotFound;
         }
       }
 

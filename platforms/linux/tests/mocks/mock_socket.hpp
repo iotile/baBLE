@@ -10,18 +10,21 @@ public:
   MockSocket(): Socket() {
     m_num_read = 0;
     m_num_write = 0;
-    m_openned = true;
-    m_binded = false;
-    m_option_set = false;
-    m_connected = false;
+
+    m_open = true;
   };
 
   explicit MockSocket(const std::array<uint8_t, 6>& bd_addr): MockSocket() {
     m_address = bd_addr;
   };
 
-  void bind(uint16_t device, uint16_t channel) override {};
-  void bind(const std::array<uint8_t, 6>& address, uint8_t address_type, uint16_t channel) override {};
+  void bind(uint16_t device, uint16_t channel) override {
+    m_binded = true;
+  };
+
+  void bind(const std::array<uint8_t, 6>& address, uint8_t address_type, uint16_t channel) override {
+    m_binded = true;
+  };
 
   void write(const std::vector<uint8_t>& data) override {
     m_num_write++;
@@ -52,7 +55,7 @@ public:
   };
 
   void close() override {
-    m_openned = false;
+    m_open = false;
   };
 
   const std::vector<uint8_t>& get_write_buffer(size_t index) {
@@ -69,22 +72,6 @@ public:
 
   void simulate_read(const std::vector<uint8_t>& data) {
     m_read_buffer.assign(data.begin(), data.end());
-  };
-
-  bool is_open() {
-    return m_openned;
-  };
-
-  bool is_binded() {
-    return m_binded;
-  };
-
-  bool is_option_set() {
-    return m_option_set;
-  };
-
-  bool is_connected() {
-    return m_connected;
   };
 
   bool has_read(int expected_num = -1) {
@@ -106,10 +93,6 @@ private:
   std::array<uint8_t, 6> m_address{};
   std::vector<std::vector<uint8_t>> m_write_buffers;
   std::vector<uint8_t> m_read_buffer;
-  bool m_binded;
-  bool m_option_set;
-  bool m_connected;
-  bool m_openned;
   int m_num_read;
   int m_num_write;
 

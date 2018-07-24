@@ -1,6 +1,6 @@
-#include <algorithm>
-#include "utils/string_formats.hpp"
 #include "ReadByGroupType.hpp"
+#include "utils/string_formats.hpp"
+#include "Transport/Socket/HCI/HCISocket.hpp"
 
 using namespace std;
 
@@ -17,33 +17,6 @@ namespace Packet {
         m_error = Format::HCI::AttributeErrorCode::None;
 
         m_length_per_service = 0;
-      }
-
-      void ReadByGroupType::set_services(const vector<Format::HCI::Service>& services) {
-        if (m_error != Format::HCI::AttributeErrorCode::None) {
-          return;
-        }
-
-        uint8_t total_length = 2;  // 1 byte for opcode + 1 byte for length
-
-        for (auto& service : services) {
-          if (service.handle >= m_starting_handle && service.handle <= m_ending_handle){
-            if (m_length_per_service == 0) {
-              m_length_per_service = static_cast<uint8_t>(service.uuid.size() + 4);  // 2bytes for handle + 2bytes for group end handle
-            }
-
-            if (m_length_per_service != service.uuid.size() + 4) break;
-
-            total_length += m_length_per_service;
-            if (total_length > ATT_MTU) break;
-
-            m_services.push_back(service);
-          }
-        }
-
-        if (m_services.empty()) {
-          m_error = Format::HCI::AttributeErrorCode::AttributeNotFound;
-        }
       }
 
       vector<uint8_t> ReadByGroupType::serialize(HCIFormatBuilder& builder) const {
@@ -90,6 +63,38 @@ namespace Packet {
         } catch (const invalid_argument& err) {
           LOG.warning("Can't convert UUID to number: UUID too long, size=" + to_string(m_uuid.size()));
           m_error = Format::HCI::AttributeErrorCode::UnsupportedGroupType;
+        }
+      }
+
+      void ReadByGroupType::set_socket(AbstractSocket* socket) {
+        auto hci_socket = dynamic_cast<HCISocket*>(socket);
+        if (hci_socket == nullptr) {
+          throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast socket to HCISocket packet");
+        }
+
+        if (m_error != Format::HCI::AttributeErrorCode::None) {
+          return;
+        }
+
+        uint8_t total_length = 2;  // 1 byte for opcode + 1 byte for length
+
+        for (auto& service : hci_socket->get_services()) {
+          if (service.handle >= m_starting_handle && service.handle <= m_ending_handle){
+            if (m_length_per_service == 0) {
+              m_length_per_service = static_cast<uint8_t>(service.uuid.size() + 4);  // 2bytes for handle + 2bytes for group end handle
+            }
+
+            if (m_length_per_service != service.uuid.size() + 4) break;
+
+            total_length += m_length_per_service;
+            if (total_length > ATT_MTU) break;
+
+            m_services.push_back(service);
+          }
+        }
+
+        if (m_services.empty()) {
+          m_error = Format::HCI::AttributeErrorCode::AttributeNotFound;
         }
       }
 

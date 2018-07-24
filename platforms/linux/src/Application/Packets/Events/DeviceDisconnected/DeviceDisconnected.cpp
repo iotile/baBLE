@@ -1,4 +1,5 @@
 #include "DeviceDisconnected.hpp"
+#include "Transport/Socket/HCI/HCISocket.hpp"
 #include "utils/string_formats.hpp"
 
 using namespace std;
@@ -57,6 +58,20 @@ namespace Packet {
       );
 
       return builder.build(payload, BaBLE::Payload::DeviceDisconnected);
+    }
+
+    void DeviceDisconnected::set_socket(AbstractSocket* socket) {
+      if (m_status != BaBLE::StatusCode::Success) {
+        LOG.info("Unsuccessful DeviceDisconnected event ignored (because the device is not disconnected...)", "DeviceDisconnected");
+        return;
+      }
+
+      auto hci_socket = dynamic_cast<HCISocket*>(socket);
+      if (hci_socket == nullptr) {
+        throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast socket to HCISocket packet");
+      }
+
+      hci_socket->disconnect_l2cap_socket(m_connection_handle);
     }
 
     const string DeviceDisconnected::stringify() const {

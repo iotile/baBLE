@@ -43,8 +43,25 @@ public:
 
   int get_raw();
 
+  inline bool is_open() {
+    return m_open;
+  };
+  inline bool is_binded() {
+    return m_binded;
+  };
+  inline bool is_option_set() {
+    return m_option_set;
+  };
+  inline bool is_connected() {
+    return m_connected;
+  };
+
 protected:
   Socket();
+  bool m_open;
+  bool m_binded;
+  bool m_option_set;
+  bool m_connected;
 
 private:
   sa_family_t m_domain;

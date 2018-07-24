@@ -7,7 +7,6 @@
 #include "Transport/Socket/Socket.hpp"
 #include "Transport/AbstractSocket.hpp"
 #include "Format/HCI/HCIFormat.hpp"
-#include "utils/string_formats.hpp"
 
 class HCISocket : public AbstractSocket {
 
@@ -19,7 +18,6 @@ public:
 
   bool send(const std::vector<uint8_t>& data) override;
   void poll(OnReceivedCallback on_received, OnErrorCallback on_error) override;
-  void handle_packet(std::shared_ptr<Packet::AbstractPacket> packet) override;
 
   void connect_l2cap_socket(uint16_t connection_handle, const std::array<uint8_t, 6>& device_address, uint8_t device_address_type);
   void disconnect_l2cap_socket(uint16_t connection_handle);
@@ -28,10 +26,9 @@ public:
   std::vector<Format::HCI::Service> get_services() const;
   std::vector<Format::HCI::Characteristic> get_characteristics() const;
 
-  std::string get_controller_address() {
-    return Utils::format_bd_address(m_controller_address);
-  };
+  std::string get_controller_address();
 
+  void close() override;
   ~HCISocket() override;
 
 protected:

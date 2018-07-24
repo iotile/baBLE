@@ -30,9 +30,9 @@ namespace Packet {
         void unserialize(HCIFormatExtractor& extractor) override;
         std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
 
-        const std::string stringify() const override;
+        void set_socket(AbstractSocket* socket) override;
 
-        void set_gatt_table(const std::vector<Format::HCI::Service>& services, const std::vector<Format::HCI::Characteristic>& characteristics);
+        const std::string stringify() const override;
 
       private:
         uint16_t m_starting_handle;

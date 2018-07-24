@@ -1,5 +1,5 @@
-#ifndef BABLE_PERIPHERAL_READBYTYPEREQUEST_HPP
-#define BABLE_PERIPHERAL_READBYTYPEREQUEST_HPP
+#ifndef BABLE_PERIPHERAL_READREQUEST_HPP
+#define BABLE_PERIPHERAL_READREQUEST_HPP
 
 #include "Application/Packets/Base/ControllerToHostPacket.hpp"
 
@@ -9,7 +9,7 @@ namespace Packet {
 
     namespace Peripheral {
 
-      class ReadByTypeRequest : public ControllerToHostPacket {
+      class ReadRequest : public ControllerToHostPacket {
 
       public:
         static const Packet::Type initial_type() {
@@ -17,14 +17,14 @@ namespace Packet {
         };
 
         static const uint16_t initial_packet_code() {
-          return Format::HCI::AttributeCode::ReadByTypeRequest;
+          return Format::HCI::AttributeCode::ReadRequest;
         };
 
         static const uint16_t final_packet_code() {
           return static_cast<uint16_t>(BaBLE::Payload::ReadPeripheral);
         };
 
-        explicit ReadByTypeRequest(uint16_t starting_handle = 0x0001, uint16_t ending_handle = 0xFFFF);
+        explicit ReadRequest(uint16_t attribute_handle = 0);
 
         void unserialize(HCIFormatExtractor& extractor) override;
 
@@ -32,8 +32,6 @@ namespace Packet {
         std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
 
         void prepare(const std::shared_ptr<PacketRouter>& router) override;
-
-        void set_socket(AbstractSocket* socket) override;
 
         const std::string stringify() const override;
 
@@ -56,4 +54,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_PERIPHERAL_READBYTYPEREQUEST_HPP
+#endif //BABLE_PERIPHERAL_READREQUEST_HPP

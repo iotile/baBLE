@@ -6,6 +6,7 @@
 #include "Format/HCI/HCIFormat.hpp"
 #include "Format/MGMT/MGMTFormat.hpp"
 #include "Format/Flatbuffers/FlatbuffersFormat.hpp"
+#include "Transport/AbstractSocket.hpp"
 
 // FIXME: Need it to avoid cyclic dependency...
 class PacketRouter;
@@ -67,6 +68,7 @@ namespace Packet {
     void set_controller_id(uint16_t controller_id);
     void set_connection_handle(uint16_t connection_handle);
     void set_status(uint8_t native_status, bool compute_status = true, const std::string& native_class = "");
+    virtual void set_socket(AbstractSocket* socket) {};
 
     void translate();
     virtual void prepare(const std::shared_ptr<PacketRouter>& router) = 0;

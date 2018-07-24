@@ -3,7 +3,6 @@
 #include "Log/Log.hpp"
 #include "Application/PacketBuilder/PacketBuilder.hpp"
 #include "Application/PacketRouter/PacketRouter.hpp"
-#include "Format/Flatbuffers/FlatbuffersFormat.hpp"
 #include "Transport/Socket/MGMT/MGMTSocket.hpp"
 #include "Transport/Socket/HCI/HCISocket.hpp"
 #include "Transport/Socket/StdIO/StdIOSocket.hpp"
@@ -123,7 +122,7 @@ int main(int argc, char* argv[]) {
           return;
         }
 
-        socket->handle_packet(packet);
+        packet->set_socket(socket);
 
         // Check if there are packets waiting for a response
         packet = packet_router->route(packet_router, packet);
@@ -145,27 +144,17 @@ int main(int argc, char* argv[]) {
       }
 
       if (packet->get_id() == Packet::Id::SetGATTTable) {
-        auto setgatttable_packet = dynamic_pointer_cast<Packet::Control::SetGATTTable>(packet);
-        if (setgatttable_packet == nullptr) {
-          throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast packet to SetGATTTable packet");
-        }
-
         shared_ptr<AbstractSocket> base_socket = socket_container.get_socket(Packet::Type::HCI, packet->get_controller_id());
-        auto hci_socket = dynamic_pointer_cast<HCISocket>(base_socket);
-        if (hci_socket == nullptr) {
-          throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast socket to HCISocket packet");
-        }
-
-        hci_socket->set_gatt_table(setgatttable_packet->get_services(), setgatttable_packet->get_characteristics());
+        packet->set_socket(dynamic_cast<HCISocket*>(base_socket.get()));
+      } else {
+        packet->set_socket(socket);
       }
 
+      // Check if there are packets waiting for a response
+      packet = packet_router->route(packet_router, packet);
       packet->prepare(packet_router);
-      socket_container.send(packet);
 
-      if (packet->get_id() == Packet::Id::Exit) {
-        LOG.debug("Received Exit packet. Cleanly stopping loop...");
-        cleanly_stop_loop(loop);
-      }
+      socket_container.send(packet);
     },
     on_error
   );

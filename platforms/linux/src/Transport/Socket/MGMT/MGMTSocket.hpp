@@ -15,8 +15,8 @@ public:
 
   bool send(const std::vector<uint8_t>& data) override;
   void poll(OnReceivedCallback on_received, OnErrorCallback on_error) override;
-  void handle_packet(std::shared_ptr<Packet::AbstractPacket> packet) override;
 
+  void close() override;
   ~MGMTSocket() override;
 
 protected:

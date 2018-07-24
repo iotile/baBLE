@@ -19,6 +19,8 @@ namespace Packet {
       void unserialize(FlatbuffersFormatExtractor& extractor) override;
       std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
 
+      void set_socket(AbstractSocket* socket) override;
+
       const std::string stringify() const override;
 
     };

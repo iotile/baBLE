@@ -11,7 +11,7 @@ public:
   // Register given socket in container
   SocketContainer& register_socket(std::shared_ptr<AbstractSocket> socket);
 
-  std::shared_ptr<AbstractSocket> get_socket(Packet::Type packet_type, uint16_t controller_id = NON_CONTROLLER_ID);
+  std::shared_ptr<AbstractSocket> get_socket(Packet::Type packet_type, uint16_t controller_id = NON_CONTROLLER_ID) const;
 
   // Send a packet using the matching registered socket
   bool send(const std::shared_ptr<Packet::AbstractPacket>& packet);
