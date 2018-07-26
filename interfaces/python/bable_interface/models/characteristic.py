@@ -51,7 +51,7 @@ class Characteristic(object):
 
     def __repr__(self):
         return "<Characteristic uuid={}, handle={}, value_handle={}, config_handle={}, properties={}"\
-            .format(self.uuid, self.handle, self.value_handle, self.config_handle, self.properties)
+            .format(uuid_to_string(self.uuid), self.handle, self.value_handle, self.config_handle, self.properties)
 
     def to_dict(self):
         return {

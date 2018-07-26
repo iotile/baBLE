@@ -28,7 +28,7 @@ class Service(object):
 
     def __repr__(self):
         return "<Service uuid={}, start_handle={}, end_handle={}>"\
-            .format(self.uuid, self.handle, self.group_end_handle)
+            .format(uuid_to_string(self.uuid), self.handle, self.group_end_handle)
 
     def to_dict(self):
         return {
