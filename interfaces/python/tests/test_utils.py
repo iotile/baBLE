@@ -1,5 +1,6 @@
 import pytest
-from bable_interface.utils import to_bytes, camel_to_snake, snake_to_camel
+from uuid import UUID
+from bable_interface.utils import to_bytes, camel_to_snake, snake_to_camel, string_to_uuid, uuid_to_string
 
 
 def test_to_bytes():
@@ -47,3 +48,49 @@ def test_snake_to_camel():
 
     # Case with string already snake cased
     assert snake_to_camel("SnakeCase") == "SnakeCase"
+
+
+def test_string_to_uuid():
+    """ Test to convert a string into a uuid. """
+    # Test with 2-byte UUID (Big Endian)
+    string = '1234'
+    uuid = string_to_uuid(string)
+    assert uuid == UUID('00001234-0000-1000-8000-00805f9b34fb')
+
+    # Test with 2-byte UUID (Little Endian)
+    string = '3412'
+    uuid = string_to_uuid(string, input_byteorder='little')
+    assert uuid == UUID('00001234-0000-1000-8000-00805f9b34fb')
+
+    # Test with 16-byte UUID (Big Endian)
+    string = '12345678-1234-1234-1234-123456789112'
+    uuid = string_to_uuid(string)
+    assert uuid == UUID('12345678-1234-1234-1234-123456789112')
+
+    # Test with 16-byte UUID (Little Endian)
+    string = '12917856-3412-3412-3412-341278563412'
+    uuid = string_to_uuid(string, input_byteorder='little')
+    assert uuid == UUID('12345678-1234-1234-1234-123456789112')
+
+
+def test_uuid_to_string():
+    """ Test to convert a uuid into a string. """
+    # Test with 2-byte UUID (Little Endian)
+    uuid = UUID('00001234-0000-1000-8000-00805f9b34fb')
+    string = uuid_to_string(uuid)
+    assert string == '3412'
+
+    # Test with 2-byte UUID (Big Endian)
+    uuid = UUID('00001234-0000-1000-8000-00805f9b34fb')
+    string = uuid_to_string(uuid, output_byteorder='big')
+    assert string == '1234'
+
+    # Test with 16-byte UUID (Little Endian)
+    uuid = UUID('12345678-1234-1234-1234-123456789112')
+    string = uuid_to_string(uuid)
+    assert string == '78563412341234121234123456789112'
+
+    # Test with 16-byte UUID (Big Endian)
+    uuid = UUID('12345678-1234-1234-1234-123456789112')
+    string = uuid_to_string(uuid, output_byteorder='big')
+    assert string == '12345678123412341234123456789112'

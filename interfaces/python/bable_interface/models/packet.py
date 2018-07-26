@@ -23,9 +23,9 @@ class PacketUuid(object):
                                   self.attribute_handle, self.uuid)
 
     def set(self, address=None, connection_handle=None, attribute_handle=None, uuid=None):
-        self.address = address.lower() if address is not None else None
-        self.connection_handle = connection_handle
-        self.attribute_handle = attribute_handle
+        self.address = address.lower() if address is not None else self.address
+        self.connection_handle = connection_handle if connection_handle is not None else self.connection_handle
+        self.attribute_handle = attribute_handle if attribute_handle is not None else self.attribute_handle
         self.uuid = uuid
 
     def match(self, other, match_connection_only=False):

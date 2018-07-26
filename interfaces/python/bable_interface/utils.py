@@ -56,7 +56,7 @@ else:
     string_types = str
 
 
-BASE_UUID_BT = UUID('00000000-0000-1000-8000-00805F9B34FB')
+BASE_UUID_BT = UUID('00000000-0000-1000-8000-00805f9b34fb')
 
 
 def string_to_uuid(string, input_byteorder='big'):

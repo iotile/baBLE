@@ -214,6 +214,7 @@ TEST_CASE("Integration (with mocked socket) - HCI packet", "[integration][hci]")
         if (packet == nullptr) {
           return;
         }
+        packet->set_socket(socket);
         packet = packet_router->route(packet_router, packet);
         packet->prepare(packet_router);
         socket_container.send(packet);
