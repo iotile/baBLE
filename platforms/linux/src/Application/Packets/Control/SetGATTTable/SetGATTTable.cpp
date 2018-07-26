@@ -21,11 +21,10 @@ namespace Packet {
       for (uint32_t i = 0; i < raw_services->Length(); i++) {
         auto raw_service = raw_services->Get(i);
 
-        Format::HCI::Service service{
-          raw_service->handle(),
-          raw_service->group_end_handle(),
-          Utils::extract_uuid(raw_service->uuid()->str())
-        };
+        Format::HCI::Service service{};
+        service.handle = raw_service->handle();
+        service.group_end_handle = raw_service->group_end_handle();
+        service.uuid =  Utils::extract_uuid(raw_service->uuid()->str());
 
         m_services.push_back(service);
       }
@@ -49,15 +48,14 @@ namespace Packet {
           const_value.assign(raw_characteristic->const_value()->begin(), raw_characteristic->const_value()->end());
         }
 
-        Format::HCI::Characteristic characteristic{
-            raw_characteristic->handle(),
-            properties,
-            raw_characteristic->value_handle(),
-            raw_characteristic->config_handle(),
-            configuration,
-            Utils::extract_uuid(raw_characteristic->uuid()->str()),
-            const_value
-        };
+        Format::HCI::Characteristic characteristic{};
+        characteristic.handle = raw_characteristic->handle();
+        characteristic.properties = properties;
+        characteristic.value_handle = raw_characteristic->value_handle();
+        characteristic.config_handle = raw_characteristic->config_handle();
+        characteristic.configuration = configuration;
+        characteristic.uuid = Utils::extract_uuid(raw_characteristic->uuid()->str());
+        characteristic.const_value = const_value;
 
         m_characteristics.push_back(characteristic);
       }
