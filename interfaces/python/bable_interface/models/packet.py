@@ -107,9 +107,11 @@ class Packet(object):
         for name, value in get_params(fb_packet):
             packet.params[name] = value
 
+        address = packet.params.get('address')
+
         # Update uuid with params
         packet.packet_uuid.set(
-            address=packet.params.get('address'),
+            address=address.decode() if address is not None else None,
             connection_handle=packet.params.get('connection_handle'),
             attribute_handle=packet.params.get('attribute_handle'),
             uuid=raw_uuid.decode() if raw_uuid is not None else None
