@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_STARTSCAN_HPP
-#define BABLE_LINUX_STARTSCAN_HPP
+#ifndef BABLE_STARTSCAN_HPP
+#define BABLE_STARTSCAN_HPP
 
 #include "Application/Packets/Base/HostOnlyPacket.hpp"
 #include "Application/Packets/Commands/SetScanParameters/SetScanParameters.hpp"
@@ -45,4 +45,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_STARTSCAN_HPP
+#endif //BABLE_STARTSCAN_HPP

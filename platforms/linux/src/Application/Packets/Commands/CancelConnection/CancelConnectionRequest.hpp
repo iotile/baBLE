@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_CANCELCONNECTION_HPP
-#define BABLE_LINUX_CANCELCONNECTION_HPP
+#ifndef BABLE_CANCELCONNECTION_HPP
+#define BABLE_CANCELCONNECTION_HPP
 
 #include "Application/Packets/Base/HostToControllerPacket.hpp"
 
@@ -38,4 +38,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_CANCELCONNECTION_HPP
+#endif //BABLE_CANCELCONNECTION_HPP

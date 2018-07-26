@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_STRING_FORMATS_HPP
-#define BABLE_LINUX_STRING_FORMATS_HPP
+#ifndef BABLE_STRING_FORMATS_HPP
+#define BABLE_STRING_FORMATS_HPP
 
 #include <array>
 #include <sstream>
@@ -79,4 +79,4 @@ namespace Utils {
 
 }
 
-#endif //BABLE_LINUX_STRING_FORMATS_HPP
+#endif //BABLE_STRING_FORMATS_HPP

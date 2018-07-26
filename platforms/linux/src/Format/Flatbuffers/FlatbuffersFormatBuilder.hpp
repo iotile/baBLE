@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_FLATBUFFERSFORMATBUILDER_HPP
-#define BABLE_LINUX_FLATBUFFERSFORMATBUILDER_HPP
+#ifndef BABLE_FLATBUFFERSFORMATBUILDER_HPP
+#define BABLE_FLATBUFFERSFORMATBUILDER_HPP
 
 #include <Packet_generated.h>
 
@@ -46,4 +46,4 @@ std::vector<uint8_t> FlatbuffersFormatBuilder::build(const flatbuffers::Offset<T
   return result;
 };
 
-#endif //BABLE_LINUX_FLATBUFFERSFORMATBUILDER_HPP
+#endif //BABLE_FLATBUFFERSFORMATBUILDER_HPP

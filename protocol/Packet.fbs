@@ -18,14 +18,15 @@ include "./Commands/WriteWithoutResponseCentral.fbs";
 include "./Commands/WriteWithoutResponsePeripheral.fbs";
 include "./Commands/ProbeServices.fbs";
 include "./Commands/ProbeCharacteristics.fbs";
-include "./Commands/SetGATTTable.fbs";
 include "./Commands/SetAdvertising.fbs";
+include "./Commands/EmitNotification.fbs";
 include "./Events/DeviceConnected.fbs";
 include "./Events/DeviceDisconnected.fbs";
 include "./Events/DeviceFound.fbs";
 include "./Events/ControllerChanged.fbs";
 include "./Events/NotificationReceived.fbs";
 include "./Errors/BaBLEError.fbs";
+include "./Control/SetGATTTable.fbs";
 include "./Control/Ready.fbs";
 include "./Control/Exit.fbs";
 
@@ -36,6 +37,7 @@ union Payload {
   CancelConnection,
   Connect,
   Disconnect,
+  EmitNotification,
   GetConnectedDevices,
   GetControllersIds,
   GetControllerInfo,
@@ -47,7 +49,6 @@ union Payload {
   SetAdvertising,
   SetConnectable,
   SetDiscoverable,
-  SetGATTTable,
   SetPowered,
   StartScan,
   StopScan,
@@ -69,7 +70,15 @@ union Payload {
 
   // Control
   Exit,
-  Ready
+  Ready,
+  SetGATTTable
+}
+
+union Model {
+  Characteristic,
+  Controller,
+  Device,
+  Service
 }
 
 enum StatusCode:uint8 {

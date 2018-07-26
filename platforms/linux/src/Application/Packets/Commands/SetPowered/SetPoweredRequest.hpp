@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_SETPOWEREDREQUEST_HPP
-#define BABLE_LINUX_SETPOWEREDREQUEST_HPP
+#ifndef BABLE_SETPOWEREDREQUEST_HPP
+#define BABLE_SETPOWEREDREQUEST_HPP
 
 #include "Application/Packets/Base/HostToControllerPacket.hpp"
 
@@ -38,4 +38,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_SETPOWEREDREQUEST_HPP
+#endif //BABLE_SETPOWEREDREQUEST_HPP

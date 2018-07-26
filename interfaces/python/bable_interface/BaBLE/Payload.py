@@ -7,18 +7,18 @@ class Payload(object):
     CancelConnection = 1
     Connect = 2
     Disconnect = 3
-    GetConnectedDevices = 4
-    GetControllersIds = 5
-    GetControllerInfo = 6
-    GetControllersList = 7
-    ProbeCharacteristics = 8
-    ProbeServices = 9
-    ReadCentral = 10
-    ReadPeripheral = 11
-    SetAdvertising = 12
-    SetConnectable = 13
-    SetDiscoverable = 14
-    SetGATTTable = 15
+    EmitNotification = 4
+    GetConnectedDevices = 5
+    GetControllersIds = 6
+    GetControllerInfo = 7
+    GetControllersList = 8
+    ProbeCharacteristics = 9
+    ProbeServices = 10
+    ReadCentral = 11
+    ReadPeripheral = 12
+    SetAdvertising = 13
+    SetConnectable = 14
+    SetDiscoverable = 15
     SetPowered = 16
     StartScan = 17
     StopScan = 18
@@ -35,4 +35,5 @@ class Payload(object):
     BaBLEError = 29
     Exit = 30
     Ready = 31
+    SetGATTTable = 32
 

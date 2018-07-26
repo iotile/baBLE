@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_CONSTANTS_HPP
-#define BABLE_LINUX_CONSTANTS_HPP
+#ifndef BABLE_CONSTANTS_HPP
+#define BABLE_CONSTANTS_HPP
 
 #include "Transport/Socket/Socket.hpp"
 
@@ -26,7 +26,7 @@
 #define ATT_CID 4
 
 // Default and minimal MTU for attributes
-#define ATT_MTU 23  // TODO: update mtu after negiciation using HCI)
+#define ATT_MTU 23  // TODO: update mtu after negociation using HCI)
 
 // Misc.
 #define NON_CONTROLLER_ID 0xFFFF
@@ -308,6 +308,7 @@ namespace Format {
       uint16_t config_handle = 0;
       uint16_t configuration = 0;
       std::vector<uint8_t> uuid{};
+      std::vector<uint8_t> const_value{};
     };
 
     enum GattUUID {
@@ -320,4 +321,4 @@ namespace Format {
 
 }
 
-#endif //BABLE_LINUX_CONSTANTS_HPP
+#endif //BABLE_CONSTANTS_HPP

@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_GETCONTROLLERSLIST_HPP
-#define BABLE_LINUX_GETCONTROLLERSLIST_HPP
+#ifndef BABLE_GETCONTROLLERSLIST_HPP
+#define BABLE_GETCONTROLLERSLIST_HPP
 
 #include "Application/Packets/Base/HostOnlyPacket.hpp"
 #include "Application/Packets/Commands/GetControllersIds/GetControllersIdsRequest.hpp"
@@ -51,4 +51,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_GETCONTROLLERSLIST_HPP
+#endif //BABLE_GETCONTROLLERSLIST_HPP

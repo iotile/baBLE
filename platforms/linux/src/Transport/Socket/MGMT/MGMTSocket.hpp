@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_MGMTSOCKET_HPP
-#define BABLE_LINUX_MGMTSOCKET_HPP
+#ifndef BABLE_MGMTSOCKET_HPP
+#define BABLE_MGMTSOCKET_HPP
 
 #include <queue>
 #include <uv.h>
@@ -37,4 +37,4 @@ private:
 
 };
 
-#endif //BABLE_LINUX_MGMTSOCKET_HPP
+#endif //BABLE_MGMTSOCKET_HPP

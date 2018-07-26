@@ -68,13 +68,20 @@ class Controller(object):
         return False
 
     # Controller
-    def Name(self):
+    def Advertising(self):
         o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(18))
+        if o != 0:
+            return bool(self._tab.Get(flatbuffers.number_types.BoolFlags, o + self._tab.Pos))
+        return False
+
+    # Controller
+    def Name(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(20))
         if o != 0:
             return self._tab.String(o + self._tab.Pos)
         return None
 
-def ControllerStart(builder): builder.StartObject(8)
+def ControllerStart(builder): builder.StartObject(9)
 def ControllerAddId(builder, id): builder.PrependUint16Slot(0, id, 0)
 def ControllerAddAddress(builder, address): builder.PrependUOffsetTRelativeSlot(1, flatbuffers.number_types.UOffsetTFlags.py_type(address), 0)
 def ControllerAddBtVersion(builder, btVersion): builder.PrependUint8Slot(2, btVersion, 0)
@@ -82,5 +89,6 @@ def ControllerAddPowered(builder, powered): builder.PrependBoolSlot(3, powered, 
 def ControllerAddConnectable(builder, connectable): builder.PrependBoolSlot(4, connectable, 0)
 def ControllerAddDiscoverable(builder, discoverable): builder.PrependBoolSlot(5, discoverable, 0)
 def ControllerAddLowEnergy(builder, lowEnergy): builder.PrependBoolSlot(6, lowEnergy, 0)
-def ControllerAddName(builder, name): builder.PrependUOffsetTRelativeSlot(7, flatbuffers.number_types.UOffsetTFlags.py_type(name), 0)
+def ControllerAddAdvertising(builder, advertising): builder.PrependBoolSlot(7, advertising, 0)
+def ControllerAddName(builder, name): builder.PrependUOffsetTRelativeSlot(8, flatbuffers.number_types.UOffsetTFlags.py_type(name), 0)
 def ControllerEnd(builder): return builder.EndObject()

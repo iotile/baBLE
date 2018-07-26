@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_COMMANDSTATUS_HPP
-#define BABLE_LINUX_COMMANDSTATUS_HPP
+#ifndef BABLE_COMMANDSTATUS_HPP
+#define BABLE_COMMANDSTATUS_HPP
 
 #include "Application/Packets/Base/ControllerToHostPacket.hpp"
 
@@ -43,4 +43,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_COMMANDSTATUS_HPP
+#endif //BABLE_COMMANDSTATUS_HPP

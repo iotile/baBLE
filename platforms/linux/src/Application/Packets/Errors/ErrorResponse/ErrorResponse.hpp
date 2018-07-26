@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_ERRORRESPONSE_HPP
-#define BABLE_LINUX_ERRORRESPONSE_HPP
+#ifndef BABLE_ERRORRESPONSE_HPP
+#define BABLE_ERRORRESPONSE_HPP
 
 #include "Application/Packets/Base/ControllerToHostPacket.hpp"
 
@@ -53,4 +53,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_ERRORRESPONSE_HPP
+#endif //BABLE_ERRORRESPONSE_HPP

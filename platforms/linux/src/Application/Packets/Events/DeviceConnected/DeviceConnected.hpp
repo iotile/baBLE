@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_DEVICECONNECTED_HPP
-#define BABLE_LINUX_DEVICECONNECTED_HPP
+#ifndef BABLE_DEVICECONNECTED_HPP
+#define BABLE_DEVICECONNECTED_HPP
 
 #include "Application/Packets/Base/ControllerToHostPacket.hpp"
 
@@ -42,4 +42,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_DEVICECONNECTED_HPP
+#endif //BABLE_DEVICECONNECTED_HPP

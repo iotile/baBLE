@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_COMMANDCOMPLETE_HPP
-#define BABLE_LINUX_COMMANDCOMPLETE_HPP
+#ifndef BABLE_COMMANDCOMPLETE_HPP
+#define BABLE_COMMANDCOMPLETE_HPP
 
 #include "Application/Packets/Base/ControllerToHostPacket.hpp"
 
@@ -48,4 +48,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_COMMANDCOMPLETE_HPP
+#endif //BABLE_COMMANDCOMPLETE_HPP

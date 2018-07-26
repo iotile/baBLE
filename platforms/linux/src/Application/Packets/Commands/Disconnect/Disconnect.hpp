@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_DISCONNECT_HPP
-#define BABLE_LINUX_DISCONNECT_HPP
+#ifndef BABLE_DISCONNECT_HPP
+#define BABLE_DISCONNECT_HPP
 
 #include "Application/Packets/Base/HostToControllerPacket.hpp"
 
@@ -45,4 +45,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_DISCONNECT_HPP
+#endif //BABLE_DISCONNECT_HPP

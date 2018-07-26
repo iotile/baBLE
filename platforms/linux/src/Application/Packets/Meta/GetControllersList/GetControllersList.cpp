@@ -28,10 +28,12 @@ namespace Packet {
         auto address = builder.CreateString(Utils::format_bd_address(controller.address));
         auto name = builder.CreateString(controller.name);
 
+        // TODO: create constants for 1 << x
         bool powered = (controller.current_settings & 1) > 0;
         bool connectable = (controller.current_settings & 1 << 1) > 0;
         bool discoverable = (controller.current_settings & 1 << 3) > 0;
-        bool low_energy = (controller.current_settings & 9) > 0;
+        bool low_energy = (controller.current_settings & 1 << 9) > 0;
+        bool advertising = (controller.current_settings & 1 << 10) > 0;
 
         auto controller_offset = BaBLE::CreateController(
             builder,
@@ -42,6 +44,7 @@ namespace Packet {
             connectable,
             discoverable,
             low_energy,
+            advertising,
             name
         );
         controllers.push_back(controller_offset);

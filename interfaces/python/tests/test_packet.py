@@ -1,12 +1,12 @@
 import pytest
 from bable_interface.models import Packet
-from bable_interface.BaBLE import Payload, Read
+from bable_interface.BaBLE import Payload, ReadCentral
 
 
 def test_build():
     """ Test building a packet. """
     packet = Packet.build(
-        payload_module=Read,
+        payload_module=ReadCentral,
         controller_id=0,
         connection_handle=0x0040,
         attribute_handle=0x0003
@@ -14,31 +14,29 @@ def test_build():
 
     assert isinstance(packet, Packet)
     assert packet.controller_id == 0
-    assert packet.payload_type == Payload.Payload.Read
+    assert packet.payload_type == Payload.Payload.ReadCentral
     assert packet.get('connection_handle') == 0x0040
     assert packet.get('attribute_handle') == 0x0003
 
     # Try to get a parameter that does not exist in the protocol
     with pytest.raises(KeyError):
         Packet.build(
-            payload_module=Read,
+            payload_module=ReadCentral,
             does_not_exist="test"
         )
 
 
 def test_extract():
     """ Test extract packet information from raw bytes. """
-    # These raw bytes are from the Read packet built in test_build()
-    raw_payload = bytearray(b'\x10\x00\x00\x00\x0c\x00\x10\x00\x0c\x00\x09\x00\x04\x00\x0a\x00\x0c\x00\x00\x00\x40\x00'
-                            b'\x00\x00\x00\x0a\x00\x00\x04\x00\x00\x00\x24\x00\x00\x00\x30\x61\x65\x37\x31\x39\x61\x30'
-                            b'\x2d\x65\x61\x64\x39\x2d\x34\x32\x31\x34\x2d\x38\x30\x64\x31\x2d\x63\x39\x61\x61\x36\x65'
-                            b'\x61\x34\x32\x38\x37\x30\x00\x00\x00\x00\x08\x00\x08\x00\x06\x00\x04\x00\x08\x00\x00\x00'
-                            b'\x03\x00\x40\x00')
+    # These raw bytes are from the ReadCentral packet built in test_build()
+    raw_payload = bytearray(b'\x10\x00\x00\x00\x0c\x00\x10\x00\x0c\x00\x09\x00\x04\x00\x0a\x00\x0c\x00\x00\x00\x1c\x00'
+                            b'\x00\x00\x00\x0b\x00\x00\x04\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x08\x00\x08\x00'
+                            b'\x06\x00\x04\x00\x08\x00\x00\x00\x03\x00\x40\x00')
     packet = Packet.extract(raw_payload)
 
     assert isinstance(packet, Packet)
     assert packet.controller_id == 0
-    assert packet.payload_type == Payload.Payload.Read
+    assert packet.payload_type == Payload.Payload.ReadCentral
     assert packet.get('connection_handle') == 0x0040
     assert packet.get('attribute_handle') == 0x0003
 
@@ -51,7 +49,7 @@ def test_extract():
 def test_serialize():
     """ Test to serialize a packet (getting raw bytes from packet object). """
     packet = Packet(
-        payload_type=Payload.Payload.Read,
+        payload_type=Payload.Payload.ReadCentral,
         controller_id=0,
         connection_handle=0x0040,
         attribute_handle=0x0003
@@ -63,7 +61,7 @@ def test_serialize():
 def test_get():
     """ Test to get packet parameters. """
     packet = Packet(
-        payload_type=Payload.Payload.Read,
+        payload_type=Payload.Payload.ReadCentral,
         controller_id=0,
         connection_handle=0x0040,
         attribute_handle=0x0003

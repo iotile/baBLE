@@ -21,7 +21,10 @@ def test_version(capsys):
     assert re.match(r"^\d\.\d\.\d(\.dev0)?$", out)
 
 
-def test_set_cap():
+def test_set_cap(capsys):
     """ Test if bable script returns error if called with wrong path when setting capabilities. """
     result = bable_script.main(['--set-cap', 'does_not_exist'])
     assert result == 1
+
+    out, _ = capsys.readouterr()
+    assert out != ""

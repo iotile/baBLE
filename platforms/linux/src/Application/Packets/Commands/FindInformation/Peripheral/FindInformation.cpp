@@ -52,13 +52,13 @@ namespace Packet {
       }
 
       void FindInformation::set_socket(AbstractSocket* socket) {
+        if (m_error != Format::HCI::AttributeErrorCode::None) {
+          return;
+        }
+
         auto hci_socket = dynamic_cast<HCISocket*>(socket);
         if (hci_socket == nullptr) {
           throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast socket to HCISocket packet");
-        }
-
-        if (m_error != Format::HCI::AttributeErrorCode::None) {
-          return;
         }
 
         for (auto& service : hci_socket->get_services()) {

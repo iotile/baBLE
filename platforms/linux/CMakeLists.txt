@@ -41,13 +41,16 @@ set(SOURCES_FILES
         src/Application/Packets/Commands/SetPowered/SetPoweredResponse.cpp
         src/Application/Packets/Commands/Read/Central/ReadRequest.cpp
         src/Application/Packets/Commands/Read/Central/ReadResponse.cpp
-        src/Application/Packets/Commands/WriteWithoutResponse/WriteWithoutResponse.cpp
-        src/Application/Packets/Commands/NotificationReceived/NotificationReceived.cpp
+        src/Application/Packets/Commands/Read/Peripheral/ReadRequest.cpp
+        src/Application/Packets/Commands/Read/Peripheral/ReadResponse.cpp
+        src/Application/Packets/Commands/WriteWithoutResponse/Central/WriteWithoutResponse.cpp
+        src/Application/Packets/Commands/WriteWithoutResponse/Peripheral/WriteWithoutResponse.cpp
+        src/Application/Packets/Commands/HandleValueNotification/NotificationReceived.cpp
+        src/Application/Packets/Commands/HandleValueNotification/EmitNotification.cpp
         src/Application/Packets/Commands/GetControllersIds/GetControllersIdsRequest.cpp
         src/Application/Packets/Commands/GetControllerInfo/GetControllerInfoRequest.cpp
         src/Application/Packets/Commands/GetConnectedDevices/GetConnectedDevices.cpp
         src/Application/Packets/Commands/ReadByType/Peripheral/ReadByTypeRequest.cpp
-        src/Application/Packets/Commands/ReadByType/Peripheral/ReadByTypeResponse.cpp
         src/Application/Packets/Commands/ReadByType/Central/ReadByTypeRequest.cpp
         src/Application/Packets/Commands/ReadByType/Central/ReadByTypeResponse.cpp
         src/Application/Packets/Commands/ReadByGroupType/Central/ReadByGroupTypeRequest.cpp
@@ -60,8 +63,10 @@ set(SOURCES_FILES
         src/Application/Packets/Commands/SetAdvertiseEnable/SetAdvertiseEnable.cpp
         src/Application/Packets/Commands/SetDiscoverable/SetDiscoverableRequest.cpp
         src/Application/Packets/Commands/SetDiscoverable/SetDiscoverableResponse.cpp
-        src/Application/Packets/Commands/Write/WriteRequest.cpp
-        src/Application/Packets/Commands/Write/WriteResponse.cpp
+        src/Application/Packets/Commands/Write/Central/WriteRequest.cpp
+        src/Application/Packets/Commands/Write/Central/WriteResponse.cpp
+        src/Application/Packets/Commands/Write/Peripheral/WriteRequest.cpp
+        src/Application/Packets/Commands/Write/Peripheral/WriteResponse.cpp
         src/Application/Packets/Commands/SetScanParameters/SetScanParameters.cpp
         src/Application/Packets/Commands/SetScanEnable/SetScanEnable.cpp
         src/Application/Packets/Commands/CreateConnection/CreateConnection.cpp
@@ -75,6 +80,7 @@ set(SOURCES_FILES
         src/Application/Packets/Commands/SetAdvertisingParameters/SetAdvertisingParameters.hpp
         src/Application/Packets/Commands/FindInformation/Peripheral/FindInformation.cpp
         src/Application/Packets/Commands/FindInformation/Peripheral/FindInformation.hpp
+        src/Application/Packets/Commands/FindByType/Peripheral/FindByType.cpp
         src/Application/Packets/Events/CommandComplete/CommandComplete.cpp
         src/Application/Packets/Events/DeviceConnected/DeviceConnected.cpp
         src/Application/Packets/Events/DeviceDisconnected/DeviceDisconnected.cpp
@@ -116,8 +122,7 @@ set(SOURCES_FILES
         src/Transport/Socket/StdIO/StdIOSocket.cpp
         src/Transport/Socket/HCI/HCISocket.cpp
         src/registration.hpp
-        src/Exceptions/BaBLEException.cpp
-        src/Application/Packets/Commands/FindByType/Peripheral/FindByType.cpp)
+        src/Exceptions/BaBLEException.cpp)
 add_library(bable ${SOURCES_FILES})
 target_include_directories(bable PUBLIC src)
 

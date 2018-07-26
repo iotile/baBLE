@@ -33,19 +33,26 @@ namespace Packet {
 
         void prepare(const std::shared_ptr<PacketRouter>& router) override;
 
+        void set_socket(AbstractSocket* socket) override;
+
         const std::string stringify() const override;
 
       private:
-        uint16_t m_starting_handle;
-        uint16_t m_ending_handle;
-        std::vector<uint8_t> m_uuid;
+        enum ReadType {
+          None,
+          Service,
+          Characteristic,
+          CharacteristicValue,
+          CharacteristicConfiguration
+        };
 
-        bool m_read_attribute;
-        uint16_t m_uuid_num;
+        uint16_t m_attribute_handle;
+
+        ReadType m_type;
+        Format::HCI::Service m_service;
+        Format::HCI::Characteristic m_characteristic;
+
         Format::HCI::AttributeErrorCode m_error;
-
-        std::vector<Format::HCI::Characteristic> m_characteristics;
-        uint8_t m_length_per_characteristic;
       };
 
     }

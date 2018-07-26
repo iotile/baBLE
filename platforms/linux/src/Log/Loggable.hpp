@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_LOGGABLE_HPP
-#define BABLE_LINUX_LOGGABLE_HPP
+#ifndef BABLE_LOGGABLE_HPP
+#define BABLE_LOGGABLE_HPP
 
 #include <string>
 
@@ -11,4 +11,4 @@ public:
 
 };
 
-#endif //BABLE_LINUX_LOGGABLE_HPP
+#endif //BABLE_LOGGABLE_HPP

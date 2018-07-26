@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_READBYTYPEREQUEST_HPP
-#define BABLE_LINUX_READBYTYPEREQUEST_HPP
+#ifndef BABLE_READBYTYPEREQUEST_HPP
+#define BABLE_READBYTYPEREQUEST_HPP
 
 #include "Application/Packets/Base/HostToControllerPacket.hpp"
 
@@ -53,4 +53,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_READBYTYPEREQUEST_HPP
+#endif //BABLE_READBYTYPEREQUEST_HPP

@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_HCISOCKET_HPP
-#define BABLE_LINUX_HCISOCKET_HPP
+#ifndef BABLE_HCISOCKET_HPP
+#define BABLE_HCISOCKET_HPP
 
 #include <queue>
 #include <unordered_map>
@@ -57,4 +57,4 @@ private:
 };
 
 
-#endif //BABLE_LINUX_HCISOCKET_HPP
+#endif //BABLE_HCISOCKET_HPP

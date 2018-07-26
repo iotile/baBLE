@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_PACKETROUTER_HPP
-#define BABLE_LINUX_PACKETROUTER_HPP
+#ifndef BABLE_PACKETROUTER_HPP
+#define BABLE_PACKETROUTER_HPP
 
 #include <chrono>
 #include <map>
@@ -35,4 +35,4 @@ private:
 
 };
 
-#endif //BABLE_LINUX_PACKETROUTER_HPP
+#endif //BABLE_PACKETROUTER_HPP

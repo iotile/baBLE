@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_FLATBUFFERSFORMATEXTRACTOR_HPP
-#define BABLE_LINUX_FLATBUFFERSFORMATEXTRACTOR_HPP
+#ifndef BABLE_FLATBUFFERSFORMATEXTRACTOR_HPP
+#define BABLE_FLATBUFFERSFORMATEXTRACTOR_HPP
 
 #include <Packet_generated.h>
 #include "Format/AbstractExtractor.hpp"
@@ -33,4 +33,4 @@ T FlatbuffersFormatExtractor::get_payload() const {
   return payload;
 };
 
-#endif //BABLE_LINUX_FLATBUFFERSFORMATEXTRACTOR_HPP
+#endif //BABLE_FLATBUFFERSFORMATEXTRACTOR_HPP

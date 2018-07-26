@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_FLATBUFFERSFORMAT_HPP
-#define BABLE_LINUX_FLATBUFFERSFORMAT_HPP
+#ifndef BABLE_FLATBUFFERSFORMAT_HPP
+#define BABLE_FLATBUFFERSFORMAT_HPP
 
 #include <Packet_generated.h>
 #include "Format/AbstractFormat.hpp"
@@ -37,4 +37,4 @@ private:
 
 };
 
-#endif //BABLE_LINUX_FLATBUFFERSFORMAT_HPP
+#endif //BABLE_FLATBUFFERSFORMAT_HPP

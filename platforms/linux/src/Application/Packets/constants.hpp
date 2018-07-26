@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_PACKET_CONSTANTS_HPP
-#define BABLE_LINUX_PACKET_CONSTANTS_HPP
+#ifndef BABLE_PACKET_CONSTANTS_HPP
+#define BABLE_PACKET_CONSTANTS_HPP
 
 namespace Packet {
 
@@ -24,6 +24,7 @@ namespace Packet {
     DeviceConnected,
     DeviceDisconnected,
     Disconnect,
+    EmitNotification,
     ErrorResponse,
     Exit,
     FindByType,
@@ -67,4 +68,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_PACKET_CONSTANTS_HPP
+#endif //BABLE_PACKET_CONSTANTS_HPP

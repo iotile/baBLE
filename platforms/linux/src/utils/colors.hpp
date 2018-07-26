@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_COLORS_HPP
-#define BABLE_LINUX_COLORS_HPP
+#ifndef BABLE_COLORS_HPP
+#define BABLE_COLORS_HPP
 
 #define RESET_COLOR "\033[0m"
 
@@ -12,4 +12,4 @@
 
 #define COLORIZE(color, txt) ((color) + std::string(txt) + RESET_COLOR)
 
-#endif //BABLE_LINUX_COLORS_HPP
+#endif //BABLE_COLORS_HPP

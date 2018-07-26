@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_READY_HPP
-#define BABLE_LINUX_READY_HPP
+#ifndef BABLE_READY_HPP
+#define BABLE_READY_HPP
 
 #include "Application/Packets/Base/HostOnlyPacket.hpp"
 
@@ -26,4 +26,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_READY_HPP
+#endif //BABLE_READY_HPP

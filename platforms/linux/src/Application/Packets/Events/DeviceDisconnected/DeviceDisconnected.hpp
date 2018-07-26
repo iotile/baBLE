@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_DEVICEDISCONNECTED_HPP
-#define BABLE_LINUX_DEVICEDISCONNECTED_HPP
+#ifndef BABLE_DEVICEDISCONNECTED_HPP
+#define BABLE_DEVICEDISCONNECTED_HPP
 
 #include "Application/Packets/Base/ControllerToHostPacket.hpp"
 
@@ -39,4 +39,4 @@ namespace Packet {
   }
 
 }
-#endif //BABLE_LINUX_DEVICEDISCONNECTED_HPP
+#endif //BABLE_DEVICEDISCONNECTED_HPP

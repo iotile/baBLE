@@ -8,7 +8,7 @@
 #include "Application/Packets/Commands/GetControllerInfo/GetControllerInfoResponse.hpp"
 #include "Application/Packets/Commands/Read/Central/ReadRequest.hpp"
 #include "Application/Packets/Commands/Read/Central/ReadResponse.hpp"
-#include "Application/Packets/Commands/Write/WriteResponse.hpp"
+#include "Application/Packets/Commands/Write/Central/WriteResponse.hpp"
 #include "Application/Packets/Control/Ready/Ready.hpp"
 #include "mocks/mock_socket.hpp"
 #include "mocks/mock_stdio_socket.hpp"
@@ -194,7 +194,7 @@ TEST_CASE("Integration (with mocked socket) - HCI packet", "[integration][hci]")
   PacketBuilder hci_packet_builder(hci_format);
   hci_packet_builder
       .register_command<Packet::Commands::Central::ReadResponse>()
-      .register_command<Packet::Commands::WriteResponse>();
+      .register_command<Packet::Commands::Central::WriteResponse>();
 
   PacketBuilder stdio_packet_builder(fb_format);
   stdio_packet_builder

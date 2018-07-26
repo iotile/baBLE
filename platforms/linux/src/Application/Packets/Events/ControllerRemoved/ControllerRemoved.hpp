@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_CONTROLLERREMOVED_HPP
-#define BABLE_LINUX_CONTROLLERREMOVED_HPP
+#ifndef BABLE_CONTROLLERREMOVED_HPP
+#define BABLE_CONTROLLERREMOVED_HPP
 
 #include "Application/Packets/Base/ControllerToHostPacket.hpp"
 
@@ -35,4 +35,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_CONTROLLERREMOVED_HPP
+#endif //BABLE_CONTROLLERREMOVED_HPP

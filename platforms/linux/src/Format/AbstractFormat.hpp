@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_ABSTRACTFORMAT_HPP
-#define BABLE_LINUX_ABSTRACTFORMAT_HPP
+#ifndef BABLE_ABSTRACTFORMAT_HPP
+#define BABLE_ABSTRACTFORMAT_HPP
 
 #include <memory>
 #include "Application/Packets/constants.hpp"
@@ -20,4 +20,4 @@ public:
 
 };
 
-#endif //BABLE_LINUX_ABSTRACTFORMAT_HPP
+#endif //BABLE_ABSTRACTFORMAT_HPP

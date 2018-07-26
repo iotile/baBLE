@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_CREATECONNECTION_HPP
-#define BABLE_LINUX_CREATECONNECTION_HPP
+#ifndef BABLE_CREATECONNECTION_HPP
+#define BABLE_CREATECONNECTION_HPP
 
 #include "Application/Packets/Base/HostToControllerPacket.hpp"
 
@@ -57,4 +57,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_CREATECONNECTION_HPP
+#endif //BABLE_CREATECONNECTION_HPP

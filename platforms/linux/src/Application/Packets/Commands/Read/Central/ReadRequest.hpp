@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_CENTRAL_READREQUEST_HPP
-#define BABLE_LINUX_CENTRAL_READREQUEST_HPP
+#ifndef BABLE_CENTRAL_READREQUEST_HPP
+#define BABLE_CENTRAL_READREQUEST_HPP
 
 #include "Application/Packets/Base/HostToControllerPacket.hpp"
 
@@ -47,4 +47,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_CENTRAL_READREQUEST_HPP
+#endif //BABLE_CENTRAL_READREQUEST_HPP

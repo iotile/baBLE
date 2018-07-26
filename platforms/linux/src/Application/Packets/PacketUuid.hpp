@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_PACKETUUID_HPP
-#define BABLE_LINUX_PACKETUUID_HPP
+#ifndef BABLE_PACKETUUID_HPP
+#define BABLE_PACKETUUID_HPP
 
 #include <cstdint>
 #include "./constants.hpp"
@@ -29,4 +29,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_PACKETUUID_HPPs
+#endif //BABLE_PACKETUUID_HPPs

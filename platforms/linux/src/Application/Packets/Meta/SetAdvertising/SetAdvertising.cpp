@@ -43,7 +43,7 @@ namespace Packet {
           } else {
             throw Exceptions::BaBLEException(
                 BaBLE::StatusCode::WrongFormat,
-                "UUID must be 16bit or 128bit",
+                "UUID must be 16bit or 128bit, received_uuid=" + uuid_str,
                 m_uuid_request
             );
           }
@@ -67,8 +67,8 @@ namespace Packet {
       vector<uint8_t> advertising_data;
       advertising_data.reserve(
           3 +  // Flags
-              m_uuids_16_bits.size() * 4 + m_uuids_128_bits.size() * 18 +  // UUIDs
-              m_adv_manufacturer_data.size() + sizeof(m_company_id) + 2 // Manufacturer data
+          m_uuids_16_bits.size() * 4 + m_uuids_128_bits.size() * 18 +  // UUIDs
+          m_adv_manufacturer_data.size() + sizeof(m_company_id) + 2 // Manufacturer data
       );
 
       // Flags
@@ -90,11 +90,13 @@ namespace Packet {
       }
 
       // Manufacturer data
-      advertising_data.push_back(static_cast<uint8_t>(m_adv_manufacturer_data.size() + sizeof(m_company_id) + 1));  // Length
-      advertising_data.push_back(Format::HCI::ReportType::ManufacturerSpecific);  // Type
-      advertising_data.push_back(static_cast<uint8_t>((m_company_id & 0x00FF)));  // Company ID
-      advertising_data.push_back(static_cast<uint8_t>(m_company_id >> 8));
-      advertising_data.insert(advertising_data.end(), m_adv_manufacturer_data.begin(), m_adv_manufacturer_data.end());  // Data
+      if (!m_adv_manufacturer_data.empty()) {
+        advertising_data.push_back(static_cast<uint8_t>(m_adv_manufacturer_data.size() + sizeof(m_company_id) + 1));  // Length
+        advertising_data.push_back(Format::HCI::ReportType::ManufacturerSpecific);  // Type
+        advertising_data.push_back(static_cast<uint8_t>((m_company_id & 0x00FF)));  // Company ID
+        advertising_data.push_back(static_cast<uint8_t>(m_company_id >> 8));
+        advertising_data.insert(advertising_data.end(), m_adv_manufacturer_data.begin(), m_adv_manufacturer_data.end());  // Data
+      }
 
       return advertising_data;
     }
@@ -103,15 +105,17 @@ namespace Packet {
       vector<uint8_t> scan_response_data;
       scan_response_data.reserve(
           m_scan_manufacturer_data.size() + sizeof(m_company_id) + 2 +  // Manufacturer data
-              m_name.length() + 2  // Name
+          m_name.length() + 2  // Name
       );
 
       // Manufacturer data
-      scan_response_data.push_back(static_cast<uint8_t>(m_scan_manufacturer_data.size() + sizeof(m_company_id) + 1));  // Length
-      scan_response_data.push_back(Format::HCI::ReportType::ManufacturerSpecific);  // Type
-      scan_response_data.push_back(static_cast<uint8_t>((m_company_id & 0x00FF)));  // Company ID
-      scan_response_data.push_back(static_cast<uint8_t>(m_company_id >> 8));
-      scan_response_data.insert(scan_response_data.end(), m_scan_manufacturer_data.begin(), m_scan_manufacturer_data.end());  // Data
+      if (!m_scan_manufacturer_data.empty()) {
+        scan_response_data.push_back(static_cast<uint8_t>(m_scan_manufacturer_data.size() + sizeof(m_company_id) + 1));  // Length
+        scan_response_data.push_back(Format::HCI::ReportType::ManufacturerSpecific);  // Type
+        scan_response_data.push_back(static_cast<uint8_t>((m_company_id & 0x00FF)));  // Company ID
+        scan_response_data.push_back(static_cast<uint8_t>(m_company_id >> 8));
+        scan_response_data.insert(scan_response_data.end(), m_scan_manufacturer_data.begin(), m_scan_manufacturer_data.end());  // Data
+      }
 
       if (m_name.length() > 0) {
         vector<uint8_t> name_bytes = Utils::string_to_bytes(m_name);
@@ -269,7 +273,7 @@ namespace Packet {
     }
 
     shared_ptr<AbstractPacket> SetAdvertising::on_response_received(const shared_ptr<PacketRouter>& router,
-                                                                                       const shared_ptr<AbstractPacket>& packet) {
+                                                                    const shared_ptr<AbstractPacket>& packet) {
       LOG.debug("Advertising parameters response received", "SetAdvertising");
       auto command_complete_packet = dynamic_pointer_cast<Events::CommandComplete>(packet);
       if (command_complete_packet == nullptr) {

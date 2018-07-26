@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_EXTRACTOR_HPP
-#define BABLE_LINUX_EXTRACTOR_HPP
+#ifndef BABLE_EXTRACTOR_HPP
+#define BABLE_EXTRACTOR_HPP
 
 #include "./HCI/constants.hpp"
 
@@ -93,4 +93,4 @@ std::array<T, N> AbstractExtractor::get_array() {
   return result;
 };
 
-#endif //BABLE_LINUX_EXTRACTOR_HPP
+#endif //BABLE_EXTRACTOR_HPP

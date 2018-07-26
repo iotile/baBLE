@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_SOCKETCONTAINER_HPP
-#define BABLE_LINUX_SOCKETCONTAINER_HPP
+#ifndef BABLE_SOCKETCONTAINER_HPP
+#define BABLE_SOCKETCONTAINER_HPP
 
 #include <map>
 #include "Transport/AbstractSocket.hpp"
@@ -21,4 +21,4 @@ private:
 
 };
 
-#endif //BABLE_LINUX_SOCKETCONTAINER_HPP
+#endif //BABLE_SOCKETCONTAINER_HPP

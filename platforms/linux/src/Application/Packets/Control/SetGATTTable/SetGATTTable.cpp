@@ -44,13 +44,19 @@ namespace Packet {
         if (raw_characteristic->indication_enabled()) configuration |= 1 << 1;
         if (raw_characteristic->notification_enabled()) configuration |= 1 << 0;
 
+        vector<uint8_t> const_value;
+        if (raw_characteristic->const_value() != nullptr) {
+          const_value.assign(raw_characteristic->const_value()->begin(), raw_characteristic->const_value()->end());
+        }
+
         Format::HCI::Characteristic characteristic{
             raw_characteristic->handle(),
             properties,
             raw_characteristic->value_handle(),
             raw_characteristic->config_handle(),
             configuration,
-            Utils::extract_uuid(raw_characteristic->uuid()->str())  // TODO: verify if uuid order is ok
+            Utils::extract_uuid(raw_characteristic->uuid()->str()),
+            const_value
         };
 
         m_characteristics.push_back(characteristic);
@@ -64,10 +70,6 @@ namespace Packet {
     }
 
     void SetGATTTable::set_socket(AbstractSocket* socket) {
-      if (socket == nullptr) {
-        throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "SetGATTTable needs the socket to set its GATT table", m_uuid_request);
-      }
-
       auto hci_socket = dynamic_cast<HCISocket*>(socket);
       if (hci_socket == nullptr) {
         throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast socket to HCISocket packet");
@@ -96,6 +98,7 @@ namespace Packet {
                << "Value handle: " << to_string(it->value_handle) << ", "
                << "Config handle: " << to_string(it->config_handle) << ", "
                << "Configuration: " << to_string(it->configuration) << ", "
+               << "Constant value: " << Utils::format_bytes_array(it->const_value) << ", "
                << "UUID: " << Utils::format_uuid(it->uuid) << "} ";
         if (next(it) != m_characteristics.end()) {
           result << ", ";

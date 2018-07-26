@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_HCIFORMAT_HPP
-#define BABLE_LINUX_HCIFORMAT_HPP
+#ifndef BABLE_HCIFORMAT_HPP
+#define BABLE_HCIFORMAT_HPP
 
 #include "Format/AbstractFormat.hpp"
 #include "HCIFormatBuilder.hpp"
@@ -34,4 +34,4 @@ public:
 
 };
 
-#endif //BABLE_LINUX_HCIFORMAT_HPP
+#endif //BABLE_HCIFORMAT_HPP

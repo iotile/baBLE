@@ -25,7 +25,7 @@ class CommandsManager(object):
                     add_task_fn(callback(packet=packet))
 
         if not found:
-            self.logger.info("Unexpected response received (uuid=%s)", packet_uuid)
+            self.logger.debug("Unexpected packet received (uuid=%s)", packet_uuid)
             return False
 
         return True

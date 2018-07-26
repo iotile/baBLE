@@ -7,7 +7,7 @@ class BaBLEException(Exception):
         super(BaBLEException, self).__init__()
 
         if packet.payload_type == Payload.BaBLEError:
-            self.message = packet.get('message')
+            self.message = packet.get('message',  bytes.decode)
         else:
             self.message = message if message is not None else "Response with error status received"
 

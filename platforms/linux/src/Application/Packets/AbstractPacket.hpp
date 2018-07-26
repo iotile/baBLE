@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_ABSTRACTPACKET_HPP
-#define BABLE_LINUX_ABSTRACTPACKET_HPP
+#ifndef BABLE_ABSTRACTPACKET_HPP
+#define BABLE_ABSTRACTPACKET_HPP
 
 #include "PacketUuid.hpp"
 #include "Log/Loggable.hpp"
@@ -107,4 +107,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_ABSTRACTPACKET_HPP
+#endif //BABLE_ABSTRACTPACKET_HPP

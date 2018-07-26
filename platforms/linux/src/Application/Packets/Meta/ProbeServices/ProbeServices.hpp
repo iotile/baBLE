@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_PROBESERVICES_HPP
-#define BABLE_LINUX_PROBESERVICES_HPP
+#ifndef BABLE_PROBESERVICES_HPP
+#define BABLE_PROBESERVICES_HPP
 
 #include "Application/Packets/Base/HostOnlyPacket.hpp"
 #include "Application/Packets/Commands/ReadByGroupType/Central/ReadByGroupTypeRequest.hpp"
@@ -42,4 +42,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_PROBESERVICES_HPP
+#endif //BABLE_PROBESERVICES_HPP

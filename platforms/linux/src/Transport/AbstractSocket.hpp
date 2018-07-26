@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_ABSTRACTSOCKET_HPP
-#define BABLE_LINUX_ABSTRACTSOCKET_HPP
+#ifndef BABLE_ABSTRACTSOCKET_HPP
+#define BABLE_ABSTRACTSOCKET_HPP
 
 #include "Format/AbstractFormat.hpp"
 #include "Exceptions/BaBLEException.hpp"
@@ -44,4 +44,4 @@ protected:
 
 };
 
-#endif //BABLE_LINUX_ABSTRACTSOCKET_HPP
+#endif //BABLE_ABSTRACTSOCKET_HPP
