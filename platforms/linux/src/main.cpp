@@ -143,7 +143,9 @@ int main(int argc, char* argv[]) {
         return;
       }
 
-      if (packet->get_id() == Packet::Id::SetGATTTable) {
+      Packet::Id packet_id = packet->get_id();
+
+      if (packet_id == Packet::Id::SetGATTTable) {
         shared_ptr<AbstractSocket> base_socket = socket_container.get_socket(Packet::Type::HCI, packet->get_controller_id());
         packet->set_socket(dynamic_cast<HCISocket*>(base_socket.get()));
       } else {
@@ -155,6 +157,11 @@ int main(int argc, char* argv[]) {
       packet->prepare(packet_router);
 
       socket_container.send(packet);
+
+      if (packet_id == Packet::Id::WriteWithoutResponse || packet_id == Packet::Id::EmitNotification) {
+        packet->prepare(packet_router);
+        socket_container.send(packet);
+      }
     },
     on_error
   );

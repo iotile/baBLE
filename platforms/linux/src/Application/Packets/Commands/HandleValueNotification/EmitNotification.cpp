@@ -14,6 +14,8 @@ namespace Packet {
           : HostToControllerPacket(Packet::Id::EmitNotification, final_type(), final_packet_code(), false) {
         m_attribute_handle = attribute_handle;
         m_value = move(value);
+
+        m_ack_to_send = false;
       }
 
       void EmitNotification::unserialize(FlatbuffersFormatExtractor& extractor) {
@@ -47,6 +49,25 @@ namespace Packet {
             }
             return;
           }
+        }
+      }
+
+      vector<uint8_t> EmitNotification::serialize(FlatbuffersFormatBuilder& builder) const {
+        auto payload = BaBLE::CreateEmitNotification(
+            builder,
+            m_connection_handle,
+            m_attribute_handle
+        );
+
+        return builder.build(payload, BaBLE::Payload::EmitNotification);
+      }
+
+      void EmitNotification::prepare(const shared_ptr<PacketRouter>& router) {
+        if (!m_ack_to_send) {
+          m_current_type = m_final_type;
+          m_ack_to_send = true;
+        } else {
+          m_current_type = initial_type();
         }
       }
 

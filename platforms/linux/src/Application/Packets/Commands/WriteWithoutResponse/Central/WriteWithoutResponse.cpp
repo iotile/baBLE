@@ -13,6 +13,8 @@ namespace Packet {
           : HostToControllerPacket(Packet::Id::WriteWithoutResponse, final_type(), final_packet_code(), false) {
         m_attribute_handle = attribute_handle;
         m_data_to_write = move(data);
+
+        m_ack_to_send = false;
       }
 
       void WriteWithoutResponse::unserialize(FlatbuffersFormatExtractor& extractor) {
@@ -32,6 +34,25 @@ namespace Packet {
             .add(m_data_to_write);
 
         return builder.build(Format::HCI::Type::AsyncData);
+      }
+
+      vector<uint8_t> WriteWithoutResponse::serialize(FlatbuffersFormatBuilder& builder) const {
+        auto payload = BaBLE::CreateWriteWithoutResponseCentral(
+            builder,
+            m_connection_handle,
+            m_attribute_handle
+        );
+
+        return builder.build(payload, BaBLE::Payload::WriteWithoutResponseCentral);
+      }
+
+      void WriteWithoutResponse::prepare(const shared_ptr<PacketRouter>& router) {
+        if (!m_ack_to_send) {
+          m_current_type = m_final_type;
+          m_ack_to_send = true;
+        } else {
+          m_current_type = initial_type();
+        }
       }
 
       const string WriteWithoutResponse::stringify() const {
