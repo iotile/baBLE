@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_LOG_HPP
-#define BABLE_LINUX_LOG_HPP
+#ifndef BABLE_LOG_HPP
+#define BABLE_LOG_HPP
 
 #include <array>
 #include <vector>
@@ -66,4 +66,4 @@ void Log::debug(std::array<uint8_t, N> bytes, const std::string &name) {
 
 #define LOG Log::get()
 
-#endif //BABLE_LINUX_LOG_HPP
+#endif //BABLE_LOG_HPP

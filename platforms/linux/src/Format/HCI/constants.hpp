@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_CONSTANTS_HPP
-#define BABLE_LINUX_CONSTANTS_HPP
+#ifndef BABLE_CONSTANTS_HPP
+#define BABLE_CONSTANTS_HPP
 
 #include "Transport/Socket/Socket.hpp"
 
@@ -9,6 +9,7 @@
 
 // Channels
 #define HCI_CHANNEL_RAW 0
+#define HCI_CHANNEL_USER 1
 #define HCI_CHANNEL_CONTROL 3
 
 // For filter
@@ -24,6 +25,9 @@
 // BLE only supports ATT Channel ID for L2CAP
 #define ATT_CID 4
 
+// Default and minimal MTU for attributes
+#define ATT_MTU 23  // TODO: update mtu after negociation using HCI)
+
 // Misc.
 #define NON_CONTROLLER_ID 0xFFFF
 
@@ -34,6 +38,8 @@ namespace Format {
     const std::size_t command_header_length = 4;
     const std::size_t async_data_header_length = 10;
     const std::size_t event_header_length = 3;
+
+    const std::size_t advertising_data_length = 31;
 
     struct hci_filter {
       uint32_t type_mask;
@@ -156,19 +162,29 @@ namespace Format {
     enum SubEventCode {
       LEConnectionComplete= (EventCode::LEMeta << 8) | 0x01,
       LEAdvertisingReport= (EventCode::LEMeta << 8) | 0x02,
+      LEConnectionUpdateComplete= (EventCode::LEMeta << 8) | 0x03,
       LEReadRemoteUsedFeaturesComplete= (EventCode::LEMeta << 8) | 0x04
     };
 
     enum CommandCode {
+      LESetAdvertisingParameters = 0x2006,
+      LESetAdvertisingData = 0x2008,
+      LESetScanResponse = 0x2009,
+      LESetAdvertiseEnable = 0x200A,
       SetScanParameters = 0x200B,
       SetScanEnable = 0x200C,
       LECreateConnection = 0x200D,
       LECreateConnectionCancel = 0x200E,
-      Disconnect = 0x0406
+      Disconnect = 0x0406,
+      ConnectionParameterUpdateRequest = 0x0012
     };
 
     enum AttributeCode {
       ErrorResponse= 0x01,
+      FindInformationRequest= 0x04,
+      FindInformationResponse= 0x05,
+      FindByTypeRequest= 0x06,
+      FindByTypeResponse= 0x07,
       ReadByTypeRequest= 0x08,
       ReadByTypeResponse= 0x09,
       ReadRequest= 0x0A,
@@ -292,6 +308,7 @@ namespace Format {
       uint16_t config_handle = 0;
       uint16_t configuration = 0;
       std::vector<uint8_t> uuid{};
+      std::vector<uint8_t> const_value{};
     };
 
     enum GattUUID {
@@ -304,4 +321,4 @@ namespace Format {
 
 }
 
-#endif //BABLE_LINUX_CONSTANTS_HPP
+#endif //BABLE_CONSTANTS_HPP

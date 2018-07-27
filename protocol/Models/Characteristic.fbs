@@ -12,4 +12,5 @@ table Characteristic {
   notification_enabled:bool;
   indication_enabled:bool;
   uuid:string;
+  const_value:[uint8];
 }

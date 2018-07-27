@@ -1,13 +1,14 @@
-from builtins import bytes
-import struct
 import trollius as asyncio
 from trollius import From
-
+from builtins import bytes
+import struct
+from uuid import UUID
 from bable_interface.BaBLE import StartScan, StopScan, ProbeServices, ProbeCharacteristics, Connect, Disconnect, \
-    CancelConnection, GetConnectedDevices, GetControllersList, Read, Write, WriteWithoutResponse
+    CancelConnection, GetConnectedDevices, GetControllersList, ReadCentral, SetAdvertising, SetGATTTable, \
+    WriteCentral, WriteWithoutResponseCentral, EmitNotification
 from bable_interface.BaBLE.StatusCode import StatusCode
 from bable_interface.BaBLE.Payload import Payload
-from bable_interface.utils import none_cb, to_bytes
+from bable_interface.utils import none_cb, string_types, switch_endianness_string, uuid_to_string, to_bytes
 from bable_interface.models import BaBLEException, Characteristic, Controller, Device, Packet, PacketUuid, Service
 
 
@@ -142,7 +143,7 @@ def probe_services(self, controller_id, connection_handle, timeout=15.0):
         if packet.status_code == StatusCode.Success:
             services = packet.get(
                 name='services',
-                format_function=lambda raw_services: [Service(raw_service) for raw_service in raw_services]
+                format_function=lambda raw_services: [Service.from_flatbuffers(service) for service in raw_services]
             )
 
             future.set_result(services)
@@ -176,7 +177,7 @@ def probe_characteristics(self, controller_id, connection_handle, timeout=15.0):
         if packet.status_code == StatusCode.Success:
             characteristics = packet.get(
                 name='characteristics',
-                format_function=lambda raw_chars: [Characteristic(raw_char) for raw_char in raw_chars]
+                format_function=lambda raw_chars: [Characteristic.from_flatbuffers(raw_char) for raw_char in raw_chars]
             )
 
             future.set_result(characteristics)
@@ -270,10 +271,7 @@ def connect(self, controller_id, address, address_type, on_connected_with_info, 
 
         try:
             device['services'] = yield From(self.probe_services(controller_id, device['connection_handle']))
-            device['characteristics'] = yield From(self.probe_characteristics(
-                controller_id,
-                device['connection_handle']
-            ))
+            device['characteristics'] = yield From(self.probe_characteristics(controller_id, device['connection_handle']))
         except Exception as err:
             yield From(self.disconnect(controller_id, device['connection_handle'], none_cb))
             error = BaBLEException(packet, "Failed to probe GATT", address=address, exception=err)
@@ -541,7 +539,7 @@ def read(self, controller_id, connection_handle, attribute_handle, on_read, time
 
     future = asyncio.Future()
     request_packet = Packet.build(
-        Read,
+        ReadCentral,
         controller_id=controller_id,
         connection_handle=connection_handle,
         attribute_handle=attribute_handle
@@ -595,7 +593,7 @@ def write(self, controller_id, connection_handle, attribute_handle, value, on_wr
 
     future = asyncio.Future()
     request_packet = Packet.build(
-        Write,
+        WriteCentral,
         controller_id=controller_id,
         connection_handle=connection_handle,
         attribute_handle=attribute_handle,
@@ -619,7 +617,7 @@ def write(self, controller_id, connection_handle, attribute_handle, value, on_wr
 @asyncio.coroutine
 def write_without_response(self, controller_id, connection_handle, attribute_handle, value):
     request_packet = Packet.build(
-        WriteWithoutResponse,
+        WriteWithoutResponseCentral,
         controller_id=controller_id,
         connection_handle=connection_handle,
         attribute_handle=attribute_handle,
@@ -632,7 +630,7 @@ def write_without_response(self, controller_id, connection_handle, attribute_han
 
 
 @asyncio.coroutine
-def set_notification(self, enabled, controller_id, connection_handle, characteristic, on_notification_set,
+def set_notification(self, controller_id, enabled, connection_handle, characteristic, on_notification_set,
                      on_notification_received, timeout=15.0):
 
     if not isinstance(characteristic, Characteristic):
@@ -668,7 +666,8 @@ def set_notification(self, enabled, controller_id, connection_handle, characteri
         on_notification_received_cb(True, result, None, *on_notification_received_params)
 
     try:
-        read_result = yield From(self.read(controller_id, connection_handle, characteristic.config_handle, none_cb, timeout))
+        read_result = yield From(self.read(controller_id, connection_handle, characteristic.config_handle, none_cb,
+                                           timeout))
     except (RuntimeError, BaBLEException) as err:
         on_notification_set_cb(
             False,
@@ -689,14 +688,16 @@ def set_notification(self, enabled, controller_id, connection_handle, characteri
 
     if new_state == current_state:
         on_notification_set_cb(True, read_result, None, *on_notification_set_params)
-        raise asyncio.Return(read_result)
+        returned_value = asyncio.Return(read_result)
+        returned_value.raised = True  # To avoid the warning emitted in Return destructor ("... used without raise")
+        raise returned_value
 
     value = to_bytes(new_state, 2, byteorder='little')
 
     try:
-        result = yield From(self.write(controller_id, connection_handle, characteristic.config_handle, value, none_cb, timeout))
+        result = yield From(self.write(controller_id, connection_handle, characteristic.config_handle, value, none_cb,
+                                       timeout))
         on_notification_set_cb(True, result, None, *on_notification_set_params)
-
         returned_value = asyncio.Return(result)
         returned_value.raised = True  # To avoid the warning emitted in Return destructor ("... used without raise")
         raise returned_value
@@ -714,4 +715,196 @@ def set_notification(self, enabled, controller_id, connection_handle, characteri
 
 @asyncio.coroutine
 def handle_error(self, packet, on_error):
-    on_error(packet.full_status, packet.get('message'))
+    on_error(packet.full_status, packet.get('message', str.decode))
+
+
+@asyncio.coroutine
+def set_gatt_table(self, controller_id, services, characteristics, on_set, timeout):
+
+    if isinstance(on_set, (tuple, list)):
+        on_set_cb = on_set[0]
+        on_set_params = on_set[1:]
+    else:
+        on_set_cb = on_set
+        on_set_params = []
+
+    @asyncio.coroutine
+    def on_response_received(packet, future):
+        self.logger.debug("GATT table set with status={}".format(packet.status))
+        self.remove_callback(packet.packet_uuid)
+
+        if packet.status_code == StatusCode.Success:
+            data = packet.get_dict(['controller_id'])
+
+            on_set_cb(True, data, None, *on_set_params)
+            future.set_result(data)
+        else:
+            error = BaBLEException(packet, "Failed to set GATT table")
+            on_set_cb(False, None, error, *on_set_params)
+            future.set_exception(error)
+
+    future = asyncio.Future()
+    request_packet = Packet.build(
+        SetGATTTable,
+        controller_id=controller_id,
+        services=services,
+        characteristics=characteristics
+    )
+
+    self.register_callback(
+        request_packet.packet_uuid,
+        callback=on_response_received,
+        params={'future': future}
+    )
+
+    self.send_packet(request_packet)
+
+    self.logger.debug("Waiting for setting GATT table response...")
+    try:
+        result = yield From(asyncio.wait_for(future, timeout=timeout))
+        raise asyncio.Return(result)
+    except asyncio.TimeoutError:
+        self.remove_callback(request_packet.packet_uuid)
+        raise RuntimeError("Set GATT table timed out")
+
+
+@asyncio.coroutine
+def set_advertising(self, controller_id, enabled, uuids, name, company_id, advertising_data, scan_response, on_set,
+                    timeout):
+
+    if isinstance(on_set, (tuple, list)):
+        on_set_cb = on_set[0]
+        on_set_params = on_set[1:]
+    else:
+        on_set_cb = on_set
+        on_set_params = []
+
+    if uuids is not None:
+        if not isinstance(uuids, (tuple, list)):
+            uuids = [uuids]
+
+        for i, uuid in enumerate(uuids):
+            if isinstance(uuid, UUID):
+                uuids[i] = uuid_to_string(uuid)
+            elif isinstance(uuid, string_types):
+                uuids[i] = switch_endianness_string(uuid)
+            else:
+                raise ValueError("UUID must be either a uuid.UUID object or a string")
+
+    @asyncio.coroutine
+    def on_response_received(packet, future):
+        self.logger.debug("Set advertising response received with status={}".format(packet.status))
+        self.remove_callback(packet.packet_uuid)
+
+        if packet.status_code == StatusCode.Success:
+            data = packet.get_dict([
+                'controller_id',
+                'state'
+            ])
+
+            on_set_cb(True, data, None, *on_set_params)
+            future.set_result(data)
+        else:
+            error = BaBLEException(packet, "Failed to set advertising")
+            on_set_cb(False, None, error, *on_set_params)
+            future.set_exception(error)
+
+    future = asyncio.Future()
+    request_packet = Packet.build(
+        SetAdvertising,
+        controller_id=controller_id,
+        state=enabled,
+        uuids=uuids,
+        name=name,
+        company_id=company_id,
+        adv_manufacturer_data=advertising_data,
+        scan_manufacturer_data=scan_response
+    )
+
+    self.register_callback(
+        request_packet.packet_uuid,
+        callback=on_response_received,
+        params={'future': future}
+    )
+
+    self.send_packet(request_packet)
+
+    self.logger.debug("Waiting for setting advertising response...")
+    try:
+        result = yield From(asyncio.wait_for(future, timeout=timeout))
+        raise asyncio.Return(result)
+    except asyncio.TimeoutError:
+        self.remove_callback(request_packet.packet_uuid)
+        raise RuntimeError("Set advertising timed out")
+
+
+@asyncio.coroutine
+def notify(self, controller_id, connection_handle, attribute_handle, value):
+    request_packet = Packet.build(
+        EmitNotification,
+        controller_id=controller_id,
+        connection_handle=connection_handle,
+        attribute_handle=attribute_handle,
+        value=bytes(value)
+    )
+
+    self.send_packet(request_packet)
+
+    self.logger.debug("Notification sent")
+
+
+@asyncio.coroutine
+def on_write_request(self, on_write_handler):
+    write_request_uuid = PacketUuid(payload_type=Payload.WritePeripheral)
+    write_without_response_request_uuid = PacketUuid(payload_type=Payload.WriteWithoutResponsePeripheral)
+
+    if isinstance(on_write_handler, (tuple, list)):
+        on_write_handler_fn = on_write_handler[0]
+        on_write_handler_params = on_write_handler[1:]
+    else:
+        on_write_handler_fn = on_write_handler
+        on_write_handler_params = []
+
+    @asyncio.coroutine
+    def on_request(packet):
+        request = packet.get_dict([
+            'controller_id',
+            'connection_handle',
+            'attribute_handle',
+            ('value', bytes)
+        ])
+
+        packet.value = on_write_handler_fn(request, *on_write_handler_params)
+
+        if packet.payload_type != Payload.WriteWithoutResponsePeripheral:
+            self.send_packet(packet)
+
+    self.register_callback(write_request_uuid, callback=on_request)
+    self.register_callback(write_without_response_request_uuid, callback=on_request)
+    self.logger.debug("On write handler registered")
+
+
+@asyncio.coroutine
+def on_read_request(self, on_read_handler):
+    read_request_uuid = PacketUuid(payload_type=Payload.ReadPeripheral)
+
+    if isinstance(on_read_handler, (tuple, list)):
+        on_read_handler_fn = on_read_handler[0]
+        on_read_handler_params = on_read_handler[1:]
+    else:
+        on_read_handler_fn = on_read_handler
+        on_read_handler_params = []
+
+    @asyncio.coroutine
+    def on_request(packet):
+        request = packet.get_dict([
+            'controller_id',
+            'connection_handle',
+            'attribute_handle'
+        ])
+
+        packet.value = on_read_handler_fn(request, *on_read_handler_params)
+        self.send_packet(packet)
+
+    self.register_callback(read_request_uuid, callback=on_request)
+    self.logger.debug("On read handler registered")

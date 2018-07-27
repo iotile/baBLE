@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_EXIT_HPP
-#define BABLE_LINUX_EXIT_HPP
+#ifndef BABLE_EXIT_HPP
+#define BABLE_EXIT_HPP
 
 #include "Application/Packets/Base/HostOnlyPacket.hpp"
 
@@ -19,6 +19,8 @@ namespace Packet {
       void unserialize(FlatbuffersFormatExtractor& extractor) override;
       std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
 
+      void set_socket(AbstractSocket* socket) override;
+
       const std::string stringify() const override;
 
     };
@@ -27,4 +29,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_EXIT_HPP
+#endif //BABLE_EXIT_HPP

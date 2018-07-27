@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_PACKET_CONSTANTS_HPP
-#define BABLE_LINUX_PACKET_CONSTANTS_HPP
+#ifndef BABLE_PACKET_CONSTANTS_HPP
+#define BABLE_PACKET_CONSTANTS_HPP
 
 namespace Packet {
 
@@ -12,6 +12,7 @@ namespace Packet {
 
   enum class Id {
     None,
+    AdvertisingReport,
     BaBLEError,
     CancelConnectionRequest,
     CancelConnectionResponse,
@@ -23,16 +24,18 @@ namespace Packet {
     DeviceConnected,
     DeviceDisconnected,
     Disconnect,
-    AdvertisingReport,
-    NotificationReceived,
+    EmitNotification,
     ErrorResponse,
     Exit,
+    FindByType,
+    FindInformation,
     GetConnectedDevices,
     GetControllerInfoRequest,
     GetControllerInfoResponse,
     GetControllersIdsRequest,
     GetControllersIdsResponse,
     GetControllersList,
+    NotificationReceived,
     ProbeCharacteristics,
     ProbeServices,
     ReadRequest,
@@ -42,14 +45,20 @@ namespace Packet {
     ReadByTypeRequest,
     ReadByTypeResponse,
     Ready,
+    SetAdvertising,
+    SetAdvertisingData,
+    SetAdvertiseEnable,
+    SetAdvertisingParameters,
     SetConnectableRequest,
     SetConnectableResponse,
     SetDiscoverableRequest,
     SetDiscoverableResponse,
+    SetGATTTable,
     SetPoweredRequest,
     SetPoweredResponse,
     SetScanEnable,
     SetScanParameters,
+    SetScanResponse,
     StartScan,
     StopScan,
     WriteRequest,
@@ -59,4 +68,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_PACKET_CONSTANTS_HPP
+#endif //BABLE_PACKET_CONSTANTS_HPP

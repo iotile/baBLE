@@ -8,5 +8,6 @@ table Controller {
   connectable:bool;
   discoverable:bool;
   low_energy:bool;
+  advertising:bool;
   name:string;
 }

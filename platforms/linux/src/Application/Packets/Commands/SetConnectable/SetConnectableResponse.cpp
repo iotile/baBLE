@@ -27,7 +27,7 @@ namespace Packet {
       return builder.build(payload, BaBLE::Payload::SetConnectable);
     }
 
-    const std::string SetConnectableResponse::stringify() const {
+    const string SetConnectableResponse::stringify() const {
       stringstream result;
 
       result << "<SetConnectableResponse> "

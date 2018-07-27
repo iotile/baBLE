@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_HCISOCKET_HPP
-#define BABLE_LINUX_HCISOCKET_HPP
+#ifndef BABLE_HCISOCKET_HPP
+#define BABLE_HCISOCKET_HPP
 
 #include <queue>
 #include <unordered_map>
@@ -7,7 +7,6 @@
 #include "Transport/Socket/Socket.hpp"
 #include "Transport/AbstractSocket.hpp"
 #include "Format/HCI/HCIFormat.hpp"
-#include "utils/string_formats.hpp"
 
 class HCISocket : public AbstractSocket {
 
@@ -23,10 +22,13 @@ public:
   void connect_l2cap_socket(uint16_t connection_handle, const std::array<uint8_t, 6>& device_address, uint8_t device_address_type);
   void disconnect_l2cap_socket(uint16_t connection_handle);
 
-  std::string get_controller_address() {
-    return Utils::format_bd_address(m_controller_address);
-  };
+  void set_gatt_table(const std::vector<Format::HCI::Service>& services, const std::vector<Format::HCI::Characteristic>& characteristics);
+  std::vector<Format::HCI::Service> get_services() const;
+  std::vector<Format::HCI::Characteristic> get_characteristics() const;
 
+  std::string get_controller_address();
+
+  void close() override;
   ~HCISocket() override;
 
 protected:
@@ -49,7 +51,10 @@ private:
   std::queue<std::vector<uint8_t>> m_send_queue;
   bool m_writable;
 
+  std::vector<Format::HCI::Service> m_services;
+  std::vector<Format::HCI::Characteristic> m_characteristics;
+
 };
 
 
-#endif //BABLE_LINUX_HCISOCKET_HPP
+#endif //BABLE_HCISOCKET_HPP

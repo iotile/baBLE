@@ -26,7 +26,7 @@ namespace Packet {
       return builder.build(payload, BaBLE::Payload::GetControllersIds);
     }
 
-    const std::string GetControllersIdsResponse::stringify() const {
+    const string GetControllersIdsResponse::stringify() const {
       stringstream result;
 
       result << "<GetControllersIdsResponse> "

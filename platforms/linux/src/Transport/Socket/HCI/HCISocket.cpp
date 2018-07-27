@@ -1,4 +1,5 @@
 #include "HCISocket.hpp"
+#include "utils/string_formats.hpp"
 #include "Log/Log.hpp"
 
 using namespace std;
@@ -30,7 +31,7 @@ vector<shared_ptr<HCISocket>> HCISocket::create_all(uv_loop_t* loop, shared_ptr<
 
     free(dl);
 
-  } catch (const std::exception& err) {
+  } catch (const exception& err) {
     free(dl);
     throw;
   }
@@ -42,7 +43,7 @@ HCISocket::HCISocket(uv_loop_t* loop, shared_ptr<HCIFormat> format, uint16_t con
     : HCISocket(loop, move(format), controller_id, make_shared<Socket>(AF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC | SOCK_NONBLOCK, BTPROTO_HCI))
 {}
 
-HCISocket::HCISocket(uv_loop_t* loop, shared_ptr<HCIFormat> format, uint16_t controller_id, std::shared_ptr<Socket> hci_socket)
+HCISocket::HCISocket(uv_loop_t* loop, shared_ptr<HCIFormat> format, uint16_t controller_id, shared_ptr<Socket> hci_socket)
     : AbstractSocket(move(format)),
       m_hci_socket(move(hci_socket)) {
   m_controller_id = controller_id;
@@ -51,7 +52,7 @@ HCISocket::HCISocket(uv_loop_t* loop, shared_ptr<HCIFormat> format, uint16_t con
   LOG.debug("Setting HCI filters...", "HCISocket");
   set_filters();
 
-  LOG.debug("Binding HCI socket...", "HCISocket");
+  LOG.debug("Binding HCI socket to controller #" + to_string(m_controller_id) + "...", "HCISocket");
   m_hci_socket->bind(m_controller_id, HCI_CHANNEL_RAW);
 
   LOG.debug("Getting HCI controller address...", "HCISocket");
@@ -107,6 +108,23 @@ void HCISocket::disconnect_l2cap_socket(uint16_t connection_handle) {
   }
 }
 
+void HCISocket::set_gatt_table(const vector<Format::HCI::Service>& services, const vector<Format::HCI::Characteristic>& characteristics) {
+  m_services = services;
+  m_characteristics = characteristics;
+}
+
+vector<Format::HCI::Service> HCISocket::get_services() const {
+  return m_services;
+}
+
+vector<Format::HCI::Characteristic> HCISocket::get_characteristics() const {
+  return m_characteristics;
+}
+
+string HCISocket::get_controller_address() {
+  return Utils::format_bd_address(m_controller_address);
+}
+
 bool HCISocket::send(const vector<uint8_t>& data) {
   if (!m_writable) {
     LOG.debug("Already sending a message. Queuing...", "HCISocket");
@@ -116,8 +134,8 @@ bool HCISocket::send(const vector<uint8_t>& data) {
   } else {
     set_writable(false);
 
-    LOG.debug("Sending data...", "HCISocket");
-    LOG.debug(data, "HCISocket");
+//    LOG.debug("Sending data...", "HCISocket");
+//    LOG.debug(data, "HCISocket");
     m_hci_socket->write(data);
   }
 
@@ -154,7 +172,9 @@ void HCISocket::on_poll(uv_poll_t* handle, int status, int events) {
   try {
     if (events & UV_READABLE) {
       vector<uint8_t> received_payload = hci_socket->receive();
-      hci_socket->m_on_received(received_payload, hci_socket->m_format);
+//      LOG.debug("Data received", "HCISocket");
+//      LOG.debug(received_payload, "HCISocket");
+      hci_socket->m_on_received(received_payload, hci_socket);
 
     } else if (events & UV_WRITABLE) {
       hci_socket->set_writable(true);
@@ -166,8 +186,8 @@ void HCISocket::on_poll(uv_poll_t* handle, int status, int events) {
 }
 
 void HCISocket::poll(OnReceivedCallback on_received, OnErrorCallback on_error) {
-  m_on_received = on_received;
-  m_on_error = on_error;
+  m_on_received = move(on_received);
+  m_on_error = move(on_error);
 
   uv_poll_start(m_poller.get(), UV_READABLE | UV_WRITABLE, on_poll);
   m_poll_started = true;
@@ -192,7 +212,7 @@ void HCISocket::set_writable(bool is_writable) {
   }
 }
 
-HCISocket::~HCISocket() {
+void HCISocket::close() {
   for (auto& kv : m_l2cap_sockets) {
     kv.second.close();
   }
@@ -201,4 +221,8 @@ HCISocket::~HCISocket() {
 
   m_hci_socket->close();
   LOG.debug("HCI socket closed", "HCISocket");
+}
+
+HCISocket::~HCISocket() {
+  close();
 }

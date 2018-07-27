@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_HOSTTOCONTROLLERPACKET_HPP
-#define BABLE_LINUX_HOSTTOCONTROLLERPACKET_HPP
+#ifndef BABLE_HOSTTOCONTROLLERPACKET_HPP
+#define BABLE_HOSTTOCONTROLLERPACKET_HPP
 
 #include "Application/PacketRouter/PacketRouter.hpp"
 #include "Log/Log.hpp"
@@ -25,7 +25,7 @@ namespace Packet {
     std::vector<uint8_t> serialize(MGMTFormatBuilder& builder) const override;
     std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
 
-    virtual std::shared_ptr<Packet::AbstractPacket> on_response_received(const std::shared_ptr<PacketRouter>& router,
+    virtual std::shared_ptr<AbstractPacket> on_response_received(const std::shared_ptr<PacketRouter>& router,
                                                                          const std::shared_ptr<AbstractPacket>& packet);
 
     uint16_t m_response_packet_code;
@@ -35,4 +35,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_HOSTTOCONTROLLERPACKET_HPP
+#endif //BABLE_HOSTTOCONTROLLERPACKET_HPP

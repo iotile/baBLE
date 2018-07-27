@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_MGMTFORMAT_HPP
-#define BABLE_LINUX_MGMTFORMAT_HPP
+#ifndef BABLE_MGMTFORMAT_HPP
+#define BABLE_MGMTFORMAT_HPP
 
 #include "./constants.hpp"
 #include "Format/AbstractFormat.hpp"
@@ -36,4 +36,4 @@ public:
 
 };
 
-#endif //BABLE_LINUX_MGMTFORMAT_HPP
+#endif //BABLE_MGMTFORMAT_HPP

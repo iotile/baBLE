@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_MGMTSOCKET_HPP
-#define BABLE_LINUX_MGMTSOCKET_HPP
+#ifndef BABLE_MGMTSOCKET_HPP
+#define BABLE_MGMTSOCKET_HPP
 
 #include <queue>
 #include <uv.h>
@@ -16,6 +16,7 @@ public:
   bool send(const std::vector<uint8_t>& data) override;
   void poll(OnReceivedCallback on_received, OnErrorCallback on_error) override;
 
+  void close() override;
   ~MGMTSocket() override;
 
 protected:
@@ -36,4 +37,4 @@ private:
 
 };
 
-#endif //BABLE_LINUX_MGMTSOCKET_HPP
+#endif //BABLE_MGMTSOCKET_HPP

@@ -1,7 +1,0 @@
-namespace BaBLE;
-
-table WriteWithoutResponse {
-  connection_handle:uint16;
-  attribute_handle:uint16;
-  value:[uint8];
-}

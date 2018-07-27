@@ -18,7 +18,7 @@ namespace Packet {
       m_returned_params = extractor.get_vector<uint8_t>();
     }
 
-    const std::string CommandComplete::stringify() const {
+    const string CommandComplete::stringify() const {
       stringstream result;
 
       result << "<CommandComplete> "

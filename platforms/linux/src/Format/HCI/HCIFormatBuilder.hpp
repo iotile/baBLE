@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_HCIFORMATBUILDER_HPP
-#define BABLE_LINUX_HCIFORMATBUILDER_HPP
+#ifndef BABLE_HCIFORMATBUILDER_HPP
+#define BABLE_HCIFORMATBUILDER_HPP
 
 #include "./constants.hpp"
 
@@ -98,4 +98,4 @@ HCIFormatBuilder& HCIFormatBuilder::add(const T (&container)[N]) {
   return *this;
 }
 
-#endif //BABLE_LINUX_HCIFORMATBUILDER_HPP
+#endif //BABLE_HCIFORMATBUILDER_HPP

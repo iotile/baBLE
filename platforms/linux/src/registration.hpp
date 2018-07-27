@@ -1,7 +1,7 @@
-#ifndef BABLE_LINUX_REGISTRATION_CPP
-#define BABLE_LINUX_REGISTRATION_CPP
+#ifndef BABLE_REGISTRATION_CPP
+#define BABLE_REGISTRATION_CPP
 
-#include "Format/AbstractFormat.hpp"
+#include <Application/Packets/Commands/HandleValueNotification/EmitNotification.hpp>
 #include "Application/PacketBuilder/PacketBuilder.hpp"
 #include "Application/Packets/Commands/Disconnect/Disconnect.hpp"
 #include "Application/Packets/Commands/SetPowered/SetPoweredRequest.hpp"
@@ -14,14 +14,23 @@
 #include "Application/Packets/Commands/GetControllersIds/GetControllersIdsResponse.hpp"
 #include "Application/Packets/Commands/GetControllerInfo/GetControllerInfoRequest.hpp"
 #include "Application/Packets/Commands/GetControllerInfo/GetControllerInfoResponse.hpp"
-#include "Application/Packets/Commands/ReadByGroupType/ReadByGroupTypeResponse.hpp"
-#include "Application/Packets/Commands/ReadByType/ReadByTypeResponse.hpp"
-#include "Application/Packets/Commands/Read/ReadRequest.hpp"
-#include "Application/Packets/Commands/Read/ReadResponse.hpp"
-#include "Application/Packets/Commands/Write/WriteRequest.hpp"
-#include "Application/Packets/Commands/Write/WriteResponse.hpp"
-#include "Application/Packets/Commands/NotificationReceived/NotificationReceived.hpp"
-#include "Application/Packets/Commands/WriteWithoutResponse/WriteWithoutResponse.hpp"
+#include "Application/Packets/Commands/ReadByGroupType/Central/ReadByGroupTypeResponse.hpp"
+#include "Application/Packets/Commands/ReadByGroupType/Peripheral/ReadByGroupType.hpp"
+#include "Application/Packets/Commands/ReadByType/Peripheral/ReadByTypeRequest.hpp"
+#include "Application/Packets/Commands/ReadByType/Central/ReadByTypeResponse.hpp"
+#include "Application/Packets/Commands/FindInformation/Peripheral/FindInformation.hpp"
+#include "Application/Packets/Commands/FindByType/Peripheral/FindByType.hpp"
+#include "Application/Packets/Commands/Read/Central/ReadRequest.hpp"
+#include "Application/Packets/Commands/Read/Central/ReadResponse.hpp"
+#include "Application/Packets/Commands/Read/Peripheral/ReadRequest.hpp"
+#include "Application/Packets/Commands/Read/Peripheral/ReadResponse.hpp"
+#include "Application/Packets/Commands/Write/Central/WriteRequest.hpp"
+#include "Application/Packets/Commands/Write/Central/WriteResponse.hpp"
+#include "Application/Packets/Commands/Write/Peripheral/WriteRequest.hpp"
+#include "Application/Packets/Commands/Write/Peripheral/WriteResponse.hpp"
+#include "Application/Packets/Commands/HandleValueNotification/NotificationReceived.hpp"
+#include "Application/Packets/Commands/WriteWithoutResponse/Peripheral/WriteWithoutResponse.hpp"
+#include "Application/Packets/Commands/WriteWithoutResponse/Central/WriteWithoutResponse.hpp"
 #include "Application/Packets/Commands/GetConnectedDevices/GetConnectedDevices.hpp"
 #include "Application/Packets/Commands/CreateConnection/CreateConnection.hpp"
 #include "Application/Packets/Commands/CancelConnection/CancelConnectionRequest.hpp"
@@ -32,9 +41,11 @@
 #include "Application/Packets/Events/AdvertisingReport/AdvertisingReport.hpp"
 #include "Application/Packets/Events/CommandComplete/CommandComplete.hpp"
 #include "Application/Packets/Events/CommandStatus/CommandStatus.hpp"
+#include "Application/Packets/Control/SetGATTTable/SetGATTTable.hpp"
 #include "Application/Packets/Control/Exit/Exit.hpp"
 #include "Application/Packets/Control/Ready/Ready.hpp"
 #include "Application/Packets/Errors/ErrorResponse/ErrorResponse.hpp"
+#include "Application/Packets/Meta/SetAdvertising/SetAdvertising.hpp"
 #include "Application/Packets/Meta/StartScan/StartScan.hpp"
 #include "Application/Packets/Meta/StopScan/StopScan.hpp"
 #include "Application/Packets/Meta/GetControllersList/GetControllersList.hpp"
@@ -66,11 +77,18 @@ void register_mgmt_packets(PacketBuilder& mgmt_packet_builder) {
 // HCI
 void register_hci_packets(PacketBuilder& hci_packet_builder) {
   hci_packet_builder
-    .register_command<Packet::Commands::ReadResponse>()
-    .register_command<Packet::Commands::WriteResponse>()
-    .register_command<Packet::Commands::NotificationReceived>()
-    .register_command<Packet::Commands::ReadByGroupTypeResponse>()
-    .register_command<Packet::Commands::ReadByTypeResponse>()
+    .register_command<Packet::Commands::Central::ReadResponse>()
+    .register_command<Packet::Commands::Peripheral::ReadRequest>()
+    .register_command<Packet::Commands::Central::WriteResponse>()
+    .register_command<Packet::Commands::Peripheral::WriteRequest>()
+    .register_command<Packet::Commands::Peripheral::WriteWithoutResponse>()
+    .register_command<Packet::Commands::Central::NotificationReceived>()
+    .register_command<Packet::Commands::Central::ReadByGroupTypeResponse>()
+    .register_command<Packet::Commands::Peripheral::ReadByGroupType>()
+    .register_command<Packet::Commands::Central::ReadByTypeResponse>()
+    .register_command<Packet::Commands::Peripheral::ReadByTypeRequest>()
+    .register_command<Packet::Commands::Peripheral::FindInformation>()
+    .register_command<Packet::Commands::Peripheral::FindByType>()
     .register_command<Packet::Errors::ErrorResponse>()
     .register_event<Packet::Events::DeviceConnected>()
     .register_event<Packet::Events::DeviceDisconnected>()
@@ -78,7 +96,9 @@ void register_hci_packets(PacketBuilder& hci_packet_builder) {
     .register_event<Packet::Events::CommandComplete>()
     .register_event<Packet::Events::CommandStatus>()
     .set_ignored_packets({
-      Format::HCI::SubEventCode::LEReadRemoteUsedFeaturesComplete
+      Format::HCI::SubEventCode::LEReadRemoteUsedFeaturesComplete,
+      Format::HCI::SubEventCode::LEConnectionUpdateComplete,
+      Format::HCI::CommandCode::ConnectionParameterUpdateRequest
     });
 }
 
@@ -94,15 +114,20 @@ void register_stdio_packets(PacketBuilder& stdio_packet_builder) {
     .register_command<Packet::Commands::CreateConnection>()
     .register_command<Packet::Commands::CancelConnectionRequest>()
     .register_command<Packet::Commands::Disconnect>()
-    .register_command<Packet::Commands::ReadRequest>()
-    .register_command<Packet::Commands::WriteRequest>()
-    .register_command<Packet::Commands::WriteWithoutResponse>()
+    .register_command<Packet::Commands::Central::ReadRequest>()
+    .register_command<Packet::Commands::Peripheral::ReadResponse>()
+    .register_command<Packet::Commands::Central::WriteRequest>()
+    .register_command<Packet::Commands::Peripheral::WriteResponse>()
+    .register_command<Packet::Commands::Central::WriteWithoutResponse>()
+    .register_command<Packet::Commands::Peripheral::EmitNotification>()
     .register_command<Packet::Meta::GetControllersList>()
+    .register_command<Packet::Meta::SetAdvertising>()
     .register_command<Packet::Meta::StartScan>()
     .register_command<Packet::Meta::StopScan>()
     .register_command<Packet::Meta::ProbeServices>()
     .register_command<Packet::Meta::ProbeCharacteristics>()
+    .register_command<Packet::Control::SetGATTTable>()
     .register_command<Packet::Control::Exit>();
 }
 
-#endif //BABLE_LINUX_REGISTRATION_CPP
+#endif //BABLE_REGISTRATION_CPP

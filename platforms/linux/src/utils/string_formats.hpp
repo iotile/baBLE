@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_STRING_FORMATS_HPP
-#define BABLE_LINUX_STRING_FORMATS_HPP
+#ifndef BABLE_STRING_FORMATS_HPP
+#define BABLE_STRING_FORMATS_HPP
 
 #include <array>
 #include <sstream>
@@ -15,6 +15,12 @@ namespace Utils {
   std::array<uint8_t, 6> extract_bd_address(const std::string& bd_address);
 
   std::string format_uuid(const std::vector<uint8_t>& uuid_vector);
+
+  uint16_t uuid_to_number(const std::vector<uint8_t>& uuid_vector);
+
+  std::vector<uint8_t> extract_uuid(const std::string& uuid);
+
+  std::vector<uint8_t> string_to_bytes(const std::string& uuid);
 
   template<typename T>
   std::string format_bytes_array(const T& bytes) {
@@ -73,4 +79,4 @@ namespace Utils {
 
 }
 
-#endif //BABLE_LINUX_STRING_FORMATS_HPP
+#endif //BABLE_STRING_FORMATS_HPP

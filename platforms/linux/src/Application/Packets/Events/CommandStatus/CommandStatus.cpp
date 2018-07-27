@@ -18,7 +18,7 @@ namespace Packet {
       m_opcode = extractor.get_value<uint16_t>();
     }
 
-    const std::string CommandStatus::stringify() const {
+    const string CommandStatus::stringify() const {
       stringstream result;
 
       result << "<CommandStatus> "

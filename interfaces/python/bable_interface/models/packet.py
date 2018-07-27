@@ -1,6 +1,6 @@
 import uuid
 from bable_interface.BaBLE.StatusCode import StatusCode
-from bable_interface.flatbuffers_functions import build_packet, get_type, get_name, get_params, parse_packet, has_attribute
+from bable_interface.flatbuffers_functions import build_packet, get_type, get_data, get_params, parse_packet, has_attribute
 
 
 class PacketUuid(object):
@@ -23,9 +23,9 @@ class PacketUuid(object):
                                   self.attribute_handle, self.uuid)
 
     def set(self, address=None, connection_handle=None, attribute_handle=None, uuid=None):
-        self.address = address.lower() if address is not None else None
-        self.connection_handle = connection_handle
-        self.attribute_handle = attribute_handle
+        self.address = address.lower() if address is not None else self.address
+        self.connection_handle = connection_handle if connection_handle is not None else self.connection_handle
+        self.attribute_handle = attribute_handle if attribute_handle is not None else self.attribute_handle
         self.uuid = uuid
 
     def match(self, other, match_connection_only=False):
@@ -35,8 +35,12 @@ class PacketUuid(object):
         if self.uuid is not None:
             return self.uuid == other.uuid
 
-        if self.payload_type != other.payload_type or self.controller_id != other.controller_id:
+        if self.payload_type != other.payload_type:
             return False
+
+        if self.controller_id is not None:
+            if self.controller_id != other.controller_id:
+                return False
 
         if self.address is not None:
             if other.address is None or self.address != other.address.lower():
@@ -68,7 +72,8 @@ class Packet(object):
         # Add extra params
         for name, value in kwargs.items():
             if not has_attribute(payload_type, name):
-                raise KeyError("Can't create packet {} with '{}' attribute.".format(get_name(payload_type), name))
+                raise KeyError("Can't create packet {} with '{}' attribute."
+                               .format(get_data(payload_type, key='name'), name))
 
             packet.params[name] = value
 
@@ -102,9 +107,11 @@ class Packet(object):
         for name, value in get_params(fb_packet):
             packet.params[name] = value
 
+        address = packet.params.get('address')
+
         # Update uuid with params
         packet.packet_uuid.set(
-            address=packet.params.get('address'),
+            address=address.decode() if address is not None else None,
             connection_handle=packet.params.get('connection_handle'),
             attribute_handle=packet.params.get('attribute_handle'),
             uuid=raw_uuid.decode() if raw_uuid is not None else None
@@ -125,7 +132,7 @@ class Packet(object):
 
     def __repr__(self):
         result = "<{} controller_id={}, status={}, uuid={}, "\
-            .format(get_name(self.payload_type), self.controller_id, self.full_status, self.packet_uuid.uuid)
+            .format(get_data(self.payload_type, key='name'), self.controller_id, self.full_status, self.packet_uuid.uuid)
 
         for key, value in self.params.items():
             result += "{}={}, ".format(key, value)
@@ -142,7 +149,7 @@ class Packet(object):
         except AttributeError:
             value = self.params[name]
 
-        return format_function(value) if format_function is not None else value
+        return format_function(value) if value is not None and format_function is not None else value
 
     def get_dict(self, requests):
         result = {}

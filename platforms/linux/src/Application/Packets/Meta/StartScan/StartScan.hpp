@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_STARTSCAN_HPP
-#define BABLE_LINUX_STARTSCAN_HPP
+#ifndef BABLE_STARTSCAN_HPP
+#define BABLE_STARTSCAN_HPP
 
 #include "Application/Packets/Base/HostOnlyPacket.hpp"
 #include "Application/Packets/Commands/SetScanParameters/SetScanParameters.hpp"
@@ -36,8 +36,8 @@ namespace Packet {
 
       Packet::Id m_waiting_response;
 
-      std::shared_ptr<Packet::Commands::SetScanParameters> m_set_scan_params_packet;
-      std::shared_ptr<Packet::Commands::SetScanEnable> m_set_scan_enable_packet;
+      std::shared_ptr<Commands::SetScanParameters> m_set_scan_params_packet;
+      std::shared_ptr<Commands::SetScanEnable> m_set_scan_enable_packet;
 
     };
 
@@ -45,4 +45,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_STARTSCAN_HPP
+#endif //BABLE_STARTSCAN_HPP

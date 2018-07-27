@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_EXTRACTOR_HPP
-#define BABLE_LINUX_EXTRACTOR_HPP
+#ifndef BABLE_EXTRACTOR_HPP
+#define BABLE_EXTRACTOR_HPP
 
 #include "./HCI/constants.hpp"
 
@@ -54,6 +54,10 @@ public:
     return m_data_length;
   };
 
+  inline bool is_valid() const {
+    return m_valid;
+  };
+
   // Setters
   void set_data_pointer(size_t value);
   void set_controller_id(uint16_t controller_id);
@@ -63,6 +67,8 @@ protected:
   virtual void parse_header(const std::vector<uint8_t>& data) {
     throw std::runtime_error("parse_header() function is not defined in AbstractExtractor.");
   };
+
+  bool m_valid;
 
   uint16_t m_type_code;
   uint16_t m_packet_code;
@@ -87,4 +93,4 @@ std::array<T, N> AbstractExtractor::get_array() {
   return result;
 };
 
-#endif //BABLE_LINUX_EXTRACTOR_HPP
+#endif //BABLE_EXTRACTOR_HPP

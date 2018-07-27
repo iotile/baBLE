@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_HOSTONLYPACKET_HPP
-#define BABLE_LINUX_HOSTONLYPACKET_HPP
+#ifndef BABLE_HOSTONLYPACKET_HPP
+#define BABLE_HOSTONLYPACKET_HPP
 
 #include "Application/Packets/AbstractPacket.hpp"
 
@@ -27,4 +27,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_HOSTONLYPACKET_HPP
+#endif //BABLE_HOSTONLYPACKET_HPP

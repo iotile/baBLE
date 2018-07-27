@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_DEVICEDISCONNECTED_HPP
-#define BABLE_LINUX_DEVICEDISCONNECTED_HPP
+#ifndef BABLE_DEVICEDISCONNECTED_HPP
+#define BABLE_DEVICEDISCONNECTED_HPP
 
 #include "Application/Packets/Base/ControllerToHostPacket.hpp"
 
@@ -27,6 +27,8 @@ namespace Packet {
       void unserialize(HCIFormatExtractor& extractor) override;
       std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
 
+      void set_socket(AbstractSocket* socket) override;
+
       const std::string stringify() const override;
 
     private:
@@ -37,4 +39,4 @@ namespace Packet {
   }
 
 }
-#endif //BABLE_LINUX_DEVICEDISCONNECTED_HPP
+#endif //BABLE_DEVICEDISCONNECTED_HPP

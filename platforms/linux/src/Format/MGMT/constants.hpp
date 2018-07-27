@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_MGMT_CONSTANTS_HPP
-#define BABLE_LINUX_MGMT_CONSTANTS_HPP
+#ifndef BABLE_MGMT_CONSTANTS_HPP
+#define BABLE_MGMT_CONSTANTS_HPP
 
 namespace Format {
 
@@ -18,8 +18,10 @@ namespace Format {
       GetConnections = 0x0015,
       StartScan = 0x0023,
       StopScan = 0x0024,
+      SetAdvertising = 0x0029,
       AddDevice = 0x0033,
-      RemoveDevice = 0x0034
+      RemoveDevice = 0x0034,
+      AddAdvertising = 0x003E
     };
 
     enum EventCode {
@@ -74,14 +76,6 @@ namespace Format {
       ManufacturerSpecific = 0xFF
     };
 
-    const std::string Reasons[] = {
-        "Unspecified",
-        "Connection timeout",
-        "Connection terminated by local host",
-        "Connection terminated by remote host",
-        "Connection terminated due to authentication failure"
-    };
-
     // Structure representing the Extended Inquiry Response data
     struct EIR {
       uint8_t flags = 0;
@@ -108,4 +102,4 @@ namespace Format {
 
 }
 
-#endif //BABLE_LINUX_MGMT_CONSTANTS_HPP
+#endif //BABLE_MGMT_CONSTANTS_HPP

@@ -10,17 +10,23 @@ include "./Commands/Disconnect.fbs";
 include "./Commands/SetPowered.fbs";
 include "./Commands/SetDiscoverable.fbs";
 include "./Commands/SetConnectable.fbs";
-include "./Commands/Read.fbs";
-include "./Commands/Write.fbs";
-include "./Commands/WriteWithoutResponse.fbs";
+include "./Commands/ReadCentral.fbs";
+include "./Commands/ReadPeripheral.fbs";
+include "./Commands/WriteCentral.fbs";
+include "./Commands/WritePeripheral.fbs";
+include "./Commands/WriteWithoutResponseCentral.fbs";
+include "./Commands/WriteWithoutResponsePeripheral.fbs";
 include "./Commands/ProbeServices.fbs";
 include "./Commands/ProbeCharacteristics.fbs";
+include "./Commands/SetAdvertising.fbs";
+include "./Commands/EmitNotification.fbs";
 include "./Events/DeviceConnected.fbs";
 include "./Events/DeviceDisconnected.fbs";
 include "./Events/DeviceFound.fbs";
 include "./Events/ControllerChanged.fbs";
 include "./Events/NotificationReceived.fbs";
 include "./Errors/BaBLEError.fbs";
+include "./Control/SetGATTTable.fbs";
 include "./Control/Ready.fbs";
 include "./Control/Exit.fbs";
 
@@ -31,20 +37,25 @@ union Payload {
   CancelConnection,
   Connect,
   Disconnect,
+  EmitNotification,
   GetConnectedDevices,
   GetControllersIds,
   GetControllerInfo,
   GetControllersList,
   ProbeCharacteristics,
   ProbeServices,
-  Read,
+  ReadCentral,
+  ReadPeripheral,
+  SetAdvertising,
   SetConnectable,
   SetDiscoverable,
   SetPowered,
   StartScan,
   StopScan,
-  Write,
-  WriteWithoutResponse,
+  WriteCentral,
+  WritePeripheral,
+  WriteWithoutResponseCentral,
+  WriteWithoutResponsePeripheral,
 
   // Events
   ControllerAdded,
@@ -59,7 +70,15 @@ union Payload {
 
   // Control
   Exit,
-  Ready
+  Ready,
+  SetGATTTable
+}
+
+union Model {
+  Characteristic,
+  Controller,
+  Device,
+  Service
 }
 
 enum StatusCode:uint8 {

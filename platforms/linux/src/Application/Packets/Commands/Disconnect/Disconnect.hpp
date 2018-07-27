@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_DISCONNECT_HPP
-#define BABLE_LINUX_DISCONNECT_HPP
+#ifndef BABLE_DISCONNECT_HPP
+#define BABLE_DISCONNECT_HPP
 
 #include "Application/Packets/Base/HostToControllerPacket.hpp"
 
@@ -31,7 +31,7 @@ namespace Packet {
       const std::string stringify() const override;
 
       void prepare(const std::shared_ptr<PacketRouter>& router) override;
-      std::shared_ptr<Packet::AbstractPacket> on_response_received(const std::shared_ptr<PacketRouter>& router,
+      std::shared_ptr<AbstractPacket> on_response_received(const std::shared_ptr<PacketRouter>& router,
                                                                    const std::shared_ptr<AbstractPacket>& packet) override;
 
     private:
@@ -45,4 +45,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_DISCONNECT_HPP
+#endif //BABLE_DISCONNECT_HPP

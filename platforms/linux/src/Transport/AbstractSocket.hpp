@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_ABSTRACTSOCKET_HPP
-#define BABLE_LINUX_ABSTRACTSOCKET_HPP
+#ifndef BABLE_ABSTRACTSOCKET_HPP
+#define BABLE_ABSTRACTSOCKET_HPP
 
 #include "Format/AbstractFormat.hpp"
 #include "Exceptions/BaBLEException.hpp"
@@ -7,7 +7,7 @@
 class AbstractSocket {
 
 public:
-  using OnReceivedCallback = std::function<void(const std::vector<uint8_t>&, const std::shared_ptr<AbstractFormat>&)>;
+  using OnReceivedCallback = std::function<void(const std::vector<uint8_t>&, AbstractSocket*)>;
   using OnErrorCallback = std::function<void(const Exceptions::BaBLEException&)>;
 
   explicit AbstractSocket(std::shared_ptr<AbstractFormat> format) {
@@ -15,7 +15,7 @@ public:
     m_controller_id = NON_CONTROLLER_ID;
     m_poll_started = false;
 
-    m_on_received = [](const std::vector<uint8_t>& data, const std::shared_ptr<AbstractFormat>& format) {};
+    m_on_received = [](const std::vector<uint8_t>& data, AbstractSocket* socket) {};
     m_on_error = [](const Exceptions::BaBLEException&) {};
   };
 
@@ -30,6 +30,8 @@ public:
   virtual bool send(const std::vector<uint8_t>& data) = 0;
   virtual void poll(OnReceivedCallback on_received, OnErrorCallback on_error) = 0;
 
+  virtual void close() = 0;
+
   virtual ~AbstractSocket() = default;
 
 protected:
@@ -42,4 +44,4 @@ protected:
 
 };
 
-#endif //BABLE_LINUX_ABSTRACTSOCKET_HPP
+#endif //BABLE_ABSTRACTSOCKET_HPP

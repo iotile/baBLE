@@ -2,6 +2,7 @@
 #define BABLE_MOCK_MGMT_SOCKET_HPP
 
 #include "Transport/Socket/MGMT/MGMTSocket.hpp"
+#include "mock_socket.hpp"
 
 class MockMGMTSocket : public MGMTSocket {
 

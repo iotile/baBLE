@@ -37,8 +37,8 @@ bool MGMTSocket::send(const vector<uint8_t>& data) {
   } else {
     set_writable(false);
 
-    LOG.debug("Sending data...", "MGMTSocket");
-    LOG.debug(data, "MGMTSocket");
+//    LOG.debug("Sending data...", "MGMTSocket");
+//    LOG.debug(data, "MGMTSocket");
     m_socket->write(data);
   }
 
@@ -70,7 +70,9 @@ void MGMTSocket::on_poll(uv_poll_t* handle, int status, int events) {
   try {
     if (events & UV_READABLE) {
       vector<uint8_t> received_payload = mgmt_socket->receive();
-      mgmt_socket->m_on_received(received_payload, mgmt_socket->m_format);
+//      LOG.debug("Data received", "MGMTSocket");
+//      LOG.debug(received_payload, "MGMTSocket");
+      mgmt_socket->m_on_received(received_payload, mgmt_socket);
 
     } else if (events & UV_WRITABLE) {
       mgmt_socket->set_writable(true);
@@ -108,7 +110,11 @@ void MGMTSocket::set_writable(bool is_writable) {
   }
 }
 
-MGMTSocket::~MGMTSocket() {
+void MGMTSocket::close() {
   m_socket->close();
   LOG.debug("MGMT socket closed", "MGMTSocket");
-};
+}
+
+MGMTSocket::~MGMTSocket() {
+  close();
+}

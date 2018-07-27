@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_BABLEERROR_HPP
-#define BABLE_LINUX_BABLEERROR_HPP
+#ifndef BABLE_BABLEERROR_HPP
+#define BABLE_BABLEERROR_HPP
 
 #include "Application/Packets/Base/HostOnlyPacket.hpp"
 #include "Exceptions/BaBLEException.hpp"
@@ -30,4 +30,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_BABLEERROR_HPP
+#endif //BABLE_BABLEERROR_HPP

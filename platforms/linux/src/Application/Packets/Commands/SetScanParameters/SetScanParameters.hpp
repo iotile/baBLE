@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_SETSCANPARAMETERS_HPP
-#define BABLE_LINUX_SETSCANPARAMETERS_HPP
+#ifndef BABLE_SETSCANPARAMETERS_HPP
+#define BABLE_SETSCANPARAMETERS_HPP
 
 #include "Application/Packets/Base/HostToControllerPacket.hpp"
 
@@ -32,7 +32,7 @@ namespace Packet {
 
       const std::string stringify() const override;
 
-      std::shared_ptr<Packet::AbstractPacket> on_response_received(const std::shared_ptr<PacketRouter>& router,
+      std::shared_ptr<AbstractPacket> on_response_received(const std::shared_ptr<PacketRouter>& router,
                                                                    const std::shared_ptr<AbstractPacket>& packet) override;
 
       void set_scan_type(bool active_scan);
@@ -49,4 +49,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_SETSCANPARAMETERS_HPP
+#endif //BABLE_SETSCANPARAMETERS_HPP

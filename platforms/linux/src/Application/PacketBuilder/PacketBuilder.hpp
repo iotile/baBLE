@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_PACKETBUILDER_HPP
-#define BABLE_LINUX_PACKETBUILDER_HPP
+#ifndef BABLE_PACKETBUILDER_HPP
+#define BABLE_PACKETBUILDER_HPP
 
 #include "Application/Packets/AbstractPacket.hpp"
 #include "Format/AbstractFormat.hpp"
@@ -79,4 +79,4 @@ PacketBuilder& PacketBuilder::register_packet(std::unordered_map<uint16_t, Packe
   return *this;
 };
 
-#endif //BABLE_LINUX_PACKETBUILDER_HPP
+#endif //BABLE_PACKETBUILDER_HPP

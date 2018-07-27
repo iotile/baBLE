@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_BABLEEXCEPTION_HPP
-#define BABLE_LINUX_BABLEEXCEPTION_HPP
+#ifndef BABLE_BABLEEXCEPTION_HPP
+#define BABLE_BABLEEXCEPTION_HPP
 
 #include <Packet_generated.h>
 
@@ -27,4 +27,4 @@ namespace Exceptions {
 
 }
 
-#endif //BABLE_LINUX_BABLEEXCEPTION_HPP
+#endif //BABLE_BABLEEXCEPTION_HPP

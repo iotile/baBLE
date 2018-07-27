@@ -5,7 +5,7 @@
 
 using namespace std;
 
-Socket::Socket(sa_family_t domain, int type, int protocol) {
+Socket::Socket(sa_family_t domain, int type, int protocol): Socket() {
   m_domain = domain;
   m_socket = ::socket(m_domain, type, protocol);
 
@@ -15,11 +15,17 @@ Socket::Socket(sa_family_t domain, int type, int protocol) {
         "Error while creating the socket: " + string(strerror(errno))
     );
   }
+  m_open = true;
 }
 
 Socket::Socket() {
   m_domain = {};
-  m_socket = 0;
+  m_socket = -1;
+
+  m_open = false;
+  m_binded = false;
+  m_option_set = false;
+  m_connected = false;
 }
 
 void Socket::bind(uint16_t device, uint16_t channel){
@@ -36,6 +42,7 @@ void Socket::bind(uint16_t device, uint16_t channel){
         "Error while binding the socket: " + string(strerror(errno))
     );
   }
+  m_binded = true;
 }
 
 void Socket::bind(const array<uint8_t, 6>& address, uint8_t address_type, uint16_t channel){
@@ -57,6 +64,7 @@ void Socket::bind(const array<uint8_t, 6>& address, uint8_t address_type, uint16
         "Error while binding the socket: " + string(strerror(errno))
     );
   }
+  m_binded = true;
 }
 
 void Socket::write(const vector<uint8_t>& data){
@@ -92,6 +100,7 @@ void Socket::set_option(int level, int name, const void *val, socklen_t len) {
         "Error while setting options on the socket: " + string(strerror(errno))
     );
   }
+  m_option_set = true;
 }
 
 void Socket::ioctl(uint64_t request, void* param) {
@@ -123,15 +132,19 @@ void Socket::connect(const array<uint8_t, 6>& address, uint8_t address_type, uin
         "Error while connecting the socket: " + string(strerror(errno))
     );
   }
+  m_connected = true;
 }
 
 void Socket::close() {
-  int result = ::close(m_socket);
-  if (result != 0) {
-    throw Exceptions::BaBLEException(
-        BaBLE::StatusCode::SocketError,
-        "Error while closing the socket: " + string(strerror(errno))
-    );
+  if (m_open) {
+    int result = ::close(m_socket);
+    if (result != 0) {
+      throw Exceptions::BaBLEException(
+          BaBLE::StatusCode::SocketError,
+          "Error while closing the socket: " + string(strerror(errno))
+      );
+    }
+    m_open = false;
   }
 }
 

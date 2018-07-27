@@ -119,7 +119,7 @@ namespace Packet {
     };
   };
 
-  void AbstractPacket::set_status(uint8_t native_status, bool compute_status, const std::string& native_class) {
+  void AbstractPacket::set_status(uint8_t native_status, bool compute_status, const string& native_class) {
     m_native_status = native_status;
 
     if (compute_status) {

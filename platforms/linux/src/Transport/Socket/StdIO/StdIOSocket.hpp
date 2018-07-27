@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_STDIOSOCKET_HPP
-#define BABLE_LINUX_STDIOSOCKET_HPP
+#ifndef BABLE_STDIOSOCKET_HPP
+#define BABLE_STDIOSOCKET_HPP
 
 #define MAGIC_CODE 0xCAFE
 
@@ -15,7 +15,9 @@ public:
 
   bool send(const std::vector<uint8_t>& data) override;
   void poll(OnReceivedCallback on_received, OnErrorCallback on_error) override;
+
   void on_close(OnCloseCallback on_close);
+  void close();
 
 protected:
   static void on_poll(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf);
@@ -37,4 +39,4 @@ private:
 
 };
 
-#endif //BABLE_LINUX_STDIOSOCKET_HPP
+#endif //BABLE_STDIOSOCKET_HPP

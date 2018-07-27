@@ -1,0 +1,9 @@
+include "Models/Characteristic.fbs";
+include "Models/Service.fbs";
+
+namespace BaBLE;
+
+table SetGATTTable {
+  services:[Service];
+  characteristics:[Characteristic];
+}

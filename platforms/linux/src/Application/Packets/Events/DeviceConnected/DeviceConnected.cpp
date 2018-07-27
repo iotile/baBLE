@@ -1,4 +1,5 @@
 #include "DeviceConnected.hpp"
+#include "Transport/Socket/HCI/HCISocket.hpp"
 #include "utils/string_formats.hpp"
 
 using namespace std;
@@ -33,6 +34,27 @@ namespace Packet {
       );
 
       return builder.build(payload, BaBLE::Payload::DeviceConnected);
+    }
+
+    void DeviceConnected::set_socket(AbstractSocket* socket) {
+      // This part is needed due to a bug since Linux Kernel v4 : we have to create manually the L2CAP socket, else
+      // we'll be disconnected after sending one packet.
+      if (m_status != BaBLE::StatusCode::Success) {
+        LOG.info("Unsuccessful DeviceConnected event ignored (because the device is not connected...)", "DeviceConnected");
+        return;
+      }
+
+      auto hci_socket = dynamic_cast<HCISocket*>(socket);
+      if (hci_socket == nullptr) {
+        throw Exceptions::BaBLEException(BaBLE::StatusCode::Failed, "Can't downcast socket to HCISocket packet");
+      }
+
+      try {
+        hci_socket->connect_l2cap_socket(m_connection_handle, m_raw_address, m_address_type);
+      } catch (const Exceptions::BaBLEException& err) {
+        LOG.warning(err.get_message(), "DeviceConnected");
+        set_status(Format::HCI::ConnectionFailedEstablished);
+      }
     }
 
     const string DeviceConnected::stringify() const {

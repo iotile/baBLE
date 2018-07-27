@@ -8,6 +8,7 @@ class Controller(object):
         self.connectable = raw_ctrl.Connectable()
         self.discoverable = raw_ctrl.Discoverable()
         self.low_energy = raw_ctrl.LowEnergy()
+        self.advertising = raw_ctrl.Advertising()
 
     def __str__(self):
         return self.__repr__()

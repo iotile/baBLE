@@ -38,7 +38,7 @@ void StdIOSocket::on_poll(uv_stream_t* stream, ssize_t nread, const uv_buf_t* bu
 
   if (nread == UV_EOF) {
     LOG.debug("StdIO socket closed...", "StdIOSocket");
-    stdio_socket->m_on_close_callback();
+    stdio_socket->close();
 
   } else if (nread < 0) {
     auto error_code = static_cast<int>(nread);
@@ -65,7 +65,7 @@ void StdIOSocket::on_poll(uv_stream_t* stream, ssize_t nread, const uv_buf_t* bu
         remaining_data_length -= consumed_data_length;
         remaining_data += consumed_data_length;
 
-        stdio_socket->m_on_received(stdio_socket->m_payload, stdio_socket->m_format);
+        stdio_socket->m_on_received(stdio_socket->m_payload, stdio_socket);
       } catch (const Exceptions::BaBLEException& err) {
         stdio_socket->m_on_error(err);
       }
@@ -84,6 +84,11 @@ void StdIOSocket::poll(OnReceivedCallback on_received, OnErrorCallback on_error)
 
 void StdIOSocket::on_close(OnCloseCallback on_close) {
   m_on_close_callback = move(on_close);
+}
+
+void StdIOSocket::close() {
+  m_on_close_callback();
+  LOG.debug("StdIOSocket closed", "StdIOSocket");
 }
 
 vector<uint8_t> StdIOSocket::generate_header(const vector<uint8_t>& data) {

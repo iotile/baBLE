@@ -6,9 +6,9 @@
 #include "Application/Packets/Meta/GetControllersList/GetControllersList.hpp"
 #include "Application/Packets/Commands/GetControllersIds/GetControllersIdsResponse.hpp"
 #include "Application/Packets/Commands/GetControllerInfo/GetControllerInfoResponse.hpp"
-#include "Application/Packets/Commands/Read/ReadRequest.hpp"
-#include "Application/Packets/Commands/Read/ReadResponse.hpp"
-#include "Application/Packets/Commands/Write/WriteResponse.hpp"
+#include "Application/Packets/Commands/Read/Central/ReadRequest.hpp"
+#include "Application/Packets/Commands/Read/Central/ReadResponse.hpp"
+#include "Application/Packets/Commands/Write/Central/WriteResponse.hpp"
 #include "Application/Packets/Control/Ready/Ready.hpp"
 #include "mocks/mock_socket.hpp"
 #include "mocks/mock_stdio_socket.hpp"
@@ -30,6 +30,10 @@ TEST_CASE("Integration (with mocked socket) - MGMT meta packet", "[integration][
   // Mocked sockets
   shared_ptr<MockMGMTSocket> mgmt_socket = make_shared<MockMGMTSocket>(loop, mgmt_format);
   shared_ptr<MockStdIOSocket> stdio_socket = make_shared<MockStdIOSocket>(loop, fb_format);
+  REQUIRE(mgmt_socket->get_raw()->is_open());
+  REQUIRE(mgmt_socket->get_raw()->is_option_set() == false);
+  REQUIRE(mgmt_socket->get_raw()->is_binded());
+  REQUIRE(mgmt_socket->get_raw()->is_connected() == false);
 
   // Socket container
   SocketContainer socket_container;
@@ -56,8 +60,8 @@ TEST_CASE("Integration (with mocked socket) - MGMT meta packet", "[integration][
   };
 
   mgmt_socket->poll(
-      [&mgmt_packet_builder, &packet_router, &socket_container](const vector<uint8_t>& received_data, const shared_ptr<AbstractFormat>& format) {
-        shared_ptr<AbstractExtractor> extractor = format->create_extractor(received_data);
+      [&mgmt_packet_builder, &packet_router, &socket_container](const vector<uint8_t>& received_data, AbstractSocket* socket) {
+        shared_ptr<AbstractExtractor> extractor = socket->format()->create_extractor(received_data);
 
         shared_ptr<Packet::AbstractPacket> packet = mgmt_packet_builder.build(extractor);
         if (packet == nullptr) {
@@ -72,8 +76,8 @@ TEST_CASE("Integration (with mocked socket) - MGMT meta packet", "[integration][
   );
 
   stdio_socket->poll(
-      [&stdio_packet_builder, &packet_router, &socket_container](const vector<uint8_t>& received_data, const shared_ptr<AbstractFormat>& format) {
-        shared_ptr<AbstractExtractor> extractor = format->create_extractor(received_data);
+      [&stdio_packet_builder, &packet_router, &socket_container](const vector<uint8_t>& received_data, AbstractSocket* socket) {
+        shared_ptr<AbstractExtractor> extractor = socket->format()->create_extractor(received_data);
 
         shared_ptr<Packet::AbstractPacket> packet = stdio_packet_builder.build(extractor);
         if (packet == nullptr) {
@@ -170,6 +174,10 @@ TEST_CASE("Integration (with mocked socket) - HCI packet", "[integration][hci]")
   // Mocked sockets
   shared_ptr<MockStdIOSocket> stdio_socket = make_shared<MockStdIOSocket>(loop, fb_format);
   shared_ptr<MockHCISocket> hci_socket = make_shared<MockHCISocket>(loop, hci_format, 0, Utils::extract_bd_address(controller_address));
+  REQUIRE(hci_socket->get_raw()->is_open());
+  REQUIRE(hci_socket->get_raw()->is_option_set());
+  REQUIRE(hci_socket->get_raw()->is_binded());
+  REQUIRE(hci_socket->get_raw()->is_connected() == false);
   REQUIRE(hci_socket->get_controller_id() == 0);
   REQUIRE(hci_socket->get_controller_address() == controller_address);
 
@@ -185,12 +193,12 @@ TEST_CASE("Integration (with mocked socket) - HCI packet", "[integration][hci]")
   // PacketBuilder
   PacketBuilder hci_packet_builder(hci_format);
   hci_packet_builder
-      .register_command<Packet::Commands::ReadResponse>()
-      .register_command<Packet::Commands::WriteResponse>();
+      .register_command<Packet::Commands::Central::ReadResponse>()
+      .register_command<Packet::Commands::Central::WriteResponse>();
 
   PacketBuilder stdio_packet_builder(fb_format);
   stdio_packet_builder
-      .register_command<Packet::Commands::ReadRequest>();
+      .register_command<Packet::Commands::Central::ReadRequest>();
 
   auto on_error = [&stdio_socket, &socket_container](const Exceptions::BaBLEException& err) {
     CAPTURE(err);
@@ -198,14 +206,15 @@ TEST_CASE("Integration (with mocked socket) - HCI packet", "[integration][hci]")
   };
 
   hci_socket->poll(
-      [&hci_socket, &hci_packet_builder, &packet_router, &socket_container](const vector<uint8_t>& received_data, const shared_ptr<AbstractFormat>& format) {
-        shared_ptr<AbstractExtractor> extractor = format->create_extractor(received_data);
+      [&hci_socket, &hci_packet_builder, &packet_router, &socket_container](const vector<uint8_t>& received_data, AbstractSocket* socket) {
+        shared_ptr<AbstractExtractor> extractor = socket->format()->create_extractor(received_data);
         extractor->set_controller_id(hci_socket->get_controller_id());
 
         shared_ptr<Packet::AbstractPacket> packet = hci_packet_builder.build(extractor);
         if (packet == nullptr) {
           return;
         }
+        packet->set_socket(socket);
         packet = packet_router->route(packet_router, packet);
         packet->prepare(packet_router);
         socket_container.send(packet);
@@ -214,8 +223,8 @@ TEST_CASE("Integration (with mocked socket) - HCI packet", "[integration][hci]")
   );
 
   stdio_socket->poll(
-      [&stdio_packet_builder, &packet_router, &socket_container](const vector<uint8_t>& received_data, const shared_ptr<AbstractFormat>& format) {
-        shared_ptr<AbstractExtractor> extractor = format->create_extractor(received_data);
+      [&stdio_packet_builder, &packet_router, &socket_container](const vector<uint8_t>& received_data, AbstractSocket* socket) {
+        shared_ptr<AbstractExtractor> extractor = socket->format()->create_extractor(received_data);
 
         shared_ptr<Packet::AbstractPacket> packet = stdio_packet_builder.build(extractor);
         if (packet == nullptr) {
@@ -228,19 +237,19 @@ TEST_CASE("Integration (with mocked socket) - HCI packet", "[integration][hci]")
   );
 
   // Test send ReadRequest (HCI packet) and receive result
-  shared_ptr<Packet::Commands::ReadRequest> read_request_packet = make_shared<Packet::Commands::ReadRequest>();
+  shared_ptr<Packet::Commands::Central::ReadRequest> read_request_packet = make_shared<Packet::Commands::Central::ReadRequest>();
   REQUIRE_THROWS(read_request_packet->to_bytes());
 
   // Build a ReadRequest
   FlatbuffersFormatBuilder fb_builder(0, "test", "TEST");
-  auto payload_request = BaBLE::CreateRead(
+  auto payload_request = BaBLE::CreateReadCentral(
       fb_builder,
       0x0040, // Connection handle
       0x0003  // Attribute handle
   );
 
   // Simulate a Flatbuffers packet received with a Read request inside. It will automatically send the matching HCI packet
-  stdio_socket->simulate_read(fb_builder.build(payload_request, BaBLE::Payload::Read));
+  stdio_socket->simulate_read(fb_builder.build(payload_request, BaBLE::Payload::ReadCentral));
   REQUIRE(hci_socket->get_raw()->get_num_write_buffers() == 1);
 
   // Read the HCI packet sent (Read request)
@@ -257,10 +266,10 @@ TEST_CASE("Integration (with mocked socket) - HCI packet", "[integration][hci]")
 
   // Verify that the Flatbuffers packet contains the response as expected
   shared_ptr<AbstractExtractor> fb_extractor = fb_format->create_extractor(stdio_socket->get_write_buffer(0));
-  REQUIRE(fb_extractor->get_packet_code() == static_cast<uint16_t>(BaBLE::Payload::Read));
+  REQUIRE(fb_extractor->get_packet_code() == static_cast<uint16_t>(BaBLE::Payload::ReadCentral));
   REQUIRE(fb_extractor->get_controller_id() == 0);
 
-  auto payload_response = static_pointer_cast<FlatbuffersFormatExtractor>(fb_extractor)->get_payload<const BaBLE::Read*>();
+  auto payload_response = static_pointer_cast<FlatbuffersFormatExtractor>(fb_extractor)->get_payload<const BaBLE::ReadCentral*>();
   REQUIRE(payload_response->connection_handle() == 0x0040);
   REQUIRE(payload_response->attribute_handle() == 0x0003);
 

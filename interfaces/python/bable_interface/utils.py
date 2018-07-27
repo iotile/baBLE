@@ -1,5 +1,6 @@
 import re
 import sys
+from uuid import UUID
 
 FIRST_CAP_REGEX = re.compile('(.)([A-Z][a-z]+)')
 ALL_CAP_REGEX = re.compile('([a-z0-9])([A-Z])')
@@ -53,5 +54,44 @@ if sys.version_info < (3, 0):
     string_types = (str, unicode)
 else:
     string_types = str
+
+
+BASE_UUID_BT = UUID('00000000-0000-1000-8000-00805f9b34fb')
+
+
+def string_to_uuid(string, input_byteorder='big'):
+    string = string.replace('-', '')
+    if input_byteorder == 'little':
+        string = switch_endianness_string(string)
+
+    if len(string) not in [4, 32]:
+        raise ValueError("Invalid uuid length (is not 2 or 16 bytes) uuid={}".format(string))
+
+    if len(string) != 32:
+        string = string.zfill(8) + BASE_UUID_BT.hex[8:]
+        return UUID(string)
+    else:
+        return UUID(string)
+
+
+def uuid_to_string(uuid, output_byteorder='little'):
+    if uuid.hex[8:] == BASE_UUID_BT.hex[8:]:
+        # 2 bytes UUID expanded with BASE_UUID_BT
+        uuid2 = uuid.hex[4:8]
+        if output_byteorder == 'little':
+            uuid2 = switch_endianness_string(uuid2)
+        return uuid2
+    else:
+        # 16 bytes UUID
+        if output_byteorder == 'little':
+            uuid16 = UUID(bytes=uuid.bytes_le)
+        else:
+            uuid16 = uuid
+        return uuid16.hex
+
+
+def switch_endianness_string(be_string):
+    return "".join(reversed([be_string[i:i+2] for i in range(0, len(be_string), 2)]))
+
 
 MAGIC_CODE = b'\xCA\xFE'

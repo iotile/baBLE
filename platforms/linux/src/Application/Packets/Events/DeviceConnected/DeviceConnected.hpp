@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_DEVICECONNECTED_HPP
-#define BABLE_LINUX_DEVICECONNECTED_HPP
+#ifndef BABLE_DEVICECONNECTED_HPP
+#define BABLE_DEVICECONNECTED_HPP
 
 #include "Application/Packets/Base/ControllerToHostPacket.hpp"
 
@@ -27,15 +27,9 @@ namespace Packet {
       void unserialize(HCIFormatExtractor& extractor) override;
       std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
 
+      void set_socket(AbstractSocket* socket) override;
+
       const std::string stringify() const override;
-
-      inline const std::array<uint8_t, 6>& get_raw_device_address() const {
-        return m_raw_address;
-      };
-
-      inline uint8_t get_device_address_type() const {
-        return m_address_type;
-      };
 
     private:
       uint8_t m_address_type;
@@ -48,4 +42,4 @@ namespace Packet {
 
 }
 
-#endif //BABLE_LINUX_DEVICECONNECTED_HPP
+#endif //BABLE_DEVICECONNECTED_HPP

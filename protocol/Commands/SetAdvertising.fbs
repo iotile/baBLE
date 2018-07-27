@@ -1,0 +1,10 @@
+namespace BaBLE;
+
+table SetAdvertising {
+  state:bool;
+  uuids:[string];
+  name:string;
+  company_id:uint16;
+  adv_manufacturer_data:[uint8];
+  scan_manufacturer_data:[uint8];
+}

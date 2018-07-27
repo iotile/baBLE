@@ -42,13 +42,13 @@ namespace Packet {
   }
   
   vector<uint8_t> HostToControllerPacket::serialize(HCIFormatBuilder& builder) const {
-  builder.set_opcode(m_packet_code);
-  
-  return {};
+    builder.set_opcode(m_packet_code);
+
+    return {};
   }
 
-  shared_ptr<Packet::AbstractPacket> HostToControllerPacket::on_response_received(const shared_ptr<PacketRouter>& router,
-                                                                                  const shared_ptr<AbstractPacket>& packet) {
+  shared_ptr<AbstractPacket> HostToControllerPacket::on_response_received(const shared_ptr<PacketRouter>& router,
+                                                                          const shared_ptr<AbstractPacket>& packet) {
     LOG.debug("Response received", "RequestPacket");
     packet->set_uuid_request(m_uuid_request);
     return packet;

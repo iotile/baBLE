@@ -1,5 +1,5 @@
-#ifndef BABLE_LINUX_MGMTFORMATBUILDER_HPP
-#define BABLE_LINUX_MGMTFORMATBUILDER_HPP
+#ifndef BABLE_MGMTFORMATBUILDER_HPP
+#define BABLE_MGMTFORMATBUILDER_HPP
 
 #include <array>
 #include <vector>
@@ -96,4 +96,4 @@ MGMTFormatBuilder& MGMTFormatBuilder::add(const T (&container)[N]) {
   return *this;
 }
 
-#endif //BABLE_LINUX_MGMTFORMATBUILDER_HPP
+#endif //BABLE_MGMTFORMATBUILDER_HPP

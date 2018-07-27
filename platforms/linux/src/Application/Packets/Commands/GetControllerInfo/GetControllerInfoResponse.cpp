@@ -39,7 +39,8 @@ namespace Packet {
       bool powered = (m_controller_info.current_settings & 1) > 0;
       bool connectable = (m_controller_info.current_settings & 1 << 1) > 0;
       bool discoverable = (m_controller_info.current_settings & 1 << 3) > 0;
-      bool low_energy = (m_controller_info.current_settings & 9) > 0;
+      bool low_energy = (m_controller_info.current_settings & 1 << 9) > 0;
+      bool advertising = (m_controller_info.current_settings & 1 << 10) > 0;
 
       auto controller = BaBLE::CreateController(
           builder,
@@ -50,6 +51,7 @@ namespace Packet {
           connectable,
           discoverable,
           low_energy,
+          advertising,
           name
       );
       auto payload = BaBLE::CreateGetControllerInfo(builder, controller);

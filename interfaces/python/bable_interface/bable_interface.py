@@ -7,7 +7,7 @@ from .BaBLE import Payload, Exit
 from .threads import WorkingThread, ReceivingThread
 from .commands import CommandsManager
 from .utils import none_cb
-from .models import Packet, PacketUuid
+from .models import Packet
 
 
 class BaBLEInterface(object):
@@ -134,7 +134,6 @@ class BaBLEInterface(object):
         return None
 
     #### Commands ####
-
     def start_scan(self, on_device_found, active_scan=True, controller_id=0, on_scan_started=none_cb, sync=True,
                    timeout=15.0):
         return self._run_command(
@@ -212,7 +211,44 @@ class BaBLEInterface(object):
                          on_notification_received=none_cb, controller_id=0, sync=True, timeout=15.0):
         return self._run_command(
             command_name='set_notification',
-            params=[enabled, controller_id, connection_handle, characteristic, on_notification_set,
+            params=[controller_id, enabled, connection_handle, characteristic, on_notification_set,
                     on_notification_received, timeout],
             sync=sync
+        )
+
+    def set_gatt_table(self, services, characteristics, on_set=none_cb, controller_id=0, sync=True, timeout=15.0):
+        return self._run_command(
+            command_name='set_gatt_table',
+            params=[controller_id, services, characteristics, on_set, timeout],
+            sync=sync
+        )
+
+    def set_advertising(self, enabled, uuids=None, name=None, company_id=None, advertising_data=None,
+                        scan_response=None, on_set=none_cb, controller_id=0, sync=True, timeout=15.0):
+        return self._run_command(
+            command_name='set_advertising',
+            params=[controller_id, enabled, uuids, name, company_id, advertising_data, scan_response, on_set, timeout],
+            sync=sync
+        )
+
+    def notify(self, connection_handle, attribute_handle, value, controller_id=0, sync=False):
+        return self._run_command(
+            command_name='notify',
+            params=[controller_id, connection_handle, attribute_handle, value],
+            sync=sync
+        )
+
+    #### Handlers registration ####
+    def on_write_request(self, on_write_handler):
+        return self._run_command(
+            command_name='on_write_request',
+            params=[on_write_handler],
+            sync=True
+        )
+
+    def on_read_request(self, on_read_handler):
+        return self._run_command(
+            command_name='on_read_request',
+            params=[on_read_handler],
+            sync=True
         )

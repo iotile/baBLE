@@ -18,9 +18,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -funsigned-char")
 # To strip debug info on release
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -s")
 
-# To link statically the libraries (libuv)
-link_libraries("-static -static-libgcc")
-
 ############## CREATE LIBRARY ###############
 ## Build executable from sources files
 set(SOURCES_FILES
@@ -38,33 +35,52 @@ set(SOURCES_FILES
         src/Application/Packets/Base/HostToControllerPacket.cpp
         src/Application/Packets/Base/ControllerToHostPacket.cpp
         src/Application/Packets/Base/HostOnlyPacket.hpp
+        src/Application/Packets/Base/ControllerOnlyPacket.hpp
         src/Application/Packets/Commands/Disconnect/Disconnect.cpp
         src/Application/Packets/Commands/SetPowered/SetPoweredRequest.cpp
-        src/Application/Packets/Commands/SetDiscoverable/SetDiscoverableRequest.cpp
-        src/Application/Packets/Commands/SetConnectable/SetConnectableRequest.cpp
-        src/Application/Packets/Commands/Read/ReadRequest.cpp
-        src/Application/Packets/Commands/Write/WriteRequest.cpp
-        src/Application/Packets/Commands/WriteWithoutResponse/WriteWithoutResponse.cpp
-        src/Application/Packets/Commands/NotificationReceived/NotificationReceived.cpp
+        src/Application/Packets/Commands/SetPowered/SetPoweredResponse.cpp
+        src/Application/Packets/Commands/Read/Central/ReadRequest.cpp
+        src/Application/Packets/Commands/Read/Central/ReadResponse.cpp
+        src/Application/Packets/Commands/Read/Peripheral/ReadRequest.cpp
+        src/Application/Packets/Commands/Read/Peripheral/ReadResponse.cpp
+        src/Application/Packets/Commands/WriteWithoutResponse/Central/WriteWithoutResponse.cpp
+        src/Application/Packets/Commands/WriteWithoutResponse/Peripheral/WriteWithoutResponse.cpp
+        src/Application/Packets/Commands/HandleValueNotification/NotificationReceived.cpp
+        src/Application/Packets/Commands/HandleValueNotification/EmitNotification.cpp
         src/Application/Packets/Commands/GetControllersIds/GetControllersIdsRequest.cpp
         src/Application/Packets/Commands/GetControllerInfo/GetControllerInfoRequest.cpp
         src/Application/Packets/Commands/GetConnectedDevices/GetConnectedDevices.cpp
-        src/Application/Packets/Commands/ReadByType/ReadByTypeRequest.cpp
-        src/Application/Packets/Commands/ReadByType/ReadByTypeResponse.cpp
-        src/Application/Packets/Commands/ReadByGroupType/ReadByGroupTypeRequest.cpp
-        src/Application/Packets/Commands/ReadByGroupType/ReadByGroupTypeResponse.cpp
+        src/Application/Packets/Commands/ReadByType/Peripheral/ReadByTypeRequest.cpp
+        src/Application/Packets/Commands/ReadByType/Central/ReadByTypeRequest.cpp
+        src/Application/Packets/Commands/ReadByType/Central/ReadByTypeResponse.cpp
+        src/Application/Packets/Commands/ReadByGroupType/Central/ReadByGroupTypeRequest.cpp
+        src/Application/Packets/Commands/ReadByGroupType/Central/ReadByGroupTypeResponse.cpp
+        src/Application/Packets/Commands/ReadByGroupType/Peripheral/ReadByGroupType.cpp
         src/Application/Packets/Commands/GetControllerInfo/GetControllerInfoResponse.cpp
         src/Application/Packets/Commands/GetControllersIds/GetControllersIdsResponse.cpp
-        src/Application/Packets/Commands/Read/ReadResponse.cpp
+        src/Application/Packets/Commands/SetConnectable/SetConnectableRequest.cpp
         src/Application/Packets/Commands/SetConnectable/SetConnectableResponse.cpp
+        src/Application/Packets/Commands/SetAdvertiseEnable/SetAdvertiseEnable.cpp
+        src/Application/Packets/Commands/SetDiscoverable/SetDiscoverableRequest.cpp
         src/Application/Packets/Commands/SetDiscoverable/SetDiscoverableResponse.cpp
-        src/Application/Packets/Commands/SetPowered/SetPoweredResponse.cpp
-        src/Application/Packets/Commands/Write/WriteResponse.cpp
+        src/Application/Packets/Commands/Write/Central/WriteRequest.cpp
+        src/Application/Packets/Commands/Write/Central/WriteResponse.cpp
+        src/Application/Packets/Commands/Write/Peripheral/WriteRequest.cpp
+        src/Application/Packets/Commands/Write/Peripheral/WriteResponse.cpp
         src/Application/Packets/Commands/SetScanParameters/SetScanParameters.cpp
         src/Application/Packets/Commands/SetScanEnable/SetScanEnable.cpp
         src/Application/Packets/Commands/CreateConnection/CreateConnection.cpp
         src/Application/Packets/Commands/CancelConnection/CancelConnectionRequest.cpp
         src/Application/Packets/Commands/CancelConnection/CancelConnectionResponse.cpp
+        src/Application/Packets/Commands/SetAdvertisingData/SetAdvertisingData.cpp
+        src/Application/Packets/Commands/SetAdvertisingData/SetAdvertisingData.hpp
+        src/Application/Packets/Commands/SetScanResponse/SetScanResponse.cpp
+        src/Application/Packets/Commands/SetScanResponse/SetScanResponse.hpp
+        src/Application/Packets/Commands/SetAdvertisingParameters/SetAdvertisingParameters.cpp
+        src/Application/Packets/Commands/SetAdvertisingParameters/SetAdvertisingParameters.hpp
+        src/Application/Packets/Commands/FindInformation/Peripheral/FindInformation.cpp
+        src/Application/Packets/Commands/FindInformation/Peripheral/FindInformation.hpp
+        src/Application/Packets/Commands/FindByType/Peripheral/FindByType.cpp
         src/Application/Packets/Events/CommandComplete/CommandComplete.cpp
         src/Application/Packets/Events/DeviceConnected/DeviceConnected.cpp
         src/Application/Packets/Events/DeviceDisconnected/DeviceDisconnected.cpp
@@ -79,6 +95,9 @@ set(SOURCES_FILES
         src/Application/Packets/Meta/ProbeCharacteristics/ProbeCharacteristics.cpp
         src/Application/Packets/Meta/StartScan/StartScan.cpp
         src/Application/Packets/Meta/StopScan/StopScan.cpp
+        src/Application/Packets/Meta/SetAdvertising/SetAdvertising.cpp
+        src/Application/Packets/Meta/SetAdvertising/SetAdvertising.hpp
+        src/Application/Packets/Control/SetGATTTable/SetGATTTable.cpp
         src/Application/Packets/Control/Ready/Ready.cpp
         src/Application/Packets/Control/Exit/Exit.cpp
         src/Application/PacketRouter/PacketRouter.cpp
@@ -121,7 +140,7 @@ target_include_directories(bable PUBLIC deps/protocol)
 
 ############## CREATE EXECUTABLE ###############
 add_executable(bable-bridge-linux src/main.cpp)
-target_link_libraries(bable-bridge-linux bable)
+target_link_libraries(bable-bridge-linux bable -static)  # Statically linked
 
 ########## CREATE TEST (IF ENABLED) ############
 if (BUILD_TESTS)

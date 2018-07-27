@@ -95,7 +95,29 @@ class Characteristic(object):
             return self._tab.String(o + self._tab.Pos)
         return None
 
-def CharacteristicStart(builder): builder.StartObject(11)
+    # Characteristic
+    def ConstValue(self, j):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(26))
+        if o != 0:
+            a = self._tab.Vector(o)
+            return self._tab.Get(flatbuffers.number_types.Uint8Flags, a + flatbuffers.number_types.UOffsetTFlags.py_type(j * 1))
+        return 0
+
+    # Characteristic
+    def ConstValueAsNumpy(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(26))
+        if o != 0:
+            return self._tab.GetVectorAsNumpy(flatbuffers.number_types.Uint8Flags, o)
+        return 0
+
+    # Characteristic
+    def ConstValueLength(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(26))
+        if o != 0:
+            return self._tab.VectorLen(o)
+        return 0
+
+def CharacteristicStart(builder): builder.StartObject(12)
 def CharacteristicAddHandle(builder, handle): builder.PrependUint16Slot(0, handle, 0)
 def CharacteristicAddValueHandle(builder, valueHandle): builder.PrependUint16Slot(1, valueHandle, 0)
 def CharacteristicAddConfigHandle(builder, configHandle): builder.PrependUint16Slot(2, configHandle, 0)
@@ -107,4 +129,6 @@ def CharacteristicAddBroadcast(builder, broadcast): builder.PrependBoolSlot(7, b
 def CharacteristicAddNotificationEnabled(builder, notificationEnabled): builder.PrependBoolSlot(8, notificationEnabled, 0)
 def CharacteristicAddIndicationEnabled(builder, indicationEnabled): builder.PrependBoolSlot(9, indicationEnabled, 0)
 def CharacteristicAddUuid(builder, uuid): builder.PrependUOffsetTRelativeSlot(10, flatbuffers.number_types.UOffsetTFlags.py_type(uuid), 0)
+def CharacteristicAddConstValue(builder, constValue): builder.PrependUOffsetTRelativeSlot(11, flatbuffers.number_types.UOffsetTFlags.py_type(constValue), 0)
+def CharacteristicStartConstValueVector(builder, numElems): return builder.StartVector(1, numElems, 1)
 def CharacteristicEnd(builder): return builder.EndObject()
