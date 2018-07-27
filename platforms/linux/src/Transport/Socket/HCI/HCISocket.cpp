@@ -73,7 +73,7 @@ bool HCISocket::get_controller_info() {
   // To get the controller address
   m_hci_socket->ioctl(HCIGETDEVINFO, (void *)&di);
   m_buffer_size = di.acl_pkts;
-  copy(begin(di.bdaddr.b, end(di.bdaddr.b), m_controller_address.begin()));
+  copy(begin(di.bdaddr.b), end(di.bdaddr.b), m_controller_address.begin());
   return true;
 }
 
@@ -81,7 +81,7 @@ bool HCISocket::set_filters() {
   // IMPORTANT: without these filters, nothing will be received on the HCI socket...
   struct Format::HCI::hci_filter filter {
       (1 << Format::HCI::Type::Event) | (1 << Format::HCI::Type::AsyncData),
-      (1 << Format::HCI::EventCode::DisconnectComplete) | (1 << Format::HCI::EventCode::CommandComplete) | (1 << Format::HCI::EventCode::CommandStatus),
+      (1 << Format::HCI::EventCode::DisconnectComplete) | (1 << Format::HCI::EventCode::CommandComplete) | (1 << Format::HCI::EventCode::CommandStatus) | ( 1 << Format::HCI::EventCode::NumberOfCompletedPackets),
       (1 << Format::HCI::EventCode::LEMeta - 32),
       0
   };
@@ -106,6 +106,8 @@ void HCISocket::disconnect_l2cap_socket(uint16_t connection_handle) {
     m_l2cap_sockets.erase(it);
     LOG.info("L2CAP socket manually disconnected.", "HCISocket");
   }
+
+  m_in_progress_packets.erase(connection_handle);
 }
 
 void HCISocket::set_gatt_table(const vector<Format::HCI::Service>& services, const vector<Format::HCI::Characteristic>& characteristics) {
@@ -209,6 +211,20 @@ void HCISocket::set_writable(bool is_writable) {
       send(reinterpret_cast<const vector<uint8_t>&>(m_send_queue.front()));
       m_send_queue.pop();
     }
+  }
+}
+
+void HCISocket::set_in_progress_packets(uint16_t connection_handle, uint16_t num_packets_processed) {
+  auto it= m_in_progress_packets.find(connection_handle);
+  if (it == m_in_progress_packets.end()) {
+    LOG.warning("Connection handle not found : can't set the number of processing packets", "HCISocket");
+    return;
+  }
+
+  if (num_packets_processed > it->second) {
+    it->second = 0;
+  } else {
+    it->second -= num_packets_processed;
   }
 }
 

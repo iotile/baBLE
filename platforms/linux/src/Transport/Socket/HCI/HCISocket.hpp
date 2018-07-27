@@ -26,6 +26,8 @@ public:
   std::vector<Format::HCI::Service> get_services() const;
   std::vector<Format::HCI::Characteristic> get_characteristics() const;
 
+  void set_in_progress_packets(uint16_t connection_handle, uint16_t num_packets_processed);
+
   std::string get_controller_address();
 
   void close() override;
@@ -45,6 +47,7 @@ private:
 
   std::array<uint8_t, 6> m_controller_address{};
   uint16_t m_buffer_size;
+  std::unordered_map<uint16_t, uint16_t> m_in_progress_packets;
   std::unordered_map<uint16_t, Socket> m_l2cap_sockets;
 
   std::unique_ptr<uv_poll_t> m_poller;

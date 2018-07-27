@@ -36,6 +36,7 @@ namespace Packet {
     GetControllersIdsResponse,
     GetControllersList,
     NotificationReceived,
+    NumberOfCompletedPackets,
     ProbeCharacteristics,
     ProbeServices,
     ReadRequest,
