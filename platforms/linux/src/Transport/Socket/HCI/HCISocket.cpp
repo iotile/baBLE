@@ -56,7 +56,7 @@ HCISocket::HCISocket(uv_loop_t* loop, shared_ptr<HCIFormat> format, uint16_t con
   m_hci_socket->bind(m_controller_id, HCI_CHANNEL_RAW);
 
   LOG.debug("Getting HCI controller address...", "HCISocket");
-  find_controller_address();
+  get_controller_info();
 
   LOG.debug("Setting up poller on HCI socket...", "HCISocket");
   m_poller = make_unique<uv_poll_t>();
@@ -66,14 +66,14 @@ HCISocket::HCISocket(uv_loop_t* loop, shared_ptr<HCIFormat> format, uint16_t con
   LOG.debug("HCI socket created on " + Utils::format_bd_address(m_controller_address), "HCISocket");
 }
 
-bool HCISocket::find_controller_address() {
+bool HCISocket::get_controller_info() {
   struct Format::HCI::hci_dev_info di{};
   di.dev_id = m_controller_id;
 
   // To get the controller address
   m_hci_socket->ioctl(HCIGETDEVINFO, (void *)&di);
-
-  copy(begin(di.bdaddr.b), end(di.bdaddr.b), m_controller_address.begin());
+  m_buffer_size = di.acl_pkts;
+  copy(begin(di.bdaddr.b, end(di.bdaddr.b), m_controller_address.begin()));
   return true;
 }
 

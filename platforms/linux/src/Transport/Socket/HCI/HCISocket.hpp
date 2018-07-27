@@ -39,11 +39,12 @@ protected:
 
 private:
   bool set_filters();
-  bool find_controller_address();
+  bool get_controller_info();
 
   std::vector<uint8_t> receive();
 
   std::array<uint8_t, 6> m_controller_address{};
+  uint16_t m_buffer_size;
   std::unordered_map<uint16_t, Socket> m_l2cap_sockets;
 
   std::unique_ptr<uv_poll_t> m_poller;
