@@ -13,7 +13,7 @@ public:
   explicit MGMTSocket(uv_loop_t* loop, std::shared_ptr<MGMTFormat> format);
   explicit MGMTSocket(uv_loop_t* loop, std::shared_ptr<MGMTFormat> format, std::shared_ptr<Socket> socket);
 
-  bool send(const std::vector<uint8_t>& data) override;
+  bool send(const std::vector<uint8_t>& data, uint16_t connection_handle) override;
   void poll(OnReceivedCallback on_received, OnErrorCallback on_error) override;
 
   void close() override;

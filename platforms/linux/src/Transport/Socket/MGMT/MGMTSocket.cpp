@@ -28,7 +28,7 @@ MGMTSocket::MGMTSocket(uv_loop_t* loop, shared_ptr<MGMTFormat> format, shared_pt
   LOG.debug("MGMT socket created", "MGMTSocket");
 }
 
-bool MGMTSocket::send(const vector<uint8_t>& data) {
+bool MGMTSocket::send(const vector<uint8_t>& data, uint16_t connection_handle) {
   if (!m_writable) {
     LOG.debug("Already sending a message. Queuing...", "MGMTSocket");
     m_send_queue.push(data);
@@ -104,7 +104,7 @@ void MGMTSocket::set_writable(bool is_writable) {
 
   if (m_writable) {
     if (!m_send_queue.empty()) {
-      send(reinterpret_cast<const vector<uint8_t>&>(m_send_queue.front()));
+      send(reinterpret_cast<const vector<uint8_t>&>(m_send_queue.front()), 0);
       m_send_queue.pop();
     }
   }

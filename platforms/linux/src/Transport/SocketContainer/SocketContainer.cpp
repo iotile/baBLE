@@ -28,7 +28,7 @@ bool SocketContainer::send(const shared_ptr<Packet::AbstractPacket>& packet) {
   Packet::Type packet_type = packet->get_type();
 
   if (packet_type == Packet::Type::NONE) {
-    LOG.debug("Packet ignored: " + packet->stringify());
+    // LOG.debug("Packet ignored: " + packet->stringify());
     return true;
   }
 
@@ -52,7 +52,7 @@ bool SocketContainer::send(const shared_ptr<Packet::AbstractPacket>& packet) {
   vector<uint8_t> data = packet->to_bytes();
 
   try {
-    bool result = socket->send(data);
+    bool result = socket->send(data, packet->get_connection_handle());
     return result;
 
   } catch (Exceptions::BaBLEException& err) {

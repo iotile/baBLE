@@ -27,7 +27,7 @@ public:
     return m_controller_id;
   };
 
-  virtual bool send(const std::vector<uint8_t>& data) = 0;
+  virtual bool send(const std::vector<uint8_t>& data, uint16_t connection_handle) = 0;
   virtual void poll(OnReceivedCallback on_received, OnErrorCallback on_error) = 0;
 
   virtual void close() = 0;

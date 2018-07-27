@@ -16,7 +16,7 @@ public:
   explicit HCISocket(uv_loop_t* loop, std::shared_ptr<HCIFormat> format, uint16_t controller_id);
   explicit HCISocket(uv_loop_t* loop, std::shared_ptr<HCIFormat> format, uint16_t controller_id, std::shared_ptr<Socket> hci_socket);
 
-  bool send(const std::vector<uint8_t>& data) override;
+  bool send(const std::vector<uint8_t>& data, uint16_t connection_handle) override;
   void poll(OnReceivedCallback on_received, OnErrorCallback on_error) override;
 
   void connect_l2cap_socket(uint16_t connection_handle, const std::array<uint8_t, 6>& device_address, uint8_t device_address_type);
@@ -52,7 +52,7 @@ private:
 
   std::unique_ptr<uv_poll_t> m_poller;
 
-  std::queue<std::vector<uint8_t>> m_send_queue;
+  std::queue<std::tuple<std::vector<uint8_t>, uint16_t>> m_send_queue;
   bool m_writable;
 
   std::vector<Format::HCI::Service> m_services;

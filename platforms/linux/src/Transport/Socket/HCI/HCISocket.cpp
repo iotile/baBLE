@@ -127,18 +127,32 @@ string HCISocket::get_controller_address() {
   return Utils::format_bd_address(m_controller_address);
 }
 
-bool HCISocket::send(const vector<uint8_t>& data) {
+bool HCISocket::send(const vector<uint8_t>& data, uint16_t connection_handle) {
   if (!m_writable) {
     LOG.debug("Already sending a message. Queuing...", "HCISocket");
-    m_send_queue.push(data);
+    m_send_queue.push(make_tuple(data, connection_handle));
     return false;
 
   } else {
-    set_writable(false);
+    if (connection_handle != 0) {
+      uint16_t num_in_progress_packets = 0;
+      for (auto& i : m_in_progress_packets) {
+        num_in_progress_packets += i.second;
+      }
+
+      if (num_in_progress_packets >= m_buffer_size) {
+        throw Exceptions::BaBLEException(BaBLE::StatusCode::Rejected, "Controller buffer full");
+      }
+    }
 
 //    LOG.debug("Sending data...", "HCISocket");
 //    LOG.debug(data, "HCISocket");
+    set_writable(false);
     m_hci_socket->write(data);
+
+    if (connection_handle != 0) {
+      m_in_progress_packets[connection_handle]++;
+    }
   }
 
   return true;
@@ -208,7 +222,8 @@ void HCISocket::set_writable(bool is_writable) {
 
   if (m_writable) {
     if (!m_send_queue.empty()) {
-      send(reinterpret_cast<const vector<uint8_t>&>(m_send_queue.front()));
+      tuple<vector<uint8_t>, uint16_t> to_send = m_send_queue.front();
+      send(get<0>(to_send), get<1>(to_send));
       m_send_queue.pop();
     }
   }
