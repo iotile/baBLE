@@ -11,7 +11,7 @@ public:
     m_stream->data = this;
   };
 
-  bool send(const std::vector<uint8_t>& data) override {
+  bool send(const std::vector<uint8_t>& data, uint16_t connection_handle) override {
     m_buffers.push_back(data);
   };
 
