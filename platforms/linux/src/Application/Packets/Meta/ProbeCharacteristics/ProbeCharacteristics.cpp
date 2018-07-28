@@ -26,6 +26,14 @@ namespace Packet {
       m_start_handle = payload->start_handle();
       m_end_handle = payload->end_handle();
 
+      if (m_start_handle > m_end_handle) {
+        throw Exceptions::BaBLEException(
+            BaBLE::StatusCode::InvalidCommand,
+            "End handle can't be greater than start handle, start_handle=" + to_string(m_start_handle) + ", end_handle=" + to_string(m_end_handle),
+            m_uuid_request
+        );
+      }
+
       m_read_by_type_request_packet->set_controller_id(m_controller_id);
       m_read_by_type_request_packet->set_connection_handle(m_connection_handle);
       m_read_by_type_request_packet->set_handles(m_start_handle, m_end_handle);
@@ -149,9 +157,13 @@ namespace Packet {
         m_characteristics.insert(m_characteristics.end(), new_characteristics.begin(), new_characteristics.end());
 
         uint16_t last_ending_handle = read_by_type_response_packet->get_last_ending_handle();
-        if (last_ending_handle == m_end_handle) {
+        // TODO: optimize by stopping if ATT_MTU - new_characteristics.size() * 4 >= 4 (packet was not full) -> need handle negociation MTU
+        if (last_ending_handle >= m_end_handle) {
+          // 1st step done -> now we want the characteristics configurations
           m_waiting_char_declaration = false;
           m_waiting_char_configuration = true;
+          m_read_by_type_request_packet->set_gatt_uuid(Format::HCI::GattUUID::ClientCharacteristicConfiguration);
+          m_read_by_type_request_packet->set_handles(m_start_handle, m_end_handle);
         } else {
           m_waiting_char_declaration = true;
           m_read_by_type_request_packet->set_handles(static_cast<uint16_t>(last_ending_handle + 1), m_end_handle);
@@ -160,7 +172,8 @@ namespace Packet {
         m_characteristics_config.insert(m_characteristics_config.end(), new_characteristics.begin(), new_characteristics.end());
 
         uint16_t last_ending_handle = read_by_type_response_packet->get_last_ending_handle();
-        if (last_ending_handle == m_end_handle) {
+        if (last_ending_handle >= m_end_handle) {
+          // 2nd step done
           m_waiting_char_configuration = false;
           _merge_characteristics();
         } else {
