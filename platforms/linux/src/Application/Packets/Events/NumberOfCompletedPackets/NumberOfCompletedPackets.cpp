@@ -13,7 +13,6 @@ namespace Packet {
     {}
 
     void NumberOfCompletedPackets::unserialize(HCIFormatExtractor& extractor) {
-      auto length = extractor.get_value<uint8_t>();
       auto num_connection_handle = extractor.get_value<uint8_t>();
 
       for (uint8_t i = 0; i < num_connection_handle; i++) {

@@ -200,11 +200,11 @@ class BaBLEInterface(object):
             sync=sync
         )
 
-    def write_without_response(self, connection_handle, attribute_handle, value, controller_id=0, sync=False):
+    def write_without_response(self, connection_handle, attribute_handle, value, controller_id=0, timeout=2.0):
         return self._run_command(
             command_name='write_without_response',
-            params=[controller_id, connection_handle, attribute_handle, value],
-            sync=sync
+            params=[controller_id, connection_handle, attribute_handle, value, timeout],
+            sync=True
         )
 
     def set_notification(self, enabled, connection_handle, characteristic, on_notification_set=none_cb,
@@ -231,11 +231,11 @@ class BaBLEInterface(object):
             sync=sync
         )
 
-    def notify(self, connection_handle, attribute_handle, value, controller_id=0, sync=False):
+    def notify(self, connection_handle, attribute_handle, value, controller_id=0, timeout=2.0):
         return self._run_command(
             command_name='notify',
-            params=[controller_id, connection_handle, attribute_handle, value],
-            sync=sync
+            params=[controller_id, connection_handle, attribute_handle, value, timeout],
+            sync=True
         )
 
     #### Handlers registration ####

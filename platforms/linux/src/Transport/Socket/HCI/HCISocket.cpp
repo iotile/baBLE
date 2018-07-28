@@ -143,6 +143,8 @@ bool HCISocket::send(const vector<uint8_t>& data, uint16_t connection_handle) {
       if (num_in_progress_packets >= m_buffer_size) {
         throw Exceptions::BaBLEException(BaBLE::StatusCode::Rejected, "Controller buffer full");
       }
+
+//      LOG.debug(to_string(m_buffer_size - num_in_progress_packets) + " remaining slots in controller buffer.", "HCISocket");
     }
 
 //    LOG.debug("Sending data...", "HCISocket");
@@ -241,6 +243,8 @@ void HCISocket::set_in_progress_packets(uint16_t connection_handle, uint16_t num
   } else {
     it->second -= num_packets_processed;
   }
+
+//  LOG.debug(to_string(num_packets_processed) + " packets processed.", "HCISocket");
 }
 
 void HCISocket::close() {

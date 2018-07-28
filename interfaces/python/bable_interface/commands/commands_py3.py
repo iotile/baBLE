@@ -613,7 +613,22 @@ def write(self, controller_id, connection_handle, attribute_handle, value, on_wr
 
 
 @asyncio.coroutine
-def write_without_response(self, controller_id, connection_handle, attribute_handle, value):
+def write_without_response(self, controller_id, connection_handle, attribute_handle, value, timeout):
+
+    @asyncio.coroutine
+    def on_ack_received(packet, future):
+        self.logger.debug("WriteWithoutResponse ack received with status={}".format(packet.status))
+        self.remove_callback(packet.packet_uuid)
+
+        if packet.status_code == StatusCode.Success:
+            future.set_result(True)
+        else:
+            error = BaBLEException(packet, "Failed to send WriteWithoutResponse packet",
+                                   connection_handle=connection_handle,
+                                   attribute_handle=attribute_handle)
+            future.set_exception(error)
+
+    future = asyncio.Future()
     request_packet = Packet.build(
         WriteWithoutResponseCentral,
         controller_id=controller_id,
@@ -622,9 +637,17 @@ def write_without_response(self, controller_id, connection_handle, attribute_han
         value=bytes(value)
     )
 
+    self.register_callback(request_packet.packet_uuid, callback=on_ack_received, params={'future': future})
+
     self.send_packet(request_packet)
 
-    self.logger.debug("Write without response command sent")
+    try:
+        result = yield from asyncio.wait_for(future, timeout=timeout)
+        self.logger.debug("Write without response command sent")
+        return result
+    except asyncio.TimeoutError:
+        self.remove_callback(request_packet.packet_uuid)
+        raise RuntimeError("WriteWithoutResponse timed out")
 
 
 @asyncio.coroutine
@@ -833,7 +856,22 @@ def set_advertising(self, controller_id, enabled, uuids, name, company_id, adver
 
 
 @asyncio.coroutine
-def notify(self, controller_id, connection_handle, attribute_handle, value):
+def notify(self, controller_id, connection_handle, attribute_handle, value, timeout):
+
+    @asyncio.coroutine
+    def on_ack_received(packet, future):
+        self.logger.debug("EmitNotification ack received with status={}".format(packet.status))
+        self.remove_callback(packet.packet_uuid)
+
+        if packet.status_code == StatusCode.Success:
+            future.set_result(True)
+        else:
+            error = BaBLEException(packet, "Failed to send EmitNotification packet",
+                                   connection_handle=connection_handle,
+                                   attribute_handle=attribute_handle)
+            future.set_exception(error)
+
+    future = asyncio.Future()
     request_packet = Packet.build(
         EmitNotification,
         controller_id=controller_id,
@@ -842,9 +880,17 @@ def notify(self, controller_id, connection_handle, attribute_handle, value):
         value=bytes(value)
     )
 
+    self.register_callback(request_packet.packet_uuid, callback=on_ack_received, params={'future': future})
+
     self.send_packet(request_packet)
 
-    self.logger.debug("Notification sent")
+    try:
+        result = yield from asyncio.wait_for(future, timeout=timeout)
+        self.logger.debug("Notification sent")
+        return result
+    except asyncio.TimeoutError:
+        self.remove_callback(request_packet.packet_uuid)
+        raise RuntimeError("Notification timed out")
 
 
 @asyncio.coroutine

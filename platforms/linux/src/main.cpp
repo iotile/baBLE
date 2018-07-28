@@ -87,7 +87,7 @@ int main(int argc, char* argv[]) {
   LOG.debug("Creating socket pollers...");
 
   auto on_error = [&stdio_socket, &socket_container](const Exceptions::BaBLEException& err) {
-    LOG.error(err.get_message(), "Error");
+    LOG.debug(err.get_message(), "Error");
     shared_ptr<Packet::Errors::BaBLEError> error_packet = make_shared<Packet::Errors::BaBLEError>(err);
     socket_container.send(error_packet);
   };

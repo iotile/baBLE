@@ -5,6 +5,10 @@ from uuid import UUID
 FIRST_CAP_REGEX = re.compile('(.)([A-Z][a-z]+)')
 ALL_CAP_REGEX = re.compile('([a-z0-9])([A-Z])')
 
+MAGIC_CODE = b'\xCA\xFE'
+BASE_UUID_BT = UUID('00000000-0000-1000-8000-00805f9b34fb')
+
+
 if sys.version_info < (3, 2):
     import struct
 
@@ -56,10 +60,10 @@ else:
     string_types = str
 
 
-BASE_UUID_BT = UUID('00000000-0000-1000-8000-00805f9b34fb')
-
-
 def string_to_uuid(string, input_byteorder='big'):
+    if len(string) == 0:
+        return None
+
     string = string.replace('-', '')
     if input_byteorder == 'little':
         string = switch_endianness_string(string)
@@ -75,6 +79,9 @@ def string_to_uuid(string, input_byteorder='big'):
 
 
 def uuid_to_string(uuid, output_byteorder='little'):
+    if uuid is None:
+        return ''
+
     if uuid.hex[8:] == BASE_UUID_BT.hex[8:]:
         # 2 bytes UUID expanded with BASE_UUID_BT
         uuid2 = uuid.hex[4:8]
@@ -92,6 +99,3 @@ def uuid_to_string(uuid, output_byteorder='little'):
 
 def switch_endianness_string(be_string):
     return "".join(reversed([be_string[i:i+2] for i in range(0, len(be_string), 2)]))
-
-
-MAGIC_CODE = b'\xCA\xFE'

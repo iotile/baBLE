@@ -4,12 +4,12 @@ import flatbuffers
 from builtins import int
 
 # pylint:disable=unused-import
-from .BaBLE import Packet, Payload, Model, BaBLEError, CancelConnection, Characteristic, Connect, ControllerAdded, \
-    ControllerRemoved, DeviceConnected, DeviceDisconnected, DeviceFound, Disconnect, EmitNotification, Exit, \
-    GetConnectedDevices, GetControllersList, GetControllerInfo, GetControllersIds, NotificationReceived, \
-    ProbeCharacteristics, ProbeServices, ReadCentral, ReadPeripheral, Ready, Service, SetAdvertising, SetConnectable, \
-    SetDiscoverable, SetGATTTable,  SetPowered, StartScan, StopScan, WriteCentral, WritePeripheral, \
-    WriteWithoutResponseCentral, WriteWithoutResponsePeripheral
+from .BaBLE import Packet, Payload, Model, BaBLEError, CancelConnection, Characteristic, Connect, Controller, \
+    ControllerAdded, ControllerRemoved, Device, DeviceConnected, DeviceDisconnected, DeviceFound, Disconnect, \
+    EmitNotification, Exit, GetConnectedDevices, GetControllersList, GetControllerInfo, GetControllersIds, \
+    NotificationReceived, ProbeCharacteristics, ProbeServices, ReadCentral, ReadPeripheral, Ready, Service, \
+    SetAdvertising, SetConnectable, SetDiscoverable, SetGATTTable,  SetPowered, StartScan, StopScan, WriteCentral, \
+    WritePeripheral, WriteWithoutResponseCentral, WriteWithoutResponsePeripheral
 from .utils import to_bytes, MAGIC_CODE, snake_to_camel, camel_to_snake, string_types
 
 
