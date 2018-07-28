@@ -47,6 +47,7 @@ public:
       bdaddr_t bdaddr{};
       std::copy(m_address.begin(), m_address.end(), std::begin(bdaddr.b));
       dev->bdaddr = bdaddr;
+      dev->acl_pkts = 1;
     };
   };
 
