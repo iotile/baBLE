@@ -6,7 +6,8 @@ from bable_interface.BaBLE import StartScan, StopScan, ProbeServices, ProbeChara
     WriteCentral, WriteWithoutResponseCentral, EmitNotification
 from bable_interface.BaBLE.StatusCode import StatusCode
 from bable_interface.BaBLE.Payload import Payload
-from bable_interface.utils import none_cb, string_types, switch_endianness_string, uuid_to_string, to_bytes
+from bable_interface.utils import none_cb, string_to_uuid, string_types, switch_endianness_string, uuid_to_string,\
+    to_bytes
 from bable_interface.models import BaBLEException, Characteristic, Controller, Device, Packet, PacketUuid, Service
 
 
@@ -32,12 +33,12 @@ def start_scan(self, controller_id, active_scan, on_device_found, on_scan_starte
         result = packet.get_dict([
             'controller_id',
             'type',
-            'address',
+            ('address', lambda value: value.decode()),
             ('address_type', lambda value: 'public' if value == 0 else 'random'),
             'rssi',
-            'uuid',
+            ('uuid', lambda value: string_to_uuid(value, input_byteorder='little')),
             'company_id',
-            'device_name',
+            ('device_name', lambda value: value.decode()),
             ('manufacturer_data', bytes)
         ])
 
