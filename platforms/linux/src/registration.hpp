@@ -1,7 +1,6 @@
 #ifndef BABLE_REGISTRATION_CPP
 #define BABLE_REGISTRATION_CPP
 
-#include <Application/Packets/Commands/HandleValueNotification/EmitNotification.hpp>
 #include "Application/PacketBuilder/PacketBuilder.hpp"
 #include "Application/Packets/Commands/Disconnect/Disconnect.hpp"
 #include "Application/Packets/Commands/SetPowered/SetPoweredRequest.hpp"
@@ -34,6 +33,7 @@
 #include "Application/Packets/Commands/GetConnectedDevices/GetConnectedDevices.hpp"
 #include "Application/Packets/Commands/CreateConnection/CreateConnection.hpp"
 #include "Application/Packets/Commands/CancelConnection/CancelConnectionRequest.hpp"
+#include "Application/Packets/Commands/HandleValueNotification/EmitNotification.hpp"
 #include "Application/Packets/Events/DeviceConnected/DeviceConnected.hpp"
 #include "Application/Packets/Events/DeviceDisconnected/DeviceDisconnected.hpp"
 #include "Application/Packets/Events/ControllerAdded/ControllerAdded.hpp"
@@ -41,6 +41,7 @@
 #include "Application/Packets/Events/AdvertisingReport/AdvertisingReport.hpp"
 #include "Application/Packets/Events/CommandComplete/CommandComplete.hpp"
 #include "Application/Packets/Events/CommandStatus/CommandStatus.hpp"
+#include "Application/Packets/Events/NumberOfCompletedPackets/NumberOfCompletedPackets.hpp"
 #include "Application/Packets/Control/SetGATTTable/SetGATTTable.hpp"
 #include "Application/Packets/Control/Exit/Exit.hpp"
 #include "Application/Packets/Control/Ready/Ready.hpp"
@@ -95,6 +96,7 @@ void register_hci_packets(PacketBuilder& hci_packet_builder) {
     .register_event<Packet::Events::AdvertisingReport>()
     .register_event<Packet::Events::CommandComplete>()
     .register_event<Packet::Events::CommandStatus>()
+    .register_event<Packet::Events::NumberOfCompletedPackets>()
     .set_ignored_packets({
       Format::HCI::SubEventCode::LEReadRemoteUsedFeaturesComplete,
       Format::HCI::SubEventCode::LEConnectionUpdateComplete,

@@ -13,11 +13,11 @@ public:
 
   StdIOSocket(uv_loop_t* loop, std::shared_ptr<AbstractFormat> format);
 
-  bool send(const std::vector<uint8_t>& data) override;
+  bool send(const std::vector<uint8_t>& data, uint16_t connection_handle) override;
   void poll(OnReceivedCallback on_received, OnErrorCallback on_error) override;
 
   void on_close(OnCloseCallback on_close);
-  void close();
+  void close() override;
 
 protected:
   static void on_poll(uv_stream_t* stream, ssize_t nread, const uv_buf_t* buf);

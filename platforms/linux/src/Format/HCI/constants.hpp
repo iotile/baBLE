@@ -154,6 +154,7 @@ namespace Format {
 
     enum EventCode {
       DisconnectComplete= 0x05,
+      NumberOfCompletedPackets= 0x13,
       CommandComplete= 0x0E,
       CommandStatus= 0x0F,
       LEMeta= 0x3E

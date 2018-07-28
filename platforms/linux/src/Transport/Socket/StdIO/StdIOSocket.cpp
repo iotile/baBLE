@@ -18,7 +18,7 @@ StdIOSocket::StdIOSocket(uv_loop_t* loop, shared_ptr<AbstractFormat> format)
   m_on_close_callback = []() {};
 }
 
-bool StdIOSocket::send(const vector<uint8_t>& data) {
+bool StdIOSocket::send(const vector<uint8_t>& data, uint16_t connection_handle) {
   vector<uint8_t> header = generate_header(data);
 
   fwrite(header.data(), sizeof(uint8_t), header.size(), stdout);

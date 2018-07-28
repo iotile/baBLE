@@ -7,7 +7,7 @@ class Service(object):
     @classmethod
     def from_flatbuffers(cls, raw_service):
         return cls(
-            uuid=raw_service.Uuid().decode(),
+            uuid={'uuid': raw_service.Uuid().decode(), 'byteorder': 'little'},
             handle=raw_service.Handle(),
             group_end_handle=raw_service.GroupEndHandle()
         )
@@ -17,8 +17,10 @@ class Service(object):
             self.uuid = uuid
         elif isinstance(uuid, string_types):
             self.uuid = string_to_uuid(uuid)
+        elif isinstance(uuid, dict):
+            self.uuid = string_to_uuid(uuid['uuid'], input_byteorder=uuid['byteorder'])
         else:
-            raise ValueError("UUID must be either a uuid.UUID object or a string")
+            raise ValueError("UUID must be either a uuid.UUID object, a dict or a string")
 
         self.handle = handle
         self.group_end_handle = group_end_handle

@@ -56,7 +56,7 @@ HCISocket::HCISocket(uv_loop_t* loop, shared_ptr<HCIFormat> format, uint16_t con
   m_hci_socket->bind(m_controller_id, HCI_CHANNEL_RAW);
 
   LOG.debug("Getting HCI controller address...", "HCISocket");
-  find_controller_address();
+  get_controller_info();
 
   LOG.debug("Setting up poller on HCI socket...", "HCISocket");
   m_poller = make_unique<uv_poll_t>();
@@ -66,13 +66,13 @@ HCISocket::HCISocket(uv_loop_t* loop, shared_ptr<HCIFormat> format, uint16_t con
   LOG.debug("HCI socket created on " + Utils::format_bd_address(m_controller_address), "HCISocket");
 }
 
-bool HCISocket::find_controller_address() {
+bool HCISocket::get_controller_info() {
   struct Format::HCI::hci_dev_info di{};
   di.dev_id = m_controller_id;
 
   // To get the controller address
   m_hci_socket->ioctl(HCIGETDEVINFO, (void *)&di);
-
+  m_buffer_size = di.acl_pkts;
   copy(begin(di.bdaddr.b), end(di.bdaddr.b), m_controller_address.begin());
   return true;
 }
@@ -81,7 +81,7 @@ bool HCISocket::set_filters() {
   // IMPORTANT: without these filters, nothing will be received on the HCI socket...
   struct Format::HCI::hci_filter filter {
       (1 << Format::HCI::Type::Event) | (1 << Format::HCI::Type::AsyncData),
-      (1 << Format::HCI::EventCode::DisconnectComplete) | (1 << Format::HCI::EventCode::CommandComplete) | (1 << Format::HCI::EventCode::CommandStatus),
+      (1 << Format::HCI::EventCode::DisconnectComplete) | (1 << Format::HCI::EventCode::CommandComplete) | (1 << Format::HCI::EventCode::CommandStatus) | ( 1 << Format::HCI::EventCode::NumberOfCompletedPackets),
       (1 << Format::HCI::EventCode::LEMeta - 32),
       0
   };
@@ -106,6 +106,8 @@ void HCISocket::disconnect_l2cap_socket(uint16_t connection_handle) {
     m_l2cap_sockets.erase(it);
     LOG.info("L2CAP socket manually disconnected.", "HCISocket");
   }
+
+  m_in_progress_packets.erase(connection_handle);
 }
 
 void HCISocket::set_gatt_table(const vector<Format::HCI::Service>& services, const vector<Format::HCI::Characteristic>& characteristics) {
@@ -125,18 +127,34 @@ string HCISocket::get_controller_address() {
   return Utils::format_bd_address(m_controller_address);
 }
 
-bool HCISocket::send(const vector<uint8_t>& data) {
+bool HCISocket::send(const vector<uint8_t>& data, uint16_t connection_handle) {
   if (!m_writable) {
     LOG.debug("Already sending a message. Queuing...", "HCISocket");
-    m_send_queue.push(data);
+    m_send_queue.push(make_tuple(data, connection_handle));
     return false;
 
   } else {
-    set_writable(false);
+    if (connection_handle != 0) {
+      uint16_t num_in_progress_packets = 0;
+      for (auto& i : m_in_progress_packets) {
+        num_in_progress_packets += i.second;
+      }
+
+      if (num_in_progress_packets >= m_buffer_size) {
+        throw Exceptions::BaBLEException(BaBLE::StatusCode::Rejected, "Controller buffer full");
+      }
+
+//      LOG.debug(to_string(m_buffer_size - num_in_progress_packets) + " remaining slots in controller buffer.", "HCISocket");
+    }
 
 //    LOG.debug("Sending data...", "HCISocket");
 //    LOG.debug(data, "HCISocket");
+    set_writable(false);
     m_hci_socket->write(data);
+
+    if (connection_handle != 0) {
+      m_in_progress_packets[connection_handle]++;
+    }
   }
 
   return true;
@@ -206,10 +224,27 @@ void HCISocket::set_writable(bool is_writable) {
 
   if (m_writable) {
     if (!m_send_queue.empty()) {
-      send(reinterpret_cast<const vector<uint8_t>&>(m_send_queue.front()));
+      tuple<vector<uint8_t>, uint16_t> to_send = m_send_queue.front();
+      send(get<0>(to_send), get<1>(to_send));
       m_send_queue.pop();
     }
   }
+}
+
+void HCISocket::set_in_progress_packets(uint16_t connection_handle, uint16_t num_packets_processed) {
+  auto it= m_in_progress_packets.find(connection_handle);
+  if (it == m_in_progress_packets.end()) {
+    LOG.warning("Connection handle not found : can't set the number of processing packets", "HCISocket");
+    return;
+  }
+
+  if (num_packets_processed > it->second) {
+    it->second = 0;
+  } else {
+    it->second -= num_packets_processed;
+  }
+
+//  LOG.debug(to_string(num_packets_processed) + " packets processed.", "HCISocket");
 }
 
 void HCISocket::close() {

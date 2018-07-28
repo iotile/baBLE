@@ -17,9 +17,6 @@ namespace Packet {
         m_error = Format::HCI::AttributeErrorCode::None;
       }
 
-      // TODO: test with a connection from iotile coretools bled112
-
-      // TODO: add flow control WriteWithoutResponse + adapt Python part
       // TODO: split Connection into Connection/ProbeService/ProbeCharacteristics in Python part (only in BaBLE)
 
       vector<uint8_t> ReadRequest::serialize(HCIFormatBuilder& builder) const {

@@ -7,7 +7,7 @@ class Characteristic(object):
     @classmethod
     def from_flatbuffers(cls, raw_characteristic):
         return cls(
-            uuid=raw_characteristic.Uuid().decode(),
+            uuid={'uuid': raw_characteristic.Uuid().decode(), 'byteorder': 'little'},
             handle=raw_characteristic.Handle(),
             value_handle=raw_characteristic.ValueHandle(),
             config_handle=raw_characteristic.ConfigHandle(),
@@ -26,8 +26,10 @@ class Characteristic(object):
             self.uuid = uuid
         elif isinstance(uuid, string_types):
             self.uuid = string_to_uuid(uuid)
+        elif isinstance(uuid, dict):
+            self.uuid = string_to_uuid(uuid['uuid'], input_byteorder=uuid['byteorder'])
         else:
-            raise ValueError("UUID must be either a uuid.UUID object or a string")
+            raise ValueError("UUID must be either a uuid.UUID object, a dict or a string")
 
         self.handle = handle
         self.value_handle = value_handle

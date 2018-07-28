@@ -88,6 +88,7 @@ set(SOURCES_FILES
         src/Application/Packets/Events/ControllerRemoved/ControllerRemoved.cpp
         src/Application/Packets/Events/AdvertisingReport/AdvertisingReport.cpp
         src/Application/Packets/Events/CommandStatus/CommandStatus.cpp
+        src/Application/Packets/Events/NumberOfCompletedPackets/NumberOfCompletedPackets.cpp
         src/Application/Packets/Errors/BaBLEError/BaBLEError.cpp
         src/Application/Packets/Errors/ErrorResponse/ErrorResponse.cpp
         src/Application/Packets/Meta/GetControllersList/GetControllersList.cpp

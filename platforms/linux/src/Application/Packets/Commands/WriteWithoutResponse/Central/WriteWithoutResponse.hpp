@@ -28,6 +28,9 @@ namespace Packet {
 
         void unserialize(FlatbuffersFormatExtractor& extractor) override;
         std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;
+        std::vector<uint8_t> serialize(FlatbuffersFormatBuilder& builder) const override;
+
+        void prepare(const std::shared_ptr<PacketRouter>& router) override;
 
         const std::string stringify() const override;
 
@@ -35,6 +38,7 @@ namespace Packet {
         uint16_t m_attribute_handle;
         std::vector<uint8_t> m_data_to_write;
 
+        bool m_ack_to_send;
       };
 
 

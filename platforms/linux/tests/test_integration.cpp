@@ -56,6 +56,7 @@ TEST_CASE("Integration (with mocked socket) - MGMT meta packet", "[integration][
 
   // Callback called if an error occured in polling function
   auto on_error = [&stdio_socket, &socket_container](const Exceptions::BaBLEException& err) {
+    CAPTURE(err);
     FAIL("Error received");
   };
 
@@ -237,8 +238,11 @@ TEST_CASE("Integration (with mocked socket) - HCI packet", "[integration][hci]")
   );
 
   // Test send ReadRequest (HCI packet) and receive result
-  shared_ptr<Packet::Commands::Central::ReadRequest> read_request_packet = make_shared<Packet::Commands::Central::ReadRequest>();
+  shared_ptr<Packet::Commands::Central::ReadRequest> read_request_packet = make_shared<Packet::Commands::Central::ReadRequest>(0x0003);
+  read_request_packet->set_connection_handle(0x0040);
   REQUIRE_THROWS(read_request_packet->to_bytes());
+  read_request_packet->prepare(packet_router);
+  REQUIRE_NOTHROW(read_request_packet->to_bytes());
 
   // Build a ReadRequest
   FlatbuffersFormatBuilder fb_builder(0, "test", "TEST");
@@ -276,4 +280,7 @@ TEST_CASE("Integration (with mocked socket) - HCI packet", "[integration][hci]")
   vector<uint8_t> read_bytes(payload_response->value()->begin(), payload_response->value()->end());
   string read_str = Utils::bytes_to_string(read_bytes);
   REQUIRE(read_str == "baBLE");
+
+  // Test if buffer overflow protection is working (buffer size set to 1 in MockSocket)
+  REQUIRE_THROWS_AS(hci_socket->send(read_request_packet->to_bytes(), read_request_packet->get_connection_handle()), Exceptions::BaBLEException);
 }
