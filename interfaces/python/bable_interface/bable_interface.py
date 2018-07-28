@@ -171,6 +171,22 @@ class BaBLEInterface(object):
             sync=sync
         )
 
+    def probe_services(self, connection_handle, controller_id=0, on_services_probed=none_cb, sync=False, timeout=15.0):
+        return self._run_command(
+            command_name='probe_services',
+            params=[controller_id, connection_handle, on_services_probed, timeout],
+            sync=sync
+        )
+
+    def probe_characteristics(self, connection_handle, start_handle=0x0001, end_handle=0xFFFF, controller_id=0,
+                              on_characteristics_probed=none_cb, sync=False,
+                              timeout=15.0):
+        return self._run_command(
+            command_name='probe_characteristics',
+            params=[controller_id, connection_handle, start_handle, end_handle, on_characteristics_probed, timeout],
+            sync=sync
+        )
+
     def list_connected_devices(self, controller_id=0, timeout=15.0):
         return self._run_command(
             command_name='list_connected_devices',

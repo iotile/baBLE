@@ -12,7 +12,7 @@ from bable_interface.models import BaBLEException, Characteristic, Controller, D
 
 
 @asyncio.coroutine
-def start_scan(self, controller_id, active_scan, on_device_found, on_scan_started, timeout=15.0):
+def start_scan(self, controller_id, active_scan, on_device_found, on_scan_started, timeout):
 
     if isinstance(on_device_found, (tuple, list)):
         on_device_found_cb = on_device_found[0]
@@ -87,7 +87,7 @@ def start_scan(self, controller_id, active_scan, on_device_found, on_scan_starte
 
 
 @asyncio.coroutine
-def stop_scan(self, controller_id, on_scan_stopped, timeout=15.0):
+def stop_scan(self, controller_id, on_scan_stopped, timeout):
 
     if isinstance(on_scan_stopped, (tuple, list)):
         on_scan_stopped_cb = on_scan_stopped[0]
@@ -132,7 +132,14 @@ def stop_scan(self, controller_id, on_scan_stopped, timeout=15.0):
 
 
 @asyncio.coroutine
-def probe_services(self, controller_id, connection_handle, timeout=15.0):
+def probe_services(self, controller_id, connection_handle, on_services_probed, timeout):
+
+    if isinstance(on_services_probed, (tuple, list)):
+        on_services_probed_cb = on_services_probed[0]
+        on_services_probed_params = on_services_probed[1:]
+    else:
+        on_services_probed_cb = on_services_probed
+        on_services_probed_params = []
 
     @asyncio.coroutine
     def on_response_received(packet, future):
@@ -140,17 +147,24 @@ def probe_services(self, controller_id, connection_handle, timeout=15.0):
         self.remove_callback(packet.packet_uuid)
 
         if packet.status_code == StatusCode.Success:
-            services = packet.get(
-                name='services',
-                format_function=lambda raw_services: [Service.from_flatbuffers(service) for service in raw_services]
-            )
-
+            services = packet.get_dict([
+                'controller_id',
+                'connection_handle',
+                ('services', lambda services: [Service.from_flatbuffers(service) for service in services])
+            ])
+            on_services_probed_cb(True, services, None, *on_services_probed_params)
             future.set_result(services)
         else:
-            future.set_exception(BaBLEException(packet, "Failed to probe services"))
+            error = BaBLEException(packet, "Failed to probe services", connection_handle=connection_handle)
+            on_services_probed_cb(False, None, error, *on_services_probed_params)
+            future.set_exception(error)
 
     future = asyncio.Future()
-    request_packet = Packet.build(ProbeServices, controller_id=controller_id, connection_handle=connection_handle)
+    request_packet = Packet.build(
+        ProbeServices,
+        controller_id=controller_id,
+        connection_handle=connection_handle
+    )
 
     self.register_callback(request_packet.packet_uuid, callback=on_response_received, params={'future': future})
 
@@ -166,7 +180,15 @@ def probe_services(self, controller_id, connection_handle, timeout=15.0):
 
 
 @asyncio.coroutine
-def probe_characteristics(self, controller_id, connection_handle, timeout=15.0):
+def probe_characteristics(self, controller_id, connection_handle, start_handle, end_handle, on_characteristics_probed,
+                          timeout):
+
+    if isinstance(on_characteristics_probed, (tuple, list)):
+        on_characteristics_probed_cb = on_characteristics_probed[0]
+        on_characteristics_probed_params = on_characteristics_probed[1:]
+    else:
+        on_characteristics_probed_cb = on_characteristics_probed
+        on_characteristics_probed_params = []
 
     @asyncio.coroutine
     def on_response_received(packet, future):
@@ -174,20 +196,25 @@ def probe_characteristics(self, controller_id, connection_handle, timeout=15.0):
         self.remove_callback(packet.packet_uuid)
 
         if packet.status_code == StatusCode.Success:
-            characteristics = packet.get(
-                name='characteristics',
-                format_function=lambda raw_chars: [Characteristic.from_flatbuffers(raw_char) for raw_char in raw_chars]
-            )
-
+            characteristics = packet.get_dict([
+                'controller_id',
+                'connection_handle',
+                ('characteristics', lambda chars: [Characteristic.from_flatbuffers(char) for char in chars])
+            ])
+            on_characteristics_probed_cb(True, characteristics, None, *on_characteristics_probed_params)
             future.set_result(characteristics)
         else:
-            future.set_exception(BaBLEException(packet, "Failed to probe characteristics"))
+            error = BaBLEException(packet, "Failed to probe characteristics", connection_handle=connection_handle)
+            on_characteristics_probed_cb(False, None, error, *on_characteristics_probed_params)
+            future.set_exception(error)
 
     future = asyncio.Future()
     request_packet = Packet.build(
         ProbeCharacteristics,
         controller_id=controller_id,
-        connection_handle=connection_handle
+        connection_handle=connection_handle,
+        start_handle=start_handle,
+        end_handle=end_handle
     )
 
     self.register_callback(request_packet.packet_uuid, callback=on_response_received, params={'future': future})
@@ -204,7 +231,7 @@ def probe_characteristics(self, controller_id, connection_handle, timeout=15.0):
 
 
 @asyncio.coroutine
-def connect(self, controller_id, address, address_type, on_connected_with_info, on_disconnected, timeout=15.0):
+def connect(self, controller_id, address, address_type, on_connected_with_info, on_disconnected, timeout):
 
     connected_event_uuid = PacketUuid(
         payload_type=Payload.DeviceConnected,
@@ -248,38 +275,28 @@ def connect(self, controller_id, address, address_type, on_connected_with_info, 
         self.logger.debug("Device connected event received with status={}".format(packet.status))
         self.remove_callback(packet.packet_uuid)
 
-        if packet.status_code != StatusCode.Success:
+        if packet.status_code == StatusCode.Success:
+            device = packet.get_dict([
+                'controller_id',
+                'connection_handle',
+                'address',
+                ('address_type', lambda value: 'public' if value == 0 else 'random')
+            ])
+
+            self.register_callback(
+                PacketUuid(payload_type=Payload.DeviceDisconnected,
+                           controller_id=controller_id,
+                           connection_handle=device['connection_handle']),
+                callback=on_unexpected_disconnection
+            )
+
+            on_connected_cb(True, device, None, *on_connected_params)
+            future.set_result(device)
+        else:
             error = BaBLEException(packet, "Failed to connect", address=address)
             on_connected_cb(False, None, error, *on_connected_params)
             future.set_exception(error)
             return
-
-        device = packet.get_dict([
-            'controller_id',
-            'connection_handle',
-            'address',
-            ('address_type', lambda value: 'public' if value == 0 else 'random')
-        ])
-
-        self.register_callback(
-            PacketUuid(payload_type=Payload.DeviceDisconnected,
-                       controller_id=controller_id,
-                       connection_handle=device['connection_handle']),
-            callback=on_unexpected_disconnection
-        )
-
-        try:
-            device['services'] = yield from self.probe_services(controller_id, device['connection_handle'])
-            device['characteristics'] = yield from self.probe_characteristics(controller_id, device['connection_handle'])
-        except Exception as err:
-            yield from self.disconnect(controller_id, device['connection_handle'], none_cb)
-            error = BaBLEException(packet, "Failed to probe GATT", address=address, exception=err)
-            on_connected_cb(False, None, error, *on_connected_params)
-            future.set_exception(error)
-            return
-
-        on_connected_cb(True, device, None, *on_connected_params)
-        future.set_result(device)
 
     @asyncio.coroutine
     def on_response_received(packet, future):
@@ -316,7 +333,7 @@ def connect(self, controller_id, address, address_type, on_connected_with_info, 
 
 
 @asyncio.coroutine
-def disconnect(self, controller_id, connection_handle, on_disconnected, timeout=15.0):
+def disconnect(self, controller_id, connection_handle, on_disconnected, timeout):
 
     disconnected_event_uuid = PacketUuid(
         payload_type=Payload.DeviceDisconnected,
@@ -391,7 +408,7 @@ def disconnect(self, controller_id, connection_handle, on_disconnected, timeout=
 
 
 @asyncio.coroutine
-def cancel_connection(self, controller_id, on_connection_cancelled, timeout=15.0):
+def cancel_connection(self, controller_id, on_connection_cancelled, timeout):
 
     if isinstance(on_connection_cancelled, (tuple, list)):
         on_connection_cancelled_cb = on_connection_cancelled[0]
@@ -431,7 +448,7 @@ def cancel_connection(self, controller_id, on_connection_cancelled, timeout=15.0
 
 
 @asyncio.coroutine
-def list_connected_devices(self, controller_id, timeout=15.0):
+def list_connected_devices(self, controller_id, timeout):
 
     @asyncio.coroutine
     def on_response_received(packet, future):
@@ -465,7 +482,7 @@ def list_connected_devices(self, controller_id, timeout=15.0):
 
 
 @asyncio.coroutine
-def list_controllers(self, timeout=15.0):
+def list_controllers(self, timeout):
 
     @asyncio.coroutine
     def on_response_received(packet, future):
@@ -503,7 +520,7 @@ def list_controllers(self, timeout=15.0):
 
 
 @asyncio.coroutine
-def read(self, controller_id, connection_handle, attribute_handle, on_read, timeout=15.0):
+def read(self, controller_id, connection_handle, attribute_handle, on_read, timeout):
 
     if isinstance(on_read, (tuple, list)):
         on_read_cb = on_read[0]
@@ -559,7 +576,7 @@ def read(self, controller_id, connection_handle, attribute_handle, on_read, time
 
 
 @asyncio.coroutine
-def write(self, controller_id, connection_handle, attribute_handle, value, on_written, timeout=15.0):
+def write(self, controller_id, connection_handle, attribute_handle, value, on_written, timeout):
 
     if isinstance(on_written, (tuple, list)):
         on_written_cb = on_written[0]
@@ -653,7 +670,7 @@ def write_without_response(self, controller_id, connection_handle, attribute_han
 
 @asyncio.coroutine
 def set_notification(self, controller_id, enabled, connection_handle, characteristic, on_notification_set,
-                     on_notification_received, timeout=15.0):
+                     on_notification_received, timeout):
 
     if not isinstance(characteristic, Characteristic):
         raise ValueError("Characteristic parameter must be a 'bable_interface.models.Characteristic' object")
