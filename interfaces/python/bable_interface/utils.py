@@ -91,10 +91,10 @@ def uuid_to_string(uuid, output_byteorder='little'):
     else:
         # 16 bytes UUID
         if output_byteorder == 'little':
-            uuid16 = UUID(bytes=uuid.bytes_le)
+            uuid16 = switch_endianness_string(uuid.hex)
         else:
-            uuid16 = uuid
-        return uuid16.hex
+            uuid16 = uuid.hex
+        return uuid16
 
 
 def switch_endianness_string(be_string):
