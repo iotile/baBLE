@@ -148,6 +148,7 @@ namespace Format {
       UUID128ServiceClass= 0x07,
       ShortDeviceName = 0x08,
       CompleteDeviceName= 0x09,
+      TXPowerLevel= 0x0A,
       UUID16ServiceData= 0x16,
       ManufacturerSpecific= 0xFF
     };

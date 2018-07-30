@@ -163,6 +163,10 @@ Format::HCI::EIR HCIFormatExtractor::parse_eir(const vector<uint8_t>& data) {
         }
         break;
 
+      case Format::HCI::ReportType::TXPowerLevel:
+        // TODO: return tx power level
+        break;
+
       default:
         LOG.debug("Unknown EIR type received: " + to_string(type));
         break;
