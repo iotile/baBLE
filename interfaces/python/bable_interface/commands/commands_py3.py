@@ -932,9 +932,9 @@ def on_write_request(self, on_write_handler):
             ('value', bytes)
         ])
 
-        packet.value = on_write_handler_fn(request, *on_write_handler_params)
+        handled = on_write_handler_fn(request, *on_write_handler_params)
 
-        if packet.payload_type != Payload.WriteWithoutResponsePeripheral:
+        if handled and packet.payload_type != Payload.WriteWithoutResponsePeripheral:
             self.send_packet(packet)
 
     self.register_callback(write_request_uuid, callback=on_request)
@@ -962,7 +962,67 @@ def on_read_request(self, on_read_handler):
         ])
 
         packet.value = on_read_handler_fn(request, *on_read_handler_params)
-        self.send_packet(packet)
+
+        if packet.value is not None:
+            self.send_packet(packet)
 
     self.register_callback(read_request_uuid, callback=on_request)
     self.logger.debug("On read handler registered")
+
+
+@asyncio.coroutine
+def on_connected(self, on_connected_handler):
+    device_connected_uuid = PacketUuid(payload_type=Payload.DeviceConnected)
+
+    if isinstance(on_connected_handler, (tuple, list)):
+        on_connected_handler_fn = on_connected_handler[0]
+        on_connected_handler_params = on_connected_handler[1:]
+    else:
+        on_connected_handler_fn = on_connected_handler
+        on_connected_handler_params = []
+
+    @asyncio.coroutine
+    def on_device_connected(packet):
+        if packet.status_code == StatusCode.Success:
+            device = packet.get_dict([
+                'controller_id',
+                'connection_handle',
+                'address',
+                ('address_type', lambda value: 'public' if value == 0 else 'random')
+            ])
+
+            on_connected_handler_fn(device, *on_connected_handler_params)
+        else:
+            self.logger.debug("Failed connected event received: %s", packet)
+
+    self.register_callback(device_connected_uuid, callback=on_device_connected)
+    self.logger.debug("On connected handler registered")
+
+
+@asyncio.coroutine
+def on_disconnected(self, on_disconnected_handler):
+    device_disconnected_uuid = PacketUuid(payload_type=Payload.DeviceDisconnected)
+
+    if isinstance(on_disconnected_handler, (tuple, list)):
+        on_disconnected_handler_fn = on_disconnected_handler[0]
+        on_disconnected_handler_params = on_disconnected_handler[1:]
+    else:
+        on_disconnected_handler_fn = on_disconnected_handler
+        on_disconnected_handler_params = []
+
+    @asyncio.coroutine
+    def on_device_disconnected(packet):
+        if packet.status_code == StatusCode.Success:
+            device = packet.get_dict([
+                'controller_id',
+                'connection_handle',
+                'reason',
+                'code'
+            ])
+
+            on_disconnected_handler_fn(device, *on_disconnected_handler_params)
+        else:
+            self.logger.debug("Failed disconnected event received: %s", packet)
+
+    self.register_callback(device_disconnected_uuid, callback=on_device_disconnected)
+    self.logger.debug("On disconnected handler registered")

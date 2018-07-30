@@ -255,6 +255,20 @@ class BaBLEInterface(object):
         )
 
     #### Handlers registration ####
+    def on_connected(self, on_connected_handler):
+        return self._run_command(
+            command_name='on_connected',
+            params=[on_connected_handler],
+            sync=True
+        )
+
+    def on_disconnected(self, on_disconnected_handler):
+        return self._run_command(
+            command_name='on_disconnected',
+            params=[on_disconnected_handler],
+            sync=True
+        )
+
     def on_write_request(self, on_write_handler):
         return self._run_command(
             command_name='on_write_request',
