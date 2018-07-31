@@ -7,7 +7,7 @@ namespace Packet {
 
   namespace Commands {
 
-    CreateConnection::CreateConnection(const string& address, uint8_t address_type)
+    CreateConnection::CreateConnection(const string& address, uint8_t address_type, float connection_interval_min, float connection_interval_max)
         : HostToControllerPacket(Packet::Id::CreateConnection, final_type(), final_packet_code()) {
       m_response_packet_code = Format::HCI::EventCode::CommandStatus;
 
@@ -17,8 +17,8 @@ namespace Packet {
       m_peer_address_type = address_type;
       m_address = address;
       m_own_address_type = 0x00; // Public address type
-      m_connection_interval_min = 0x0006; // 7.5ms
-      m_connection_interval_max = 0x0018; // 30ms
+      m_connection_interval_min = static_cast<uint16_t>(connection_interval_min / 1.25);
+      m_connection_interval_max = static_cast<uint16_t>(connection_interval_max / 1.25);
       m_connection_latency = 0x0000;
       m_supervision_timeout = 0x002A; // 0.42s
       m_min_ce_length = 0x0000;
@@ -33,6 +33,8 @@ namespace Packet {
 
       m_peer_address_type = payload->address_type();
       m_address = payload->address()->str();
+      m_connection_interval_min = static_cast<uint16_t>(payload->connection_interval_min() / 1.25);
+      m_connection_interval_max = static_cast<uint16_t>(payload->connection_interval_max() / 1.25);
 
       try {
         m_raw_address = Utils::extract_bd_address(m_address);

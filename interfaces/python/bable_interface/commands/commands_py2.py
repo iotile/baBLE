@@ -1,6 +1,6 @@
 import trollius as asyncio
 from trollius import From
-from builtins import bytes
+from builtins import bytes, int
 import struct
 from uuid import UUID
 from bable_interface.BaBLE import StartScan, StopScan, ProbeServices, ProbeCharacteristics, Connect, Disconnect, \
@@ -233,7 +233,13 @@ def probe_characteristics(self, controller_id, connection_handle, start_handle, 
 
 
 @asyncio.coroutine
-def connect(self, controller_id, address, address_type, on_connected_with_info, on_disconnected, timeout):
+def connect(self, controller_id, address, address_type, connection_interval, on_connected_with_info, on_disconnected,
+            timeout):
+
+    if not isinstance(connection_interval, (tuple, list)) \
+       or len(connection_interval) != 2 \
+       or not all(isinstance(v, (int, float)) for v in connection_interval):
+        raise ValueError("connection_interval must be a 2-number tuple or list ([min, max])")
 
     connected_event_uuid = PacketUuid(
         payload_type=Payload.DeviceConnected,
@@ -316,7 +322,9 @@ def connect(self, controller_id, address, address_type, on_connected_with_info, 
         Connect,
         controller_id=controller_id,
         address=address,
-        address_type=0 if address_type == 'public' else 1
+        address_type=0 if address_type == 'public' else 1,
+        connection_interval_min=connection_interval[0],
+        connection_interval_max=connection_interval[1]
     )
 
     self.register_callback(request_packet.packet_uuid, callback=on_response_received, params={'future': future})
@@ -881,6 +889,8 @@ def set_advertising(self, controller_id, enabled, uuids, name, company_id, adver
 
 @asyncio.coroutine
 def notify(self, controller_id, connection_handle, attribute_handle, value, timeout):
+
+    # TODO: use characteristic instead of attribute_handle
 
     @asyncio.coroutine
     def on_ack_received(packet, future):

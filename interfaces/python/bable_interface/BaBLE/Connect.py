@@ -32,7 +32,23 @@ class Connect(object):
             return self._tab.Get(flatbuffers.number_types.Uint8Flags, o + self._tab.Pos)
         return 1
 
-def ConnectStart(builder): builder.StartObject(2)
+    # Connect
+    def ConnectionIntervalMin(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(8))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Float32Flags, o + self._tab.Pos)
+        return 7.5
+
+    # Connect
+    def ConnectionIntervalMax(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(10))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Float32Flags, o + self._tab.Pos)
+        return 30.0
+
+def ConnectStart(builder): builder.StartObject(4)
 def ConnectAddAddress(builder, address): builder.PrependUOffsetTRelativeSlot(0, flatbuffers.number_types.UOffsetTFlags.py_type(address), 0)
 def ConnectAddAddressType(builder, addressType): builder.PrependUint8Slot(1, addressType, 1)
+def ConnectAddConnectionIntervalMin(builder, connectionIntervalMin): builder.PrependFloat32Slot(2, connectionIntervalMin, 7.5)
+def ConnectAddConnectionIntervalMax(builder, connectionIntervalMax): builder.PrependFloat32Slot(3, connectionIntervalMax, 30.0)
 def ConnectEnd(builder): return builder.EndObject()

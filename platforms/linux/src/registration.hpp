@@ -71,7 +71,8 @@ void register_mgmt_packets(PacketBuilder& mgmt_packet_builder) {
       Format::MGMT::EventCode::DeviceConnected,
       Format::MGMT::EventCode::DeviceDisconnected,
       Format::MGMT::EventCode::DeviceRemoved,
-      Format::MGMT::EventCode::Discovering
+      Format::MGMT::EventCode::Discovering,
+      Format::MGMT::EventCode::NewConnectionParameter
     });
 }
 

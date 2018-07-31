@@ -3,4 +3,6 @@ namespace BaBLE;
 table Connect {
   address:string;
   address_type:uint8 = 0x01;  // Random
+  connection_interval_min:float = 7.5;  // 7.5ms
+  connection_interval_max:float = 30; // 30 ms
 }

@@ -22,7 +22,10 @@ namespace Packet {
         return Format::HCI::CommandCode::LECreateConnection;
       };
 
-      explicit CreateConnection(const std::string& address = "", uint8_t address_type = 0x01); // Random address type
+      explicit CreateConnection(const std::string& address = "",
+                                uint8_t address_type = 0x01,  // Random address type
+                                float connection_interval_min = 7.5,  // Minimum connection interval (7.5ms)
+                                float connection_interval_max = 30);  // Maximum connection interval (30ms)
 
       void unserialize(FlatbuffersFormatExtractor& extractor) override;
       std::vector<uint8_t> serialize(HCIFormatBuilder& builder) const override;

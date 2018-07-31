@@ -927,7 +927,9 @@ inline flatbuffers::Offset<StopScan> CreateStopScan(
 struct Connect FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_ADDRESS = 4,
-    VT_ADDRESS_TYPE = 6
+    VT_ADDRESS_TYPE = 6,
+    VT_CONNECTION_INTERVAL_MIN = 8,
+    VT_CONNECTION_INTERVAL_MAX = 10
   };
   const flatbuffers::String *address() const {
     return GetPointer<const flatbuffers::String *>(VT_ADDRESS);
@@ -935,11 +937,19 @@ struct Connect FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   uint8_t address_type() const {
     return GetField<uint8_t>(VT_ADDRESS_TYPE, 1);
   }
+  float connection_interval_min() const {
+    return GetField<float>(VT_CONNECTION_INTERVAL_MIN, 7.5f);
+  }
+  float connection_interval_max() const {
+    return GetField<float>(VT_CONNECTION_INTERVAL_MAX, 30.0f);
+  }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_ADDRESS) &&
            verifier.Verify(address()) &&
            VerifyField<uint8_t>(verifier, VT_ADDRESS_TYPE) &&
+           VerifyField<float>(verifier, VT_CONNECTION_INTERVAL_MIN) &&
+           VerifyField<float>(verifier, VT_CONNECTION_INTERVAL_MAX) &&
            verifier.EndTable();
   }
 };
@@ -952,6 +962,12 @@ struct ConnectBuilder {
   }
   void add_address_type(uint8_t address_type) {
     fbb_.AddElement<uint8_t>(Connect::VT_ADDRESS_TYPE, address_type, 1);
+  }
+  void add_connection_interval_min(float connection_interval_min) {
+    fbb_.AddElement<float>(Connect::VT_CONNECTION_INTERVAL_MIN, connection_interval_min, 7.5f);
+  }
+  void add_connection_interval_max(float connection_interval_max) {
+    fbb_.AddElement<float>(Connect::VT_CONNECTION_INTERVAL_MAX, connection_interval_max, 30.0f);
   }
   explicit ConnectBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -968,8 +984,12 @@ struct ConnectBuilder {
 inline flatbuffers::Offset<Connect> CreateConnect(
     flatbuffers::FlatBufferBuilder &_fbb,
     flatbuffers::Offset<flatbuffers::String> address = 0,
-    uint8_t address_type = 1) {
+    uint8_t address_type = 1,
+    float connection_interval_min = 7.5f,
+    float connection_interval_max = 30.0f) {
   ConnectBuilder builder_(_fbb);
+  builder_.add_connection_interval_max(connection_interval_max);
+  builder_.add_connection_interval_min(connection_interval_min);
   builder_.add_address(address);
   builder_.add_address_type(address_type);
   return builder_.Finish();
@@ -978,11 +998,15 @@ inline flatbuffers::Offset<Connect> CreateConnect(
 inline flatbuffers::Offset<Connect> CreateConnectDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
     const char *address = nullptr,
-    uint8_t address_type = 1) {
+    uint8_t address_type = 1,
+    float connection_interval_min = 7.5f,
+    float connection_interval_max = 30.0f) {
   return BaBLE::CreateConnect(
       _fbb,
       address ? _fbb.CreateString(address) : 0,
-      address_type);
+      address_type,
+      connection_interval_min,
+      connection_interval_max);
 }
 
 struct CancelConnection FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {

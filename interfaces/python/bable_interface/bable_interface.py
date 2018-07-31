@@ -170,12 +170,12 @@ class BaBLEInterface(object):
             sync=sync
         )
 
-    def connect(self, address, address_type, on_connected=none_cb, on_disconnected=none_cb, controller_id=0, sync=False,
-                timeout=None):
+    def connect(self, address, address_type, connection_interval=(7.5, 30), on_connected=none_cb,
+                on_disconnected=none_cb, controller_id=0, sync=False, timeout=None):
         controller_id = self._compute_controller_id(controller_id)
         return self._run_command(
             command_name='connect',
-            params=[controller_id, address, address_type, on_connected, on_disconnected, timeout],
+            params=[controller_id, address, address_type, connection_interval, on_connected, on_disconnected, timeout],
             sync=sync
         )
 

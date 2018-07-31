@@ -37,7 +37,8 @@ namespace Format {
       DeviceFound = 0x0012,
       Discovering = 0x0013,
       DeviceAdded = 0x001A,
-      DeviceRemoved = 0x001B
+      DeviceRemoved = 0x001B,
+      NewConnectionParameter = 0x001C
     };
 
     enum StatusCode {
