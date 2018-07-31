@@ -88,7 +88,7 @@ def test_uuid_to_string():
     # Test with 16-byte UUID (Little Endian)
     uuid = UUID('12345678-1234-1234-1234-123456789112')
     string = uuid_to_string(uuid)
-    assert string == '78563412341234121234123456789112'
+    assert string == '12917856341234123412341278563412'
 
     # Test with 16-byte UUID (Big Endian)
     uuid = UUID('12345678-1234-1234-1234-123456789112')
