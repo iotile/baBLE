@@ -57,7 +57,12 @@ int main(int argc, char* argv[]) {
   LOG.debug("Creating sockets...");
   shared_ptr<MGMTSocket> mgmt_socket = make_shared<MGMTSocket>(loop, mgmt_format);
   shared_ptr<StdIOSocket> stdio_socket = make_shared<StdIOSocket>(loop, fb_format);
-  vector<shared_ptr<HCISocket>> hci_sockets = HCISocket::create_all(loop, hci_format);
+  vector<shared_ptr<HCISocket>> hci_sockets;
+  if (options.at("controller_id") < 0) {
+    hci_sockets = HCISocket::create_all(loop, hci_format);
+  } else {
+    hci_sockets.push_back(make_shared<HCISocket>(loop, hci_format, options.at("controller_id")));
+  }
 
   // Socket container
   LOG.debug("Registering sockets into socket container...");

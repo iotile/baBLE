@@ -27,6 +27,14 @@ namespace Utils {
     }
   }
 
+  void set_controller_id(char* param) {
+    try {
+      settings.at("controller_id") = stoi(string(param));
+    } catch (const invalid_argument& err) {
+      throw invalid_argument("Controller id must be a valid number (only X in hciX)");
+    }
+  }
+
   void display_usage() {
     stringstream usage;
     stringstream options;
