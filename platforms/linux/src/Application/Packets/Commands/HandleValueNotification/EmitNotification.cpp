@@ -21,6 +21,7 @@ namespace Packet {
       void EmitNotification::unserialize(FlatbuffersFormatExtractor& extractor) {
         auto payload = extractor.get_payload<const BaBLE::EmitNotification*>();
 
+        m_connection_handle = payload->connection_handle();
         m_attribute_handle = payload->attribute_handle();
         m_value.assign(payload->value()->begin(), payload->value()->end());
       }

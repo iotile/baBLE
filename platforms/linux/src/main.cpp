@@ -150,7 +150,7 @@ int main(int argc, char* argv[]) {
 
       Packet::Id packet_id = packet->get_id();
 
-      if (packet_id == Packet::Id::SetGATTTable) {
+      if (packet_id == Packet::Id::SetGATTTable || packet_id == Packet::Id::EmitNotification) {
         shared_ptr<AbstractSocket> base_socket = socket_container.get_socket(Packet::Type::HCI, packet->get_controller_id());
         packet->set_socket(dynamic_cast<HCISocket*>(base_socket.get()));
       } else {
