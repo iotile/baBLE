@@ -17,8 +17,6 @@ namespace Packet {
         m_error = Format::HCI::AttributeErrorCode::None;
       }
 
-      // TODO: split Connection into Connection/ProbeService/ProbeCharacteristics in Python part (only in BaBLE)
-
       vector<uint8_t> ReadRequest::serialize(HCIFormatBuilder& builder) const {
         if (m_error != Format::HCI::AttributeErrorCode::None) {
           builder

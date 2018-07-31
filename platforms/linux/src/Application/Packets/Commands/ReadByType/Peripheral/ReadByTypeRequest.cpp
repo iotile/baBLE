@@ -173,20 +173,20 @@ namespace Packet {
 
           for (auto& characteristic : hci_socket->get_characteristics()) {
             if (characteristic.handle >= m_starting_handle && characteristic.handle <= m_ending_handle) {
-
               if (m_uuid_num == Format::HCI::GattUUID::CharacteristicDeclaration) {
                 if (m_length_per_characteristic == 0) {
-                  // 2 bytes for handle + 1 byte for properties + 2 bytes for value handle
+                  // 2 bytes for handle + 1 byte for properties + 2 bytes for value handle + uuid size
                   m_length_per_characteristic = static_cast<uint8_t>(characteristic.uuid.size() + 5);
                 }
 
                 if (m_length_per_characteristic != characteristic.uuid.size() + 5) break;
 
-                total_length += m_length_per_characteristic;
-
               } else {
-                total_length += 4;  // 2 bytes for handle + 2 bytes for configuration
+                m_length_per_characteristic = 4;  // 2 bytes for handle + 2 bytes for configuration
+                if (characteristic.config_handle == 0) continue;
               }
+
+              total_length += m_length_per_characteristic;
 
               if (total_length > ATT_MTU) break;
 
