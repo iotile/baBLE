@@ -20,14 +20,14 @@ namespace Packet {
       vector<uint8_t> WriteWithoutResponse::serialize(FlatbuffersFormatBuilder& builder) const {
         auto value = builder.CreateVector(m_value);
 
-        auto payload = BaBLE::CreateWritePeripheral(
+        auto payload = BaBLE::CreateWriteWithoutResponsePeripheral(
             builder,
             m_connection_handle,
             m_attribute_handle,
             value
         );
 
-        return builder.build(payload, BaBLE::Payload::WritePeripheral);
+        return builder.build(payload, BaBLE::Payload::WriteWithoutResponsePeripheral);
       }
 
       void WriteWithoutResponse::unserialize(HCIFormatExtractor& extractor) {
