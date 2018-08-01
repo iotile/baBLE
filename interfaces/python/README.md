@@ -29,9 +29,10 @@ def on_connected(success, result, failure_reason):
         bable.cancel_connection()
     else:
         connections[result['address']] = result
+        char = bable_interface.Characteristic(uuid='1234', handle='0x000a', value_handle='0x000b')
         # Command can be forced to be asynchronous by setting `sync` to False (if command is sync by default)
         # It is often useful if you want to call a command into a callback function (because they must not be blocking)
-        bable.enable_notification(result['connection_handle'], 0x000a, on_notification_received, sync=False)
+        bable.set_notification(True, result['connection_handle'], char, on_notification_received=on_notification_received, sync=False)
 
 
 def on_unexpected_disconnection(success, result, failure_reason):
@@ -44,7 +45,7 @@ def on_device_found(success, result, failure_reason):
         print("Connecting...")
         # You can precise timeout duration (meaning the time before an exception is raised if no response has been received)
         # by setting the `timeout` parameter with the value you want (in seconds)
-        bable.connect(result['address'], "random", on_connected, on_unexpected_disconnection, timeout=5.0)
+        bable.connect(result['address'], result['address_type'], on_connected, on_unexpected_disconnection, timeout=5.0)
 
 
 def on_disconnected(success, result, failure_reason):
@@ -53,15 +54,16 @@ def on_disconnected(success, result, failure_reason):
 
 def on_error(status, message):
     print("Error received:", status, message)
-    bable.stop()
+    bable.stop(sync=False)
 
 
 # Start the bable interface (meaning starting the threads and the subprocess needed to make it work)
-bable.start(on_error)
+# You can restrict baBLE to only one controller by setting the controller_id (if you want to use multiple controllers)
+bable.start(on_error=on_error, controller_id=1)
 
 # Commands that could take a long time are asynchronous by default: result is sent by calling a callback function.
 # If an error occures, callback function will be called with `success` parameter as False and failure_reason as the error
-bable.start_scan(on_device_found)
+bable.start_scan(on_device_found, timeout=1)
 
 time.sleep(10)  # We can sleep here without blocking the interface (because it is running in another thread)
 

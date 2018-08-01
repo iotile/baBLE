@@ -80,6 +80,16 @@ without keep the executable permission on the bable bridge executable. To fix th
 woth `chmod +x <your_python_library_folder>/site-packages/bable_interface/bin/<bable_bridge_executable>` or, simply use
 `pip` instead (recommended solution).
 
+#### Issues when using multiple controllers with baBLE
+
+- Firstly, be sure that Bluez is not running (because it will try to handle connections by itself, creating conflicts):
+`sudo service bluetooth stop`.
+
+- Then, be aware that by default, the bable bridge will try to manage all the BLE controllers. So if you run multiple
+instances of the bable-bridge, you will have some conflicts. To solve this problem, simply run one instance per controller,
+using the `controller_id` parameter of the interface (or directly the `--controller-id <CONTROLLER_ID>` option on the
+bable-bridge executable)
+
 ### Versioning
 
 We use [SemVer](https://semver.org/) for versioning. For the versions available, see the tags on this repository.
