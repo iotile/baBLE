@@ -27,9 +27,8 @@ setup(
     packages=find_packages(exclude=('test',)),
     include_package_data=True,
     entry_points={
-        'console_scripts': [
-            'bable = bable_interface.scripts.bable_script:main'
-        ]
+        'console_scripts': ['bable = bable_interface.scripts.bable_script:main'],
+        'pytest11': ['mock_bable = bable_interface.scripts.mock_bable_interface']
     },
     version=version,
     license="MIT",
