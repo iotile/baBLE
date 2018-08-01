@@ -1,4 +1,6 @@
+from builtins import bytes
 from bable_interface.BaBLE.Payload import Payload
+from bable_interface.utils import string_types
 
 
 class BaBLEException(Exception):
@@ -7,7 +9,13 @@ class BaBLEException(Exception):
         super(BaBLEException, self).__init__()
 
         if packet.payload_type == Payload.BaBLEError:
-            self.message = packet.get('message',  bytes.decode)
+            raw_message = packet.get('message')
+            if type(raw_message) == bytes or type(raw_message) == bytearray:
+                self.message = raw_message.decode()
+            elif isinstance(raw_message, string_types):
+                self.message = raw_message
+            else:
+                raise ValueError("Can't read message in BaBLEException: wrong type")
         else:
             self.message = message if message is not None else "Response with error status received"
 
