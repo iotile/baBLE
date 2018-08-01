@@ -146,9 +146,12 @@ class BaBLEInterface(object):
 
         self.selected_controller_id = int(controller_id) if controller_id is not None else None
 
-    def _compute_controller_id(self, controller_id):
+    def _compute_controller_id(self, controller_id, allow_all=False):
         if self.selected_controller_id is None:
-            return int(controller_id)
+            if allow_all and controller_id is None:
+                return controller_id
+            else:
+                return int(controller_id)
         else:
             return self.selected_controller_id
 
@@ -288,30 +291,33 @@ class BaBLEInterface(object):
         )
 
     #### Handlers registration ####
-    def on_connected(self, on_connected_handler):
+    def on_connected(self, on_connected_handler, controller_id=None):
+        controller_id = self._compute_controller_id(controller_id, allow_all=True)
         return self._run_command(
             command_name='on_connected',
-            params=[on_connected_handler],
+            params=[controller_id, on_connected_handler],
             sync=True
         )
 
-    def on_disconnected(self, on_disconnected_handler):
+    def on_disconnected(self, on_disconnected_handler, controller_id=None):
+        controller_id = self._compute_controller_id(controller_id, allow_all=True)
         return self._run_command(
             command_name='on_disconnected',
-            params=[on_disconnected_handler],
+            params=[controller_id, on_disconnected_handler],
             sync=True
         )
 
-    def on_write_request(self, on_write_handler):
+    def on_write_request(self, on_write_handler, controller_id=None):
+        controller_id = self._compute_controller_id(controller_id, allow_all=True)
         return self._run_command(
             command_name='on_write_request',
-            params=[on_write_handler],
+            params=[controller_id, on_write_handler],
             sync=True
         )
 
-    def on_read_request(self, on_read_handler):
+    def on_read_request(self, on_read_handler, controller_id=None):
         return self._run_command(
             command_name='on_read_request',
-            params=[on_read_handler],
+            params=[controller_id, on_read_handler],
             sync=True
         )

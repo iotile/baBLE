@@ -707,6 +707,7 @@ def set_notification(self, controller_id, enabled, connection_handle, characteri
     @asyncio.coroutine
     def on_notification_event(packet):
         result = packet.get_dict([
+            'controller_id',
             'connection_handle',
             'attribute_handle',
             ('value', bytes)
@@ -928,9 +929,12 @@ def notify(self, controller_id, connection_handle, attribute_handle, value, time
 
 
 @asyncio.coroutine
-def on_write_request(self, on_write_handler):
-    write_request_uuid = PacketUuid(payload_type=Payload.WritePeripheral)
-    write_without_response_request_uuid = PacketUuid(payload_type=Payload.WriteWithoutResponsePeripheral)
+def on_write_request(self, controller_id, on_write_handler):
+    write_request_uuid = PacketUuid(payload_type=Payload.WritePeripheral, controller_id=controller_id)
+    write_without_response_request_uuid = PacketUuid(
+        payload_type=Payload.WriteWithoutResponsePeripheral,
+        controller_id=controller_id
+    )
 
     if isinstance(on_write_handler, (tuple, list)):
         on_write_handler_fn = on_write_handler[0]
@@ -959,8 +963,8 @@ def on_write_request(self, on_write_handler):
 
 
 @asyncio.coroutine
-def on_read_request(self, on_read_handler):
-    read_request_uuid = PacketUuid(payload_type=Payload.ReadPeripheral)
+def on_read_request(self, controller_id, on_read_handler):
+    read_request_uuid = PacketUuid(payload_type=Payload.ReadPeripheral, controller_id=controller_id)
 
     if isinstance(on_read_handler, (tuple, list)):
         on_read_handler_fn = on_read_handler[0]
@@ -987,8 +991,8 @@ def on_read_request(self, on_read_handler):
 
 
 @asyncio.coroutine
-def on_connected(self, on_connected_handler):
-    device_connected_uuid = PacketUuid(payload_type=Payload.DeviceConnected)
+def on_connected(self, controller_id, on_connected_handler):
+    device_connected_uuid = PacketUuid(payload_type=Payload.DeviceConnected, controller_id=controller_id)
 
     if isinstance(on_connected_handler, (tuple, list)):
         on_connected_handler_fn = on_connected_handler[0]
@@ -1016,8 +1020,8 @@ def on_connected(self, on_connected_handler):
 
 
 @asyncio.coroutine
-def on_disconnected(self, on_disconnected_handler):
-    device_disconnected_uuid = PacketUuid(payload_type=Payload.DeviceDisconnected)
+def on_disconnected(self, controller_id, on_disconnected_handler):
+    device_disconnected_uuid = PacketUuid(payload_type=Payload.DeviceDisconnected, controller_id=controller_id)
 
     if isinstance(on_disconnected_handler, (tuple, list)):
         on_disconnected_handler_fn = on_disconnected_handler[0]
