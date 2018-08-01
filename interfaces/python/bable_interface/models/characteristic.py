@@ -55,6 +55,20 @@ class Characteristic(object):
         return "<Characteristic uuid={}, handle={}, value_handle={}, config_handle={}, properties={}"\
             .format(uuid_to_string(self.uuid), self.handle, self.value_handle, self.config_handle, self.properties)
 
+    def __eq__(self, other):
+        if isinstance(other, Characteristic):
+            return self.uuid == other.uuid
+        return NotImplemented
+
+    def __ne__(self, other):
+        equal = self.__eq__(other)
+        if equal is not NotImplemented:
+            return not equal
+        return NotImplemented
+
+    def __hash__(self):
+        return self.uuid.__hash__()
+
     def to_dict(self):
         return {
             'uuid': uuid_to_string(self.uuid),
