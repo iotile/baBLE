@@ -468,7 +468,7 @@ def list_connected_devices(self, controller_id, timeout):
         if packet.status_code == StatusCode.Success:
             devices = packet.get(
                 name='devices',
-                format_function=lambda raw_devs: [Device(raw_dev) for raw_dev in raw_devs]
+                format_function=lambda raw_devs: [Device.from_flatbuffers(raw_dev) for raw_dev in raw_devs]
             )
 
             future.set_result(devices)
@@ -502,7 +502,7 @@ def list_controllers(self, timeout):
         if packet.status_code == StatusCode.Success:
             controllers = packet.get(
                 name='controllers',
-                format_function=lambda raw_ctrls: [Controller(raw_ctrl) for raw_ctrl in raw_ctrls]
+                format_function=lambda raw_ctrls: [Controller.from_flatbuffers(raw_ctrl) for raw_ctrl in raw_ctrls]
             )
 
             future.set_result(controllers)
