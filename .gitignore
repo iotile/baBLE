@@ -9,3 +9,5 @@
 
 # Keep .gitkeep
 !.gitkeep
+
+workspace/*

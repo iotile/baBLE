@@ -54,6 +54,14 @@ namespace Packet {
       return m_connection_handle;
     };
 
+    inline const bool get_routable() const {
+      return m_routable;
+    }
+
+    void set_routable(bool routable) {
+      m_routable = routable;
+    }
+
     inline const BaBLE::StatusCode get_status() const {
       return m_status;
     };
@@ -102,7 +110,7 @@ namespace Packet {
     void compute_bable_status();
 
     uint8_t m_native_status;
-
+    bool m_routable;
   };
 
 }
