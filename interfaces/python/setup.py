@@ -12,7 +12,10 @@ if sys.platform != 'linux' and sys.platform != 'linux2':
     print("baBLE only works on Linux for now.")
     sys.exit(1)
 
-version = os.getenv("VERSION", "0.0.0.dev0")
+if os.getenv("TRAVIS_TAG") is not None:
+    version = os.getenv("TRAVIS_TAG")
+else: 
+    version = os.getenv("VERSION", "0.0.0.dev0")
 
 with open('README.md', 'r') as readme_file:
     long_description = readme_file.read()
@@ -33,7 +36,7 @@ setup(
     version=version,
     license="MIT",
     author="Arch",
-    author_email="info@arch-iot.com",
+    author_email="info@archsys.io",
     description="Python interface for BaBLE",
     long_description=long_description,
     long_description_content_type="text/markdown",
