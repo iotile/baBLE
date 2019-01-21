@@ -10,7 +10,15 @@ namespace Packet {
 
     NumberOfCompletedPackets::NumberOfCompletedPackets()
         : ControllerToHostPacket(Packet::Id::NumberOfCompletedPackets, initial_type(), initial_packet_code(), final_packet_code(), true)
-    {}
+    {
+      /*
+       * This packet should never be routed as a response to a request packet
+       * by PacketRouter.  The reason is because it has the same ID code as
+       * a WriteResponse packet so it will be incorrectly matched to WriteRequest
+       * packets.  See Issue #25.
+       */
+      set_routable(false);
+    }
 
     void NumberOfCompletedPackets::unserialize(HCIFormatExtractor& extractor) {
       auto num_connection_handle = extractor.get_value<uint8_t>();

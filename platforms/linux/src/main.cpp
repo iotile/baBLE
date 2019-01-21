@@ -106,9 +106,11 @@ int main(int argc, char* argv[]) {
         return;
       }
 
-      packet = packet_router->route(packet_router, packet);
-      packet->prepare(packet_router);
+      if (packet->get_routable()) {
+        packet = packet_router->route(packet_router, packet);
+      }
 
+      packet->prepare(packet_router);
       socket_container.send(packet);
     },
     on_error
@@ -130,9 +132,11 @@ int main(int argc, char* argv[]) {
         packet->set_socket(socket);
 
         // Check if there are packets waiting for a response
-        packet = packet_router->route(packet_router, packet);
-        packet->prepare(packet_router);
+        if (packet->get_routable()) {
+          packet = packet_router->route(packet_router, packet);
+        }
 
+        packet->prepare(packet_router);
         socket_container.send(packet);
       },
       on_error
@@ -158,9 +162,11 @@ int main(int argc, char* argv[]) {
       }
 
       // Check if there are packets waiting for a response
-      packet = packet_router->route(packet_router, packet);
-      packet->prepare(packet_router);
+      if (packet->get_routable()) {
+        packet = packet_router->route(packet_router, packet);
+      }
 
+      packet->prepare(packet_router);
       socket_container.send(packet);
 
       if (packet_id == Packet::Id::WriteWithoutResponse || packet_id == Packet::Id::EmitNotification) {

@@ -108,6 +108,7 @@ namespace Packet {
     m_connection_handle = 0;
     m_status = BaBLE::StatusCode::Success;
     m_native_status = 0x00;
+    m_routable = true;
   };
 
   const PacketUuid AbstractPacket::get_uuid() const {
