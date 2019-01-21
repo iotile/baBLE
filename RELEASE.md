@@ -2,6 +2,15 @@
 
 All major changes in each released version of **baBLE** are listed here.
 
+## 1.2.1
+
+- Python
+  - Fix creation of wheels to have proper version numbering
+
+- Cpp
+  - Fix issue where controller response indicating number of available packets
+    could be misidentified as a WriteResponse packet.
+
 ## 1.2.0
 - Global
   - add possibility to set connection interval on connect (95da8a3)
